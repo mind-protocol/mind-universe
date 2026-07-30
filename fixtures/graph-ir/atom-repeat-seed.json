@@ -1,0 +1,158 @@
+{
+  "universe": "00000000000000000000000000004000",
+  "symbols": [
+    "CodeDefinition",
+    "Operator",
+    "Register",
+    "Value",
+    "Budget",
+    "ENTRY",
+    "NEXT",
+    "INPUT",
+    "OUTPUT",
+    "BODY",
+    "BUDGET"
+  ],
+  "entities": [
+    {
+      "key": "00000000000000000000000000004000",
+      "symbol": "CodeDefinition",
+      "content": {
+        "kind": "graph_ir_code_definition",
+        "ir_version": 0,
+        "revision": 5,
+        "required_capabilities": []
+      }
+    },
+    {
+      "key": "00000000000000000000000000004001",
+      "symbol": "Operator",
+      "content": {
+        "kind": "graph_ir_operator",
+        "opcode": "constant",
+        "value": {"type": "text", "value": "bounded-atom-intent"}
+      }
+    },
+    {
+      "key": "00000000000000000000000000004002",
+      "symbol": "Operator",
+      "content": {
+        "kind": "graph_ir_operator",
+        "opcode": "repeat_n"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004003",
+      "symbol": "Operator",
+      "content": {
+        "kind": "graph_ir_operator",
+        "opcode": "propose"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004004",
+      "symbol": "Operator",
+      "content": {
+        "kind": "graph_ir_operator",
+        "opcode": "return"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004010",
+      "symbol": "Register",
+      "content": {
+        "kind": "graph_ir_register",
+        "register": 0
+      }
+    },
+    {
+      "key": "00000000000000000000000000004011",
+      "symbol": "Register",
+      "content": {
+        "kind": "graph_ir_register",
+        "register": 1
+      }
+    },
+    {
+      "key": "00000000000000000000000000004020",
+      "symbol": "Value",
+      "content": {
+        "kind": "graph_ir_value",
+        "value": {"type": "integer", "value": 3}
+      }
+    },
+    {
+      "key": "00000000000000000000000000004021",
+      "symbol": "Budget",
+      "content": {
+        "kind": "graph_ir_loop_budget",
+        "max_iterations": 4
+      }
+    }
+  ],
+  "relations": [
+    {
+      "key": "00000000000000000000000000004100",
+      "source": "00000000000000000000000000004000",
+      "target": "00000000000000000000000000004001",
+      "predicate": "ENTRY"
+    },
+    {
+      "key": "00000000000000000000000000004101",
+      "source": "00000000000000000000000000004001",
+      "target": "00000000000000000000000000004010",
+      "predicate": "OUTPUT"
+    },
+    {
+      "key": "00000000000000000000000000004102",
+      "source": "00000000000000000000000000004001",
+      "target": "00000000000000000000000000004002",
+      "predicate": "NEXT"
+    },
+    {
+      "key": "00000000000000000000000000004103",
+      "source": "00000000000000000000000000004002",
+      "target": "00000000000000000000000000004020",
+      "predicate": "INPUT",
+      "content": {"role": "iterations"}
+    },
+    {
+      "key": "00000000000000000000000000004104",
+      "source": "00000000000000000000000000004002",
+      "target": "00000000000000000000000000004021",
+      "predicate": "BUDGET"
+    },
+    {
+      "key": "00000000000000000000000000004105",
+      "source": "00000000000000000000000000004002",
+      "target": "00000000000000000000000000004003",
+      "predicate": "BODY"
+    },
+    {
+      "key": "00000000000000000000000000004106",
+      "source": "00000000000000000000000000004002",
+      "target": "00000000000000000000000000004004",
+      "predicate": "NEXT"
+    },
+    {
+      "key": "00000000000000000000000000004107",
+      "source": "00000000000000000000000000004003",
+      "target": "00000000000000000000000000004010",
+      "predicate": "INPUT",
+      "content": {"role": "command"}
+    },
+    {
+      "key": "00000000000000000000000000004108",
+      "source": "00000000000000000000000000004003",
+      "target": "00000000000000000000000000004011",
+      "predicate": "OUTPUT"
+    },
+    {
+      "key": "00000000000000000000000000004109",
+      "source": "00000000000000000000000000004004",
+      "target": "00000000000000000000000000004010",
+      "predicate": "INPUT",
+      "content": {"role": "value"}
+    }
+  ]
+}

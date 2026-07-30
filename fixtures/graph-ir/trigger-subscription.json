@@ -1,0 +1,31 @@
+{
+  "contract_version": 0,
+  "subscription": "00000000000000000000000000006001",
+  "revision": 7,
+  "enabled": true,
+  "event_kinds": [
+    "approved_change_set",
+    "local_observation",
+    "effect_receipt",
+    "health_failure",
+    "scheduled_tick",
+    "operator_request"
+  ],
+  "code_definition": "00000000000000000000000000006002",
+  "code_revision": 11,
+  "code_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "evidence_requirement": "measured",
+  "max_event_age_ticks": 8,
+  "budgets": {
+    "fuel": 64,
+    "max_mutations": 4,
+    "max_ticks": 3
+  },
+  "controls": {
+    "cooldown_ticks": 2,
+    "debounce_ticks": 1,
+    "max_causal_depth": 4,
+    "max_firings_per_tick": 3
+  },
+  "idempotency_namespace": "trigger-fixture"
+}

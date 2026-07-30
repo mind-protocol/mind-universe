@@ -7,12 +7,15 @@ license.workspace = true
 [dependencies]
 serde.workspace = true
 universe-capabilities = { path = "../universe-capabilities" }
+universe-compiler = { path = "../universe-compiler" }
 universe-core = { path = "../universe-core" }
 universe-ir = { path = "../universe-ir" }
+universe-physics = { path = "../universe-physics" }
 universe-store = { path = "../universe-store" }
 universe-transactions = { path = "../universe-transactions" }
 universe-vm = { path = "../universe-vm" }
 
 [dev-dependencies]
+serde_json.workspace = true
 tempfile = "3"
 universe-testkit = { path = "../universe-testkit" }

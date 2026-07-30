@@ -1,2 +1,20 @@
 target/
 **/target/
+
+# Secrets — never commit
+.env
+.env.*
+
+# Node / Tauri build outputs
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+
+# Generated, reproducible evidence (non-authoritative per AGENTS.md).
+# Regenerate with the reconstruction/e2e bins; not tracked to avoid bloating
+# the recovery log. Remove this rule if evidence must be version-pinned.
+artifacts/
+
+# Scratch
+New Text Document.txt

@@ -1,0 +1,71 @@
+{
+  "ir_version": 0,
+  "revision": 1,
+  "required_capabilities": [],
+  "operators": [
+    {"op":"input","name":"polarity","output":0},
+    {"op":"input","name":"outcome","output":1},
+    {"op":"constant","value":{"type":"text","value":"rejected"},"output":2},
+    {"op":"compare","left":1,"right":2,"kind":"equal","output":3},
+    {"op":"branch","condition":3,"true_next":15,"false_next":5},
+    {"op":"constant","value":{"type":"text","value":"support"},"output":4},
+    {"op":"compare","left":0,"right":4,"kind":"equal","output":5},
+    {"op":"branch","condition":5,"true_next":8,"false_next":10},
+    {
+      "op":"constant",
+      "value":{
+        "type":"record",
+        "value":{
+          "color":{"type":"text","value":"#fff3c4"},
+          "duration_ms":{"type":"integer","value":240},
+          "emissive":{"type":"text","value":"#ffd76a"},
+          "emissive_intensity_microunits":{"type":"integer","value":4000000},
+          "opacity_microunits":{"type":"integer","value":1000000},
+          "primitive":{"type":"text","value":"energy_packet"},
+          "radius_microunits":{"type":"integer","value":90000}
+        }
+      },
+      "output":6
+    },
+    {"op":"return","value":6},
+    {"op":"constant","value":{"type":"text","value":"inhibit"},"output":7},
+    {"op":"compare","left":0,"right":7,"kind":"equal","output":8},
+    {"op":"branch","condition":8,"true_next":13,"false_next":17},
+    {
+      "op":"constant",
+      "value":{
+        "type":"record",
+        "value":{
+          "color":{"type":"text","value":"#6b1018"},
+          "duration_ms":{"type":"integer","value":320},
+          "emissive":{"type":"text","value":"#d21f3c"},
+          "emissive_intensity_microunits":{"type":"integer","value":3200000},
+          "opacity_microunits":{"type":"integer","value":780000},
+          "primitive":{"type":"text","value":"inhibitory_wave"},
+          "radius_microunits":{"type":"integer","value":140000}
+        }
+      },
+      "output":9
+    },
+    {"op":"return","value":9},
+    {
+      "op":"constant",
+      "value":{
+        "type":"record",
+        "value":{
+          "color":{"type":"text","value":"#8d1630"},
+          "duration_ms":{"type":"integer","value":180},
+          "emissive":{"type":"text","value":"#ef355d"},
+          "emissive_intensity_microunits":{"type":"integer","value":4500000},
+          "opacity_microunits":{"type":"integer","value":900000},
+          "primitive":{"type":"text","value":"rupture"},
+          "radius_microunits":{"type":"integer","value":180000}
+        }
+      },
+      "output":10
+    },
+    {"op":"return","value":10},
+    {"op":"constant","value":{"type":"epistemic","value":{"state":"not_measured"}},"output":11},
+    {"op":"return","value":11}
+  ]
+}

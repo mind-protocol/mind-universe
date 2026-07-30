@@ -2,6 +2,9 @@
 //! no Universe behavior: the query program, selector, limits, and proposal kind
 //! are loaded from graph fixtures.
 
+pub mod behavior_runtime;
+pub mod covalidity;
+
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{BTreeMap, BTreeSet},

@@ -1,0 +1,12 @@
+{
+  "ir_version": 0,
+  "revision": 4,
+  "required_capabilities": [],
+  "operators": [
+    {"op":"input","name":"eligible","output":0},
+    {"op":"constant","value":{"type":"text","value":"bounded-intent"},"output":1},
+    {"op":"branch","condition":0,"true_next":3,"false_next":4},
+    {"op":"propose","command":1,"output":2},
+    {"op":"return","value":1}
+  ]
+}

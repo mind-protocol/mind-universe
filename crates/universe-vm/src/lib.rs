@@ -4,9 +4,14 @@ use serde::{Deserialize, Serialize};
 use std::cmp::Reverse;
 use std::collections::{BTreeMap, BTreeSet};
 use thiserror::Error;
-use universe_compiler::{compile, Bytecode, CompileError};
-use universe_core::{Revision, Tick};
-use universe_ir::{CodeDefinition, Operator, Register, Value};
+use universe_compiler::{
+    canonical_execution_request_hash, canonical_hash, compile, Bytecode, CompileError,
+};
+use universe_core::{EntityKey, Epistemic, Revision, Tick};
+use universe_ir::{
+    BooleanBinaryKind, CodeDefinition, ComparisonKind, EpistemicState, ExecutionRequest, Operator,
+    Register, Value, TRIGGER_CONTRACT_VERSION,
+};
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct ExecutionLimits {
@@ -39,6 +44,34 @@ pub struct ExecutionReceipt {
     pub trace: Vec<ExecutionTrace>,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TriggeredExecutionState {
+    Completed,
+    Rejected,
+    Trapped,
+}
+
+/// Epistemic receipt for one pinned trigger execution.
+///
+/// A deterministic rejection or VM trap is a measured outcome, not a
+/// `MeasurementFailed` claim. The latter remains reserved for inability to
+/// measure what occurred.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct TriggeredExecutionReceipt {
+    pub request_id: String,
+    pub request_hash: String,
+    pub idempotency_key: String,
+    pub subscription: EntityKey,
+    pub subscription_revision: Revision,
+    pub event_id: String,
+    pub code_definition: EntityKey,
+    pub code_revision: Revision,
+    pub state: Epistemic<TriggeredExecutionState>,
+    pub execution: Option<ExecutionReceipt>,
+    pub reason: Option<String>,
+}
+
 #[derive(Clone, Debug, Eq, Error, PartialEq)]
 pub enum VmError {
     #[error(transparent)]
@@ -57,6 +90,8 @@ pub enum VmError {
     Host(String),
     #[error("expected {expected}, received another value type")]
     Type { expected: &'static str },
+    #[error("epistemic value is unavailable in state {0:?}")]
+    EvidenceUnavailable(EpistemicState),
     #[error("proposal budget exhausted")]
     ProposalBudgetExhausted,
 }
@@ -74,6 +109,10 @@ pub trait VmHost {
     fn follow_one(&mut self, source: &Value, predicate: &Value) -> Result<Value, String>;
     fn entity_symbol(&mut self, entity: &Value) -> Result<Value, String>;
     fn hydrate(&mut self, selected: &[Value], max_bytes: u32) -> Result<Vec<Value>, String>;
+    fn call_capability(&mut self, capability: &str, input: &Value) -> Result<Value, String> {
+        let _ = input;
+        Err(format!("capability {capability} has no host adapter"))
+    }
 }
 
 fn register(registers: &BTreeMap<Register, Value>, id: Register) -> Result<&Value, VmError> {
@@ -98,6 +137,124 @@ pub fn execute_program(
     )
 }
 
+/// Executes only the CodeDefinition and authority revision pinned into a
+/// bounded request produced by the trigger compiler.
+///
+/// Tick budget is enforced at admission through the inclusive request
+/// deadline. Graph VM execution is synchronous and cannot advance Universe
+/// time internally.
+pub fn execute_trigger_request(
+    code: &CodeDefinition,
+    host: &mut impl VmHost,
+    inputs: &BTreeMap<String, Value>,
+    request: &ExecutionRequest,
+    current_universe_revision: Revision,
+    current_tick: Tick,
+) -> TriggeredExecutionReceipt {
+    let request_hash = canonical_execution_request_hash(request);
+    let rejected = |reason: String| TriggeredExecutionReceipt {
+        request_id: request.request_id.clone(),
+        request_hash: request_hash.clone(),
+        idempotency_key: request.idempotency_key.clone(),
+        subscription: request.subscription,
+        subscription_revision: request.subscription_revision,
+        event_id: request.trigger.event_id.clone(),
+        code_definition: request.code_definition,
+        code_revision: request.code_revision,
+        state: Epistemic::Measured(TriggeredExecutionState::Rejected),
+        execution: None,
+        reason: Some(reason),
+    };
+    if request.contract_version != TRIGGER_CONTRACT_VERSION {
+        return rejected(format!(
+            "unsupported trigger contract version {}",
+            request.contract_version
+        ));
+    }
+    if request.request_id.trim().is_empty() || request.idempotency_key.trim().is_empty() {
+        return rejected("request identity is empty".into());
+    }
+    if current_universe_revision != request.starting_universe_revision {
+        return rejected(format!(
+            "starting Universe revision mismatch: request {}, current {}",
+            request.starting_universe_revision.0, current_universe_revision.0
+        ));
+    }
+    if current_tick.0 < request.issued_at_tick.0 {
+        return rejected(format!(
+            "execution tick {} precedes request tick {}",
+            current_tick.0, request.issued_at_tick.0
+        ));
+    }
+    if current_tick.0 > request.deadline_tick.0 {
+        return rejected(format!(
+            "execution tick {} exceeds deadline {}",
+            current_tick.0, request.deadline_tick.0
+        ));
+    }
+    if code.revision != request.code_revision {
+        return rejected(format!(
+            "CodeDefinition revision mismatch: request {}, supplied {}",
+            request.code_revision.0, code.revision.0
+        ));
+    }
+    let supplied_code_hash = match canonical_hash(code) {
+        Ok(hash) => hash,
+        Err(error) => return rejected(format!("CodeDefinition hash failed: {error}")),
+    };
+    if supplied_code_hash != request.code_hash {
+        return rejected(format!(
+            "CodeDefinition hash mismatch: request {}, supplied {}",
+            request.code_hash, supplied_code_hash
+        ));
+    }
+    if request.budgets.fuel == 0
+        || request.budgets.max_mutations == 0
+        || request.budgets.max_ticks == 0
+    {
+        return rejected("execution request contains a zero budget".into());
+    }
+
+    match execute_program(
+        code,
+        host,
+        inputs,
+        request.starting_universe_revision,
+        current_tick,
+        ExecutionLimits {
+            fuel: request.budgets.fuel,
+            max_proposals: request.budgets.max_mutations,
+        },
+    ) {
+        Ok(execution) => TriggeredExecutionReceipt {
+            request_id: request.request_id.clone(),
+            request_hash,
+            idempotency_key: request.idempotency_key.clone(),
+            subscription: request.subscription,
+            subscription_revision: request.subscription_revision,
+            event_id: request.trigger.event_id.clone(),
+            code_definition: request.code_definition,
+            code_revision: request.code_revision,
+            state: Epistemic::Measured(TriggeredExecutionState::Completed),
+            execution: Some(execution),
+            reason: None,
+        },
+        Err(error) => TriggeredExecutionReceipt {
+            request_id: request.request_id.clone(),
+            request_hash,
+            idempotency_key: request.idempotency_key.clone(),
+            subscription: request.subscription,
+            subscription_revision: request.subscription_revision,
+            event_id: request.trigger.event_id.clone(),
+            code_definition: request.code_definition,
+            code_revision: request.code_revision,
+            state: Epistemic::Measured(TriggeredExecutionState::Trapped),
+            execution: None,
+            reason: Some(error.to_string()),
+        },
+    }
+}
+
 pub fn execute(
     bytecode: &Bytecode,
     host: &mut impl VmHost,
@@ -117,8 +274,13 @@ pub fn execute(
     let mut proposals = Vec::new();
     let mut trace = Vec::new();
     let mut result = Value::Unit;
+    let mut program_counter = 0usize;
 
-    for (index, op) in bytecode.instructions.iter().enumerate() {
+    while program_counter < bytecode.instructions.len() {
+        let index = program_counter;
+        let op = &bytecode.instructions[index];
+        let mut next_program_counter = index + 1;
+        let mut returned = false;
         if host.is_cancelled() {
             return Err(VmError::Cancelled);
         }
@@ -140,6 +302,122 @@ pub fn execute(
                     .ok_or_else(|| VmError::MissingInput(name.clone()))?,
             ),
             Operator::Constant { value, .. } => Some(value.clone()),
+            Operator::Compare {
+                left, right, kind, ..
+            } => Some(Value::Bool(compare(
+                register(&registers, *left)?,
+                register(&registers, *right)?,
+                *kind,
+            )?)),
+            Operator::BooleanBinary {
+                left, right, kind, ..
+            } => {
+                let Value::Bool(left) = register(&registers, *left)? else {
+                    return Err(VmError::Type { expected: "bool" });
+                };
+                let Value::Bool(right) = register(&registers, *right)? else {
+                    return Err(VmError::Type { expected: "bool" });
+                };
+                Some(Value::Bool(match kind {
+                    BooleanBinaryKind::And => *left && *right,
+                    BooleanBinaryKind::Or => *left || *right,
+                }))
+            }
+            Operator::BooleanNot { input, .. } => {
+                let Value::Bool(value) = register(&registers, *input)? else {
+                    return Err(VmError::Type { expected: "bool" });
+                };
+                Some(Value::Bool(!value))
+            }
+            Operator::EvidenceState { input, .. } => {
+                let Value::Epistemic(evidence) = register(&registers, *input)? else {
+                    return Err(VmError::Type {
+                        expected: "epistemic value",
+                    });
+                };
+                Some(Value::EpistemicState(epistemic_state(evidence)))
+            }
+            Operator::EvidenceValue { input, .. } => {
+                let Value::Epistemic(evidence) = register(&registers, *input)? else {
+                    return Err(VmError::Type {
+                        expected: "epistemic value",
+                    });
+                };
+                match evidence {
+                    Epistemic::Observed(value) | Epistemic::Measured(value) => {
+                        Some(value.as_ref().clone())
+                    }
+                    _ => return Err(VmError::EvidenceUnavailable(epistemic_state(evidence))),
+                }
+            }
+            Operator::EvidenceCompare {
+                left, right, kind, ..
+            } => {
+                let Value::Epistemic(left) = register(&registers, *left)? else {
+                    return Err(VmError::Type {
+                        expected: "epistemic value",
+                    });
+                };
+                let Value::Epistemic(right) = register(&registers, *right)? else {
+                    return Err(VmError::Type {
+                        expected: "epistemic value",
+                    });
+                };
+                Some(Value::Epistemic(evidence_compare(left, right, *kind)?))
+            }
+            Operator::EvidenceAll { inputs, .. } => {
+                let evidence = inputs
+                    .iter()
+                    .map(|input| {
+                        let Value::Epistemic(value) = register(&registers, *input)? else {
+                            return Err(VmError::Type {
+                                expected: "epistemic value",
+                            });
+                        };
+                        Ok(value)
+                    })
+                    .collect::<Result<Vec<_>, VmError>>()?;
+                Some(Value::Epistemic(evidence_all(&evidence)?))
+            }
+            Operator::Branch {
+                condition,
+                true_next,
+                false_next,
+            } => {
+                let Value::Bool(condition) = register(&registers, *condition)? else {
+                    return Err(VmError::Type { expected: "bool" });
+                };
+                next_program_counter = if *condition {
+                    *true_next as usize
+                } else {
+                    *false_next as usize
+                };
+                None
+            }
+            Operator::BranchOnEvidence {
+                input,
+                observed_next,
+                measured_next,
+                known_absent_next,
+                unknown_next,
+                not_measured_next,
+                measurement_failed_next,
+            } => {
+                let Value::Epistemic(evidence) = register(&registers, *input)? else {
+                    return Err(VmError::Type {
+                        expected: "epistemic value",
+                    });
+                };
+                next_program_counter = match evidence {
+                    Epistemic::Observed(_) => *observed_next,
+                    Epistemic::Measured(_) => *measured_next,
+                    Epistemic::KnownAbsent => *known_absent_next,
+                    Epistemic::Unknown => *unknown_next,
+                    Epistemic::NotMeasured => *not_measured_next,
+                    Epistemic::MeasurementFailed { .. } => *measurement_failed_next,
+                } as usize;
+                None
+            }
             Operator::QueryOpen { spec, .. } => Some(
                 host.open_query(
                     spec,
@@ -251,6 +529,12 @@ pub fn execute(
                         .map_err(VmError::Host)?,
                 ))
             }
+            Operator::CapabilityCall {
+                capability, input, ..
+            } => Some(
+                host.call_capability(capability, register(&registers, *input)?)
+                    .map_err(VmError::Host)?,
+            ),
             Operator::MakeRecord { fields, .. } => Some(Value::Record(
                 fields
                     .iter()
@@ -271,12 +555,17 @@ pub fn execute(
             }
             Operator::Return { value } => {
                 result = register(&registers, *value)?.clone();
+                returned = true;
                 None
             }
         };
         if let (Some(output_id), Some(value)) = (op.output(), output) {
             registers.insert(output_id, value);
         }
+        if returned {
+            break;
+        }
+        program_counter = next_program_counter;
     }
     Ok(ExecutionReceipt {
         code_revision: bytecode.code_revision,
@@ -300,10 +589,147 @@ fn score(value: &Value, field: &str) -> i64 {
     }
 }
 
+fn compare(left: &Value, right: &Value, kind: ComparisonKind) -> Result<bool, VmError> {
+    match kind {
+        ComparisonKind::Equal => Ok(left == right),
+        ComparisonKind::NotEqual => Ok(left != right),
+        ComparisonKind::LessThan
+        | ComparisonKind::LessThanOrEqual
+        | ComparisonKind::GreaterThan
+        | ComparisonKind::GreaterThanOrEqual => {
+            let (Value::Integer(left), Value::Integer(right)) = (left, right) else {
+                return Err(VmError::Type {
+                    expected: "integer operands",
+                });
+            };
+            Ok(match kind {
+                ComparisonKind::LessThan => left < right,
+                ComparisonKind::LessThanOrEqual => left <= right,
+                ComparisonKind::GreaterThan => left > right,
+                ComparisonKind::GreaterThanOrEqual => left >= right,
+                ComparisonKind::Equal | ComparisonKind::NotEqual => unreachable!(),
+            })
+        }
+    }
+}
+
+fn epistemic_state(value: &Epistemic<Box<Value>>) -> EpistemicState {
+    match value {
+        Epistemic::Observed(_) => EpistemicState::Observed,
+        Epistemic::Measured(_) => EpistemicState::Measured,
+        Epistemic::KnownAbsent => EpistemicState::KnownAbsent,
+        Epistemic::Unknown => EpistemicState::Unknown,
+        Epistemic::NotMeasured => EpistemicState::NotMeasured,
+        Epistemic::MeasurementFailed { .. } => EpistemicState::MeasurementFailed,
+    }
+}
+
+fn evidence_compare(
+    left: &Epistemic<Box<Value>>,
+    right: &Epistemic<Box<Value>>,
+    kind: ComparisonKind,
+) -> Result<Epistemic<Box<Value>>, VmError> {
+    match (left, right) {
+        (Epistemic::MeasurementFailed { reason }, _)
+        | (_, Epistemic::MeasurementFailed { reason }) => {
+            return Ok(Epistemic::MeasurementFailed {
+                reason: reason.clone(),
+            });
+        }
+        (Epistemic::NotMeasured, _) | (_, Epistemic::NotMeasured) => {
+            return Ok(Epistemic::NotMeasured);
+        }
+        (Epistemic::Unknown, _) | (_, Epistemic::Unknown) => {
+            return Ok(Epistemic::Unknown);
+        }
+        (Epistemic::KnownAbsent, _) | (_, Epistemic::KnownAbsent) => {
+            return Ok(Epistemic::KnownAbsent);
+        }
+        _ => {}
+    }
+    let (left_value, right_value) = match (left, right) {
+        (Epistemic::Measured(left), Epistemic::Measured(right))
+        | (Epistemic::Measured(left), Epistemic::Observed(right))
+        | (Epistemic::Observed(left), Epistemic::Measured(right))
+        | (Epistemic::Observed(left), Epistemic::Observed(right)) => (left, right),
+        _ => unreachable!("unavailable evidence returned before value comparison"),
+    };
+    let result = Box::new(Value::Bool(compare(left_value, right_value, kind)?));
+    Ok(
+        if matches!(
+            (left, right),
+            (Epistemic::Measured(_), Epistemic::Measured(_))
+        ) {
+            Epistemic::Measured(result)
+        } else {
+            Epistemic::Observed(result)
+        },
+    )
+}
+
+fn evidence_all(evidence: &[&Epistemic<Box<Value>>]) -> Result<Epistemic<Box<Value>>, VmError> {
+    let mut measured_result = true;
+    for value in evidence {
+        match value {
+            Epistemic::Observed(inner) | Epistemic::Measured(inner) => {
+                let Value::Bool(value) = inner.as_ref() else {
+                    return Err(VmError::Type {
+                        expected: "epistemic bool",
+                    });
+                };
+                measured_result &= *value;
+            }
+            Epistemic::KnownAbsent
+            | Epistemic::Unknown
+            | Epistemic::NotMeasured
+            | Epistemic::MeasurementFailed { .. } => {}
+        }
+    }
+    if let Some(reason) = evidence.iter().find_map(|value| match value {
+        Epistemic::MeasurementFailed { reason } => Some(reason),
+        _ => None,
+    }) {
+        return Ok(Epistemic::MeasurementFailed {
+            reason: reason.clone(),
+        });
+    }
+    if evidence
+        .iter()
+        .any(|value| matches!(value, Epistemic::Observed(_) | Epistemic::NotMeasured))
+    {
+        Ok(Epistemic::NotMeasured)
+    } else if evidence
+        .iter()
+        .any(|value| matches!(value, Epistemic::Unknown))
+    {
+        Ok(Epistemic::Unknown)
+    } else if evidence
+        .iter()
+        .any(|value| matches!(value, Epistemic::KnownAbsent))
+    {
+        Ok(Epistemic::KnownAbsent)
+    } else {
+        Ok(Epistemic::Measured(Box::new(Value::Bool(measured_result))))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use universe_ir::QuerySpec;
+    use universe_compiler::atom::{
+        compile_atom_code_definition, AtomCompilationBudget, AtomCompileError,
+    };
+    use universe_compiler::{
+        behavior_compilation_receipt_hash, behavior_loop_health_graph_inputs,
+        build_execution_request, canonical_hash, decode_behavior_loop_health,
+        BehaviorBondValidationReport, BehaviorCompilationReceipt, BehaviorCompilationStatus,
+        BehaviorLoopHealthInput, RUNTIME_BOND_PLAN_VERSION,
+    };
+    use universe_ir::{
+        BehaviorLoopClosure, BehaviorPhysicalEvidence, BehaviorReadbackEvidence, QuerySpec,
+        TriggerEvent, TriggerEventKind, TriggerEventPayload, TriggerSubscription,
+    };
+    use universe_store::{GraphSeed, UniverseStore};
 
     #[derive(Default)]
     struct Host;
@@ -347,6 +773,201 @@ mod tests {
 
     fn fixture() -> CodeDefinition {
         serde_json::from_str(include_str!("../../../fixtures/graph-ir/minimal-read.json")).unwrap()
+    }
+
+    fn boolean_fixture() -> CodeDefinition {
+        serde_json::from_str(include_str!(
+            "../../../fixtures/graph-ir/boolean-comparison.json"
+        ))
+        .unwrap()
+    }
+
+    fn epistemic_fixture() -> CodeDefinition {
+        serde_json::from_str(include_str!(
+            "../../../fixtures/graph-ir/epistemic-path.json"
+        ))
+        .unwrap()
+    }
+
+    fn branch_fixture() -> CodeDefinition {
+        serde_json::from_str(include_str!("../../../fixtures/graph-ir/branch.json")).unwrap()
+    }
+
+    fn evidence_branch_fixture() -> CodeDefinition {
+        serde_json::from_str(include_str!(
+            "../../../fixtures/graph-ir/evidence-branch.json"
+        ))
+        .unwrap()
+    }
+
+    fn behavior_loop_health_fixture() -> CodeDefinition {
+        serde_json::from_str(include_str!(
+            "../../../fixtures/graph-ir/behavior-loop-health.json"
+        ))
+        .unwrap()
+    }
+
+    fn triggered_code() -> CodeDefinition {
+        CodeDefinition {
+            ir_version: universe_ir::IR_VERSION,
+            revision: Revision(11),
+            required_capabilities: vec![],
+            operators: vec![
+                Operator::Input {
+                    name: "event".into(),
+                    output: 0,
+                },
+                Operator::Return { value: 0 },
+            ],
+        }
+    }
+
+    fn trigger_request(code: &CodeDefinition) -> ExecutionRequest {
+        let mut subscription: TriggerSubscription = serde_json::from_str(include_str!(
+            "../../../fixtures/graph-ir/trigger-subscription.json"
+        ))
+        .unwrap();
+        subscription.code_revision = code.revision;
+        subscription.code_hash = canonical_hash(code).unwrap();
+        let event = TriggerEvent {
+            event_id: "vm-event".into(),
+            kind: TriggerEventKind::LocalObservation,
+            source_revision: Revision(12),
+            occurred_at: Tick(20),
+            observed_at: Tick(20),
+            evidence: Epistemic::Measured(TriggerEventPayload {
+                subject: None,
+                fields: BTreeMap::new(),
+                receipt_hash: None,
+            }),
+            causal_ancestry: vec![],
+        };
+        build_execution_request(&subscription, &event, Revision(12), Tick(20))
+            .request
+            .unwrap()
+    }
+
+    #[test]
+    fn trigger_request_executes_only_its_pinned_code_and_budgets() {
+        let code = triggered_code();
+        let request = trigger_request(&code);
+        let inputs = BTreeMap::from([("event".into(), Value::Text("measured".into()))]);
+        let receipt =
+            execute_trigger_request(&code, &mut Host, &inputs, &request, Revision(12), Tick(21));
+        assert_eq!(
+            receipt.state,
+            Epistemic::Measured(TriggeredExecutionState::Completed)
+        );
+        let execution = receipt.execution.unwrap();
+        assert_eq!(execution.code_revision, Revision(11));
+        assert_eq!(execution.starting_universe_revision, Revision(12));
+        assert_eq!(execution.starting_tick, Tick(21));
+        assert_eq!(execution.fuel_used, 2);
+        assert_eq!(execution.result, Value::Text("measured".into()));
+    }
+
+    #[test]
+    fn trigger_request_rejects_changed_code_or_stale_deadline() {
+        let code = triggered_code();
+        let request = trigger_request(&code);
+        let mut changed_code = code.clone();
+        changed_code.revision = Revision(12);
+        let changed = execute_trigger_request(
+            &changed_code,
+            &mut Host,
+            &BTreeMap::new(),
+            &request,
+            Revision(12),
+            Tick(21),
+        );
+        assert_eq!(
+            changed.state,
+            Epistemic::Measured(TriggeredExecutionState::Rejected)
+        );
+        assert!(changed.reason.unwrap().contains("revision mismatch"));
+
+        let stale = execute_trigger_request(
+            &code,
+            &mut Host,
+            &BTreeMap::new(),
+            &request,
+            Revision(12),
+            Tick(request.deadline_tick.0 + 1),
+        );
+        assert_eq!(
+            stale.state,
+            Epistemic::Measured(TriggeredExecutionState::Rejected)
+        );
+        assert!(stale.reason.unwrap().contains("exceeds deadline"));
+    }
+
+    fn measured_behavior_loop_health_input() -> BehaviorLoopHealthInput {
+        let bond = universe_core::EntityKey(0x3070);
+        let projection_hash = "1".repeat(64);
+        let artifact_hash = "2".repeat(64);
+        let execution_receipt_hash = "3".repeat(64);
+        let compilation = BehaviorCompilationReceipt {
+            plan_version: RUNTIME_BOND_PLAN_VERSION,
+            bond,
+            behavior_hash: "4".repeat(64),
+            projection_hash: Some(projection_hash.clone()),
+            artifact_hash: Some(artifact_hash.clone()),
+            authority: None,
+            status: BehaviorCompilationStatus::Compiled,
+            validation: BehaviorBondValidationReport {
+                bond,
+                behavior_hash: "4".repeat(64),
+                authority: None,
+                valid: true,
+                issues: Vec::new(),
+            },
+        };
+        let compilation_receipt_hash = behavior_compilation_receipt_hash(&compilation);
+        BehaviorLoopHealthInput {
+            compilation: Epistemic::Measured(compilation),
+            physical: Epistemic::Measured(BehaviorPhysicalEvidence {
+                behavior_bond: bond,
+                artifact_hash: artifact_hash.clone(),
+                execution_receipt_hash: execution_receipt_hash.clone(),
+                converged: true,
+                energy_conserved: true,
+                contained: true,
+                released: true,
+                lifetime_within_limit: true,
+            }),
+            readback: Epistemic::Measured(BehaviorReadbackEvidence {
+                behavior_bond: bond,
+                projection_hash,
+                compilation_receipt_hash,
+                artifact_hash,
+                execution_receipt_hash,
+                independent_readback_hash: "5".repeat(64),
+                content_hashes_verified: true,
+                causal_chain_verified: true,
+                contradictory: false,
+            }),
+        }
+    }
+
+    fn execute_behavior_loop_health_receipt(input: &BehaviorLoopHealthInput) -> ExecutionReceipt {
+        execute_program(
+            &behavior_loop_health_fixture(),
+            &mut Host,
+            &behavior_loop_health_graph_inputs(input),
+            Revision(30),
+            Tick(10),
+            ExecutionLimits {
+                fuel: 64,
+                max_proposals: 0,
+            },
+        )
+        .unwrap()
+    }
+
+    fn execute_behavior_loop_health(
+        input: &BehaviorLoopHealthInput,
+    ) -> Epistemic<BehaviorLoopClosure> {
+        decode_behavior_loop_health(&execute_behavior_loop_health_receipt(input).result).unwrap()
     }
 
     #[test]
@@ -410,5 +1031,377 @@ mod tests {
         )
         .unwrap_err();
         assert_eq!(error, VmError::FuelExhausted);
+    }
+
+    #[test]
+    fn graph_boolean_and_comparison_operators_execute_deterministically() {
+        let receipt = execute_program(
+            &boolean_fixture(),
+            &mut Host,
+            &BTreeMap::new(),
+            Revision(12),
+            Tick(4),
+            ExecutionLimits {
+                fuel: 16,
+                max_proposals: 0,
+            },
+        )
+        .unwrap();
+        assert_eq!(receipt.result, Value::Bool(true));
+        assert_eq!(receipt.fuel_used, 8);
+    }
+
+    #[test]
+    fn ordered_comparison_rejects_non_integer_operands() {
+        let mut code = boolean_fixture();
+        code.operators[0] = Operator::Constant {
+            value: Value::Text("not-an-integer".into()),
+            output: 0,
+        };
+        let error = execute_program(
+            &code,
+            &mut Host,
+            &BTreeMap::new(),
+            Revision(12),
+            Tick(4),
+            ExecutionLimits {
+                fuel: 16,
+                max_proposals: 0,
+            },
+        )
+        .unwrap_err();
+        assert_eq!(
+            error,
+            VmError::Type {
+                expected: "integer operands"
+            }
+        );
+    }
+
+    #[test]
+    fn graph_program_reads_epistemic_state_before_unwrapping_value() {
+        let receipt = execute_program(
+            &epistemic_fixture(),
+            &mut Host,
+            &BTreeMap::new(),
+            Revision(20),
+            Tick(7),
+            ExecutionLimits {
+                fuel: 16,
+                max_proposals: 0,
+            },
+        )
+        .unwrap();
+        assert_eq!(receipt.result, Value::Bool(true));
+    }
+
+    #[test]
+    fn unknown_evidence_is_not_coerced_to_false_or_zero() {
+        let mut code = epistemic_fixture();
+        code.operators[0] = Operator::Constant {
+            value: Value::Epistemic(Epistemic::Unknown),
+            output: 0,
+        };
+        let error = execute_program(
+            &code,
+            &mut Host,
+            &BTreeMap::new(),
+            Revision(20),
+            Tick(7),
+            ExecutionLimits {
+                fuel: 16,
+                max_proposals: 0,
+            },
+        )
+        .unwrap_err();
+        assert_eq!(error, VmError::EvidenceUnavailable(EpistemicState::Unknown));
+    }
+
+    #[test]
+    fn graph_owned_behavior_loop_health_closes_with_complete_measured_proof() {
+        let input = measured_behavior_loop_health_input();
+        let receipt = execute_behavior_loop_health_receipt(&input);
+        assert_eq!(receipt.fuel_used, 39);
+        assert_eq!(receipt.trace.len(), 39);
+        assert!(receipt.proposals.is_empty());
+        let graph_health = decode_behavior_loop_health(&receipt.result).unwrap();
+        assert_eq!(
+            graph_health,
+            Epistemic::Measured(BehaviorLoopClosure::Closed)
+        );
+    }
+
+    #[test]
+    fn graph_owned_behavior_loop_health_preserves_unavailable_states() {
+        let mut observed = measured_behavior_loop_health_input();
+        let Epistemic::Measured(receipt) = observed.compilation else {
+            panic!("fixture compilation must be measured");
+        };
+        observed.compilation = Epistemic::Observed(receipt);
+        assert_eq!(
+            execute_behavior_loop_health(&observed),
+            Epistemic::NotMeasured
+        );
+
+        let mut unknown = measured_behavior_loop_health_input();
+        unknown.compilation = Epistemic::Unknown;
+        assert_eq!(execute_behavior_loop_health(&unknown), Epistemic::Unknown);
+
+        let mut known_absent = measured_behavior_loop_health_input();
+        known_absent.physical = Epistemic::KnownAbsent;
+        assert_eq!(
+            execute_behavior_loop_health(&known_absent),
+            Epistemic::KnownAbsent
+        );
+
+        let mut not_measured = measured_behavior_loop_health_input();
+        not_measured.readback = Epistemic::NotMeasured;
+        assert_eq!(
+            execute_behavior_loop_health(&not_measured),
+            Epistemic::NotMeasured
+        );
+
+        let mut failed = measured_behavior_loop_health_input();
+        failed.physical = Epistemic::MeasurementFailed {
+            reason: "physics measurement failed".into(),
+        };
+        assert_eq!(
+            execute_behavior_loop_health(&failed),
+            Epistemic::MeasurementFailed {
+                reason: "physical: physics measurement failed".into(),
+            }
+        );
+    }
+
+    #[test]
+    fn graph_owned_behavior_loop_health_is_non_compensatory() {
+        let mut contradiction = measured_behavior_loop_health_input();
+        let Epistemic::Measured(readback) = &mut contradiction.readback else {
+            panic!("fixture readback must be measured");
+        };
+        readback.contradictory = true;
+        assert_eq!(
+            execute_behavior_loop_health(&contradiction),
+            Epistemic::Measured(BehaviorLoopClosure::Open)
+        );
+
+        let mut physical_failure = measured_behavior_loop_health_input();
+        let Epistemic::Measured(physical) = &mut physical_failure.physical else {
+            panic!("fixture physical evidence must be measured");
+        };
+        physical.energy_conserved = false;
+        assert_eq!(
+            execute_behavior_loop_health(&physical_failure),
+            Epistemic::Measured(BehaviorLoopClosure::Open)
+        );
+
+        let mut mismatched_artifact = measured_behavior_loop_health_input();
+        let Epistemic::Measured(readback) = &mut mismatched_artifact.readback else {
+            panic!("fixture readback must be measured");
+        };
+        readback.artifact_hash = "9".repeat(64);
+        assert_eq!(
+            execute_behavior_loop_health(&mismatched_artifact),
+            Epistemic::Measured(BehaviorLoopClosure::Open)
+        );
+    }
+
+    #[test]
+    fn branch_only_executes_the_selected_path() {
+        let false_receipt = execute_program(
+            &branch_fixture(),
+            &mut Host,
+            &BTreeMap::from([("eligible".into(), Value::Bool(false))]),
+            Revision(21),
+            Tick(8),
+            ExecutionLimits {
+                fuel: 8,
+                max_proposals: 1,
+            },
+        )
+        .unwrap();
+        assert!(false_receipt.proposals.is_empty());
+        assert_eq!(false_receipt.fuel_used, 4);
+
+        let true_receipt = execute_program(
+            &branch_fixture(),
+            &mut Host,
+            &BTreeMap::from([("eligible".into(), Value::Bool(true))]),
+            Revision(21),
+            Tick(8),
+            ExecutionLimits {
+                fuel: 8,
+                max_proposals: 1,
+            },
+        )
+        .unwrap();
+        assert_eq!(true_receipt.proposals.len(), 1);
+        assert_eq!(true_receipt.fuel_used, 5);
+    }
+
+    #[test]
+    fn evidence_branch_routes_each_state_without_coercion() {
+        let cases = [
+            (
+                Value::Epistemic(Epistemic::Observed(Box::new(Value::Integer(1)))),
+                "observed",
+            ),
+            (
+                Value::Epistemic(Epistemic::Measured(Box::new(Value::Integer(2)))),
+                "measured",
+            ),
+            (Value::Epistemic(Epistemic::KnownAbsent), "known_absent"),
+            (Value::Epistemic(Epistemic::Unknown), "unknown"),
+            (Value::Epistemic(Epistemic::NotMeasured), "not_measured"),
+            (
+                Value::Epistemic(Epistemic::MeasurementFailed {
+                    reason: "sensor offline".into(),
+                }),
+                "measurement_failed",
+            ),
+        ];
+        let code = evidence_branch_fixture();
+        let bytecode = compile(&code).unwrap();
+        for (evidence, expected) in cases {
+            let inputs = BTreeMap::from([("evidence".into(), evidence)]);
+            let interpreted = execute_program(
+                &code,
+                &mut Host,
+                &inputs,
+                Revision(30),
+                Tick(9),
+                ExecutionLimits {
+                    fuel: 8,
+                    max_proposals: 0,
+                },
+            )
+            .unwrap();
+            let compiled = execute(
+                &bytecode,
+                &mut Host,
+                &inputs,
+                Revision(30),
+                Tick(9),
+                ExecutionLimits {
+                    fuel: 8,
+                    max_proposals: 0,
+                },
+            )
+            .unwrap();
+            assert_eq!(interpreted, compiled);
+            assert_eq!(interpreted.result, Value::Text(expected.into()));
+            assert_eq!(interpreted.fuel_used, 4);
+        }
+    }
+
+    #[test]
+    fn evidence_branch_rejects_non_epistemic_input() {
+        let error = execute_program(
+            &evidence_branch_fixture(),
+            &mut Host,
+            &BTreeMap::from([("evidence".into(), Value::Bool(true))]),
+            Revision(30),
+            Tick(9),
+            ExecutionLimits {
+                fuel: 8,
+                max_proposals: 0,
+            },
+        )
+        .unwrap_err();
+        assert_eq!(
+            error,
+            VmError::Type {
+                expected: "epistemic value"
+            }
+        );
+    }
+
+    #[test]
+    fn atom_repeat_loads_reopens_compiles_and_executes_with_receipt() {
+        let seed: GraphSeed = serde_json::from_str(include_str!(
+            "../../../fixtures/graph-ir/atom-repeat-seed.json"
+        ))
+        .unwrap();
+        let temp = tempfile::tempdir().unwrap();
+        let store = UniverseStore::open(temp.path()).unwrap();
+        let installed = store.install_seed(&seed).unwrap();
+        let installed_hash = installed.canonical_hash().unwrap();
+
+        let independent_store = UniverseStore::open(temp.path()).unwrap();
+        let independent = independent_store.load_snapshot().unwrap();
+        assert_eq!(independent.canonical_hash().unwrap(), installed_hash);
+
+        let compilation = compile_atom_code_definition(
+            &independent_store,
+            &independent,
+            universe_core::EntityKey(0x4000),
+            AtomCompilationBudget {
+                max_entities: 16,
+                max_relations: 16,
+                max_operators: 8,
+            },
+        )
+        .unwrap();
+        assert_eq!(compilation.bytecode.instructions.len(), 5);
+        assert_eq!(compilation.receipt.artifact_hash.len(), 64);
+        assert_eq!(compilation.receipt.snapshot_hash, installed_hash);
+        assert_eq!(
+            compilation.receipt.source_atoms,
+            vec![
+                universe_core::EntityKey(0x4001),
+                universe_core::EntityKey(0x4003),
+                universe_core::EntityKey(0x4003),
+                universe_core::EntityKey(0x4003),
+                universe_core::EntityKey(0x4004),
+            ]
+        );
+
+        let receipt = execute(
+            &compilation.bytecode,
+            &mut Host,
+            &BTreeMap::new(),
+            independent.revision,
+            independent.tick,
+            ExecutionLimits {
+                fuel: 8,
+                max_proposals: 3,
+            },
+        )
+        .unwrap();
+        assert_eq!(receipt.proposals.len(), 3);
+        assert_eq!(receipt.fuel_used, 5);
+        assert_eq!(receipt.result, Value::Text("bounded-atom-intent".into()));
+        assert_eq!(receipt.starting_universe_revision, independent.revision);
+    }
+
+    #[test]
+    fn atom_repeat_rejects_iterations_above_graph_budget() {
+        let mut seed: GraphSeed = serde_json::from_str(include_str!(
+            "../../../fixtures/graph-ir/atom-repeat-seed.json"
+        ))
+        .unwrap();
+        seed.entities
+            .iter_mut()
+            .find(|entity| entity.key == universe_core::EntityKey(0x4020))
+            .unwrap()
+            .content["value"]["value"] = serde_json::json!(5);
+        let temp = tempfile::tempdir().unwrap();
+        let store = UniverseStore::open(temp.path()).unwrap();
+        let snapshot = store.install_seed(&seed).unwrap();
+        let error = compile_atom_code_definition(
+            &store,
+            &snapshot,
+            universe_core::EntityKey(0x4000),
+            AtomCompilationBudget {
+                max_entities: 16,
+                max_relations: 16,
+                max_operators: 8,
+            },
+        )
+        .unwrap_err();
+        assert_eq!(
+            error,
+            AtomCompileError::Budget("REPEAT_N requests 5 iterations, budget is 4".into())
+        );
     }
 }

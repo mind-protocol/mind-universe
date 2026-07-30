@@ -1,0 +1,228 @@
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #dce8ff;
+  background: #020307;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root,
+main {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+.world-status {
+  position: fixed;
+  left: 50%;
+  bottom: 0.7rem;
+  transform: translateX(-50%);
+  color: rgb(220 232 255 / 55%);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.projection-heading {
+  position: fixed;
+  top: 1.25rem;
+  left: 1.5rem;
+  display: grid;
+  gap: 0.2rem;
+  max-width: 24rem;
+  pointer-events: none;
+  text-shadow: 0 0 18px rgb(0 0 0 / 95%);
+}
+
+.projection-heading p {
+  margin: 0;
+  color: #8eacd3;
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.projection-heading strong {
+  color: #e4edfb;
+  font-size: 1.08rem;
+  font-weight: 540;
+}
+
+.projection-heading span {
+  color: rgb(196 211 235 / 64%);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+}
+
+.projection-evidence {
+  position: fixed;
+  right: 1rem;
+  bottom: 1.5rem;
+  left: 1rem;
+  pointer-events: none;
+}
+
+.coverage,
+.projection-evidence ul {
+  display: flex;
+  justify-content: center;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.coverage {
+  margin-bottom: 0.45rem;
+}
+
+.coverage span,
+.projection-evidence li {
+  border: 1px solid rgb(121 146 182 / 20%);
+  border-radius: 999px;
+  background: rgb(4 8 16 / 68%);
+  box-shadow: 0 0 24px rgb(0 0 0 / 35%);
+  backdrop-filter: blur(8px);
+}
+
+.coverage span {
+  padding: 0.28rem 0.62rem;
+  color: rgb(205 219 242 / 70%);
+  font-size: 0.58rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.projection-evidence ul {
+  align-items: stretch;
+}
+
+.projection-evidence li {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.08rem 0.35rem;
+  width: min(20vw, 15rem);
+  padding: 0.42rem 0.62rem;
+}
+
+.projection-evidence li > span,
+.projection-evidence li > strong {
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.projection-evidence li > span {
+  color: rgb(203 216 236 / 66%);
+}
+
+.projection-evidence li > strong {
+  justify-self: end;
+  color: #92c9b0;
+  font-weight: 600;
+}
+
+.projection-evidence li > small {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  color: rgb(190 204 226 / 48%);
+  font-size: 0.52rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+[data-state="partial"],
+[data-state="stale"],
+[data-state="not_measured"],
+[data-state="unknown"] {
+  border-color: rgb(198 158 92 / 36%);
+}
+
+.projection-evidence li[data-state="not_measured"] > strong,
+.projection-evidence li[data-state="unknown"] > strong {
+  color: #d0ac72;
+}
+
+[data-state="measurement_failed"] {
+  border-color: rgb(190 87 98 / 48%);
+}
+
+.projection-evidence li[data-state="measurement_failed"] > strong {
+  color: #e0828c;
+}
+
+.entity-label {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 5.4rem;
+  padding: 0.26rem 0.38rem;
+  border: 1px solid rgb(146 172 207 / 28%);
+  border-radius: 0.35rem;
+  color: #d9e5f8;
+  background: rgb(4 8 15 / 78%);
+  font-family: inherit;
+  text-align: center;
+  white-space: nowrap;
+  box-shadow: 0 0 18px rgb(0 0 0 / 55%);
+  cursor: pointer;
+}
+
+.entity-label strong {
+  font-size: 0.54rem;
+  font-weight: 560;
+}
+
+.entity-label span {
+  color: rgb(178 198 226 / 58%);
+  font-size: 0.42rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.entity-label small {
+  max-width: 18rem;
+  padding-top: 0.18rem;
+  color: rgb(211 225 245 / 72%);
+  font-size: 0.46rem;
+  white-space: normal;
+}
+
+.entity-label.selected {
+  border-color: rgb(116 202 168 / 62%);
+  background: rgb(7 19 22 / 90%);
+  box-shadow: 0 0 24px rgb(73 176 137 / 18%);
+}
+
+.entity-label[data-epistemic="measurement_failed"] {
+  border-color: rgb(208 91 104 / 66%);
+}
+
+.relation-label {
+  display: block;
+  padding: 0.15rem 0.28rem;
+  border-radius: 999px;
+  color: rgb(178 198 226 / 54%);
+  background: rgb(3 6 12 / 66%);
+  font-size: 0.34rem;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .projection-evidence li small {
+    display: none;
+  }
+
+  .projection-evidence li {
+    width: auto;
+  }
+}

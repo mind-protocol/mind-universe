@@ -1,0 +1,122 @@
+{
+  "contract_version": 0,
+  "universe": "00000000000000000000000000006000",
+  "vocabulary": {
+    "node": "canonical_node",
+    "contract": "asset_projection_contract",
+    "mapping": "asset_projection_mapping",
+    "batch": "asset_projection_batch",
+    "asset": "asset_projection",
+    "payload": "asset_payload",
+    "receipt": "asset_projection_receipt",
+    "governed_by": "GOVERNED_BY",
+    "derived_from": "DERIVED_FROM",
+    "uses_mapping": "USES_MAPPING",
+    "has_payload": "HAS_PAYLOAD",
+    "in_batch": "IN_BATCH",
+    "invalidated_by": "INVALIDATED_BY",
+    "has_receipt": "HAS_RECEIPT"
+  },
+  "contract": {
+    "atom": "00000000000000000000000000006001",
+    "contract_id": "node-to-asset-projection-v0",
+    "contract_revision": 1,
+    "hash_contract": "sha256:canonical-json-v0",
+    "node_remains_authoritative": true,
+    "asset_is_derived": true,
+    "invalidation_signals": [
+      "source_node_revision",
+      "mapping_revision",
+      "payload_hash"
+    ]
+  },
+  "mapping": {
+    "atom": "00000000000000000000000000006002",
+    "mapping_id": "generic-content-asset-v0",
+    "revision": 1,
+    "output_kind": "generic_content_asset",
+    "media_type": "application/json",
+    "configuration": {
+      "projection_fields": [
+        "title",
+        "summary",
+        "tags"
+      ],
+      "rendering_role": "generic_content",
+      "source_path": "content"
+    },
+    "configuration_sha256": "0d6c74c7555707addb2859601c6a38abe99187088b9847a71458c97b8c1f6fe7"
+  },
+  "node": {
+    "atom": "00000000000000000000000000006003",
+    "stable_id": "node:asset-pilot",
+    "revision": 2,
+    "content": {
+      "summary": "Node canonical preserved while Assets remain derived.",
+      "tags": [
+        "bootstrap",
+        "asset"
+      ],
+      "title": "Node Asset pilot",
+      "unmapped": {
+        "epistemic_state": "unknown"
+      }
+    },
+    "content_sha256": "594974d319bc62241517f52db12e1675f54af28d4cb6c104d4be1343732a87f2"
+  },
+  "batch": {
+    "atom": "00000000000000000000000000006004",
+    "receipt_atom": "00000000000000000000000000006005",
+    "receipt_relation": "00000000000000000000000000006fff",
+    "relation_key_start": "00000000000000000000000000006800",
+    "batch_id": "node-asset-pilot-20260730-001",
+    "expected_projection_count": 2
+  },
+  "projections": [
+    {
+      "asset_atom": "00000000000000000000000000006100",
+      "payload_atom": "00000000000000000000000000006200",
+      "asset_id": "sha256:5cf7a3cc6d72d39f7d0d99f9702181762536bb432c7db51252dcae326dbfdd5b",
+      "asset_version": 1,
+      "source_node_revision": 1,
+      "mapping_revision": 1,
+      "payload": {
+        "summary": "Previous Node revision.",
+        "tags": [
+          "bootstrap"
+        ],
+        "title": "Node Asset pilot"
+      },
+      "payload_sha256": "96bab0e69f2714f1698c61758fb722706d97476fe162a75deda211448499a596",
+      "invalidation": {
+        "state": "stale",
+        "reasons": [
+          "source_node_revision_changed"
+        ],
+        "replacement_asset": "00000000000000000000000000006101"
+      }
+    },
+    {
+      "asset_atom": "00000000000000000000000000006101",
+      "payload_atom": "00000000000000000000000000006201",
+      "asset_id": "sha256:3d1b724ad50cd88d05742ce83ab53b4be67258540a96b070ebdb5c3ee5826bdf",
+      "asset_version": 2,
+      "source_node_revision": 2,
+      "mapping_revision": 1,
+      "payload": {
+        "summary": "Node canonical preserved while Assets remain derived.",
+        "tags": [
+          "bootstrap",
+          "asset"
+        ],
+        "title": "Node Asset pilot"
+      },
+      "payload_sha256": "91f0c3861995521042483e82a1658b73620d9e4d2ad40c0a693f69f1bfad11f1",
+      "invalidation": {
+        "state": "current",
+        "reasons": [],
+        "replacement_asset": null
+      }
+    }
+  ]
+}

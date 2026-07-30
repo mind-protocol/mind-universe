@@ -651,6 +651,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75"
 
 [[package]]
+name = "universe-capabilities"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "universe-core",
+]
+
+[[package]]
 name = "universe-compiler"
 version = "0.1.0"
 dependencies = [
@@ -661,6 +669,7 @@ dependencies = [
  "thiserror 2.0.19",
  "universe-core",
  "universe-ir",
+ "universe-store",
 ]
 
 [[package]]
@@ -696,6 +705,7 @@ dependencies = [
  "serde",
  "universe-core",
  "universe-physics",
+ "universe-store",
 ]
 
 [[package]]
@@ -721,8 +731,11 @@ name = "universe-supervisor"
 version = "0.1.0"
 dependencies = [
  "serde",
+ "universe-capabilities",
+ "universe-compiler",
  "universe-core",
  "universe-ir",
+ "universe-physics",
  "universe-store",
  "universe-transactions",
  "universe-vm",

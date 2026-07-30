@@ -1,0 +1,15 @@
+{
+  "ir_version": 0,
+  "revision": 2,
+  "required_capabilities": [],
+  "operators": [
+    {"op":"constant","value":{"type":"integer","value":3},"output":0},
+    {"op":"constant","value":{"type":"integer","value":5},"output":1},
+    {"op":"compare","left":0,"right":1,"kind":"less_than","output":2},
+    {"op":"compare","left":1,"right":0,"kind":"greater_than_or_equal","output":3},
+    {"op":"boolean_binary","left":2,"right":3,"kind":"and","output":4},
+    {"op":"boolean_not","input":4,"output":5},
+    {"op":"boolean_binary","left":4,"right":5,"kind":"or","output":6},
+    {"op":"return","value":6}
+  ]
+}

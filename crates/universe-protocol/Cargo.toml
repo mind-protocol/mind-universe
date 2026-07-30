@@ -5,7 +5,10 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
+getrandom = "0.4"
 serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
 universe-core = { path = "../universe-core" }
 universe-store = { path = "../universe-store" }
 universe-supervisor = { path = "../universe-supervisor" }

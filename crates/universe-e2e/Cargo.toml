@@ -5,8 +5,11 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
+hex.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+sha2.workspace = true
+universe-compiler = { path = "../universe-compiler" }
 universe-core = { path = "../universe-core" }
 universe-fields = { path = "../universe-fields" }
 universe-ir = { path = "../universe-ir" }
@@ -15,6 +18,7 @@ universe-protocol = { path = "../universe-protocol" }
 universe-query = { path = "../universe-query" }
 universe-store = { path = "../universe-store" }
 universe-supervisor = { path = "../universe-supervisor" }
+universe-testkit = { path = "../universe-testkit" }
 universe-transactions = { path = "../universe-transactions" }
 universe-vm = { path = "../universe-vm" }
 

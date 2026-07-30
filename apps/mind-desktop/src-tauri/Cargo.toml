@@ -1,0 +1,18 @@
+[package]
+name = "mind-desktop"
+version = "0.1.0"
+description = "Graph-native embodied Universe renderer"
+authors = ["Mind Universe"]
+edition = "2021"
+
+[workspace]
+
+[lib]
+name = "mind_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }

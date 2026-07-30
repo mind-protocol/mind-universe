@@ -1,0 +1,186 @@
+{
+  "contract_version": 0,
+  "universe": "00000000000000000000000000006000",
+  "contract_atom": "00000000000000000000000000006001",
+  "initial_cursor_atom": "00000000000000000000000000006002",
+  "relation_key_start": "00000000000000000000000000006800",
+  "vocabulary": {
+    "source": "postgres_cursor_source",
+    "contract": "postgres_cursor_contract",
+    "cursor_state": "postgres_cursor_state",
+    "batch": "postgres_cursor_batch",
+    "source_record": "postgres_cursor_source_record",
+    "asset": "inert_cursor_asset",
+    "receipt": "postgres_cursor_batch_receipt",
+    "conflict": "postgres_cursor_conflict",
+    "governed_by": "GOVERNED_BY",
+    "observed_from": "OBSERVED_FROM",
+    "proposes_cursor": "PROPOSES_CURSOR",
+    "advances_to": "ADVANCES_TO",
+    "in_batch": "IN_BATCH",
+    "maps_to": "MAPS_TO",
+    "has_receipt": "HAS_RECEIPT",
+    "confirms_cursor": "CONFIRMS_CURSOR",
+    "has_conflict": "HAS_CONFLICT"
+  },
+  "authority": {
+    "atom": "00000000000000000000000000006000",
+    "authority_id": "postgres:nodes-as-code:production",
+    "source_schema": "public.mind_nodes",
+    "source_graph": "l2:mind-protocol",
+    "server_version_num": "180004",
+    "source_schema_revision_sha256": "b1fbe3c62efc77b095c437ebb401fca17dcf5ffbb2c8c3e643bab29fb5e5fc79",
+    "adapter_revision": "postgres-cursor-adapter-v0",
+    "adapter_revision_sha256": "58514266de9064d00acbd389a98690190cfd447072d50c1454fd7ece043b1d1a",
+    "mapping_revision": "postgres-l2-mind-protocol-identity-only-v0@0",
+    "mapping_revision_sha256": "1e1ccd6e08c60327c35e6b7b6f51cbcc45d4d53223454561ee4aaf7e385d0c67",
+    "read_only": true
+  },
+  "budgets": {
+    "batch_limit": 3,
+    "statement_timeout_ms": 12000,
+    "transaction_timeout_ms": 15000,
+    "max_retries": 2,
+    "retry_backoff_ms": 250
+  },
+  "initial_watermark": {
+    "updated_at": "2026-07-28T22:34:22.832512Z",
+    "source_id": "code:l2:code-node-linter-runtime:v1"
+  },
+  "batches": [
+    {
+      "atom": "00000000000000000000000000006100",
+      "prepared_cursor_atom": "00000000000000000000000000006101",
+      "receipt_atom": "00000000000000000000000000006102",
+      "next_cursor_atom": "00000000000000000000000000006103",
+      "conflict_atom": "00000000000000000000000000006104",
+      "relation_key_start": "00000000000000000000000000006900",
+      "conflict_relation": "000000000000000000000000000069ff",
+      "batch_id": "postgres-node-cursor-20260730-001",
+      "index": 0,
+      "observed_at": "2026-07-30T13:49:04.171195Z",
+      "source_snapshot": "619826:619829:619826,619827",
+      "source_attempts": 1,
+      "has_more": true,
+      "source_schema_revision_sha256": "b1fbe3c62efc77b095c437ebb401fca17dcf5ffbb2c8c3e643bab29fb5e5fc79",
+      "adapter_revision_sha256": "58514266de9064d00acbd389a98690190cfd447072d50c1454fd7ece043b1d1a",
+      "mapping_revision_sha256": "1e1ccd6e08c60327c35e6b7b6f51cbcc45d4d53223454561ee4aaf7e385d0c67",
+      "prior_watermark": {
+        "updated_at": "2026-07-28T22:34:22.832512Z",
+        "source_id": "code:l2:code-node-linter-runtime:v1"
+      },
+      "next_watermark": {
+        "updated_at": "2026-07-28T22:34:22.832512Z",
+        "source_id": "code:l2:fail-loud:v0"
+      },
+      "records": [
+        {
+          "candidate_atom": "00000000000000000000000000006200",
+          "asset_atom": "00000000000000000000000000006300",
+          "graph_id": "l2:mind-protocol",
+          "source_id": "code:l2:code-node-linter:test-ignored-error-v0",
+          "node_type": "thing",
+          "subtype": "code_definition",
+          "source_status": "test_fixture",
+          "source_revision": 3,
+          "updated_at": "2026-07-28T22:34:22.832512Z",
+          "row_sha256": "a9d7e493ce49765a17ffd14b36897bd785ffe1de81c63a42e73fa90f07d6008f",
+          "properties_sha256": "677733b831eb887330dcbcf95e4e41cfa04dea0903a49edd8db71ef4b114c44a"
+        },
+        {
+          "candidate_atom": "00000000000000000000000000006201",
+          "asset_atom": "00000000000000000000000000006301",
+          "graph_id": "l2:mind-protocol",
+          "source_id": "code:l2:code-node-linter:v0",
+          "node_type": "thing",
+          "subtype": "code_definition",
+          "source_status": "graph_source_ready",
+          "source_revision": 3,
+          "updated_at": "2026-07-28T22:34:22.832512Z",
+          "row_sha256": "e90fb4f1f289c2314c392315641c11b5753bcc2bf536f92b13e426b8e70aa230",
+          "properties_sha256": "9b7c2710de7d1b0edfe6d027babbf15b08f4c944afab3d90c1ef8a00772fb5b8"
+        },
+        {
+          "candidate_atom": "00000000000000000000000000006202",
+          "asset_atom": "00000000000000000000000000006302",
+          "graph_id": "l2:mind-protocol",
+          "source_id": "code:l2:fail-loud:v0",
+          "node_type": "thing",
+          "subtype": "code_definition",
+          "source_status": "materialized_verified",
+          "source_revision": 3,
+          "updated_at": "2026-07-28T22:34:22.832512Z",
+          "row_sha256": "ca5d43cdb6da9c34603c96230f235f6697fcaa6390c21f1c2cdff0c70170c950",
+          "properties_sha256": "1729b1503fa9c4d1962ef8a31fd25cdb1c23c668e98e104298277e478416bba8"
+        }
+      ]
+    },
+    {
+      "atom": "00000000000000000000000000006110",
+      "prepared_cursor_atom": "00000000000000000000000000006111",
+      "receipt_atom": "00000000000000000000000000006112",
+      "next_cursor_atom": "00000000000000000000000000006113",
+      "conflict_atom": "00000000000000000000000000006114",
+      "relation_key_start": "00000000000000000000000000006a00",
+      "conflict_relation": "00000000000000000000000000006aff",
+      "batch_id": "postgres-node-cursor-20260730-002",
+      "index": 1,
+      "observed_at": "2026-07-30T13:49:04.171195Z",
+      "source_snapshot": "619826:619829:619826,619827",
+      "source_attempts": 1,
+      "has_more": true,
+      "source_schema_revision_sha256": "b1fbe3c62efc77b095c437ebb401fca17dcf5ffbb2c8c3e643bab29fb5e5fc79",
+      "adapter_revision_sha256": "58514266de9064d00acbd389a98690190cfd447072d50c1454fd7ece043b1d1a",
+      "mapping_revision_sha256": "1e1ccd6e08c60327c35e6b7b6f51cbcc45d4d53223454561ee4aaf7e385d0c67",
+      "prior_watermark": {
+        "updated_at": "2026-07-28T22:34:22.832512Z",
+        "source_id": "code:l2:fail-loud:v0"
+      },
+      "next_watermark": {
+        "updated_at": "2026-07-28T22:34:22.832512Z",
+        "source_id": "code:l2:mcp:actor-context-client-session-binding-patch:v1"
+      },
+      "records": [
+        {
+          "candidate_atom": "00000000000000000000000000006210",
+          "asset_atom": "00000000000000000000000000006310",
+          "graph_id": "l2:mind-protocol",
+          "source_id": "code:l2:git-projection-sync-runtime:v1",
+          "node_type": "thing",
+          "subtype": "code_definition",
+          "source_status": "materialized",
+          "source_revision": 3,
+          "updated_at": "2026-07-28T22:34:22.832512Z",
+          "row_sha256": "03dfb0e06fd04dcc4a201ee37a7c42e62702f921e6af1332e987d5308e03c8cf",
+          "properties_sha256": "904db5041aecace586111caf9bb34ed144aa0b15cc0f50ef5fc682547de087a8"
+        },
+        {
+          "candidate_atom": "00000000000000000000000000006211",
+          "asset_atom": "00000000000000000000000000006311",
+          "graph_id": "l2:mind-protocol",
+          "source_id": "code:l2:mcp:actor-context-and-space-movement-patch-v4",
+          "node_type": "thing",
+          "subtype": "code_definition",
+          "source_status": "active",
+          "source_revision": 3,
+          "updated_at": "2026-07-28T22:34:22.832512Z",
+          "row_sha256": "7baaf3403133918c7acf080e5cb880f01732e00b892109a2047368f3bc8254fe",
+          "properties_sha256": "d1bdfcf06a4f87b34808802435dac86014ab1c3145892e1ab3defe432655c1cd"
+        },
+        {
+          "candidate_atom": "00000000000000000000000000006212",
+          "asset_atom": "00000000000000000000000000006312",
+          "graph_id": "l2:mind-protocol",
+          "source_id": "code:l2:mcp:actor-context-client-session-binding-patch:v1",
+          "node_type": "thing",
+          "subtype": "code_definition",
+          "source_status": "ready",
+          "source_revision": 3,
+          "updated_at": "2026-07-28T22:34:22.832512Z",
+          "row_sha256": "118c969828d8287075ab10f5a313bb18daccfbc10a7afc0eeaa8c9a368d9bbbf",
+          "properties_sha256": "97be0483cfb91fa1570e79bfccf25394c4ee104a9559d353736efc58b52048d1"
+        }
+      ]
+    }
+  ]
+}

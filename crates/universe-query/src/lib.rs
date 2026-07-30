@@ -3,6 +3,10 @@
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use universe_core::{EntityKey, RelationKey};
+use universe_store::{
+    AdjacentRelations, IndexedUniverseSnapshot, OverlayAdjacentRelations,
+    OverlayIndexedUniverseSnapshot,
+};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum QueryOrigin {
@@ -34,37 +38,63 @@ pub struct LocalSituation {
     pub inspected_relations: usize,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct LocalRelation {
     pub key: RelationKey,
     pub source: EntityKey,
     pub target: EntityKey,
 }
 
-/// A truth-layer view must provide direct local adjacency, never a global iterator.
-pub trait LocalGraph {
-    fn contains(&self, entity: EntityKey) -> bool;
-    fn adjacent(&self, entity: EntityKey) -> &[LocalRelation];
+/// A bounded local subgraph rooted at one graph-supplied binding entity.
+///
+/// Relation identities and endpoints are returned exactly as stored. This
+/// query never interprets predicate names or decides which bindings are
+/// semantically required.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct LocalBindingSubgraph {
+    pub origin: QueryOrigin,
+    pub situation: LocalSituation,
+    pub relations: Vec<LocalRelation>,
+    /// Endpoints reached by an inspected relation but not visited within the
+    /// entity/depth budget.
+    pub frontier_entities: Vec<EntityKey>,
 }
 
-pub fn graph_read(
+/// A truth-layer view must provide direct local adjacency, never a global iterator.
+pub trait LocalGraph {
+    type Adjacent<'a>: Iterator<Item = LocalRelation>
+    where
+        Self: 'a;
+
+    fn contains(&self, entity: EntityKey) -> bool;
+    fn adjacent(&self, entity: EntityKey) -> Self::Adjacent<'_>;
+}
+
+/// Read a complete or explicitly partial local binding subgraph without a
+/// whole-Universe iterator.
+pub fn read_local_binding_subgraph(
     graph: &impl LocalGraph,
     origin: QueryOrigin,
     budget: QueryBudget,
-) -> LocalSituation {
-    let QueryOrigin::Entity(origin) = origin;
-    if !graph.contains(origin) {
-        return LocalSituation {
-            entities: Vec::new(),
+) -> LocalBindingSubgraph {
+    let QueryOrigin::Entity(origin_entity) = origin;
+    if !graph.contains(origin_entity) {
+        return LocalBindingSubgraph {
+            origin,
+            situation: LocalSituation {
+                entities: Vec::new(),
+                relations: Vec::new(),
+                status: QueryStatus::UnknownOrigin,
+                visited_entities: 0,
+                inspected_relations: 0,
+            },
             relations: Vec::new(),
-            status: QueryStatus::UnknownOrigin,
-            visited_entities: 0,
-            inspected_relations: 0,
+            frontier_entities: Vec::new(),
         };
     }
-    let mut queue = VecDeque::from([(origin, 0usize)]);
+    let mut queue = VecDeque::from([(origin_entity, 0usize)]);
     let mut visited = BTreeSet::new();
-    let mut relations = BTreeSet::new();
+    let mut relations = BTreeMap::new();
     let mut inspected = 0usize;
     let mut budget_hit = false;
     while let Some((entity, depth)) = queue.pop_front() {
@@ -85,7 +115,7 @@ pub fn graph_read(
                 break;
             }
             inspected += 1;
-            relations.insert(relation.key);
+            relations.entry(relation.key).or_insert(relation);
             let next = if relation.source == entity {
                 relation.target
             } else {
@@ -106,13 +136,34 @@ pub fn graph_read(
     } else {
         QueryStatus::Complete
     };
-    LocalSituation {
-        entities: visited.iter().copied().collect(),
-        relations: relations.iter().copied().collect(),
-        status,
-        visited_entities: visited.len(),
-        inspected_relations: inspected,
+    let frontier_entities = relations
+        .values()
+        .flat_map(|relation| [relation.source, relation.target])
+        .filter(|entity| !visited.contains(entity))
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect();
+    let relation_values: Vec<_> = relations.values().copied().collect();
+    LocalBindingSubgraph {
+        origin,
+        situation: LocalSituation {
+            entities: visited.iter().copied().collect(),
+            relations: relations.keys().copied().collect(),
+            status,
+            visited_entities: visited.len(),
+            inspected_relations: inspected,
+        },
+        relations: relation_values,
+        frontier_entities,
     }
+}
+
+pub fn graph_read(
+    graph: &impl LocalGraph,
+    origin: QueryOrigin,
+    budget: QueryBudget,
+) -> LocalSituation {
+    read_local_binding_subgraph(graph, origin, budget).situation
 }
 
 #[derive(Default)]
@@ -143,22 +194,100 @@ impl AdjacencyIndex {
 }
 
 impl LocalGraph for AdjacencyIndex {
+    type Adjacent<'a> = std::iter::Copied<std::slice::Iter<'a, LocalRelation>>;
+
     fn contains(&self, entity: EntityKey) -> bool {
         self.entities.contains(&entity)
     }
 
-    fn adjacent(&self, entity: EntityKey) -> &[LocalRelation] {
+    fn adjacent(&self, entity: EntityKey) -> Self::Adjacent<'_> {
         self.adjacency
             .get(&entity)
             .map(Vec::as_slice)
             .unwrap_or(&[])
+            .iter()
+            .copied()
+    }
+}
+
+pub struct IndexedAdjacentRelations<'a> {
+    inner: AdjacentRelations<'a>,
+}
+
+impl Iterator for IndexedAdjacentRelations<'_> {
+    type Item = LocalRelation;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next().map(|relation| LocalRelation {
+            key: relation.key,
+            source: relation.source,
+            target: relation.target,
+        })
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.inner.size_hint()
+    }
+}
+
+impl ExactSizeIterator for IndexedAdjacentRelations<'_> {}
+
+impl LocalGraph for IndexedUniverseSnapshot {
+    type Adjacent<'a> = IndexedAdjacentRelations<'a>;
+
+    fn contains(&self, entity: EntityKey) -> bool {
+        self.adjacency().contains(entity)
+    }
+
+    fn adjacent(&self, entity: EntityKey) -> Self::Adjacent<'_> {
+        IndexedAdjacentRelations {
+            inner: self.adjacent_relations(entity),
+        }
+    }
+}
+
+pub struct OverlayIndexedAdjacentRelations<'a> {
+    inner: OverlayAdjacentRelations<'a>,
+}
+
+impl Iterator for OverlayIndexedAdjacentRelations<'_> {
+    type Item = LocalRelation;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next().map(|relation| LocalRelation {
+            key: relation.key,
+            source: relation.source,
+            target: relation.target,
+        })
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.inner.size_hint()
+    }
+}
+
+impl ExactSizeIterator for OverlayIndexedAdjacentRelations<'_> {}
+
+impl LocalGraph for OverlayIndexedUniverseSnapshot {
+    type Adjacent<'a> = OverlayIndexedAdjacentRelations<'a>;
+
+    fn contains(&self, entity: EntityKey) -> bool {
+        self.contains(entity)
+    }
+
+    fn adjacent(&self, entity: EntityKey) -> Self::Adjacent<'_> {
+        OverlayIndexedAdjacentRelations {
+            inner: self.adjacent_relations(entity),
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use universe_testkit::minimal_snapshot;
+    use universe_testkit::{
+        create_behavior_bond_authority_store, minimal_snapshot, BEHAVIOR_BOND_AUTHORITY_KEYS,
+    };
 
     #[test]
     fn genesis_read_is_deterministic_and_local() {
@@ -205,5 +334,145 @@ mod tests {
         assert_eq!(result.visited_entities, 2);
         assert_eq!(result.inspected_relations, 1);
         assert!(result.visited_entities < 10_000);
+    }
+
+    #[test]
+    fn binding_subgraph_returns_exact_endpoints_without_predicate_interpretation() {
+        let relations = [
+            LocalRelation {
+                key: RelationKey(11),
+                source: EntityKey(1),
+                target: EntityKey(2),
+            },
+            LocalRelation {
+                key: RelationKey(12),
+                source: EntityKey(1),
+                target: EntityKey(3),
+            },
+        ];
+        let index =
+            AdjacencyIndex::from_parts([EntityKey(1), EntityKey(2), EntityKey(3)], relations);
+
+        let subgraph = read_local_binding_subgraph(
+            &index,
+            QueryOrigin::Entity(EntityKey(1)),
+            QueryBudget {
+                max_entities: 3,
+                max_relations: 4,
+                max_depth: 1,
+            },
+        );
+
+        assert_eq!(subgraph.situation.status, QueryStatus::Complete);
+        assert_eq!(subgraph.relations, relations);
+        assert!(subgraph.frontier_entities.is_empty());
+        assert_eq!(
+            subgraph.situation.relations,
+            vec![RelationKey(11), RelationKey(12)]
+        );
+    }
+
+    #[test]
+    fn partial_binding_subgraph_preserves_budget_and_frontier_evidence() {
+        let index = AdjacencyIndex::from_parts(
+            (1..=10_000).map(EntityKey),
+            [
+                LocalRelation {
+                    key: RelationKey(11),
+                    source: EntityKey(1),
+                    target: EntityKey(2),
+                },
+                LocalRelation {
+                    key: RelationKey(12),
+                    source: EntityKey(1),
+                    target: EntityKey(3),
+                },
+                LocalRelation {
+                    key: RelationKey(13),
+                    source: EntityKey(1),
+                    target: EntityKey(4),
+                },
+            ],
+        );
+
+        let subgraph = read_local_binding_subgraph(
+            &index,
+            QueryOrigin::Entity(EntityKey(1)),
+            QueryBudget {
+                max_entities: 2,
+                max_relations: 2,
+                max_depth: 1,
+            },
+        );
+
+        assert_eq!(subgraph.situation.status, QueryStatus::BudgetExhausted);
+        assert_eq!(subgraph.situation.visited_entities, 1);
+        assert_eq!(subgraph.situation.inspected_relations, 2);
+        assert_eq!(subgraph.relations.len(), 2);
+        assert_eq!(subgraph.frontier_entities, vec![EntityKey(2), EntityKey(3)]);
+        assert!(subgraph.situation.visited_entities < 10_000);
+    }
+
+    #[test]
+    fn stored_behavior_bond_binding_is_read_as_one_bounded_local_subgraph() {
+        let temp = tempfile::tempdir().unwrap();
+        let install = create_behavior_bond_authority_store(temp.path()).unwrap();
+        let keys = BEHAVIOR_BOND_AUTHORITY_KEYS;
+        assert_eq!(install.readback.keys, keys);
+
+        let expected_relation_keys = [
+            keys.binding_relations.source_atom,
+            keys.binding_relations.target_atom,
+            keys.binding_relations.uses_predicate,
+            keys.binding_relations.uses_profile,
+            keys.binding_relations.has_logic_role,
+            keys.binding_relations.gated_by[0],
+            keys.binding_relations.gated_by[1],
+            keys.binding_relations.serves_objective,
+            keys.binding_relations.justified_by,
+            keys.binding_relations.applies_in,
+        ]
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+
+        let indexed = universe_store::UniverseStore::open(temp.path())
+            .unwrap()
+            .load_current_overlay_indexed(universe_store::AdjacencyOverlayBudget::default())
+            .unwrap();
+        assert_eq!(
+            indexed.snapshot().canonical_hash().unwrap(),
+            install.readback.snapshot.canonical_hash().unwrap()
+        );
+        assert_eq!(
+            indexed.overlay().base_revision(),
+            universe_core::Revision(0)
+        );
+        assert_eq!(
+            indexed.overlay().current_revision(),
+            universe_core::Revision(1)
+        );
+        assert_eq!(indexed.overlay().events_applied(), 1);
+        assert_eq!(indexed.overlay().relation_addition_count(), 43);
+
+        let subgraph = read_local_binding_subgraph(
+            &indexed,
+            QueryOrigin::Entity(keys.behavior_bond),
+            QueryBudget {
+                max_entities: 16,
+                max_relations: 16,
+                max_depth: 1,
+            },
+        );
+
+        assert_eq!(subgraph.situation.status, QueryStatus::Complete);
+        assert_eq!(subgraph.situation.visited_entities, 12);
+        assert_eq!(subgraph.situation.inspected_relations, 11);
+        let actual_relation_keys = subgraph
+            .relations
+            .iter()
+            .map(|relation| relation.key)
+            .collect::<BTreeSet<_>>();
+        assert!(expected_relation_keys.is_subset(&actual_relation_keys));
+        assert!(subgraph.frontier_entities.is_empty());
     }
 }

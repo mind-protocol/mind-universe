@@ -1,0 +1,2069 @@
+{
+  "contract": "mind-universe-graph-seed",
+  "version": 0,
+  "sha256": "d99750b735bfc066df894db9738ceeaf2a35753f0ec20f849ee7b98c2170bf50",
+  "seed": {
+    "universe": "00000000000000000000000000c0a11d",
+    "symbols": [
+      "source_document",
+      "context",
+      "axiom",
+      "working_hypothesis",
+      "experiment",
+      "claim",
+      "observation",
+      "system_state",
+      "metric",
+      "GROUNDS",
+      "ASSUMES",
+      "TESTS",
+      "DERIVED_FROM",
+      "PRODUCES",
+      "MEASURES",
+      "MEASURED_BY",
+      "SUPPORTS_ESTIMATE",
+      "APPLIES_IN",
+      "CONTRADICTS",
+      "decision",
+      "decision_option",
+      "mechanism",
+      "task",
+      "MOTIVATES",
+      "OPTION_FOR",
+      "IMPLEMENTS",
+      "ADDRESSES",
+      "SAFEGUARDS",
+      "RECOMMENDS",
+      "INCREASES_PROPENSITY"
+    ],
+    "entities": [
+      {
+        "key": "00000000000000000000000000000100",
+        "symbol": "source_document",
+        "content": {
+          "kind": "atom",
+          "name": "ontology_vocabulary_mirror_1_17_0",
+          "claim": "Le vocabulaire distingue axiome, hypothèse, test, observation, soutien, contradiction et contexte.",
+          "ontology": {
+            "node_type": "source_document",
+            "epistemic_status": "documented"
+          },
+          "physics": {
+            "threshold": 1,
+            "seed_energy": 1,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000101",
+        "symbol": "context",
+        "content": {
+          "kind": "atom",
+          "name": "fixture_v0_context",
+          "claim": "La conclusion est bornée à ce cluster, ce store, ces lois et cette exécution ; elle n'est pas universelle.",
+          "ontology": {
+            "node_type": "context",
+            "epistemic_status": "documented"
+          },
+          "physics": {
+            "threshold": 1,
+            "seed_energy": 1,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000102",
+        "symbol": "axiom",
+        "content": {
+          "kind": "atom",
+          "name": "activation_is_not_semantic_truth",
+          "claim": "Une activation ou un équilibre physique n'est jamais, seul, une vérité sémantique.",
+          "ontology": {
+            "node_type": "axiom",
+            "epistemic_status": "design_proposal"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 100,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000103",
+        "symbol": "working_hypothesis",
+        "content": {
+          "kind": "atom",
+          "name": "dual_interpretation_hypothesis",
+          "claim": "Un même cluster d'Atoms et de Bonds peut recevoir une lecture physique et une lecture logique sans confondre leurs statuts épistémiques.",
+          "ontology": {
+            "node_type": "working_hypothesis",
+            "epistemic_status": "working_hypothesis"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 100,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000104",
+        "symbol": "experiment",
+        "content": {
+          "kind": "atom",
+          "name": "ontology_physics_covalidity_run",
+          "claim": "Le protocole installe le cluster, le relit, exécute deux traces identiques, mesure l'énergie puis teste une contradiction.",
+          "ontology": {
+            "node_type": "experiment",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 1,
+            "seed_energy": 1,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000105",
+        "symbol": "claim",
+        "content": {
+          "kind": "atom",
+          "name": "interpretation_preserves_distinctions",
+          "claim": "Sous l'axiome et l'hypothèse déclarés, l'énergie représente une activation conditionnelle et non un degré de vérité.",
+          "ontology": {
+            "node_type": "claim",
+            "epistemic_status": "working_hypothesis"
+          },
+          "physics": {
+            "threshold": 200,
+            "seed_energy": 0,
+            "required_supports": [
+              "00000000000000000000000000000210",
+              "00000000000000000000000000000211"
+            ],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000106",
+        "symbol": "observation",
+        "content": {
+          "kind": "atom",
+          "name": "store_roundtrip_observed",
+          "claim": "Un second lecteur retrouve les mêmes IDs, symboles, contenus et hashes.",
+          "measurement_binding": "store_roundtrip",
+          "ontology": {
+            "node_type": "observation",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 0,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000107",
+        "symbol": "observation",
+        "content": {
+          "kind": "atom",
+          "name": "deterministic_trace_observed",
+          "claim": "Deux exécutions indépendantes du même état produisent exactement la même trace.",
+          "measurement_binding": "deterministic_trace",
+          "ontology": {
+            "node_type": "observation",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 0,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000108",
+        "symbol": "observation",
+        "content": {
+          "kind": "atom",
+          "name": "energy_conservation_observed",
+          "claim": "Énergie initiale plus injections égale énergie stockée, sans création implicite.",
+          "measurement_binding": "energy_conservation",
+          "ontology": {
+            "node_type": "observation",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 0,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000109",
+        "symbol": "claim",
+        "content": {
+          "kind": "atom",
+          "name": "ontology_accepts_physics_in_fixture",
+          "claim": "Dans le contexte v0, les lois physiques respectent les distinctions et les exigences de validation de l'ontologie.",
+          "ontology": {
+            "node_type": "claim",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 300,
+            "seed_energy": 0,
+            "required_supports": [
+              "00000000000000000000000000000212",
+              "00000000000000000000000000000213",
+              "00000000000000000000000000000214"
+            ],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000010a",
+        "symbol": "claim",
+        "content": {
+          "kind": "atom",
+          "name": "physics_realizes_ontology_in_fixture",
+          "claim": "Dans le contexte v0, le cluster ontologique est réalisable par les lois homogènes des Atoms et Bonds.",
+          "ontology": {
+            "node_type": "claim",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 400,
+            "seed_energy": 0,
+            "required_supports": [
+              "00000000000000000000000000000215",
+              "00000000000000000000000000000216",
+              "00000000000000000000000000000217",
+              "00000000000000000000000000000218"
+            ],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000010b",
+        "symbol": "system_state",
+        "content": {
+          "kind": "atom",
+          "name": "ontology_physics_covalid_for_fixture",
+          "claim": "Les deux interprétations ferment ensemble pour ce fixture lorsque toutes les mesures sont présentes et aucune contradiction n'est active.",
+          "ontology": {
+            "node_type": "system_state",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 300,
+            "seed_energy": 0,
+            "required_supports": [
+              "00000000000000000000000000000219",
+              "0000000000000000000000000000021a"
+            ],
+            "inhibition_threshold": 1
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000010c",
+        "symbol": "claim",
+        "content": {
+          "kind": "atom",
+          "name": "active_counterexample",
+          "claim": "Une contradiction contextuellement valide interdit la fermeture de co-validité.",
+          "ontology": {
+            "node_type": "claim",
+            "epistemic_status": "unresolved"
+          },
+          "physics": {
+            "threshold": 1,
+            "seed_energy": 0,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000010d",
+        "symbol": "metric",
+        "content": {
+          "kind": "atom",
+          "name": "store_roundtrip_equality",
+          "claim": "Hash canonique du snapshot et contenus vérifiés par hash et pointeur.",
+          "ontology": {
+            "node_type": "metric",
+            "epistemic_status": "documented"
+          },
+          "physics": {
+            "threshold": 1,
+            "seed_energy": 1,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000010e",
+        "symbol": "metric",
+        "content": {
+          "kind": "atom",
+          "name": "exact_trace_equality",
+          "claim": "Égalité structurelle de chaque tick, firing et transfert.",
+          "ontology": {
+            "node_type": "metric",
+            "epistemic_status": "documented"
+          },
+          "physics": {
+            "threshold": 1,
+            "seed_energy": 1,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000010f",
+        "symbol": "metric",
+        "content": {
+          "kind": "atom",
+          "name": "integer_energy_balance",
+          "claim": "initial_energy + injected_energy = support_energy + inhibition_energy.",
+          "ontology": {
+            "node_type": "metric",
+            "epistemic_status": "documented"
+          },
+          "physics": {
+            "threshold": 1,
+            "seed_energy": 1,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000300",
+        "symbol": "system_state",
+        "content": {
+          "kind": "atom",
+          "name": "loop_health_objective",
+          "claim": "Obtenir une Loop épistémiquement valide, effectivement exécutée et objectivement utile.",
+          "ontology": {
+            "node_type": "system_state",
+            "epistemic_status": "target"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 200,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000301",
+        "symbol": "metric",
+        "content": {
+          "kind": "atom",
+          "name": "loop_health_metric",
+          "claim": "Conjonction non compensatoire des health épistémique, opérationnelle et résultat.",
+          "ontology": {
+            "node_type": "metric",
+            "epistemic_status": "documented"
+          },
+          "physics": {
+            "threshold": 1,
+            "seed_energy": 1,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000302",
+        "symbol": "observation",
+        "content": {
+          "kind": "atom",
+          "name": "current_loop_state_observed",
+          "claim": "L'état actuel de la Loop est mesuré avant le choix d'un mécanisme.",
+          "measurement_binding": "current_loop_state",
+          "ontology": {
+            "node_type": "observation",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 0,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000303",
+        "symbol": "claim",
+        "content": {
+          "kind": "atom",
+          "name": "measured_objective_gap",
+          "claim": "La différence entre l'objectif et l'état observé justifie l'ouverture d'une décision.",
+          "ontology": {
+            "node_type": "claim",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 200,
+            "seed_energy": 0,
+            "required_supports": [
+              "00000000000000000000000000000400",
+              "00000000000000000000000000000401"
+            ],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000304",
+        "symbol": "decision",
+        "content": {
+          "kind": "atom",
+          "name": "loop_mechanism_decision",
+          "claim": "La décision exige une physique co-valide, une option éligible et une capacité observée.",
+          "ontology": {
+            "node_type": "decision",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 300,
+            "seed_energy": 0,
+            "required_supports": [
+              "00000000000000000000000000000410",
+              "00000000000000000000000000000411",
+              "00000000000000000000000000000412"
+            ],
+            "inhibition_threshold": 1
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000305",
+        "symbol": "decision_option",
+        "content": {
+          "kind": "atom",
+          "name": "option_a_require_receipts",
+          "claim": "Exiger reçu réel, observation post-effet et fermeture des trois health.",
+          "ontology": {
+            "node_type": "decision_option",
+            "epistemic_status": "design_proposal"
+          },
+          "physics": {
+            "threshold": 500,
+            "seed_energy": 0,
+            "required_supports": [
+              "00000000000000000000000000000402",
+              "00000000000000000000000000000404",
+              "00000000000000000000000000000405",
+              "00000000000000000000000000000406",
+              "0000000000000000000000000000040b"
+            ],
+            "inhibition_threshold": 1
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000306",
+        "symbol": "decision_option",
+        "content": {
+          "kind": "atom",
+          "name": "option_b_skip_readback",
+          "claim": "Déclarer le succès dès l'intent sans attendre de reçu ni de mesure.",
+          "ontology": {
+            "node_type": "decision_option",
+            "epistemic_status": "design_proposal"
+          },
+          "physics": {
+            "threshold": 500,
+            "seed_energy": 0,
+            "required_supports": [
+              "00000000000000000000000000000403",
+              "00000000000000000000000000000408",
+              "00000000000000000000000000000409",
+              "0000000000000000000000000000040a",
+              "0000000000000000000000000000040c"
+            ],
+            "inhibition_threshold": 1
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000307",
+        "symbol": "mechanism",
+        "content": {
+          "kind": "atom",
+          "name": "mechanism_a_verified_execution",
+          "claim": "Exécuter puis attendre un reçu et une observation avant d'évaluer.",
+          "ontology": {
+            "node_type": "mechanism",
+            "epistemic_status": "design_proposal"
+          },
+          "physics": {
+            "threshold": 1,
+            "seed_energy": 1,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000308",
+        "symbol": "mechanism",
+        "content": {
+          "kind": "atom",
+          "name": "mechanism_b_optimistic_completion",
+          "claim": "Assimiler l'émission de l'intent à l'accomplissement de l'effet.",
+          "ontology": {
+            "node_type": "mechanism",
+            "epistemic_status": "design_proposal"
+          },
+          "physics": {
+            "threshold": 1,
+            "seed_energy": 1,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000309",
+        "symbol": "observation",
+        "content": {
+          "kind": "atom",
+          "name": "mechanism_a_evidence_observed",
+          "claim": "Le mécanisme A possède un soutien mesuré pour ce contexte.",
+          "measurement_binding": "mechanism_a_evidence",
+          "ontology": {
+            "node_type": "observation",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 0,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000030a",
+        "symbol": "observation",
+        "content": {
+          "kind": "atom",
+          "name": "mechanism_a_feasibility_observed",
+          "claim": "Le mécanisme A est exécutable avec les ressources présentes.",
+          "measurement_binding": "mechanism_a_feasible",
+          "ontology": {
+            "node_type": "observation",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 0,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000030b",
+        "symbol": "observation",
+        "content": {
+          "kind": "atom",
+          "name": "mechanism_a_safeguard_observed",
+          "claim": "Le garde-fou receipt-before-success est actif pour le mécanisme A.",
+          "measurement_binding": "mechanism_a_safe",
+          "ontology": {
+            "node_type": "observation",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 0,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000030c",
+        "symbol": "observation",
+        "content": {
+          "kind": "atom",
+          "name": "mechanism_b_evidence_observed",
+          "claim": "Le mécanisme B possède un signal d'utilité mais celui-ci ne suffit pas à le rendre sûr.",
+          "measurement_binding": "mechanism_b_evidence",
+          "ontology": {
+            "node_type": "observation",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 0,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000030d",
+        "symbol": "observation",
+        "content": {
+          "kind": "atom",
+          "name": "mechanism_b_feasibility_observed",
+          "claim": "Le mécanisme B est techniquement exécutable.",
+          "measurement_binding": "mechanism_b_feasible",
+          "ontology": {
+            "node_type": "observation",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 0,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000030e",
+        "symbol": "observation",
+        "content": {
+          "kind": "atom",
+          "name": "mechanism_b_safeguard_observed",
+          "claim": "Emplacement de mesure du garde-fou du mécanisme B ; il reste non mesuré dans ce run.",
+          "measurement_binding": "mechanism_b_safe",
+          "ontology": {
+            "node_type": "observation",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 0,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000030f",
+        "symbol": "claim",
+        "content": {
+          "kind": "atom",
+          "name": "mechanism_b_unsafe_counterevidence",
+          "claim": "Sauter le readback contredit le contrat selon lequel un intent n'est pas un effet.",
+          "measurement_binding": "mechanism_b_unsafe",
+          "ontology": {
+            "node_type": "claim",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 1,
+            "seed_energy": 0,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000310",
+        "symbol": "observation",
+        "content": {
+          "kind": "atom",
+          "name": "loop_context_match_observed",
+          "claim": "Les deux options sont évaluées dans le contexte explicitement déclaré.",
+          "measurement_binding": "loop_context_match",
+          "ontology": {
+            "node_type": "observation",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 0,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000311",
+        "symbol": "observation",
+        "content": {
+          "kind": "atom",
+          "name": "capability_available_observed",
+          "claim": "La capacité nécessaire à l'effet est effectivement disponible.",
+          "measurement_binding": "capability_available",
+          "ontology": {
+            "node_type": "observation",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 0,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000312",
+        "symbol": "task",
+        "content": {
+          "kind": "atom",
+          "name": "loop_effect_intent",
+          "claim": "Intent autorisé par la décision ; il ne constitue pas encore un effet.",
+          "ontology": {
+            "node_type": "task",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 0,
+            "required_supports": [
+              "00000000000000000000000000000413"
+            ],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000313",
+        "symbol": "observation",
+        "content": {
+          "kind": "atom",
+          "name": "loop_effect_receipt_observed",
+          "claim": "Le superviseur rapporte un résultat réel pour l'intent.",
+          "measurement_binding": "effect_receipt",
+          "ontology": {
+            "node_type": "observation",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 0,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000314",
+        "symbol": "observation",
+        "content": {
+          "kind": "atom",
+          "name": "positive_post_effect_outcome",
+          "claim": "La mesure post-effet indique une progression de l'objectif.",
+          "measurement_binding": "positive_outcome",
+          "ontology": {
+            "node_type": "observation",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 0,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000315",
+        "symbol": "system_state",
+        "content": {
+          "kind": "atom",
+          "name": "epistemic_health",
+          "claim": "La décision repose sur un état initial mesuré et une justification fermée.",
+          "ontology": {
+            "node_type": "system_state",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 200,
+            "seed_energy": 0,
+            "required_supports": [
+              "00000000000000000000000000000414",
+              "00000000000000000000000000000419"
+            ],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000316",
+        "symbol": "system_state",
+        "content": {
+          "kind": "atom",
+          "name": "operational_health",
+          "claim": "L'intent et son reçu réel sont tous deux présents.",
+          "ontology": {
+            "node_type": "system_state",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 200,
+            "seed_energy": 0,
+            "required_supports": [
+              "00000000000000000000000000000415",
+              "00000000000000000000000000000416"
+            ],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000317",
+        "symbol": "system_state",
+        "content": {
+          "kind": "atom",
+          "name": "outcome_health",
+          "claim": "L'objectif et une mesure post-effet positive ferment ensemble.",
+          "ontology": {
+            "node_type": "system_state",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 200,
+            "seed_energy": 0,
+            "required_supports": [
+              "00000000000000000000000000000417",
+              "00000000000000000000000000000418"
+            ],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000318",
+        "symbol": "system_state",
+        "content": {
+          "kind": "atom",
+          "name": "loop_health",
+          "claim": "Les trois health obligatoires ferment sans compensation entre elles.",
+          "ontology": {
+            "node_type": "system_state",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 300,
+            "seed_energy": 0,
+            "required_supports": [
+              "0000000000000000000000000000041a",
+              "0000000000000000000000000000041b",
+              "0000000000000000000000000000041c"
+            ],
+            "inhibition_threshold": 1
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000319",
+        "symbol": "system_state",
+        "content": {
+          "kind": "atom",
+          "name": "mechanism_a_reinforced",
+          "claim": "La Loop Loop augmente la propension du mécanisme qui a produit une boucle saine.",
+          "ontology": {
+            "node_type": "system_state",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 100,
+            "seed_energy": 0,
+            "required_supports": [
+              "0000000000000000000000000000041d"
+            ],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000031a",
+        "symbol": "claim",
+        "content": {
+          "kind": "atom",
+          "name": "active_decision_contradiction",
+          "claim": "Une contradiction valide sur la décision doit empêcher l'intent.",
+          "measurement_binding": "decision_contradiction",
+          "ontology": {
+            "node_type": "claim",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 1,
+            "seed_energy": 0,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000031c",
+        "symbol": "experiment",
+        "content": {
+          "kind": "atom",
+          "name": "loop_loop_validation_run",
+          "claim": "Exécute le succès, l'absence de reçu et la contradiction de décision.",
+          "ontology": {
+            "node_type": "experiment",
+            "epistemic_status": "test_target"
+          },
+          "physics": {
+            "threshold": 1,
+            "seed_energy": 1,
+            "required_supports": [],
+            "inhibition_threshold": null
+          }
+        }
+      }
+    ],
+    "relations": [
+      {
+        "key": "00000000000000000000000000000200",
+        "source": "00000000000000000000000000000105",
+        "target": "00000000000000000000000000000100",
+        "predicate": "DERIVED_FROM",
+        "content": {
+          "kind": "bond",
+          "justification": "La proposition reprend les distinctions du miroir sans traiter la provenance comme une preuve.",
+          "logic": {
+            "role": "provenance"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000201",
+        "source": "00000000000000000000000000000104",
+        "target": "00000000000000000000000000000103",
+        "predicate": "TESTS",
+        "content": {
+          "kind": "bond",
+          "justification": "Le protocole met l'hypothèse à l'épreuve ; le plan de test ne la valide pas.",
+          "logic": {
+            "role": "test_scope"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000202",
+        "source": "00000000000000000000000000000104",
+        "target": "00000000000000000000000000000106",
+        "predicate": "PRODUCES",
+        "content": {
+          "kind": "bond",
+          "justification": "Le protocole produit l'emplacement d'observation ; seule une mesure réussie l'active.",
+          "logic": {
+            "role": "result_provenance"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000203",
+        "source": "00000000000000000000000000000104",
+        "target": "00000000000000000000000000000107",
+        "predicate": "PRODUCES",
+        "content": {
+          "kind": "bond",
+          "justification": "Le protocole produit l'emplacement d'observation ; seule une comparaison réussie l'active.",
+          "logic": {
+            "role": "result_provenance"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000204",
+        "source": "00000000000000000000000000000104",
+        "target": "00000000000000000000000000000108",
+        "predicate": "PRODUCES",
+        "content": {
+          "kind": "bond",
+          "justification": "Le protocole produit l'emplacement d'observation ; seul le ledger mesuré l'active.",
+          "logic": {
+            "role": "result_provenance"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000205",
+        "source": "00000000000000000000000000000106",
+        "target": "0000000000000000000000000000010d",
+        "predicate": "MEASURES",
+        "content": {
+          "kind": "bond",
+          "justification": "L'observation est objectivée par l'égalité de readback.",
+          "logic": {
+            "role": "measurement_definition"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000206",
+        "source": "00000000000000000000000000000107",
+        "target": "0000000000000000000000000000010e",
+        "predicate": "MEASURES",
+        "content": {
+          "kind": "bond",
+          "justification": "L'observation est objectivée par l'égalité exacte des traces.",
+          "logic": {
+            "role": "measurement_definition"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000207",
+        "source": "00000000000000000000000000000108",
+        "target": "0000000000000000000000000000010f",
+        "predicate": "MEASURES",
+        "content": {
+          "kind": "bond",
+          "justification": "L'observation est objectivée par l'égalité entière du ledger.",
+          "logic": {
+            "role": "measurement_definition"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000208",
+        "source": "00000000000000000000000000000109",
+        "target": "00000000000000000000000000000101",
+        "predicate": "APPLIES_IN",
+        "content": {
+          "kind": "bond",
+          "justification": "La validité ontologique est explicitement bornée au fixture v0.",
+          "logic": {
+            "role": "scope"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000209",
+        "source": "0000000000000000000000000000010a",
+        "target": "00000000000000000000000000000101",
+        "predicate": "APPLIES_IN",
+        "content": {
+          "kind": "bond",
+          "justification": "La réalisabilité physique est explicitement bornée au fixture v0.",
+          "logic": {
+            "role": "scope"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000020a",
+        "source": "0000000000000000000000000000010b",
+        "target": "00000000000000000000000000000101",
+        "predicate": "APPLIES_IN",
+        "content": {
+          "kind": "bond",
+          "justification": "La fermeture ne prétend rien au-delà du store, du cluster et de l'exécution observés.",
+          "logic": {
+            "role": "scope"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000210",
+        "source": "00000000000000000000000000000102",
+        "target": "00000000000000000000000000000105",
+        "predicate": "GROUNDS",
+        "content": {
+          "kind": "bond",
+          "justification": "L'axiome interdit d'interpréter directement l'activation comme une vérité.",
+          "logic": {
+            "role": "normative_ground"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000211",
+        "source": "00000000000000000000000000000103",
+        "target": "00000000000000000000000000000105",
+        "predicate": "ASSUMES",
+        "content": {
+          "kind": "bond",
+          "justification": "La lecture duale reste une prémisse conditionnelle jusqu'aux mesures.",
+          "logic": {
+            "role": "conditional_premise"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000212",
+        "source": "00000000000000000000000000000105",
+        "target": "00000000000000000000000000000109",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "La distinction sémantique est une condition nécessaire, non une preuve suffisante.",
+          "logic": {
+            "role": "model_condition"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000213",
+        "source": "00000000000000000000000000000106",
+        "target": "00000000000000000000000000000109",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "Le readback réel soutient que l'encodage ontologique persiste dans le store.",
+          "logic": {
+            "role": "measured_support"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000214",
+        "source": "00000000000000000000000000000108",
+        "target": "00000000000000000000000000000109",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "Le ledger mesuré soutient que la loi physique n'introduit pas d'énergie cachée.",
+          "logic": {
+            "role": "measured_support"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000215",
+        "source": "00000000000000000000000000000105",
+        "target": "0000000000000000000000000000010a",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "La définition de l'interprétation fournit le modèle que la physique doit réaliser.",
+          "logic": {
+            "role": "model_condition"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000216",
+        "source": "00000000000000000000000000000106",
+        "target": "0000000000000000000000000000010a",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "Le readback vérifie que le modèle exécuté est bien celui qui a été stocké.",
+          "logic": {
+            "role": "measured_support"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000217",
+        "source": "00000000000000000000000000000107",
+        "target": "0000000000000000000000000000010a",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "L'égalité de deux traces soutient la détermination de la loi.",
+          "logic": {
+            "role": "measured_support"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000218",
+        "source": "00000000000000000000000000000108",
+        "target": "0000000000000000000000000000010a",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "Le ledger mesuré soutient la cohérence de la réalisation énergétique.",
+          "logic": {
+            "role": "measured_support"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000219",
+        "source": "00000000000000000000000000000109",
+        "target": "0000000000000000000000000000010b",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "La branche ontologie est nécessaire à la fermeture de co-validité.",
+          "logic": {
+            "role": "closure_support"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 150
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000021a",
+        "source": "0000000000000000000000000000010a",
+        "target": "0000000000000000000000000000010b",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "La branche physique est nécessaire à la fermeture de co-validité.",
+          "logic": {
+            "role": "closure_support"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 150
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000021b",
+        "source": "0000000000000000000000000000010c",
+        "target": "0000000000000000000000000000010b",
+        "predicate": "CONTRADICTS",
+        "content": {
+          "kind": "bond",
+          "justification": "Une contradiction active dans le même contexte doit empêcher la fermeture plutôt qu'être moyennée.",
+          "logic": {
+            "role": "counterevidence"
+          },
+          "physics": {
+            "polarity": "inhibit",
+            "energy": 1
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000400",
+        "source": "00000000000000000000000000000300",
+        "target": "00000000000000000000000000000303",
+        "predicate": "GROUNDS",
+        "content": {
+          "kind": "bond",
+          "justification": "L'objectif fournit la référence normative nécessaire au calcul de l'écart.",
+          "logic": {
+            "role": "objective_reference"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000401",
+        "source": "00000000000000000000000000000302",
+        "target": "00000000000000000000000000000303",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "L'état initial mesuré fournit le second terme nécessaire à l'écart.",
+          "logic": {
+            "role": "measured_support"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000402",
+        "source": "00000000000000000000000000000303",
+        "target": "00000000000000000000000000000305",
+        "predicate": "MOTIVATES",
+        "content": {
+          "kind": "bond",
+          "justification": "L'écart mesuré motive l'examen de l'option A sans suffire à la sélectionner.",
+          "logic": {
+            "role": "objective_fit"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000403",
+        "source": "00000000000000000000000000000303",
+        "target": "00000000000000000000000000000306",
+        "predicate": "MOTIVATES",
+        "content": {
+          "kind": "bond",
+          "justification": "L'écart mesuré motive aussi l'examen de l'option B sans la rendre éligible.",
+          "logic": {
+            "role": "objective_fit"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000404",
+        "source": "00000000000000000000000000000309",
+        "target": "00000000000000000000000000000305",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "Une observation mesurée soutient l'utilité attendue du mécanisme A.",
+          "logic": {
+            "role": "evidence_gate"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000405",
+        "source": "0000000000000000000000000000030a",
+        "target": "00000000000000000000000000000305",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "La faisabilité observée est une porte obligatoire distincte de l'utilité.",
+          "logic": {
+            "role": "feasibility_gate"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000406",
+        "source": "0000000000000000000000000000030b",
+        "target": "00000000000000000000000000000305",
+        "predicate": "SAFEGUARDS",
+        "content": {
+          "kind": "bond",
+          "justification": "Le garde-fou receipt-before-success protège l'option A contre une fausse complétion.",
+          "logic": {
+            "role": "safety_gate"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000408",
+        "source": "0000000000000000000000000000030c",
+        "target": "00000000000000000000000000000306",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "Le signal d'utilité de B est conservé sans pouvoir remplacer son garde-fou manquant.",
+          "logic": {
+            "role": "evidence_gate"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000409",
+        "source": "0000000000000000000000000000030d",
+        "target": "00000000000000000000000000000306",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "La faisabilité technique de B ne prouve ni sa sûreté ni sa validité.",
+          "logic": {
+            "role": "feasibility_gate"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000040a",
+        "source": "0000000000000000000000000000030e",
+        "target": "00000000000000000000000000000306",
+        "predicate": "SAFEGUARDS",
+        "content": {
+          "kind": "bond",
+          "justification": "B exige un garde-fou mesuré qui reste volontairement absent du run positif.",
+          "logic": {
+            "role": "safety_gate"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000040b",
+        "source": "00000000000000000000000000000310",
+        "target": "00000000000000000000000000000305",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "La correspondance de contexte mesurée borne l'éligibilité de A.",
+          "logic": {
+            "role": "context_gate"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000040c",
+        "source": "00000000000000000000000000000310",
+        "target": "00000000000000000000000000000306",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "La correspondance de contexte est également testée pour B.",
+          "logic": {
+            "role": "context_gate"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000040d",
+        "source": "0000000000000000000000000000030f",
+        "target": "00000000000000000000000000000306",
+        "predicate": "CONTRADICTS",
+        "content": {
+          "kind": "bond",
+          "justification": "L'assimilation intent-effet contredit directement le garde-fou exigé par la Loop.",
+          "logic": {
+            "role": "counterevidence"
+          },
+          "physics": {
+            "polarity": "inhibit",
+            "energy": 1
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000410",
+        "source": "0000000000000000000000000000010b",
+        "target": "00000000000000000000000000000304",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "La décision n'est autorisée qu'après fermeture de la co-validité ontologie-physique.",
+          "logic": {
+            "role": "law_precondition"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000411",
+        "source": "00000000000000000000000000000305",
+        "target": "00000000000000000000000000000304",
+        "predicate": "RECOMMENDS",
+        "content": {
+          "kind": "bond",
+          "justification": "L'option A ne recommande la décision qu'après fermeture de ses cinq portes.",
+          "logic": {
+            "role": "eligible_recommendation"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000412",
+        "source": "00000000000000000000000000000311",
+        "target": "00000000000000000000000000000304",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "La capacité observée est obligatoire avant l'émission de l'intent.",
+          "logic": {
+            "role": "capability_gate"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000413",
+        "source": "00000000000000000000000000000304",
+        "target": "00000000000000000000000000000312",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "La décision fermée autorise l'intent sans prétendre que l'effet a eu lieu.",
+          "logic": {
+            "role": "decision_output"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000414",
+        "source": "00000000000000000000000000000304",
+        "target": "00000000000000000000000000000315",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "La décision justifiée fournit une moitié de la health épistémique.",
+          "logic": {
+            "role": "justified_decision"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000415",
+        "source": "00000000000000000000000000000312",
+        "target": "00000000000000000000000000000316",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "L'intent établit la demande opérationnelle mais ne suffit pas sans reçu.",
+          "logic": {
+            "role": "intent_lineage"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000416",
+        "source": "00000000000000000000000000000313",
+        "target": "00000000000000000000000000000316",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "Le reçu observé est la seconde condition obligatoire de la health opérationnelle.",
+          "logic": {
+            "role": "effect_receipt"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000417",
+        "source": "00000000000000000000000000000314",
+        "target": "00000000000000000000000000000317",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "La mesure post-effet soutient objectivement la progression de l'objectif.",
+          "logic": {
+            "role": "outcome_measurement"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000418",
+        "source": "00000000000000000000000000000300",
+        "target": "00000000000000000000000000000317",
+        "predicate": "GROUNDS",
+        "content": {
+          "kind": "bond",
+          "justification": "L'objectif fournit la référence normative à laquelle le résultat est comparé.",
+          "logic": {
+            "role": "objective_reference"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000419",
+        "source": "00000000000000000000000000000302",
+        "target": "00000000000000000000000000000315",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "Une observation initiale réelle est obligatoire pour la health épistémique.",
+          "logic": {
+            "role": "measured_support"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000041a",
+        "source": "00000000000000000000000000000315",
+        "target": "00000000000000000000000000000318",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "La health épistémique est une branche obligatoire de la Loop health.",
+          "logic": {
+            "role": "health_branch"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000041b",
+        "source": "00000000000000000000000000000316",
+        "target": "00000000000000000000000000000318",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "La health opérationnelle ne peut être compensée par les deux autres branches.",
+          "logic": {
+            "role": "health_branch"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000041c",
+        "source": "00000000000000000000000000000317",
+        "target": "00000000000000000000000000000318",
+        "predicate": "SUPPORTS_ESTIMATE",
+        "content": {
+          "kind": "bond",
+          "justification": "La health résultat est nécessaire même si la décision et l'effet sont valides.",
+          "logic": {
+            "role": "health_branch"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000041d",
+        "source": "00000000000000000000000000000318",
+        "target": "00000000000000000000000000000319",
+        "predicate": "INCREASES_PROPENSITY",
+        "content": {
+          "kind": "bond",
+          "justification": "Une Loop entièrement saine augmente la propension du mécanisme A pour l'itération suivante.",
+          "logic": {
+            "role": "learning_update"
+          },
+          "physics": {
+            "polarity": "support",
+            "energy": 100
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000041e",
+        "source": "0000000000000000000000000000031a",
+        "target": "00000000000000000000000000000304",
+        "predicate": "CONTRADICTS",
+        "content": {
+          "kind": "bond",
+          "justification": "Une contradiction active sur la décision empêche l'intent malgré les supports positifs.",
+          "logic": {
+            "role": "counterevidence"
+          },
+          "physics": {
+            "polarity": "inhibit",
+            "energy": 1
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000430",
+        "source": "00000000000000000000000000000300",
+        "target": "00000000000000000000000000000301",
+        "predicate": "MEASURED_BY",
+        "content": {
+          "kind": "bond",
+          "justification": "L'objectif déclare la métrique qui objectivera sa health.",
+          "logic": {
+            "role": "measurement_definition"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000431",
+        "source": "00000000000000000000000000000302",
+        "target": "00000000000000000000000000000301",
+        "predicate": "MEASURES",
+        "content": {
+          "kind": "bond",
+          "justification": "L'observation initiale emploie la métrique déclarée sans que ce lien ne transporte de preuve.",
+          "logic": {
+            "role": "measurement_definition"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000432",
+        "source": "00000000000000000000000000000305",
+        "target": "00000000000000000000000000000304",
+        "predicate": "OPTION_FOR",
+        "content": {
+          "kind": "bond",
+          "justification": "A est une option de la décision, indépendamment de son éligibilité physique.",
+          "logic": {
+            "role": "decision_structure"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000433",
+        "source": "00000000000000000000000000000306",
+        "target": "00000000000000000000000000000304",
+        "predicate": "OPTION_FOR",
+        "content": {
+          "kind": "bond",
+          "justification": "B reste une option déclarée même lorsqu'elle est inhibée.",
+          "logic": {
+            "role": "decision_structure"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000434",
+        "source": "00000000000000000000000000000307",
+        "target": "00000000000000000000000000000305",
+        "predicate": "IMPLEMENTS",
+        "content": {
+          "kind": "bond",
+          "justification": "Le mécanisme A réalise concrètement l'option A sans prouver son résultat.",
+          "logic": {
+            "role": "mechanism_mapping"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000435",
+        "source": "00000000000000000000000000000308",
+        "target": "00000000000000000000000000000306",
+        "predicate": "IMPLEMENTS",
+        "content": {
+          "kind": "bond",
+          "justification": "Le mécanisme B réalise concrètement l'option B sans prouver son résultat.",
+          "logic": {
+            "role": "mechanism_mapping"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000436",
+        "source": "00000000000000000000000000000307",
+        "target": "00000000000000000000000000000303",
+        "predicate": "ADDRESSES",
+        "content": {
+          "kind": "bond",
+          "justification": "Le contenu du mécanisme A répond au gap sans que cette relation valide son efficacité.",
+          "logic": {
+            "role": "problem_mapping"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000437",
+        "source": "00000000000000000000000000000308",
+        "target": "00000000000000000000000000000303",
+        "predicate": "ADDRESSES",
+        "content": {
+          "kind": "bond",
+          "justification": "Le mécanisme B prétend répondre au gap mais reste soumis aux mêmes portes.",
+          "logic": {
+            "role": "problem_mapping"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000438",
+        "source": "00000000000000000000000000000305",
+        "target": "00000000000000000000000000000101",
+        "predicate": "APPLIES_IN",
+        "content": {
+          "kind": "bond",
+          "justification": "L'option A est bornée au contexte du fixture.",
+          "logic": {
+            "role": "scope"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "00000000000000000000000000000439",
+        "source": "00000000000000000000000000000306",
+        "target": "00000000000000000000000000000101",
+        "predicate": "APPLIES_IN",
+        "content": {
+          "kind": "bond",
+          "justification": "L'option B est évaluée dans le même contexte afin de rendre la comparaison valide.",
+          "logic": {
+            "role": "scope"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000043a",
+        "source": "00000000000000000000000000000304",
+        "target": "00000000000000000000000000000101",
+        "predicate": "APPLIES_IN",
+        "content": {
+          "kind": "bond",
+          "justification": "La décision ne revendique aucune validité hors du fixture.",
+          "logic": {
+            "role": "scope"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000043b",
+        "source": "0000000000000000000000000000031c",
+        "target": "00000000000000000000000000000304",
+        "predicate": "TESTS",
+        "content": {
+          "kind": "bond",
+          "justification": "Le protocole met la décision à l'épreuve sans la valider par sa seule existence.",
+          "logic": {
+            "role": "test_scope"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000043c",
+        "source": "0000000000000000000000000000031c",
+        "target": "00000000000000000000000000000313",
+        "predicate": "PRODUCES",
+        "content": {
+          "kind": "bond",
+          "justification": "Le protocole produit un emplacement pour le reçu ; seule l'observation réelle l'active.",
+          "logic": {
+            "role": "result_provenance"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000043d",
+        "source": "0000000000000000000000000000031c",
+        "target": "00000000000000000000000000000314",
+        "predicate": "PRODUCES",
+        "content": {
+          "kind": "bond",
+          "justification": "Le protocole produit un emplacement de résultat ; seule la mesure post-effet l'active.",
+          "logic": {
+            "role": "result_provenance"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      },
+      {
+        "key": "0000000000000000000000000000043e",
+        "source": "00000000000000000000000000000314",
+        "target": "00000000000000000000000000000301",
+        "predicate": "MEASURES",
+        "content": {
+          "kind": "bond",
+          "justification": "Le résultat emploie la métrique de Loop health sans transformer la mesure en preuve automatique.",
+          "logic": {
+            "role": "measurement_definition"
+          },
+          "physics": {
+            "polarity": "neutral",
+            "energy": 0
+          }
+        }
+      }
+    ]
+  }
+}

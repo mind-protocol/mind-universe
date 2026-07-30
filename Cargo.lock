@@ -722,6 +722,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75"
 
 [[package]]
+name = "universe-assets"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tempfile",
+ "universe-core",
+ "universe-store",
+ "universe-transactions",
+]
+
+[[package]]
 name = "universe-capabilities"
 version = "0.1.0"
 dependencies = [
@@ -740,6 +752,7 @@ dependencies = [
  "thiserror 2.0.19",
  "universe-core",
  "universe-ir",
+ "universe-store",
 ]
 
 [[package]]
@@ -754,9 +767,12 @@ dependencies = [
 name = "universe-e2e"
 version = "0.1.0"
 dependencies = [
+ "hex",
  "serde",
  "serde_json",
+ "sha2",
  "tempfile",
+ "universe-compiler",
  "universe-core",
  "universe-fields",
  "universe-ir",
@@ -765,7 +781,23 @@ dependencies = [
  "universe-query",
  "universe-store",
  "universe-supervisor",
+ "universe-testkit",
  "universe-transactions",
+ "universe-vm",
+]
+
+[[package]]
+name = "universe-embeddings"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "serde",
+ "serde_json",
+ "sha2",
+ "thiserror 2.0.19",
+ "universe-compiler",
+ "universe-core",
+ "universe-ir",
  "universe-vm",
 ]
 
@@ -800,10 +832,25 @@ dependencies = [
 ]
 
 [[package]]
-name = "universe-protocol"
+name = "universe-postgres-import"
 version = "0.1.0"
 dependencies = [
  "serde",
+ "serde_json",
+ "tempfile",
+ "universe-core",
+ "universe-store",
+ "universe-transactions",
+]
+
+[[package]]
+name = "universe-protocol"
+version = "0.1.0"
+dependencies = [
+ "getrandom",
+ "serde",
+ "serde_json",
+ "sha2",
  "universe-core",
  "universe-store",
  "universe-supervisor",
@@ -814,6 +861,7 @@ name = "universe-query"
 version = "0.1.0"
 dependencies = [
  "serde",
+ "tempfile",
  "universe-core",
  "universe-physics",
  "universe-store",
@@ -837,10 +885,13 @@ name = "universe-supervisor"
 version = "0.1.0"
 dependencies = [
  "serde",
+ "serde_json",
  "tempfile",
  "universe-capabilities",
+ "universe-compiler",
  "universe-core",
  "universe-ir",
+ "universe-physics",
  "universe-store",
  "universe-testkit",
  "universe-transactions",
@@ -851,9 +902,12 @@ dependencies = [
 name = "universe-testkit"
 version = "0.1.0"
 dependencies = [
+ "serde",
  "serde_json",
+ "tempfile",
  "universe-core",
  "universe-store",
+ "universe-transactions",
 ]
 
 [[package]]
@@ -872,11 +926,13 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+ "tempfile",
  "thiserror 2.0.19",
  "universe-compiler",
  "universe-core",
  "universe-ir",
  "universe-query",
+ "universe-store",
 ]
 
 [[package]]

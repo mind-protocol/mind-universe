@@ -1,0 +1,296 @@
+{
+  "contract_version": 0,
+  "universe": "00000000000000000000000000007000",
+  "vocabulary": {
+    "node": "canonical_node",
+    "contract": "asset_projection_contract",
+    "mapping": "asset_projection_mapping",
+    "batch": "asset_projection_batch",
+    "asset": "asset_projection",
+    "payload": "asset_payload",
+    "receipt": "asset_inventory_receipt",
+    "governed_by": "GOVERNED_BY",
+    "derived_from": "DERIVED_FROM",
+    "uses_mapping": "USES_MAPPING",
+    "has_payload": "HAS_PAYLOAD",
+    "in_batch": "IN_BATCH",
+    "invalidated_by": "INVALIDATED_BY",
+    "has_receipt": "HAS_RECEIPT",
+    "inventory": "asset_inventory_policy",
+    "orphan_source": "unresolved_asset_source"
+  },
+  "contract": {
+    "atom": "00000000000000000000000000008001",
+    "contract_id": "node-asset-inventory-v0",
+    "contract_revision": 1,
+    "hash_contract": "sha256:canonical-json-v0",
+    "node_remains_authoritative": true,
+    "asset_is_derived": true,
+    "invalidation_signals": [
+      "source_node_revision",
+      "mapping_revision",
+      "payload_hash"
+    ]
+  },
+  "mapping": {
+    "atom": "00000000000000000000000000008002",
+    "mapping_id": "inventory-generic-content-v0",
+    "revision": 2,
+    "output_kind": "generic_content_asset",
+    "media_type": "application/json",
+    "configuration": {
+      "fields": ["label", "value"],
+      "projection_mode": "manifest_owned"
+    },
+    "configuration_sha256": "702fa83c542b391b9d34c2f4e09e8408316864acce81ce5ddb1567002f39c2d0"
+  },
+  "policy": {
+    "atom": "00000000000000000000000000008003",
+    "inventory_id": "node-asset-inventory-20260730",
+    "ordering": "entity_key_ascending",
+    "cursor_mode": "after_entity_key_exclusive",
+    "batch_limit": 3,
+    "rebuild_states": ["stale", "missing", "corrupt"],
+    "state_labels": [
+      "current",
+      "stale",
+      "missing",
+      "corrupt",
+      "duplicate",
+      "orphaned",
+      "unknown"
+    ],
+    "class_labels": [
+      "converted",
+      "partial",
+      "blocked",
+      "intentionally_assetless",
+      "unknown"
+    ],
+    "conversion_classes": {
+      "current": "converted",
+      "stale": "partial",
+      "duplicate": "partial",
+      "missing": "blocked",
+      "corrupt": "blocked",
+      "orphaned": "unknown",
+      "unknown": "unknown"
+    }
+  },
+  "orphan_source_atom": "000000000000000000000000000070fe",
+  "nodes": [
+    {
+      "atom": "00000000000000000000000000007000",
+      "stable_id": "node:current",
+      "revision": 2,
+      "content": {"label": "current", "value": 2},
+      "content_sha256": "508875cc557dc5255315c100f59750d046ec6ffc11cd3598c2c559992b546b4d",
+      "asset_requirement": "required"
+    },
+    {
+      "atom": "00000000000000000000000000007001",
+      "stable_id": "node:stale",
+      "revision": 2,
+      "content": {"label": "stale-source", "value": 2},
+      "content_sha256": "df34db3a0d11857fbf84d99bf4373c0d01ebdc3714f7d9013dc039ea226e9ffb",
+      "asset_requirement": "required"
+    },
+    {
+      "atom": "00000000000000000000000000007002",
+      "stable_id": "node:missing",
+      "revision": 1,
+      "content": {"label": "missing", "value": 1},
+      "content_sha256": "d7f5bf2a9ac6c7200abcc490023351553300bf38d958e9ace215c6f5e788cbdc",
+      "asset_requirement": "required"
+    },
+    {
+      "atom": "00000000000000000000000000007003",
+      "stable_id": "node:corrupt",
+      "revision": 1,
+      "content": {"label": "corrupt", "value": 1},
+      "content_sha256": "2480aa653a4890b7f5d435d4d34f31ce707a7799f9020551d2dccd7d3684575f",
+      "asset_requirement": "required"
+    },
+    {
+      "atom": "00000000000000000000000000007004",
+      "stable_id": "node:duplicate",
+      "revision": 1,
+      "content": {"label": "duplicate", "value": 1},
+      "content_sha256": "ec8ec9f035f3001144d1d3501480ade5dc0cf49a628835e1dfcd021e4758fe1b",
+      "asset_requirement": "required"
+    },
+    {
+      "atom": "00000000000000000000000000007005",
+      "stable_id": "node:unknown",
+      "revision": 1,
+      "content": {"label": "unknown", "value": 1},
+      "content_sha256": "44f9ef8bc0dca941c742b95b9149d55e5791298c31c5a949043052333ce27032",
+      "asset_requirement": "unknown"
+    },
+    {
+      "atom": "00000000000000000000000000007006",
+      "stable_id": "node:mapping-stale",
+      "revision": 1,
+      "content": {"label": "mapping-stale", "value": 2},
+      "content_sha256": "6933ad278cc4b2d5013d14850756837914a9e7c96f9d3f399f392f7f30657e61",
+      "asset_requirement": "required"
+    }
+  ],
+  "observed_assets": [
+    {
+      "asset_atom": "00000000000000000000000000007100",
+      "payload_atom": "00000000000000000000000000007200",
+      "node_atom": "00000000000000000000000000007000",
+      "asset_id": "sha256:03b57346a739757c6fe70b19cb8facfa29089d9cac89e6cfca7a975bfb6cd03f",
+      "asset_version": 2,
+      "source_node_revision": 2,
+      "mapping_revision": 2,
+      "payload": {"label": "current", "value": 2},
+      "payload_sha256": "508875cc557dc5255315c100f59750d046ec6ffc11cd3598c2c559992b546b4d"
+    },
+    {
+      "asset_atom": "00000000000000000000000000007101",
+      "payload_atom": "00000000000000000000000000007201",
+      "node_atom": "00000000000000000000000000007001",
+      "asset_id": "sha256:f7e2dd42422182156c5252b7c6062a37280252540cf5df915624e599947e5a56",
+      "asset_version": 1,
+      "source_node_revision": 1,
+      "mapping_revision": 2,
+      "payload": {"label": "stale-source", "value": 1},
+      "payload_sha256": "bac76a1263618fd3256c0d3693fbf69589d4fbfc0fccd4b2688bf43657da5051"
+    },
+    {
+      "asset_atom": "00000000000000000000000000007103",
+      "payload_atom": "00000000000000000000000000007203",
+      "node_atom": "00000000000000000000000000007003",
+      "asset_id": "sha256:abeacdb7c9f2abf78f2e713ead130b224e3df32d468cf4a41697cad2b35f0aba",
+      "asset_version": 1,
+      "source_node_revision": 1,
+      "mapping_revision": 2,
+      "payload": {"label": "corrupt", "value": 0},
+      "payload_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "asset_atom": "00000000000000000000000000007104",
+      "payload_atom": "00000000000000000000000000007204",
+      "node_atom": "00000000000000000000000000007004",
+      "asset_id": "sha256:8b28309d0abc6c97c1bb4c3b593ae952a92e2c855baa7af9649bb7887f773f8a",
+      "asset_version": 1,
+      "source_node_revision": 1,
+      "mapping_revision": 2,
+      "payload": {"label": "duplicate", "value": 1},
+      "payload_sha256": "ec8ec9f035f3001144d1d3501480ade5dc0cf49a628835e1dfcd021e4758fe1b"
+    },
+    {
+      "asset_atom": "00000000000000000000000000007105",
+      "payload_atom": "00000000000000000000000000007205",
+      "node_atom": "00000000000000000000000000007004",
+      "asset_id": "sha256:8b28309d0abc6c97c1bb4c3b593ae952a92e2c855baa7af9649bb7887f773f8a",
+      "asset_version": 1,
+      "source_node_revision": 1,
+      "mapping_revision": 2,
+      "payload": {"label": "duplicate", "value": 1},
+      "payload_sha256": "ec8ec9f035f3001144d1d3501480ade5dc0cf49a628835e1dfcd021e4758fe1b"
+    },
+    {
+      "asset_atom": "000000000000000000000000000071ff",
+      "payload_atom": "000000000000000000000000000072ff",
+      "node_atom": "000000000000000000000000000070fe",
+      "asset_id": "sha256:808ebad226cfd471ea12d789ef1e180b9b721d8406305404cfead452fa8b1a24",
+      "asset_version": 1,
+      "source_node_revision": 0,
+      "mapping_revision": 2,
+      "payload": {"label": "orphan", "value": 1},
+      "payload_sha256": "350b32a5c748297a2bd029c3827169cd2f4f946fd45db90f91498b8cdd1c626c"
+    },
+    {
+      "asset_atom": "00000000000000000000000000007106",
+      "payload_atom": "00000000000000000000000000007206",
+      "node_atom": "00000000000000000000000000007006",
+      "asset_id": "sha256:b9d6b06a1cc0a26a82ea3fb3203a702e58de652bfd585dd70a3d283a9608b158",
+      "asset_version": 1,
+      "source_node_revision": 1,
+      "mapping_revision": 1,
+      "payload": {"label": "mapping-stale", "value": 1},
+      "payload_sha256": "c0899fe42f2ca5d19f88a6219650d478c8c6f2dd4a58d48eeac7ca80dedfdd05"
+    }
+  ],
+  "subjects": [
+    {"cursor_key": "00000000000000000000000000007000", "kind": "node", "node_atom": "00000000000000000000000000007000", "asset_atom": null},
+    {"cursor_key": "00000000000000000000000000007001", "kind": "node", "node_atom": "00000000000000000000000000007001", "asset_atom": null},
+    {"cursor_key": "00000000000000000000000000007002", "kind": "node", "node_atom": "00000000000000000000000000007002", "asset_atom": null},
+    {"cursor_key": "00000000000000000000000000007003", "kind": "node", "node_atom": "00000000000000000000000000007003", "asset_atom": null},
+    {"cursor_key": "00000000000000000000000000007004", "kind": "node", "node_atom": "00000000000000000000000000007004", "asset_atom": null},
+    {"cursor_key": "00000000000000000000000000007005", "kind": "node", "node_atom": "00000000000000000000000000007005", "asset_atom": null},
+    {"cursor_key": "00000000000000000000000000007006", "kind": "node", "node_atom": "00000000000000000000000000007006", "asset_atom": null},
+    {"cursor_key": "000000000000000000000000000071ff", "kind": "orphan_asset", "node_atom": null, "asset_atom": "000000000000000000000000000071ff"}
+  ],
+  "rebuilds": [
+    {
+      "node_atom": "00000000000000000000000000007001",
+      "trigger_state": "stale",
+      "previous_asset": "00000000000000000000000000007101",
+      "asset_atom": "00000000000000000000000000007301",
+      "payload_atom": "00000000000000000000000000007401",
+      "asset_id": "sha256:566de68dbaf448a7d04df6991d8ef8a57b99592cd3d5385dbc91aaab94252a4d",
+      "asset_version": 2,
+      "payload": {"label": "stale-source", "value": 2},
+      "payload_sha256": "df34db3a0d11857fbf84d99bf4373c0d01ebdc3714f7d9013dc039ea226e9ffb",
+      "relation_key_start": "00000000000000000000000000007800"
+    },
+    {
+      "node_atom": "00000000000000000000000000007002",
+      "trigger_state": "missing",
+      "previous_asset": null,
+      "asset_atom": "00000000000000000000000000007302",
+      "payload_atom": "00000000000000000000000000007402",
+      "asset_id": "sha256:fa2b386dd1eb48e9af6b7aa9a7038cf0f22b1f480fb8f158c0579d0a3c3d5f43",
+      "asset_version": 1,
+      "payload": {"label": "missing", "value": 1},
+      "payload_sha256": "d7f5bf2a9ac6c7200abcc490023351553300bf38d958e9ace215c6f5e788cbdc",
+      "relation_key_start": "00000000000000000000000000007810"
+    },
+    {
+      "node_atom": "00000000000000000000000000007003",
+      "trigger_state": "corrupt",
+      "previous_asset": "00000000000000000000000000007103",
+      "asset_atom": "00000000000000000000000000007303",
+      "payload_atom": "00000000000000000000000000007403",
+      "asset_id": "sha256:339e7c170a3520ae7e4335cc96b5daaae7b35ddaecf50a82ca3d03f6a5effdb2",
+      "asset_version": 2,
+      "payload": {"label": "corrupt", "value": 1},
+      "payload_sha256": "2480aa653a4890b7f5d435d4d34f31ce707a7799f9020551d2dccd7d3684575f",
+      "relation_key_start": "00000000000000000000000000007820"
+    },
+    {
+      "node_atom": "00000000000000000000000000007006",
+      "trigger_state": "stale",
+      "previous_asset": "00000000000000000000000000007106",
+      "asset_atom": "00000000000000000000000000007306",
+      "payload_atom": "00000000000000000000000000007406",
+      "asset_id": "sha256:0d9ef0e5f073214b5b27908d26f31981c8eed1f2e8b7f06c5b60055a3e2ace7a",
+      "asset_version": 2,
+      "payload": {"label": "mapping-stale", "value": 2},
+      "payload_sha256": "6933ad278cc4b2d5013d14850756837914a9e7c96f9d3f399f392f7f30657e61",
+      "relation_key_start": "00000000000000000000000000007830"
+    }
+  ],
+  "batches": [
+    {
+      "batch_id": "asset-inventory-001",
+      "receipt_atom": "00000000000000000000000000007501",
+      "receipt_relation": "000000000000000000000000000075f1"
+    },
+    {
+      "batch_id": "asset-inventory-002",
+      "receipt_atom": "00000000000000000000000000007502",
+      "receipt_relation": "000000000000000000000000000075f2"
+    },
+    {
+      "batch_id": "asset-inventory-003",
+      "receipt_atom": "00000000000000000000000000007503",
+      "receipt_relation": "000000000000000000000000000075f3"
+    }
+  ],
+  "initial_relation_key_start": "00000000000000000000000000007600"
+}

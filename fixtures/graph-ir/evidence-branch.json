@@ -1,0 +1,21 @@
+{
+  "ir_version": 0,
+  "revision": 5,
+  "required_capabilities": [],
+  "operators": [
+    {"op":"input","name":"evidence","output":0},
+    {"op":"branch_on_evidence","input":0,"observed_next":2,"measured_next":4,"known_absent_next":6,"unknown_next":8,"not_measured_next":10,"measurement_failed_next":12},
+    {"op":"constant","value":{"type":"text","value":"observed"},"output":1},
+    {"op":"return","value":1},
+    {"op":"constant","value":{"type":"text","value":"measured"},"output":2},
+    {"op":"return","value":2},
+    {"op":"constant","value":{"type":"text","value":"known_absent"},"output":3},
+    {"op":"return","value":3},
+    {"op":"constant","value":{"type":"text","value":"unknown"},"output":4},
+    {"op":"return","value":4},
+    {"op":"constant","value":{"type":"text","value":"not_measured"},"output":5},
+    {"op":"return","value":5},
+    {"op":"constant","value":{"type":"text","value":"measurement_failed"},"output":6},
+    {"op":"return","value":6}
+  ]
+}

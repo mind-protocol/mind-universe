@@ -8,7 +8,8 @@ license.workspace = true
 serde.workspace = true
 universe-core = { path = "../universe-core" }
 universe-physics = { path = "../universe-physics" }
+universe-store = { path = "../universe-store" }
 
 [dev-dependencies]
-universe-store = { path = "../universe-store" }
+tempfile = "3"
 universe-testkit = { path = "../universe-testkit" }

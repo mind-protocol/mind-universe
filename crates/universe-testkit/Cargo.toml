@@ -5,6 +5,11 @@ edition.workspace = true
 license.workspace = true
 
 [dependencies]
+serde.workspace = true
 serde_json.workspace = true
 universe-core = { path = "../universe-core" }
 universe-store = { path = "../universe-store" }
+universe-transactions = { path = "../universe-transactions" }
+
+[dev-dependencies]
+tempfile = "3"

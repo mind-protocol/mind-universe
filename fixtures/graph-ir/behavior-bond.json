@@ -1,0 +1,66 @@
+{
+  "bond": "00000000000000000000000000003070",
+  "source": "00000000000000000000000000003071",
+  "target": "00000000000000000000000000003072",
+  "predicate": "00000000000000000000000000003010",
+  "profile": "00000000000000000000000000003060",
+  "logic_role": "00000000000000000000000000003030",
+  "logic_binding": {
+    "state": "measured",
+    "value": {
+      "kind": "support",
+      "definition_hash": "347b065d278413d9486121de32d0fa2516fbd903c66832c0b1d839bf1b9b9f72"
+    }
+  },
+  "profile_parameters": {
+    "state": "measured",
+    "value": {
+      "profile_hash": "9a1049d0d3a96e5bf084aede728850d603249cdda15bea4a747a41eb376160cb",
+      "source_threshold": 100,
+      "source_seed_energy": 100,
+      "source_inhibition_threshold": null,
+      "target_threshold": 100,
+      "target_seed_energy": 0,
+      "target_inhibition_threshold": 100,
+      "transfer_energy": 100
+    }
+  },
+  "gates": [
+    {
+      "gate": "00000000000000000000000000003040",
+      "closure": {"state": "measured", "value": true},
+      "stale": false,
+      "contradictory": false
+    },
+    {
+      "gate": "00000000000000000000000000003041",
+      "closure": {"state": "observed", "value": true},
+      "stale": false,
+      "contradictory": false
+    }
+  ],
+  "objective": "00000000000000000000000000003045",
+  "justifications": [
+    "00000000000000000000000000003046"
+  ],
+  "budgets": {
+    "max_atoms": 16,
+    "max_bonds": 32,
+    "max_steps": 8,
+    "lifetime_ticks": 8,
+    "max_total_energy": 1000000,
+    "max_wake_cost": 4
+  },
+  "authority": {
+    "change_set": "00000000000000000000000000003000",
+    "context": "00000000000000000000000000003050",
+    "ontology_revision": 106,
+    "mapping_revision": 1,
+    "behavior_revision": 1,
+    "universe_revision": 106,
+    "change_set_hash": "0397fbc8ba84c83a9c5cd0c69d4ae971c2469210541dd6458f889ab7494100a2",
+    "ontology_hash": "2485be3ca874baff7fb74fb5506f6cc9a9a1aca62168352f882684dd56c15be5",
+    "mapping_hash": "75424262bf2b07f4797b82dd59e4c143c6d4c54fb911fd5c57f26e80f1134e38"
+  },
+  "ontology_status": {"state": "measured", "value": "active"}
+}

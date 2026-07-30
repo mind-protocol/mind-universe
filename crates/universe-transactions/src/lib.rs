@@ -4,21 +4,40 @@ use serde::{Deserialize, Serialize};
 use universe_core::{Revision, Tick, UniverseError};
 use universe_store::{
     apply_event, EntityRecord, EventRecord, RelationRecord, UniverseMutation, UniverseSnapshot,
-    UniverseStore,
+    UniverseStore, MAX_EVENT_MUTATIONS,
 };
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum UniverseCommand {
-    PutEntity { entity: EntityRecord },
-    PutRelation { relation: RelationRecord },
+    InternSymbols {
+        symbols: Vec<String>,
+    },
+    PutEntity {
+        entity: EntityRecord,
+    },
+    PutRelation {
+        relation: RelationRecord,
+    },
+    TombstoneRelation {
+        relation: universe_core::RelationKey,
+        generation: u32,
+    },
 }
 
 impl UniverseCommand {
     fn into_mutation(self) -> UniverseMutation {
         match self {
+            Self::InternSymbols { symbols } => UniverseMutation::InternSymbols { symbols },
             Self::PutEntity { entity } => UniverseMutation::PutEntity { entity },
             Self::PutRelation { relation } => UniverseMutation::PutRelation { relation },
+            Self::TombstoneRelation {
+                relation,
+                generation,
+            } => UniverseMutation::TombstoneRelation {
+                relation,
+                generation,
+            },
         }
     }
 }
@@ -69,19 +88,25 @@ impl UniverseTransaction {
                 "transaction idempotency key is empty".into(),
             ));
         }
-        // Store v0 has one durable event per atomic append. Reject wider batches
-        // rather than exposing a partially replayable transaction.
-        if write_set.commands.len() != 1 {
+        if write_set.commands.is_empty() {
             return Err(UniverseError::Validation(
-                "transaction v0 requires exactly one command".into(),
+                "transaction requires at least one command".into(),
             ));
         }
+        if write_set.commands.len() > MAX_EVENT_MUTATIONS {
+            return Err(UniverseError::BudgetExhausted(format!(
+                "transaction has {} commands, limit is {}",
+                write_set.commands.len(),
+                MAX_EVENT_MUTATIONS
+            )));
+        }
+        let mutation = batch_mutation(write_set.commands.clone());
         let event = EventRecord::new(
             snapshot.universe,
             snapshot.revision,
             Tick(snapshot.tick.0 + 1),
             write_set.idempotency_key.clone(),
-            write_set.commands[0].clone().into_mutation(),
+            mutation,
         )?;
         let mut candidate = snapshot.clone();
         apply_event(&mut candidate, &event)?;
@@ -118,13 +143,13 @@ impl UniverseTransaction {
                 actual: snapshot.revision,
             });
         }
-        let command = self.write_set.commands.into_iter().next().unwrap();
+        let mutation = batch_mutation(self.write_set.commands);
         let event = EventRecord::new(
             snapshot.universe,
             snapshot.revision,
             boundary_tick,
             self.write_set.idempotency_key.clone(),
-            command.into_mutation(),
+            mutation,
         )?;
         let mut candidate = snapshot.clone();
         apply_event(&mut candidate, &event)?;
@@ -142,10 +167,22 @@ impl UniverseTransaction {
     }
 }
 
+fn batch_mutation(commands: Vec<UniverseCommand>) -> UniverseMutation {
+    let mut mutations = commands
+        .into_iter()
+        .map(UniverseCommand::into_mutation)
+        .collect::<Vec<_>>();
+    if mutations.len() == 1 {
+        mutations.pop().expect("one mutation exists")
+    } else {
+        UniverseMutation::Batch { mutations }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use universe_core::{EntityKey, UniverseId};
+    use universe_core::{EntityKey, RelationKey, UniverseId};
     use universe_store::UniverseSnapshot;
 
     fn entity_command(key: u128) -> UniverseCommand {
@@ -164,6 +201,7 @@ mod tests {
         let temp = tempfile::tempdir().unwrap();
         let store = UniverseStore::open(temp.path()).unwrap();
         let mut snapshot = UniverseSnapshot::empty(UniverseId(9));
+        snapshot.symbols.push("thing".into());
         store.checkpoint(&snapshot).unwrap();
         let tx = UniverseTransaction::prepare(
             &snapshot,
@@ -184,9 +222,13 @@ mod tests {
     }
 
     #[test]
-    fn multi_command_write_set_is_rejected_honestly() {
-        let snapshot = UniverseSnapshot::empty(UniverseId(9));
-        let result = UniverseTransaction::prepare(
+    fn multi_command_write_set_commits_as_one_revision_and_replays_atomically() {
+        let temp = tempfile::tempdir().unwrap();
+        let store = UniverseStore::open(temp.path()).unwrap();
+        let mut snapshot = UniverseSnapshot::empty(UniverseId(9));
+        snapshot.symbols.push("thing".into());
+        store.checkpoint(&snapshot).unwrap();
+        let tx = UniverseTransaction::prepare(
             &snapshot,
             UniverseWriteSet {
                 base_revision: Revision(0),
@@ -194,7 +236,131 @@ mod tests {
                 causal_ancestry: vec![],
                 commands: vec![entity_command(10), entity_command(11)],
             },
+        )
+        .unwrap();
+        tx.commit(&store, &mut snapshot, Tick(1)).unwrap();
+        assert_eq!(snapshot.revision, Revision(1));
+        assert_eq!(snapshot.entities.len(), 2);
+
+        let independent = UniverseStore::open(temp.path())
+            .unwrap()
+            .replay(store.load_snapshot().unwrap())
+            .unwrap();
+        assert_eq!(independent, snapshot);
+    }
+
+    #[test]
+    fn symbols_and_referring_records_commit_in_the_same_revision() {
+        let temp = tempfile::tempdir().unwrap();
+        let store = UniverseStore::open(temp.path()).unwrap();
+        let mut snapshot = UniverseSnapshot::empty(UniverseId(9));
+        store.checkpoint(&snapshot).unwrap();
+        let plan = snapshot
+            .plan_symbol_interning(&["behavior_bond".into(), "SOURCE_ATOM".into()])
+            .unwrap();
+        let entity_symbol = plan.assignments["behavior_bond"];
+        let tx = UniverseTransaction::prepare(
+            &snapshot,
+            UniverseWriteSet {
+                base_revision: Revision(0),
+                idempotency_key: "symbols-and-record".into(),
+                causal_ancestry: vec!["changeset-1".into()],
+                commands: vec![
+                    UniverseCommand::InternSymbols {
+                        symbols: plan.additions,
+                    },
+                    UniverseCommand::PutEntity {
+                        entity: EntityRecord {
+                            key: EntityKey(10),
+                            generation: 0,
+                            symbol: entity_symbol,
+                            content: None,
+                        },
+                    },
+                ],
+            },
+        )
+        .unwrap();
+        tx.commit(&store, &mut snapshot, Tick(1)).unwrap();
+
+        let independent = UniverseStore::open(temp.path())
+            .unwrap()
+            .replay(store.load_snapshot().unwrap())
+            .unwrap();
+        assert_eq!(independent.revision, Revision(1));
+        assert_eq!(independent.symbol_id("behavior_bond"), Some(entity_symbol));
+        assert_eq!(independent.entities[0].symbol, entity_symbol);
+    }
+
+    #[test]
+    fn relation_tombstone_is_generation_checked_and_durably_replayed() {
+        let temp = tempfile::tempdir().unwrap();
+        let store = UniverseStore::open(temp.path()).unwrap();
+        let mut snapshot = UniverseSnapshot::empty(UniverseId(10));
+        snapshot.symbols.push("LINK".into());
+        snapshot.entities = vec![
+            EntityRecord {
+                key: EntityKey(1),
+                generation: 0,
+                symbol: 0,
+                content: None,
+            },
+            EntityRecord {
+                key: EntityKey(2),
+                generation: 0,
+                symbol: 0,
+                content: None,
+            },
+        ];
+        snapshot.relations.push(RelationRecord {
+            key: RelationKey(1),
+            generation: 4,
+            source: EntityKey(1),
+            target: EntityKey(2),
+            predicate: 0,
+            content: None,
+        });
+        store.checkpoint(&snapshot).unwrap();
+
+        let stale = UniverseTransaction::prepare(
+            &snapshot,
+            UniverseWriteSet {
+                base_revision: Revision(0),
+                idempotency_key: "stale-tombstone".into(),
+                causal_ancestry: vec![],
+                commands: vec![UniverseCommand::TombstoneRelation {
+                    relation: RelationKey(1),
+                    generation: 3,
+                }],
+            },
         );
-        assert!(matches!(result, Err(UniverseError::Validation(_))));
+        assert!(matches!(
+            stale,
+            Err(UniverseError::Validation(message))
+                if message == "relation tombstone generation is stale"
+        ));
+
+        let transaction = UniverseTransaction::prepare(
+            &snapshot,
+            UniverseWriteSet {
+                base_revision: Revision(0),
+                idempotency_key: "valid-tombstone".into(),
+                causal_ancestry: vec!["measured-observation".into()],
+                commands: vec![UniverseCommand::TombstoneRelation {
+                    relation: RelationKey(1),
+                    generation: 4,
+                }],
+            },
+        )
+        .unwrap();
+        transaction.commit(&store, &mut snapshot, Tick(1)).unwrap();
+        assert!(snapshot.relations.is_empty());
+
+        let independent = UniverseStore::open(temp.path())
+            .unwrap()
+            .replay(store.load_snapshot().unwrap())
+            .unwrap();
+        assert_eq!(independent.revision, Revision(1));
+        assert!(independent.relations.is_empty());
     }
 }

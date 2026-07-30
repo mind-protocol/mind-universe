@@ -1,0 +1,1044 @@
+{
+  "contract": "mind-universe-authority-fixture",
+  "version": 0,
+  "universe": "0000000000000000000000000a701091",
+  "symbols": [
+    "behavior_bond",
+    "logic_role",
+    "gate",
+    "SOURCE_ATOM",
+    "TARGET_ATOM",
+    "USES_PREDICATE",
+    "USES_PROFILE",
+    "HAS_LOGIC_ROLE",
+    "GATED_BY",
+    "SERVES_OBJECTIVE",
+    "JUSTIFIED_BY"
+  ],
+  "entities": [
+    {
+      "key": "00000000000000000000000000003000",
+      "symbol": "change",
+      "content": {
+        "activation": "active_graph_overlay",
+        "base_manifest": "00000000000000000000000000001000",
+        "base_schema_version": "1.17.0",
+        "change_id": "behavior-bond-authority-v1",
+        "kind": "ontology_changeset",
+        "objective": "Activate the graph vocabulary and one fully relation-bound BehaviorBond.",
+        "status": "approved_by_fixture_authority",
+        "target_schema_version": "1.18.0-behavior-bond.1"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003001",
+      "symbol": "protocol",
+      "content": {
+        "behavior_bond_shape": {
+          "GATED_BY": {
+            "cardinality": "one_or_more",
+            "target_type": "gate"
+          },
+          "HAS_LOGIC_ROLE": {
+            "cardinality": "exactly_one",
+            "target_kind": "logic_role"
+          },
+          "JUSTIFIED_BY": {
+            "cardinality": "one_or_more",
+            "target_groups": [
+              "evidence",
+              "design"
+            ]
+          },
+          "SERVES_OBJECTIVE": {
+            "cardinality": "exactly_one",
+            "target_group": "design"
+          },
+          "SOURCE_ATOM": {
+            "cardinality": "exactly_one",
+            "target": "any_atom"
+          },
+          "TARGET_ATOM": {
+            "cardinality": "exactly_one",
+            "target": "any_atom"
+          },
+          "USES_PREDICATE": {
+            "cardinality": "exactly_one",
+            "target_kind": "predicate_definition"
+          },
+          "USES_PROFILE": {
+            "cardinality": "exactly_one",
+            "target_kind": "behavior_physical_profile"
+          }
+        },
+        "compilation": {
+          "gate_mode": "all_required_non_compensatory",
+          "missing_binding": "not_measured_and_inert",
+          "predicate_name_dispatch": false,
+          "reification": "executable_relations_only",
+          "unresolved_ontology_gap": "reject"
+        },
+        "contract_id": "ontology-to-atom-projection",
+        "contract_version": "1.1.0",
+        "kind": "atom_projection_contract",
+        "status": "active_graph_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003010",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "behavior_bond",
+        "definition_kind": "semantic_type",
+        "description": "A reified executable relation whose bindings remain graph relations.",
+        "kind": "ontology_extension_definition",
+        "status": "active_overlay",
+        "stored_node_type": "thing"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003011",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "logic_role",
+        "definition_kind": "semantic_type",
+        "description": "A generic local energy-routing primitive.",
+        "kind": "ontology_extension_definition",
+        "status": "active_overlay",
+        "stored_node_type": "narrative"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003012",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "gate",
+        "definition_kind": "semantic_type",
+        "description": "A non-compensatory measured eligibility gate.",
+        "kind": "ontology_extension_definition",
+        "status": "active_overlay",
+        "stored_node_type": "thing"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003020",
+      "symbol": "logic_role",
+      "content": {
+        "canonical_id": "support",
+        "kind": "logic_role_definition",
+        "runtime_binding": {
+          "kind": "logic_role",
+          "value": {
+            "kind": "support"
+          }
+        },
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003030",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "SOURCE_ATOM",
+        "definition_kind": "predicate",
+        "endpoint_constraint": {
+          "source_types": [
+            "behavior_bond"
+          ],
+          "target": "any_atom"
+        },
+        "family": "workflow",
+        "kind": "ontology_extension_definition",
+        "physical_profile": "00000000000000000000000000003060",
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003031",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "TARGET_ATOM",
+        "definition_kind": "predicate",
+        "endpoint_constraint": {
+          "source_types": [
+            "behavior_bond"
+          ],
+          "target": "any_atom"
+        },
+        "family": "workflow",
+        "kind": "ontology_extension_definition",
+        "physical_profile": "00000000000000000000000000003061",
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003032",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "USES_PREDICATE",
+        "definition_kind": "predicate",
+        "endpoint_constraint": {
+          "source_types": [
+            "behavior_bond"
+          ],
+          "target": "predicate_definition"
+        },
+        "family": "contextual",
+        "kind": "ontology_extension_definition",
+        "physical_profile": "00000000000000000000000000003062",
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003033",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "USES_PROFILE",
+        "definition_kind": "predicate",
+        "endpoint_constraint": {
+          "source_types": [
+            "behavior_bond"
+          ],
+          "target": "behavior_physical_profile"
+        },
+        "family": "contextual",
+        "kind": "ontology_extension_definition",
+        "physical_profile": "00000000000000000000000000003063",
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003034",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "HAS_LOGIC_ROLE",
+        "definition_kind": "predicate",
+        "endpoint_constraint": {
+          "source_types": [
+            "behavior_bond"
+          ],
+          "target": "logic_role"
+        },
+        "family": "gating",
+        "kind": "ontology_extension_definition",
+        "physical_profile": "00000000000000000000000000003064",
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003035",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "GATED_BY",
+        "definition_kind": "predicate",
+        "endpoint_constraint": {
+          "source_types": [
+            "behavior_bond"
+          ],
+          "target": "gate"
+        },
+        "family": "gating",
+        "kind": "ontology_extension_definition",
+        "physical_profile": "00000000000000000000000000003065",
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003036",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "SERVES_OBJECTIVE",
+        "definition_kind": "predicate",
+        "endpoint_constraint": {
+          "source_types": [
+            "behavior_bond"
+          ],
+          "target": "design"
+        },
+        "family": "design_reasoning",
+        "kind": "ontology_extension_definition",
+        "physical_profile": "00000000000000000000000000003066",
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003037",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "JUSTIFIED_BY",
+        "definition_kind": "predicate",
+        "endpoint_constraint": {
+          "source_types": [
+            "behavior_bond"
+          ],
+          "target": "evidence_or_design"
+        },
+        "family": "evidence",
+        "kind": "ontology_extension_definition",
+        "physical_profile": "00000000000000000000000000003067",
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003060",
+      "symbol": "mechanism",
+      "content": {
+        "kind": "atom_projection_profile",
+        "logic": {
+          "default_role": "neutral",
+          "transfers_energy": false
+        },
+        "predicate": "SOURCE_ATOM",
+        "profile_id": "atom-profile-SOURCE_ATOM",
+        "spatial": {
+          "materialization": "none"
+        },
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003061",
+      "symbol": "mechanism",
+      "content": {
+        "kind": "atom_projection_profile",
+        "logic": {
+          "default_role": "neutral",
+          "transfers_energy": false
+        },
+        "predicate": "TARGET_ATOM",
+        "profile_id": "atom-profile-TARGET_ATOM",
+        "spatial": {
+          "materialization": "none"
+        },
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003062",
+      "symbol": "mechanism",
+      "content": {
+        "kind": "atom_projection_profile",
+        "logic": {
+          "default_role": "neutral",
+          "transfers_energy": false
+        },
+        "predicate": "USES_PREDICATE",
+        "profile_id": "atom-profile-USES_PREDICATE",
+        "spatial": {
+          "materialization": "none"
+        },
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003063",
+      "symbol": "mechanism",
+      "content": {
+        "kind": "atom_projection_profile",
+        "logic": {
+          "default_role": "neutral",
+          "transfers_energy": false
+        },
+        "predicate": "USES_PROFILE",
+        "profile_id": "atom-profile-USES_PROFILE",
+        "spatial": {
+          "materialization": "none"
+        },
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003064",
+      "symbol": "mechanism",
+      "content": {
+        "kind": "atom_projection_profile",
+        "logic": {
+          "default_role": "neutral",
+          "transfers_energy": false
+        },
+        "predicate": "HAS_LOGIC_ROLE",
+        "profile_id": "atom-profile-HAS_LOGIC_ROLE",
+        "spatial": {
+          "materialization": "none"
+        },
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003065",
+      "symbol": "mechanism",
+      "content": {
+        "kind": "atom_projection_profile",
+        "logic": {
+          "default_role": "neutral",
+          "transfers_energy": false
+        },
+        "predicate": "GATED_BY",
+        "profile_id": "atom-profile-GATED_BY",
+        "spatial": {
+          "materialization": "none"
+        },
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003066",
+      "symbol": "mechanism",
+      "content": {
+        "kind": "atom_projection_profile",
+        "logic": {
+          "default_role": "neutral",
+          "transfers_energy": false
+        },
+        "predicate": "SERVES_OBJECTIVE",
+        "profile_id": "atom-profile-SERVES_OBJECTIVE",
+        "spatial": {
+          "materialization": "none"
+        },
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003067",
+      "symbol": "mechanism",
+      "content": {
+        "kind": "atom_projection_profile",
+        "logic": {
+          "default_role": "neutral",
+          "transfers_energy": false
+        },
+        "predicate": "JUSTIFIED_BY",
+        "profile_id": "atom-profile-JUSTIFIED_BY",
+        "spatial": {
+          "materialization": "none"
+        },
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003070",
+      "symbol": "behavior_bond",
+      "content": {
+        "kind": "behavior_bond_instance",
+        "runtime_binding": {
+          "kind": "bond",
+          "value": {
+            "authority": {
+              "behavior_revision": 1,
+              "change_set": "00000000000000000000000000003000",
+              "change_set_hash": "038797d60c21f0d1a5431ddb48d15fd631cb75989265bba5797654d562acf25e",
+              "context": "00000000000000000000000000003077",
+              "mapping_hash": "be0d2d851112ac6f3025d80772d35189e3462e9d4b95a2aeb9afd31966ee5c29",
+              "mapping_revision": 1,
+              "ontology_hash": "4c0ec977f1f81bcd2749c53c3dc8c3a9e7c217405a0a5e93d5d104a07783827d",
+              "ontology_revision": 1,
+              "universe_revision": 1
+            },
+            "budgets": {
+              "lifetime_ticks": 8,
+              "max_atoms": 16,
+              "max_bonds": 32,
+              "max_steps": 8,
+              "max_total_energy": 1000000,
+              "max_wake_cost": 4
+            }
+          }
+        },
+        "status": "active_fixture"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003071",
+      "symbol": "claim",
+      "content": {
+        "kind": "behavior_fixture_atom",
+        "label": "source premise",
+        "status": "measured"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003072",
+      "symbol": "claim",
+      "content": {
+        "kind": "behavior_fixture_atom",
+        "label": "target conclusion",
+        "status": "not_measured"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003073",
+      "symbol": "gate",
+      "content": {
+        "kind": "behavior_gate",
+        "runtime_binding": {
+          "kind": "gate",
+          "value": {
+            "closure": {
+              "state": "measured",
+              "value": true
+            },
+            "contradictory": false,
+            "stale": false
+          }
+        },
+        "status": "closed"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003074",
+      "symbol": "gate",
+      "content": {
+        "kind": "behavior_gate",
+        "runtime_binding": {
+          "kind": "gate",
+          "value": {
+            "closure": {
+              "state": "observed",
+              "value": true
+            },
+            "contradictory": false,
+            "stale": false
+          }
+        },
+        "status": "closed"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003075",
+      "symbol": "subentity_goal",
+      "content": {
+        "kind": "behavior_objective",
+        "objective": "Transfer bounded support only after every required gate closes.",
+        "status": "active"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003076",
+      "symbol": "observation",
+      "content": {
+        "epistemic": {
+          "state": "measured",
+          "value": true
+        },
+        "kind": "behavior_justification",
+        "statement": "The source observation is admissible for this fixture context."
+      }
+    },
+    {
+      "key": "00000000000000000000000000003077",
+      "symbol": "context",
+      "content": {
+        "context_id": "behavior-bond-authority-fixture",
+        "kind": "behavior_context",
+        "status": "active"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003080",
+      "symbol": "mechanism",
+      "content": {
+        "kind": "behavior_physical_profile",
+        "runtime_binding": {
+          "kind": "physical_profile",
+          "value": {
+            "source_inhibition_threshold": null,
+            "source_seed_energy": 100,
+            "source_threshold": 100,
+            "target_inhibition_threshold": 100,
+            "target_seed_energy": 0,
+            "target_threshold": 100,
+            "transfer_energy": 100
+          }
+        },
+        "profile_id": "bounded-support-v1",
+        "status": "active_overlay"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "key": "00000000000000000000000000005000",
+      "source": "00000000000000000000000000003000",
+      "target": "00000000000000000000000000001000",
+      "predicate": "PROPOSES_CHANGE_TO",
+      "content": {
+        "justification": "The approved ChangeSet explicitly targets the canonical ontology manifest.",
+        "kind": "ontology_relation",
+        "role": "changeset_target"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005001",
+      "source": "00000000000000000000000000003001",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005002",
+      "source": "00000000000000000000000000003010",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005003",
+      "source": "00000000000000000000000000003011",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005004",
+      "source": "00000000000000000000000000003012",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005005",
+      "source": "00000000000000000000000000003020",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005006",
+      "source": "00000000000000000000000000003030",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005007",
+      "source": "00000000000000000000000000003031",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005008",
+      "source": "00000000000000000000000000003032",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005009",
+      "source": "00000000000000000000000000003033",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000500a",
+      "source": "00000000000000000000000000003034",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000500b",
+      "source": "00000000000000000000000000003035",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000500c",
+      "source": "00000000000000000000000000003036",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000500d",
+      "source": "00000000000000000000000000003037",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000500e",
+      "source": "00000000000000000000000000003060",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000500f",
+      "source": "00000000000000000000000000003061",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005010",
+      "source": "00000000000000000000000000003062",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005011",
+      "source": "00000000000000000000000000003063",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005012",
+      "source": "00000000000000000000000000003064",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005013",
+      "source": "00000000000000000000000000003065",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005014",
+      "source": "00000000000000000000000000003066",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005015",
+      "source": "00000000000000000000000000003067",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "This Atom is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005016",
+      "source": "00000000000000000000000000003070",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The executable BehaviorBond instance belongs to the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005017",
+      "source": "00000000000000000000000000003071",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The source Atom belongs to the approved fixture cluster.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005018",
+      "source": "00000000000000000000000000003072",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The target Atom belongs to the approved fixture cluster.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005019",
+      "source": "00000000000000000000000000003073",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The first gate belongs to the approved fixture cluster.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000501a",
+      "source": "00000000000000000000000000003074",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The second gate belongs to the approved fixture cluster.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000501b",
+      "source": "00000000000000000000000000003075",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The objective belongs to the approved fixture cluster.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000501c",
+      "source": "00000000000000000000000000003076",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The justification belongs to the approved fixture cluster.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000501d",
+      "source": "00000000000000000000000000003077",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The context belongs to the approved fixture cluster.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000501e",
+      "source": "00000000000000000000000000003080",
+      "target": "00000000000000000000000000003000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The numerical execution profile belongs to the approved fixture cluster.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000006100",
+      "source": "00000000000000000000000000003070",
+      "target": "00000000000000000000000000003071",
+      "predicate": "SOURCE_ATOM",
+      "content": {
+        "justification": "This relation is the sole authoritative source binding.",
+        "kind": "ontology_relation",
+        "role": "behavior_binding"
+      }
+    },
+    {
+      "key": "00000000000000000000000000006101",
+      "source": "00000000000000000000000000003070",
+      "target": "00000000000000000000000000003072",
+      "predicate": "TARGET_ATOM",
+      "content": {
+        "justification": "This relation is the sole authoritative target binding.",
+        "kind": "ontology_relation",
+        "role": "behavior_binding"
+      }
+    },
+    {
+      "key": "00000000000000000000000000006102",
+      "source": "00000000000000000000000000003070",
+      "target": "00000000000000000000000000001401",
+      "predicate": "USES_PREDICATE",
+      "content": {
+        "justification": "This relation binds the semantic predicate independently of execution logic.",
+        "kind": "ontology_relation",
+        "role": "behavior_binding"
+      }
+    },
+    {
+      "key": "00000000000000000000000000006103",
+      "source": "00000000000000000000000000003070",
+      "target": "00000000000000000000000000003080",
+      "predicate": "USES_PROFILE",
+      "content": {
+        "justification": "This relation binds the graph-owned numerical execution profile.",
+        "kind": "ontology_relation",
+        "role": "behavior_binding"
+      }
+    },
+    {
+      "key": "00000000000000000000000000006104",
+      "source": "00000000000000000000000000003070",
+      "target": "00000000000000000000000000003020",
+      "predicate": "HAS_LOGIC_ROLE",
+      "content": {
+        "justification": "This relation selects one generic logic primitive for this BehaviorBond.",
+        "kind": "ontology_relation",
+        "role": "behavior_binding"
+      }
+    },
+    {
+      "key": "00000000000000000000000000006105",
+      "source": "00000000000000000000000000003070",
+      "target": "00000000000000000000000000003073",
+      "predicate": "GATED_BY",
+      "content": {
+        "justification": "This required gate is non-compensatory.",
+        "kind": "ontology_relation",
+        "role": "behavior_binding"
+      }
+    },
+    {
+      "key": "00000000000000000000000000006106",
+      "source": "00000000000000000000000000003070",
+      "target": "00000000000000000000000000003074",
+      "predicate": "GATED_BY",
+      "content": {
+        "justification": "This second required gate is independently observed and non-compensatory.",
+        "kind": "ontology_relation",
+        "role": "behavior_binding"
+      }
+    },
+    {
+      "key": "00000000000000000000000000006107",
+      "source": "00000000000000000000000000003070",
+      "target": "00000000000000000000000000003075",
+      "predicate": "SERVES_OBJECTIVE",
+      "content": {
+        "justification": "This relation states the objective served by the behavior.",
+        "kind": "ontology_relation",
+        "role": "behavior_binding"
+      }
+    },
+    {
+      "key": "00000000000000000000000000006108",
+      "source": "00000000000000000000000000003070",
+      "target": "00000000000000000000000000003076",
+      "predicate": "JUSTIFIED_BY",
+      "content": {
+        "justification": "This relation binds the contestable measured justification.",
+        "kind": "ontology_relation",
+        "role": "behavior_binding"
+      }
+    },
+    {
+      "key": "00000000000000000000000000006109",
+      "source": "00000000000000000000000000003070",
+      "target": "00000000000000000000000000003077",
+      "predicate": "APPLIES_IN",
+      "content": {
+        "justification": "This relation binds the local context without duplicating it in bond content.",
+        "kind": "ontology_relation",
+        "role": "behavior_context"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000610a",
+      "source": "00000000000000000000000000003073",
+      "target": "00000000000000000000000000003076",
+      "predicate": "DEPENDS_ON",
+      "content": {
+        "justification": "The first gate depends on independently measured evidence.",
+        "kind": "ontology_relation",
+        "role": "gate_evidence"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000610b",
+      "source": "00000000000000000000000000003074",
+      "target": "00000000000000000000000000003076",
+      "predicate": "DEPENDS_ON",
+      "content": {
+        "justification": "The second gate depends on independently observed evidence.",
+        "kind": "ontology_relation",
+        "role": "gate_evidence"
+      }
+    }
+  ]
+}

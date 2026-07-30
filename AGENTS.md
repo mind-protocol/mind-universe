@@ -385,17 +385,6 @@ Read:
 - tests for the component being changed;
 - current git status.
 
-Preserve concurrent work. Do not overwrite or revert another agent's changes.
-
-### Respect ownership
-
-`TODO.md` assigns primary ownership to five agents. Work only in the paths owned
-by the assigned role unless the coordinator explicitly authorizes a shared
-contract change.
-
-Shared contract changes must be communicated before dependent implementations
-are updated.
-
 ### Keep native semantics minimal
 
 When implementing an opcode or adapter, ask:
@@ -425,7 +414,7 @@ Do not substitute static structure checks for runtime proof.
 
 Do not create branches, commits, pushes, or pull requests unless the user asks.
 
-Do not stage another agent's work. Do not run destructive git commands.
+Do not run destructive git commands.
 
 ---
 

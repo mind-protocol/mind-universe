@@ -1,0 +1,359 @@
+{
+  "fixtureVersion": 0,
+  "batchId": "00000000000000000000000000005004",
+  "authority": {
+    "authoritative": false,
+    "mode": "offline_verified_projection",
+    "derivedFrom": "artifacts/postgres-import/identity-pilot-20260730-001/store-verified",
+    "universe": "00000000000000000000000000005000",
+    "revision": 1,
+    "tick": 1,
+    "preReceiptSnapshotHash": "24630dc542f6f46c159a1b434ed2b9407ed14dd3b487e73049989ffeb7fdb9e4"
+  },
+  "projection": {
+    "boundedSituation": "complete",
+    "universeCoverage": "partial",
+    "streamFreshness": "stale",
+    "productionTransport": "not_measured"
+  },
+  "measurements": [
+    {
+      "label": "batch readback",
+      "state": "measured",
+      "detail": "49 content records independently read back"
+    },
+    {
+      "label": "imported code",
+      "state": "known_absent",
+      "detail": "0 executable assets; ontology activation false"
+    },
+    {
+      "label": "source status",
+      "state": "unknown",
+      "detail": "1 source row has a null status; it is not interpreted as absent"
+    },
+    {
+      "label": "global relation integrity",
+      "state": "measurement_failed",
+      "detail": "timeout after 12300 ms; the 10000-relation sample is not a global proof"
+    },
+    {
+      "label": "production transport",
+      "state": "not_measured",
+      "detail": "protocol v0 is not frozen and no live transport feeds this projection"
+    }
+  ],
+  "visualMappings": {
+    "source": {
+      "primitive": "open_polyhedral_attractor",
+      "motion": "boundary_breath",
+      "material": {
+        "color": "#7858b8",
+        "emissive": "#4b3182",
+        "emissiveIntensity": 0.7,
+        "opacity": 0.78,
+        "scale": 0.72
+      }
+    },
+    "contract": {
+      "primitive": "bounded_volume",
+      "motion": "still",
+      "material": {
+        "color": "#5c79a6",
+        "emissive": "#253f68",
+        "emissiveIntensity": 0.5,
+        "opacity": 0.72,
+        "scale": 0.58
+      }
+    },
+    "mapping": {
+      "primitive": "oriented_ring",
+      "motion": "inward_orbit",
+      "material": {
+        "color": "#7d6ba8",
+        "emissive": "#3c305e",
+        "emissiveIntensity": 0.55,
+        "opacity": 0.74,
+        "scale": 0.6
+      }
+    },
+    "strategy": {
+      "primitive": "faceted_router",
+      "motion": "still",
+      "material": {
+        "color": "#84687d",
+        "emissive": "#4d3044",
+        "emissiveIntensity": 0.4,
+        "opacity": 0.72,
+        "scale": 0.56
+      }
+    },
+    "batch": {
+      "primitive": "bounded_volume",
+      "motion": "boundary_breath",
+      "material": {
+        "color": "#4e8da2",
+        "emissive": "#1f6178",
+        "emissiveIntensity": 0.8,
+        "opacity": 0.7,
+        "scale": 0.82
+      }
+    },
+    "identity": {
+      "primitive": "oriented_ring",
+      "motion": "still",
+      "material": {
+        "color": "#7ba1c9",
+        "emissive": "#274d76",
+        "emissiveIntensity": 0.7,
+        "opacity": 0.78,
+        "scale": 0.42
+      }
+    },
+    "asset": {
+      "primitive": "faceted_router",
+      "motion": "still",
+      "material": {
+        "color": "#b58a55",
+        "emissive": "#5d3b1e",
+        "emissiveIntensity": 0.35,
+        "opacity": 0.68,
+        "scale": 0.48
+      }
+    },
+    "receipt": {
+      "primitive": "pulsing_core",
+      "motion": "outward_pulse",
+      "material": {
+        "color": "#6fc6a2",
+        "emissive": "#21785b",
+        "emissiveIntensity": 1.4,
+        "opacity": 0.9,
+        "scale": 0.62
+      }
+    }
+  },
+  "relationVisual": {
+    "primitive": "dual_lane_bond",
+    "material": {
+      "color": "#7890b5",
+      "emissive": "#32496a",
+      "emissiveIntensity": 0.35,
+      "opacity": 0.42,
+      "scale": 1
+    },
+    "width": 0.7,
+    "laneSeparation": 0.04
+  },
+  "scaffold": [
+    {
+      "id": "00000000000000000000000000005000",
+      "generation": 0,
+      "visualKey": "source",
+      "position": [-6.2, 4.4, -1],
+      "label": "PostgreSQL source",
+      "detail": "read-only · 126299 nodes · 364005 relations",
+      "epistemic": "observed",
+      "state": "read_only"
+    },
+    {
+      "id": "00000000000000000000000000005001",
+      "generation": 0,
+      "visualKey": "contract",
+      "position": [-2.1, 4.6, -1],
+      "label": "Import contract",
+      "detail": "identity-only · payload import forbidden",
+      "epistemic": "measured",
+      "state": "bounded"
+    },
+    {
+      "id": "00000000000000000000000000005002",
+      "generation": 0,
+      "visualKey": "mapping",
+      "position": [2.1, 4.6, -1],
+      "label": "Ontology adaptation",
+      "detail": "not applied · activation forbidden",
+      "epistemic": "measured",
+      "state": "not_applied"
+    },
+    {
+      "id": "00000000000000000000000000005003",
+      "generation": 0,
+      "visualKey": "strategy",
+      "position": [6.2, 4.4, -1],
+      "label": "Code migration",
+      "detail": "disabled · no fallback execution",
+      "epistemic": "measured",
+      "state": "disabled"
+    },
+    {
+      "id": "00000000000000000000000000005004",
+      "generation": 0,
+      "visualKey": "batch",
+      "position": [0, 0, -2.4],
+      "label": "Identity pilot batch",
+      "detail": "10 accepted identities · revision 1 · tick 1",
+      "epistemic": "measured",
+      "state": "prepared_identity_only"
+    },
+    {
+      "id": "00000000000000000000000000005005",
+      "generation": 0,
+      "visualKey": "receipt",
+      "position": [0, -5, -1],
+      "label": "Adaptation receipt",
+      "detail": "10 imported · 0 executable · readback measured",
+      "epistemic": "measured",
+      "state": "measured_identity_only_import"
+    }
+  ],
+  "scaffoldRelations": [
+    {
+      "id": "00000000000000000000000000005800",
+      "source": "00000000000000000000000000005004",
+      "target": "00000000000000000000000000005000",
+      "predicate": "IMPORTS_FROM",
+      "showLabel": true
+    },
+    {
+      "id": "00000000000000000000000000005801",
+      "source": "00000000000000000000000000005004",
+      "target": "00000000000000000000000000005001",
+      "predicate": "GOVERNED_BY",
+      "showLabel": true
+    },
+    {
+      "id": "00000000000000000000000000005802",
+      "source": "00000000000000000000000000005004",
+      "target": "00000000000000000000000000005002",
+      "predicate": "USES_ONTOLOGY_MAPPING",
+      "showLabel": true
+    },
+    {
+      "id": "00000000000000000000000000005803",
+      "source": "00000000000000000000000000005004",
+      "target": "00000000000000000000000000005003",
+      "predicate": "USES_CODE_STRATEGY",
+      "showLabel": true
+    },
+    {
+      "id": "00000000000000000000000000005fff",
+      "source": "00000000000000000000000000005004",
+      "target": "00000000000000000000000000005005",
+      "predicate": "HAS_RECEIPT",
+      "showLabel": true
+    }
+  ],
+  "records": [
+    {
+      "identityId": "00000000000000000000000000005100",
+      "assetId": "00000000000000000000000000005200",
+      "mapRelationId": "00000000000000000000000000005804",
+      "batchRelationId": "00000000000000000000000000005805",
+      "mapPredicate": "MAPS_TO",
+      "batchPredicate": "IN_BATCH",
+      "sourceId": "code-definition:l2:mcp:reflective-answer-materializer-v0",
+      "sourceRevision": 3,
+      "sourceStatus": "graph_defined"
+    },
+    {
+      "identityId": "00000000000000000000000000005101",
+      "assetId": "00000000000000000000000000005201",
+      "mapRelationId": "00000000000000000000000000005806",
+      "batchRelationId": "00000000000000000000000000005807",
+      "mapPredicate": "MAPS_TO",
+      "batchPredicate": "IN_BATCH",
+      "sourceId": "code:l1:debug:node-created-viz-toast-runtime:v0",
+      "sourceRevision": 3,
+      "sourceStatus": "defined_runtime_ready"
+    },
+    {
+      "identityId": "00000000000000000000000000005102",
+      "assetId": "00000000000000000000000000005202",
+      "mapRelationId": "00000000000000000000000000005808",
+      "batchRelationId": "00000000000000000000000000005809",
+      "mapPredicate": "MAPS_TO",
+      "batchPredicate": "IN_BATCH",
+      "sourceId": "code:l1:debug:node-created-viz-toast:v0",
+      "sourceRevision": 3,
+      "sourceStatus": "defined"
+    },
+    {
+      "identityId": "00000000000000000000000000005103",
+      "assetId": "00000000000000000000000000005203",
+      "mapRelationId": "0000000000000000000000000000580a",
+      "batchRelationId": "0000000000000000000000000000580b",
+      "mapPredicate": "MAPS_TO",
+      "batchPredicate": "IN_BATCH",
+      "sourceId": "code:l1:question-framework-v0",
+      "sourceRevision": 3,
+      "sourceStatus": null
+    },
+    {
+      "identityId": "00000000000000000000000000005104",
+      "assetId": "00000000000000000000000000005204",
+      "mapRelationId": "0000000000000000000000000000580c",
+      "batchRelationId": "0000000000000000000000000000580d",
+      "mapPredicate": "MAPS_TO",
+      "batchPredicate": "IN_BATCH",
+      "sourceId": "code:l1:training:subentity-behavior-capture-v0",
+      "sourceRevision": 4,
+      "sourceStatus": "materialized"
+    },
+    {
+      "identityId": "00000000000000000000000000005105",
+      "assetId": "00000000000000000000000000005205",
+      "mapRelationId": "0000000000000000000000000000580e",
+      "batchRelationId": "0000000000000000000000000000580f",
+      "mapPredicate": "MAPS_TO",
+      "batchPredicate": "IN_BATCH",
+      "sourceId": "code:l1:viz:significant-event-toast-runtime:v1",
+      "sourceRevision": 3,
+      "sourceStatus": "canonical"
+    },
+    {
+      "identityId": "00000000000000000000000000005106",
+      "assetId": "00000000000000000000000000005206",
+      "mapRelationId": "00000000000000000000000000005810",
+      "batchRelationId": "00000000000000000000000000005811",
+      "mapPredicate": "MAPS_TO",
+      "batchPredicate": "IN_BATCH",
+      "sourceId": "code:l1:viz:toast-sound-web-audio-v1",
+      "sourceRevision": 3,
+      "sourceStatus": "canonical"
+    },
+    {
+      "identityId": "00000000000000000000000000005107",
+      "assetId": "00000000000000000000000000005207",
+      "mapRelationId": "00000000000000000000000000005812",
+      "batchRelationId": "00000000000000000000000000005813",
+      "mapPredicate": "MAPS_TO",
+      "batchPredicate": "IN_BATCH",
+      "sourceId": "code:l2:blueprint:all-l1-reconciliation-v0",
+      "sourceRevision": 3,
+      "sourceStatus": "active"
+    },
+    {
+      "identityId": "00000000000000000000000000005108",
+      "assetId": "00000000000000000000000000005208",
+      "mapRelationId": "00000000000000000000000000005814",
+      "batchRelationId": "00000000000000000000000000005815",
+      "mapPredicate": "MAPS_TO",
+      "batchPredicate": "IN_BATCH",
+      "sourceId": "code:l2:browser:chatgpt-autonomy-extension-source-v0",
+      "sourceRevision": 3,
+      "sourceStatus": "patched_static_verified_pending_reload"
+    },
+    {
+      "identityId": "00000000000000000000000000005109",
+      "assetId": "00000000000000000000000000005209",
+      "mapRelationId": "00000000000000000000000000005816",
+      "batchRelationId": "00000000000000000000000000005817",
+      "mapPredicate": "MAPS_TO",
+      "batchPredicate": "IN_BATCH",
+      "sourceId": "code:l2:code-node-linter-runtime:v1",
+      "sourceRevision": 3,
+      "sourceStatus": "materialized"
+    }
+  ]
+}

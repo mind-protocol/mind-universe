@@ -1,0 +1,66 @@
+{
+  "policy_id": "canonical-conversion-census-v0",
+  "default_requirement": "unknown",
+  "rules": [
+    {
+      "kind": "ontology_source",
+      "requirement": "required",
+      "justification": "Carries an embedded provenance document — a concrete content payload projectable as a content-addressed Asset."
+    },
+    {
+      "kind": "ontology_definition:stored_node_type",
+      "requirement": "intentionally_assetless",
+      "justification": "Pure semantic authority defining a stored Node type; no separate content payload to project."
+    },
+    {
+      "kind": "ontology_definition:semantic_type",
+      "requirement": "intentionally_assetless",
+      "justification": "Pure semantic authority defining a semantic type; no separate content payload to project."
+    },
+    {
+      "kind": "ontology_definition:relation_family",
+      "requirement": "intentionally_assetless",
+      "justification": "Pure semantic authority defining a relation family; no separate content payload to project."
+    },
+    {
+      "kind": "ontology_definition:predicate",
+      "requirement": "intentionally_assetless",
+      "justification": "Pure semantic authority defining a predicate; no separate content payload to project."
+    },
+    {
+      "kind": "ontology_definition:epistemic_status",
+      "requirement": "intentionally_assetless",
+      "justification": "Pure semantic authority defining an epistemic status; no separate content payload to project."
+    },
+    {
+      "kind": "ontology_definition:compatibility_predicate",
+      "requirement": "intentionally_assetless",
+      "justification": "Pure semantic authority defining a compatibility predicate; no separate content payload to project."
+    },
+    {
+      "kind": "physical_profile",
+      "requirement": "intentionally_assetless",
+      "justification": "Physical mapping authority bound to a predicate; not a content-bearing Node."
+    },
+    {
+      "kind": "ontology_gap",
+      "requirement": "intentionally_assetless",
+      "justification": "Unresolved-binding marker; carries no projectable content and must remain a Node."
+    },
+    {
+      "kind": "asset_projection_contract",
+      "requirement": "intentionally_assetless",
+      "justification": "Projection governance authority declaring Node primacy; not itself content-bearing."
+    },
+    {
+      "kind": "asset_projection_mapping",
+      "requirement": "intentionally_assetless",
+      "justification": "Projection mapping authority; declares how a Node projects, carries no projectable payload."
+    },
+    {
+      "kind": "asset_conversion_changeset",
+      "requirement": "intentionally_assetless",
+      "justification": "Attributable authorization record for a bounded conversion; governance, not content."
+    }
+  ]
+}

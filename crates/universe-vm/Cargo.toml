@@ -13,4 +13,6 @@ universe-ir = { path = "../universe-ir" }
 
 [dev-dependencies]
 serde_json.workspace = true
+tempfile = "3"
 universe-query = { path = "../universe-query" }
+universe-store = { path = "../universe-store" }
