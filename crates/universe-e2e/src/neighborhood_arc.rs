@@ -401,7 +401,7 @@ pub fn execute_neighborhood(
                 .cmp(&right.transfer_energy)
                 .then(right.target.0.cmp(&left.target.0))
         });
-    Ok(NeighborhoodArc {
+    let arc = NeighborhoodArc {
         epistemic_status: "measured:semantic_v0 / executed / hash-verified".into(),
         start,
         bonds_executed: glides.len(),
@@ -411,7 +411,22 @@ pub fn execute_neighborhood(
         attractor_predicate: attractor.map(|glide| glide.predicate.clone()),
         attractor_energy: attractor.map(|glide| glide.transfer_energy).unwrap_or(0),
         glides,
+    };
+    Ok(NeighborhoodExecution {
+        arc,
+        universe,
+        revision,
+        receipts,
     })
+}
+
+/// Convenience: run the arc and return only the board readout.
+pub fn ride_executed_neighborhood(
+    repository: &Path,
+    artifact_root: &Path,
+    max_bonds: usize,
+) -> Result<NeighborhoodArc, E2eError> {
+    execute_neighborhood(repository, artifact_root, max_bonds).map(|execution| execution.arc)
 }
 
 #[cfg(test)]
