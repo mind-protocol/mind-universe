@@ -1,0 +1,19 @@
+{
+  "policy_id": "visual-projection-policy-v0",
+  "default_authority": "visual-mapping:l2:mind-desktop:citizen-energy-semi-humanoid-v1",
+  "bindings": [
+    {
+      "semantic_type": "actor",
+      "authority_id": "visual-mapping:l2:mind-desktop:citizen-energy-semi-humanoid-v1",
+      "justification": "A Citizen/actor embodies as the energy semi-humanoid form family; hot residency is humanoid, lower residencies fall back to the energy orb."
+    }
+  ],
+  "epistemic_modulation": {
+    "observed": { "confident": true, "emissive_scale": 1.0, "opacity_scale": 1.0, "desaturate": 0.0 },
+    "measured": { "confident": true, "emissive_scale": 1.0, "opacity_scale": 1.0, "desaturate": 0.0 },
+    "known_absent": { "confident": false, "emissive_scale": 0.0, "opacity_scale": 0.35, "desaturate": 0.9 },
+    "unknown": { "confident": false, "emissive_scale": 0.0, "opacity_scale": 0.5, "desaturate": 0.8 },
+    "not_measured": { "confident": false, "emissive_scale": 0.0, "opacity_scale": 0.5, "desaturate": 0.8 },
+    "measurement_failed": { "confident": false, "emissive_scale": 0.0, "opacity_scale": 0.6, "desaturate": 1.0, "hue": "#ff5a5a" }
+  }
+}

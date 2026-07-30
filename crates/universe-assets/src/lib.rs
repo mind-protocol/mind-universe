@@ -7,6 +7,7 @@
 pub mod census;
 pub mod conversion;
 pub mod inventory;
+pub mod visual;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
