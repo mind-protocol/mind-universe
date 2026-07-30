@@ -1925,6 +1925,47 @@ pub fn validate(code: &CodeDefinition) -> Result<(), CompileError> {
                 // is not a terminator.
                 successors[index].push(target_index);
             }
+            Operator::RepeatUntilWithLimit {
+                loop_next,
+                exit_next,
+                max_iterations,
+                ..
+            } => {
+                // The runtime iteration budget is required graph data; a zero or
+                // absent budget is rejected exactly as `Call` rejects a zero
+                // call-depth budget.
+                if *max_iterations == 0 {
+                    return Err(CompileError::ZeroBound(index));
+                }
+                let exit_index = *exit_next as usize;
+                if exit_index >= operator_count {
+                    return Err(CompileError::InvalidBranchTarget {
+                        operator: index,
+                        target: *exit_next,
+                    });
+                }
+                // The exit edge must remain forward; only the designated
+                // back-edge is allowed to point backward, keeping every other
+                // cycle forbidden.
+                if exit_index <= index {
+                    return Err(CompileError::UnboundedCycle {
+                        operator: index,
+                        target: *exit_next,
+                    });
+                }
+                let loop_index = *loop_next as usize;
+                if loop_index >= operator_count {
+                    return Err(CompileError::InvalidBranchTarget {
+                        operator: index,
+                        target: *loop_next,
+                    });
+                }
+                // This is the single controlled back-edge: a backward
+                // `loop_next` is permitted here and only here, because the
+                // required iteration budget bounds its traversals at runtime.
+                successors[index].push(loop_index);
+                successors[index].push(exit_index);
+            }
             _ => {}
         }
         if let Some(output) = op.output() {
@@ -1934,7 +1975,10 @@ pub fn validate(code: &CodeDefinition) -> Result<(), CompileError> {
         }
         if !matches!(
             op,
-            Operator::Branch { .. } | Operator::BranchOnEvidence { .. } | Operator::Return { .. }
+            Operator::Branch { .. }
+                | Operator::BranchOnEvidence { .. }
+                | Operator::Return { .. }
+                | Operator::RepeatUntilWithLimit { .. }
         ) && index + 1 < operator_count
         {
             successors[index].push(index + 1);
@@ -1960,11 +2004,21 @@ pub fn validate(code: &CodeDefinition) -> Result<(), CompileError> {
             predecessors[*target].push(source);
         }
     }
-    let mut assigned_after = vec![BTreeSet::new(); operator_count];
-    for (index, op) in code.operators.iter().enumerate() {
-        let mut assigned_before = if index == 0 {
-            BTreeSet::new()
-        } else {
+    // Definite assignment is a forward "must" analysis whose meet is set
+    // intersection. A single index-order pass is exact only on a DAG; the
+    // bounded-loop back-edge introduces a predecessor with a higher index, so
+    // we compute the greatest fixpoint instead. Every operator's assigned-after
+    // set starts at the full universe of assigned registers (Top) and can only
+    // shrink through intersection, which keeps the result sound: a register is
+    // treated as assigned at a program point only if it is assigned on every
+    // incoming path, including the first entry into a loop header where the
+    // back-edge has not yet executed. On a DAG this converges to exactly the
+    // previous single-pass result, so no other opcode's soundness changes.
+    let assigned_before =
+        |index: usize, assigned_after: &[BTreeSet<Register>]| -> BTreeSet<Register> {
+            if index == 0 {
+                return BTreeSet::new();
+            }
             let mut incoming = predecessors[index].iter();
             let first = incoming
                 .next()
@@ -1978,24 +2032,57 @@ pub fn validate(code: &CodeDefinition) -> Result<(), CompileError> {
             }
             intersection
         };
+    let mut assigned_after: Vec<BTreeSet<Register>> =
+        vec![globally_assigned.clone(); operator_count];
+    loop {
+        let mut changed = false;
+        for index in 0..operator_count {
+            let mut after = assigned_before(index, &assigned_after);
+            if let Some(output) = code.operators[index].output() {
+                after.insert(output);
+            }
+            if after != assigned_after[index] {
+                assigned_after[index] = after;
+                changed = true;
+            }
+        }
+        if !changed {
+            break;
+        }
+    }
+    for (index, op) in code.operators.iter().enumerate() {
+        let available = assigned_before(index, &assigned_after);
         for input in op.inputs() {
-            if !assigned_before.contains(&input) {
+            if !available.contains(&input) {
                 return Err(CompileError::ReadBeforeAssignment(input));
             }
         }
-        if let Some(output) = op.output() {
-            assigned_before.insert(output);
-        }
-        assigned_after[index] = assigned_before;
     }
 
-    let mut returns_on_all_paths = vec![false; operator_count];
-    for index in (0..operator_count).rev() {
-        returns_on_all_paths[index] = matches!(code.operators[index], Operator::Return { .. })
-            || (!successors[index].is_empty()
-                && successors[index]
-                    .iter()
-                    .all(|successor| returns_on_all_paths[*successor]));
+    // Structured termination is a backward "must reach a return" analysis. With
+    // a loop back-edge the reverse-index single pass is no longer exact, so we
+    // take the greatest fixpoint: every operator starts assumed-returning (Top)
+    // and is forced open only when it is a non-return dead end or has a
+    // successor that cannot return. A bounded loop stays well-formed because its
+    // forward `exit_next` reaches a return; a genuine fall-off the end is still
+    // rejected. On a DAG this equals the previous reverse-index result.
+    let mut returns_on_all_paths = vec![true; operator_count];
+    loop {
+        let mut changed = false;
+        for index in 0..operator_count {
+            let value = matches!(code.operators[index], Operator::Return { .. })
+                || (!successors[index].is_empty()
+                    && successors[index]
+                        .iter()
+                        .all(|successor| returns_on_all_paths[*successor]));
+            if value != returns_on_all_paths[index] {
+                returns_on_all_paths[index] = value;
+                changed = true;
+            }
+        }
+        if !changed {
+            break;
+        }
     }
     if !returns_on_all_paths[0] {
         return Err(CompileError::InvalidReturn);
@@ -2526,6 +2613,73 @@ mod tests {
             validate(&call_program(9, 2)),
             Err(CompileError::InvalidBranchTarget {
                 operator: 0,
+                target: 9,
+            })
+        );
+    }
+
+    fn repeat_until_program(loop_next: u32, exit_next: u32, max_iterations: u32) -> CodeDefinition {
+        CodeDefinition {
+            ir_version: IR_VERSION,
+            revision: Revision(9),
+            required_capabilities: vec![],
+            operators: vec![
+                Operator::Constant {
+                    value: Value::Epistemic(Epistemic::Measured(Box::new(Value::Bool(false)))),
+                    output: 0,
+                },
+                Operator::RepeatUntilWithLimit {
+                    condition: 0,
+                    loop_next,
+                    exit_next,
+                    max_iterations,
+                },
+                Operator::Constant {
+                    value: Value::Unit,
+                    output: 1,
+                },
+                Operator::Return { value: 1 },
+            ],
+        }
+    }
+
+    #[test]
+    fn repeat_until_with_backward_loop_edge_validates() {
+        // The single controlled back-edge (loop_next = 0) is accepted for this
+        // opcode, and the definite-assignment fixpoint stays sound across the
+        // loop header without rejecting the program.
+        assert!(validate(&repeat_until_program(0, 2, 4)).is_ok());
+    }
+
+    #[test]
+    fn repeat_until_rejects_zero_iteration_budget() {
+        // A zero runtime iteration budget is rejected exactly as Call rejects a
+        // zero call-depth budget.
+        assert_eq!(
+            validate(&repeat_until_program(0, 2, 0)),
+            Err(CompileError::ZeroBound(1))
+        );
+    }
+
+    #[test]
+    fn repeat_until_rejects_backward_exit_edge() {
+        // Only loop_next may point backward; a backward exit_next is still an
+        // unbounded cycle.
+        assert_eq!(
+            validate(&repeat_until_program(0, 1, 4)),
+            Err(CompileError::UnboundedCycle {
+                operator: 1,
+                target: 1,
+            })
+        );
+    }
+
+    #[test]
+    fn repeat_until_rejects_out_of_range_targets() {
+        assert_eq!(
+            validate(&repeat_until_program(0, 9, 4)),
+            Err(CompileError::InvalidBranchTarget {
+                operator: 1,
                 target: 9,
             })
         );

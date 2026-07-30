@@ -96,6 +96,8 @@ pub enum VmError {
     ProposalBudgetExhausted,
     #[error("call depth budget {limit} exceeded")]
     CallDepthExceeded { limit: u32 },
+    #[error("loop iteration budget {limit} exhausted")]
+    IterationBudgetExhausted { limit: u32 },
 }
 
 /// One live call frame: where control resumes in the caller and which caller
@@ -286,6 +288,10 @@ pub fn execute(
     let mut result = Value::Unit;
     let mut program_counter = 0usize;
     let mut call_stack: Vec<CallFrame> = Vec::new();
+    // Iterations already charged against each bounded-loop latch, keyed by the
+    // latch's fixed instruction index. Never reset across the program, so the
+    // graph-owned budget is a hard ceiling on back-edge traversals.
+    let mut loop_iterations: BTreeMap<usize, u32> = BTreeMap::new();
 
     while program_counter < bytecode.instructions.len() {
         let index = program_counter;
@@ -593,6 +599,45 @@ pub fn execute(
                 }
                 None
             }
+            Operator::RepeatUntilWithLimit {
+                condition,
+                loop_next,
+                exit_next,
+                max_iterations,
+            } => {
+                let Value::Epistemic(evidence) = register(&registers, *condition)? else {
+                    return Err(VmError::Type {
+                        expected: "epistemic bool",
+                    });
+                };
+                // The condition is interpreted as "until": true closes the loop.
+                // Unavailable evidence is preserved as a trap, never coerced into
+                // a continue-or-stop decision.
+                let until_satisfied = match evidence {
+                    Epistemic::Observed(inner) | Epistemic::Measured(inner) => {
+                        let Value::Bool(value) = inner.as_ref() else {
+                            return Err(VmError::Type {
+                                expected: "epistemic bool",
+                            });
+                        };
+                        *value
+                    }
+                    _ => return Err(VmError::EvidenceUnavailable(epistemic_state(evidence))),
+                };
+                if until_satisfied {
+                    next_program_counter = *exit_next as usize;
+                } else {
+                    let charged = loop_iterations.entry(index).or_insert(0);
+                    if *charged >= *max_iterations {
+                        return Err(VmError::IterationBudgetExhausted {
+                            limit: *max_iterations,
+                        });
+                    }
+                    *charged += 1;
+                    next_program_counter = *loop_next as usize;
+                }
+                None
+            }
         };
         if let (Some(output_id), Some(value)) = (op.output(), output) {
             registers.insert(output_id, value);
@@ -806,8 +851,67 @@ mod tests {
         }
     }
 
+    /// Deterministic host for the bounded-loop fixture. The `poll` capability
+    /// returns a fresh epistemic condition each iteration so the loop can either
+    /// close cleanly, run to its iteration budget, or surface unavailable
+    /// evidence without coercion.
+    enum PollMode {
+        CountTo(u32),
+        AlwaysContinue,
+        Unknown,
+    }
+
+    struct PollHost {
+        mode: PollMode,
+        calls: u32,
+    }
+
+    impl VmHost for PollHost {
+        fn is_cancelled(&self) -> bool {
+            false
+        }
+        fn capabilities(&self) -> BTreeSet<String> {
+            BTreeSet::from(["poll".into()])
+        }
+        fn open_query(&mut self, _: &QuerySpec, _: &Value, _: &Value) -> Result<Value, String> {
+            Err("poll host has no query support".into())
+        }
+        fn await_query(&mut self, _: &Value) -> Result<Value, String> {
+            Err("poll host has no query support".into())
+        }
+        fn follow_one(&mut self, _: &Value, _: &Value) -> Result<Value, String> {
+            Err("poll host has no follow support".into())
+        }
+        fn entity_symbol(&mut self, _: &Value) -> Result<Value, String> {
+            Err("poll host has no symbol support".into())
+        }
+        fn hydrate(&mut self, _: &[Value], _: u32) -> Result<Vec<Value>, String> {
+            Err("poll host has no hydrate support".into())
+        }
+        fn call_capability(&mut self, capability: &str, _: &Value) -> Result<Value, String> {
+            assert_eq!(capability, "poll");
+            self.calls += 1;
+            Ok(match &self.mode {
+                PollMode::CountTo(threshold) => Value::Epistemic(Epistemic::Measured(Box::new(
+                    Value::Bool(self.calls > *threshold),
+                ))),
+                PollMode::AlwaysContinue => {
+                    Value::Epistemic(Epistemic::Measured(Box::new(Value::Bool(false))))
+                }
+                PollMode::Unknown => Value::Epistemic(Epistemic::Unknown),
+            })
+        }
+    }
+
     fn fixture() -> CodeDefinition {
         serde_json::from_str(include_str!("../../../fixtures/graph-ir/minimal-read.json")).unwrap()
+    }
+
+    fn repeat_until_fixture() -> CodeDefinition {
+        serde_json::from_str(include_str!(
+            "../../../fixtures/graph-ir/repeat-until-limit.json"
+        ))
+        .unwrap()
     }
 
     fn boolean_fixture() -> CodeDefinition {
@@ -1392,6 +1496,91 @@ mod tests {
         )
         .unwrap_err();
         assert_eq!(error, VmError::CallDepthExceeded { limit: 1 });
+    }
+
+    #[test]
+    fn bounded_loop_repeats_then_exits_cleanly() {
+        let code = repeat_until_fixture();
+        let bytecode = compile(&code).unwrap();
+        let interpreted = execute_program(
+            &code,
+            &mut PollHost {
+                mode: PollMode::CountTo(3),
+                calls: 0,
+            },
+            &BTreeMap::new(),
+            Revision(50),
+            Tick(12),
+            ExecutionLimits {
+                fuel: 64,
+                max_proposals: 0,
+            },
+        )
+        .unwrap();
+        let compiled = execute(
+            &bytecode,
+            &mut PollHost {
+                mode: PollMode::CountTo(3),
+                calls: 0,
+            },
+            &BTreeMap::new(),
+            Revision(50),
+            Tick(12),
+            ExecutionLimits {
+                fuel: 64,
+                max_proposals: 0,
+            },
+        )
+        .unwrap();
+        assert_eq!(interpreted, compiled);
+        // Three back-edges (poll returns false, false, false) then a clean exit
+        // on the fourth poll: constant + (poll, latch) x 4 + constant + return.
+        assert_eq!(interpreted.result, Value::Text("loop-exited".into()));
+        assert_eq!(interpreted.fuel_used, 11);
+    }
+
+    #[test]
+    fn bounded_loop_traps_when_iteration_budget_exhausted() {
+        // The graph-owned budget is 8; an always-continue condition must trap
+        // deterministically instead of looping unbounded.
+        let error = execute_program(
+            &repeat_until_fixture(),
+            &mut PollHost {
+                mode: PollMode::AlwaysContinue,
+                calls: 0,
+            },
+            &BTreeMap::new(),
+            Revision(50),
+            Tick(12),
+            ExecutionLimits {
+                fuel: 64,
+                max_proposals: 0,
+            },
+        )
+        .unwrap_err();
+        assert_eq!(error, VmError::IterationBudgetExhausted { limit: 8 });
+    }
+
+    #[test]
+    fn bounded_loop_does_not_coerce_unavailable_condition() {
+        // An unknown loop condition is preserved as a trap, never read as
+        // continue or stop.
+        let error = execute_program(
+            &repeat_until_fixture(),
+            &mut PollHost {
+                mode: PollMode::Unknown,
+                calls: 0,
+            },
+            &BTreeMap::new(),
+            Revision(50),
+            Tick(12),
+            ExecutionLimits {
+                fuel: 64,
+                max_proposals: 0,
+            },
+        )
+        .unwrap_err();
+        assert_eq!(error, VmError::EvidenceUnavailable(EpistemicState::Unknown));
     }
 
     #[test]

@@ -1,0 +1,14 @@
+{
+  "entity_frames": 3,
+  "information_status": "measured",
+  "kind": "desktop_world_snapshot_manifest",
+  "readback_ok": true,
+  "relation_frames": 1,
+  "residency_measured": false,
+  "resolved_embodiments": 3,
+  "revision": 0,
+  "store_root": "artifacts/desktop-world-snapshot/citizen/store",
+  "total_frames": 5,
+  "universe": "0000000000000000000000000000b000",
+  "visual_authority_resolved": true
+}

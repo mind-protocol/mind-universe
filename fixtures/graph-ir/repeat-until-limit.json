@@ -1,0 +1,12 @@
+{
+  "ir_version": 0,
+  "revision": 9,
+  "required_capabilities": ["poll"],
+  "operators": [
+    {"op":"constant","value":{"type":"unit"},"output":0},
+    {"op":"capability_call","capability":"poll","input":0,"output":1},
+    {"op":"repeat_until_with_limit","condition":1,"loop_next":1,"exit_next":3,"max_iterations":8},
+    {"op":"constant","value":{"type":"text","value":"loop-exited"},"output":2},
+    {"op":"return","value":2}
+  ]
+}

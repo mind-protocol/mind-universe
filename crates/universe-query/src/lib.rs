@@ -110,12 +110,21 @@ pub fn read_local_binding_subgraph(
             continue;
         }
         for relation in graph.adjacent(entity) {
+            if relations.contains_key(&relation.key) {
+                // Reusable visit stamp: the collected-relations map doubles as
+                // the per-traversal relation stamp. A relation shared by two
+                // visited endpoints is inspected at most once, so it consumes
+                // relation budget at most once and cannot be double-counted.
+                // The endpoint it would reach was already discovered when the
+                // relation was first inspected, so skipping loses no frontier.
+                continue;
+            }
             if inspected >= budget.max_relations {
                 budget_hit = true;
                 break;
             }
             inspected += 1;
-            relations.entry(relation.key).or_insert(relation);
+            relations.insert(relation.key, relation);
             let next = if relation.source == entity {
                 relation.target
             } else {
@@ -411,6 +420,60 @@ mod tests {
         assert_eq!(subgraph.relations.len(), 2);
         assert_eq!(subgraph.frontier_entities, vec![EntityKey(2), EntityKey(3)]);
         assert!(subgraph.situation.visited_entities < 10_000);
+    }
+
+    #[test]
+    fn shared_relation_is_inspected_once_and_budget_is_not_double_counted() {
+        // A path 1 -- R11 -- 2 -- R12 -- 3. With a depth budget that visits
+        // node 2, node 2's adjacency lists R11 again (it is stored on both
+        // endpoints). The visit stamp must skip that second sighting so the
+        // relation is neither re-inspected nor charged to the budget twice.
+        let index = AdjacencyIndex::from_parts(
+            [EntityKey(1), EntityKey(2), EntityKey(3)],
+            [
+                LocalRelation {
+                    key: RelationKey(11),
+                    source: EntityKey(1),
+                    target: EntityKey(2),
+                },
+                LocalRelation {
+                    key: RelationKey(12),
+                    source: EntityKey(2),
+                    target: EntityKey(3),
+                },
+            ],
+        );
+
+        let subgraph = read_local_binding_subgraph(
+            &index,
+            QueryOrigin::Entity(EntityKey(1)),
+            QueryBudget {
+                max_entities: 8,
+                max_relations: 8,
+                max_depth: 2,
+            },
+        );
+
+        // Node 2 was visited (depth 1) so its adjacency, which re-lists R11,
+        // was scanned. Without the stamp this would report 3 inspections.
+        assert_eq!(subgraph.situation.visited_entities, 3);
+        assert_eq!(subgraph.situation.inspected_relations, 2);
+        // Invariant: every counted inspection produced exactly one distinct
+        // relation. No relation is double-counted and none is silently dropped.
+        assert_eq!(
+            subgraph.situation.inspected_relations,
+            subgraph.relations.len()
+        );
+        let distinct_keys = subgraph
+            .relations
+            .iter()
+            .map(|relation| relation.key)
+            .collect::<BTreeSet<_>>();
+        assert_eq!(distinct_keys.len(), subgraph.relations.len());
+        // The whole neighbourhood fit in budget, so this is honestly Complete
+        // with no frontier — the dedup did not hide any remaining work.
+        assert_eq!(subgraph.situation.status, QueryStatus::Complete);
+        assert!(subgraph.frontier_entities.is_empty());
     }
 
     #[test]

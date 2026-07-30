@@ -1,0 +1,91 @@
+{
+  "magic_object": "lantern-reveal-v0",
+  "blueprint_version": 0,
+  "doc": "La lanterne: un objet magique STATIQUE. Meme space/decorate/wield que le board, mais on ne descend pas et on ne choisit aucun attracteur. Deux passes: DARK (sans geste) revele les faits auto-lumineux (observed = fire tout seul); HALO (geste 'illuminate') revele les inferences (derived = fire seulement quand la lanterne inonde le support). Le Fog ne s'allume jamais: son required-support vient d'un node non-mesure qui reste noir dans les deux passes. Le statut observed/derived est GAGNE par le grand livre d'energie, jamais declare.",
+  "space": {
+    "key": 0,
+    "role": "space",
+    "semantic_type": "space",
+    "name": "lantern-field (halo)",
+    "governs": "borne le halo au voisinage epistemique; ne choisit aucun pas suivant."
+  },
+  "gradient_policy": {
+    "energizes": ["GROUNDS", "DEFINES", "OBSERVES"],
+    "inhibits": [],
+    "fork_predicate": null,
+    "answer_predicate": null,
+    "note": "aucune descente: la policy n'energise que l'evidence, pas une pente."
+  },
+  "contents": [
+    {
+      "key": 1,
+      "role": "moment",
+      "function": "observed",
+      "semantic_type": "moment",
+      "claim": "Fait mesure directement; porte sa propre lumiere (fire sans geste).",
+      "physics": { "threshold": 1, "seed_energy": 300, "required_supports": [], "inhibition_threshold": null }
+    },
+    {
+      "key": 2,
+      "role": "moment",
+      "function": "observed",
+      "semantic_type": "moment",
+      "claim": "Second fait mesure, auto-lumineux.",
+      "physics": { "threshold": 1, "seed_energy": 300, "required_supports": [], "inhibition_threshold": null }
+    },
+    {
+      "key": 3,
+      "role": "narrative",
+      "function": "derived",
+      "semantic_type": "claim",
+      "claim": "Inference: ne s'allume que si le halo ajoute sa part au support d'un observed.",
+      "physics": { "threshold": 150, "seed_energy": 0, "required_supports": [], "inhibition_threshold": null }
+    },
+    {
+      "key": 4,
+      "role": "narrative",
+      "function": "fog",
+      "semantic_type": "open_question",
+      "claim": "Non-mesure: reste noir meme sous le halo; son required-support vient d'un node non-mesure.",
+      "physics": { "threshold": 100, "seed_energy": 0, "required_supports": [401], "inhibition_threshold": null }
+    },
+    {
+      "key": 5,
+      "role": "thing",
+      "function": "lantern",
+      "semantic_type": "gating",
+      "measurement_binding": "illuminate",
+      "claim": "Routeur: transforme la poussee de l'actor en support le long des bonds d'evidence.",
+      "physics": { "threshold": 1, "seed_energy": 0, "required_supports": [], "inhibition_threshold": null }
+    },
+    {
+      "key": 7,
+      "role": "moment",
+      "function": "unmeasured_source",
+      "semantic_type": "moment",
+      "claim": "La mesure absente. Aucune energie, aucun geste ne l'atteint: reste noir, donc le Fog reste Fog.",
+      "physics": { "threshold": 1, "seed_energy": 0, "required_supports": [], "inhibition_threshold": null }
+    }
+  ],
+  "bonds": [
+    { "key": 301, "source": 1, "target": 3, "predicate": "GROUNDS", "polarity": "support", "energy": 100, "justification": "Un observed fonde partiellement l'inference." },
+    { "key": 302, "source": 5, "target": 3, "predicate": "GROUNDS", "polarity": "support", "energy": 100, "justification": "Le halo de la lanterne fournit la part manquante du support de l'inference." },
+    { "key": 401, "source": 7, "target": 4, "predicate": "OBSERVES", "polarity": "support", "energy": 100, "justification": "Le Fog ne pourrait s'allumer que si une mesure (node 7) le fondait; elle n'existe pas." }
+  ],
+  "activation": {
+    "key": 6,
+    "role": "narrative",
+    "shape": "sphere",
+    "explains": 0,
+    "predicate": "EXPLAINS",
+    "capability": "wield_lantern",
+    "how": "Leve la lanterne (lie-toi au space), pousse pour injecter la lumiere au node 'lantern'; le halo inonde les bonds d'evidence. Ne te deplace pas.",
+    "gestures": ["illuminate"],
+    "runtime": "graph ChangeSet -> phase Commit (CommitReceipt) -> phase Physics (spreading-activation bornee sur AtomDynamics, APRES le commit) -> readback.",
+    "promise": "Revele quels voisins sont observed (auto-lumineux), derived (lumineux seulement par inference), ou Fog (noirs).",
+    "forbidden": [
+      "presenter un node derived comme observed",
+      "traiter le Fog comme mesure: noir reste noir"
+    ]
+  }
+}

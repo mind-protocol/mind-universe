@@ -21,8 +21,8 @@ truth (canonical ontology reconstruction: 231 entities / 784 relations,
 | Status | Count |
 | --- | --- |
 | `[x]` completed and evidenced | 178 |
-| `[~]` in progress | 21 |
-| `[ ]` not started | 267 |
+| `[~]` in progress | 23 |
+| `[ ]` not started | 265 |
 | `[!]` blocked | 0 |
 | **Total** | **466** |
 
@@ -42,8 +42,13 @@ adaptation, phase 4 code migration, phase 5 physics import (`physics_pilot.rs`,
 receipt `artifacts/postgres-import/physics-pilot-20260730-001`: 4 profiles →
 1 adapted_inert / 1 compatibility / 1 unresolved / 1 quarantined, 0 bound to the
 live simulation, 4 activation refusals) — but remains incomplete: activation into
-canonical authority is the deliberate final gap. G3 (Viz/Mind Desktop) remains
-incomplete. The bootstrap completion gate is open. Highest-leverage
+canonical authority is the deliberate final gap. G3 (Viz/Mind Desktop): the
+real-store→renderer path now exists — `desktop_world_snapshot` projects a live
+store into `entity_materialized`/`relation_materialized` frames the app parses
+and folds into its view (proven end-to-end over the conversion store, 286/890) —
+but G3 remains incomplete (richer facets, progressive deltas, and
+graph-authority visual resolution are open). The bootstrap completion gate is
+open. Highest-leverage
 open gaps blocking bootstrap v0: graph triggers, authenticated production
 transport, cryptographic Genesis signing, and the 10 M / 10 M scale proof.
 
@@ -337,12 +342,29 @@ ImportBatch
 - [ ] Connect Mind Desktop to the authenticated production
   snapshot/delta/event protocol with reconnect, sequence-gap detection, resync,
   backpressure, and honest stale/degraded states.
-- [ ] Render the complete bounded local situation actually received from the
+- [~] Render the complete bounded local situation actually received from the
   Universe: Nodes, Assets, relations, active CodeDefinitions, loops, gates,
   objectives, decisions, evidence, receipts, health, folds, and residency.
-- [ ] Read all semantic, visual, physical, and interaction mappings from graph
+  Foundation landed: `universe-e2e` bin `desktop_world_snapshot` projects a real
+  store into app-ready `entity_materialized`/`relation_materialized` frames (ran
+  over the conversion store: 286 entities / 890 relations), the Mind Desktop
+  `protocol-adapter` now parses them (previously it discarded snapshot
+  entities/relations), and `world-snapshot-consumption.test.ts` folds a
+  real-store frame fixture into the view (5 Nodes + 5 relations, synchronized).
+  Still open: the richer facets (CodeDefinitions, loops, gates, objectives,
+  decisions, evidence, receipts, health, folds, residency) and resolving visuals
+  through the materialized visual-mapping authority (currently honest `unknown`).
+- [~] Read all semantic, visual, physical, and interaction mappings from graph
   authority; do not hard-code canonical predicate or Node meaning in
-  TypeScript, shaders, or renderer dispatch.
+  TypeScript, shaders, or renderer dispatch. The *visual* mapping is now read
+  from authority end-to-end: `desktop_world_snapshot` resolves each entity's
+  embodiment via the materialized `visual-embodiment/1` catalog + policy
+  (`universe-assets::visual::derive`) — residency drives the form, epistemic
+  state drives the material (honesty invariant: an `unknown` entity never emits
+  as confident) — and the renderer revalidates it with its own
+  `validateEmbodimentMapping`. Proven on a seeded citizen world
+  (`citizen-embodiment-resolution.test.ts`). Semantic, physical, and interaction
+  mappings from authority remain open.
 - [ ] Make imported PostgreSQL Nodes and converted Assets progressively visible
   as their authoritative batches commit, without whole-Universe scans.
 - [ ] Provide usable world-native navigation, focus, selection, expansion,

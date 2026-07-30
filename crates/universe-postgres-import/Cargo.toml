@@ -13,6 +13,17 @@ universe-transactions = { path = "../universe-transactions" }
 universe-ir = { path = "../universe-ir" }
 universe-compiler = { path = "../universe-compiler" }
 universe-vm = { path = "../universe-vm" }
+postgres = { version = "0.19", optional = true }
+
+[features]
+# Live, read-only PostgreSQL source connector. Kept off by default so the
+# workspace builds with no database driver; the DSN is read from the
+# MIND_POSTGRES_DSN environment variable and never stored in the graph.
+live-postgres = ["dep:postgres"]
+
+[[bin]]
+name = "postgres_census"
+required-features = ["live-postgres"]
 
 [dev-dependencies]
 tempfile = "3"

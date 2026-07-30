@@ -1,0 +1,52 @@
+{
+  "universe": "0000000000000000000000000000b000",
+  "symbols": ["OBSERVES", "actor", "thing"],
+  "entities": [
+    {
+      "key": "0000000000000000000000000000b001",
+      "generation": 0,
+      "symbol": "actor",
+      "content": {
+        "kind": "citizen",
+        "semantic_type": "actor",
+        "name": "Aurora",
+        "residency": "hot",
+        "epistemic_state": "measured"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000b002",
+      "generation": 0,
+      "symbol": "actor",
+      "content": {
+        "kind": "citizen",
+        "semantic_type": "actor",
+        "name": "Nyx",
+        "residency": "dormant",
+        "epistemic_state": "unknown"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000b003",
+      "generation": 0,
+      "symbol": "thing",
+      "content": {
+        "kind": "artifact",
+        "semantic_type": "thing",
+        "name": "Ledger",
+        "residency": "sleeping",
+        "epistemic_state": "measured"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "key": "0000000000000000000000000000b200",
+      "generation": 0,
+      "source": "0000000000000000000000000000b001",
+      "target": "0000000000000000000000000000b003",
+      "predicate": "OBSERVES",
+      "content": null
+    }
+  ]
+}

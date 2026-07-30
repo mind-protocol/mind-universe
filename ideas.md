@@ -207,3 +207,79 @@ Rangées par (valeur × proximité du substrat). On en choisit **une**.
 
 Recommandation : **A** (le squelette qui donne un sens à tout le reste), ou **C**
 si on veut une victoire rapide avant de creuser l'usine.
+
+---
+
+## 10. Triage qualité — 🟢 good / 🟡 average / 🔴 meh
+
+> **Autre axe que §1.** Les tags `[RÉEL]/[SUBSTRAT]/[VISION]` mesurent la *maturité*
+> (est-ce que ça tourne ?). Ici on note la **valeur d'ingénierie** de l'idée
+> (est-ce que ça mérite d'être construit ?), indépendamment de si c'est codé.
+> Une idée peut être `[VISION]` **et** 🟢, ou `[RÉEL]` **et** 🔴.
+
+**La thèse en une ligne :** il y a **deux projets emmêlés**. La *couche discipline*
+(graphe-source, loops, honnêteté épistémique, observers, budget de fuel) est un
+système fort et constructible. La *couche feel* est un **pari UX de première classe,
+à égalité** avec la discipline — mais son levier est la **focalisation**, pas
+l'étendue.
+
+### 10.1 Correctif « feel / juice » (la leçon Angry Birds)
+> Angry Birds n'a aucune nouveauté architecturale et a mangé un milliard d'heures :
+> **un seul verbe** (le lancer), réglé au millimètre, avec du **juice** (le cri du
+> cochon, l'effondrement des blocs). Le feel n'est pas de la « saveur » secondaire —
+> c'est le produit. Correction de mon triage initial, qui sous-notait l'engagement :
+
+- **Le geste board/carve** → **🟢** (pas 🟡). C'est le lance-pierre. Si *une*
+  interaction doit valoir des heures, c'est celle-là. Pari assumé, non validé.
+- **Le juice** (audio, effondrement, vibration sur contradiction) → **🟡→🟢** s'il est
+  câblé à un état réel. Chez Rovio la retention *est* le cri du cochon. Pas « meh ».
+- **Les potards de feel** (`k_slope`, `k_turn`, `k_brake`) → Angry Birds *est*
+  l'argument pour les régler obsessionnellement. Bon instinct (reste 🟡 tant que rien
+  ne tourne, mais c'est la surface de tuning n°1).
+
+**Ce que la leçon condamne au contraire (donc restent 🔴) :**
+- **Les neuf autres objets magiques.** Rovio a livré *le lancer*, pas lancer + portal
+  gun + grenade + prisme. Dix verbes à moitié réglés = l'inverse de la leçon.
+- **La physique pour la cognition du Citizen.** Distinction clé : chez Angry Birds la
+  physique simule le *jouet que le joueur lance* (légitime, on investit). Le 60 Hz
+  pitché ici modélisait la *rumination/angoisse du Citizen* — la physique comme
+  substrat de l'état mental d'autrui. C'est ça la sur-ingénierie, pas le board-sur-terrain.
+
+**Thèse corrigée :** le feel est une discipline **🟢 de première classe**, à égalité
+avec la couche épistémique — mais **un geste, réglé obsessionnellement, câblé à un
+état honnête**, pas dix gadgets.
+
+### 🟢 Good — le vrai projet
+| idée | pourquoi |
+|---|---|
+| **Graphe = source, fichiers = matérialisations** | discipline réelle ; intent/comportement/preuve restent reliés. |
+| **États d'honnêteté épistémique** (`observed`/`measured`/`known_absent`/`unknown`/`not_measured`/`measurement_failed`) | le joyau. Refuser d'assimiler « absent » à « zéro » ou « tourne » à « sain ». |
+| **Loop = unité auto-vérifiante** (objective → observer → health → maintenance) | force chaque capacité à dire comment elle échoue et comment on l'observe. |
+| **Observer indépendant** qui ne croit pas les claims de l'implémentation | attaque le mode d'échec n°1 des agents (succès auto-rapporté). |
+| **1 humain ↔ 1 Citizen AI** | thèse produit claire et assumée (anti-swarm). |
+| **Séparation d'autorité graphe Human/Citizen** | valeur sécurité + design ; le reframe « interface immunitaire » tient. |
+| **Mémoire spatiale — rider le graphe comme un terrain** | pari UX réel pour naviguer un contexte énorme. |
+| **Budget fuel first-class + out-of-fuel fail-loud** | discipline runtime : coût visible, pas de runaway. |
+| **Hystérésis anti-thrashing / anti-rumination** | vrai réflexe de théorie du contrôle sur un vrai problème. |
+
+### 🟡 Average — correct mais dérivatif ou non prouvé
+| idée | réserve |
+|---|---|
+| **« Membrane » au lieu d'API** | surtout un gateway stateful mieux raconté. |
+| **Couches L1–L4** | raisonnable, conventionnel. |
+| **Hoverboard / carver les embeddings** | belle UI potentielle ; le *feel* est totalement non validé. |
+| **Context Sandwiches** | joli nom pour du budget de fenêtre de contexte. |
+| **State machine 10 états + formules de score** | plausible *si* ancré dans des preuves live ; aujourd'hui prose + maths. |
+| **Potards de feel** (`k_slope`, `k_turn`, `k_brake`) | bon instinct (exposer les params tôt), prématuré sans loop qui tourne. |
+| **Tombstone / Killswitch / Aegis** | les seuls « objets magiques » à sémantique réelle (mute node, freeze L1, backpressure). |
+
+### 🔴 Meh — saveur vendue comme architecture, ou sur-ingénierie
+| idée | verdict |
+|---|---|
+| **Rapier 60 Hz pour modéliser la cognition** | sur-ingénierie ; pas besoin d'un solveur de contraintes pour décider d'indexer un doc. |
+| **Portal Gun / Grenade / Slingshot / Prisme / Sablier** | inflation métaphorique : ils *renomment* des ops sans ajouter de capacité. |
+| **Tours corporate & prisons en 3D littérales** | saveur pure ; zéro charge architecturale au-delà de « quarantaine » + « pool de budget ». |
+| **Deli / Incinérateur / Magasin de services comme échoppes** | vibe > fonction. |
+| **Esthétique cyber-liturgique, 128 BPM, chœurs de cathédrale, avatar doré** | superbe mood board, pas le produit. |
+| **Potards `ghost_cold` / `gate_doppler`** | prolifération de paramètres prématurée. |
+| **Le twist « upload de conscience »** | puissant émotionnellement, mais c'est une *motivation*, pas un requirement — et c'est l'histoire qui justifie la sur-ingénierie ci-dessus. À manier avec soin. |

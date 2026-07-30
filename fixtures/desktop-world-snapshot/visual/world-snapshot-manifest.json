@@ -1,0 +1,13 @@
+{
+  "entity_frames": 5,
+  "information_status": "measured",
+  "kind": "desktop_world_snapshot_manifest",
+  "readback_ok": true,
+  "relation_frames": 5,
+  "residency_measured": false,
+  "revision": 0,
+  "store_root": "artifacts/assets/visual-mapping-20260730-001/store",
+  "total_frames": 11,
+  "universe": "00000000000000000000000000007000",
+  "visual_authority_resolved": false
+}

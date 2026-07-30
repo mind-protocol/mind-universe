@@ -1,0 +1,270 @@
+[
+  {
+    "payload": {
+      "message_type": "snapshot",
+      "revision": 0
+    },
+    "protocol_version": 0,
+    "sequence": 1
+  },
+  {
+    "payload": {
+      "entity": {
+        "content_kind": "visual_projection_contract",
+        "generation": 0,
+        "id": "00000000000000000000000000007001",
+        "position_micro": [
+          1304550,
+          -3355317,
+          4800000
+        ],
+        "residency": "not_measured",
+        "symbol": "visual_projection_contract",
+        "visual": {
+          "material": {
+            "color": "#8a97a8",
+            "emissive": "#2b3440",
+            "emissive_intensity_micro": 0,
+            "opacity_micro": 700000,
+            "scale_micro": 1000000
+          },
+          "motion": "still",
+          "primitive": "unknown"
+        }
+      },
+      "message_type": "entity_materialized"
+    },
+    "protocol_version": 0,
+    "sequence": 2
+  },
+  {
+    "payload": {
+      "entity": {
+        "content_kind": "visual_projection_changeset",
+        "generation": 0,
+        "id": "00000000000000000000000000007002",
+        "position_micro": [
+          -4931490,
+          2433188,
+          2400000
+        ],
+        "residency": "not_measured",
+        "symbol": "visual_projection_changeset",
+        "visual": {
+          "material": {
+            "color": "#8a97a8",
+            "emissive": "#2b3440",
+            "emissive_intensity_micro": 0,
+            "opacity_micro": 700000,
+            "scale_micro": 1000000
+          },
+          "motion": "still",
+          "primitive": "unknown"
+        }
+      },
+      "message_type": "entity_materialized"
+    },
+    "protocol_version": 0,
+    "sequence": 3
+  },
+  {
+    "payload": {
+      "entity": {
+        "content_kind": "visual_embodiment_mapping",
+        "generation": 0,
+        "id": "00000000000000000000000000007010",
+        "position_micro": [
+          5760868,
+          1677023,
+          0
+        ],
+        "residency": "not_measured",
+        "symbol": "visual_embodiment_mapping",
+        "visual": {
+          "material": {
+            "color": "#8a97a8",
+            "emissive": "#2b3440",
+            "emissive_intensity_micro": 0,
+            "opacity_micro": 700000,
+            "scale_micro": 1000000
+          },
+          "motion": "still",
+          "primitive": "unknown"
+        }
+      },
+      "message_type": "entity_materialized"
+    },
+    "protocol_version": 0,
+    "sequence": 4
+  },
+  {
+    "payload": {
+      "entity": {
+        "content_kind": "visual_embodiment_catalog",
+        "generation": 0,
+        "id": "00000000000000000000000000007011",
+        "position_micro": [
+          -2855011,
+          -4699884,
+          -2400000
+        ],
+        "residency": "not_measured",
+        "symbol": "visual_embodiment_catalog",
+        "visual": {
+          "material": {
+            "color": "#8a97a8",
+            "emissive": "#2b3440",
+            "emissive_intensity_micro": 0,
+            "opacity_micro": 700000,
+            "scale_micro": 1000000
+          },
+          "motion": "still",
+          "primitive": "unknown"
+        }
+      },
+      "message_type": "entity_materialized"
+    },
+    "protocol_version": 0,
+    "sequence": 5
+  },
+  {
+    "payload": {
+      "entity": {
+        "content_kind": "semantic_type",
+        "generation": 0,
+        "id": "00000000000000000000000000007100",
+        "position_micro": [
+          -700172,
+          3531255,
+          -4800000
+        ],
+        "residency": "not_measured",
+        "symbol": "semantic_type",
+        "visual": {
+          "material": {
+            "color": "#8a97a8",
+            "emissive": "#2b3440",
+            "emissive_intensity_micro": 0,
+            "opacity_micro": 700000,
+            "scale_micro": 1000000
+          },
+          "motion": "still",
+          "primitive": "unknown"
+        }
+      },
+      "message_type": "entity_materialized"
+    },
+    "protocol_version": 0,
+    "sequence": 6
+  },
+  {
+    "payload": {
+      "message_type": "relation_materialized",
+      "relation": {
+        "id": "00000000000000000000000000007200",
+        "predicate": "GOVERNED_BY",
+        "source": "00000000000000000000000000007010",
+        "target": "00000000000000000000000000007001",
+        "visual": {
+          "color": "#5a6675",
+          "emissive": "#1f2731",
+          "emissive_intensity_micro": 0,
+          "lane_separation_micro": 0,
+          "opacity_micro": 500000,
+          "primitive": "unknown",
+          "width_micro": 20000
+        }
+      }
+    },
+    "protocol_version": 0,
+    "sequence": 7
+  },
+  {
+    "payload": {
+      "message_type": "relation_materialized",
+      "relation": {
+        "id": "00000000000000000000000000007201",
+        "predicate": "GOVERNED_BY",
+        "source": "00000000000000000000000000007002",
+        "target": "00000000000000000000000000007001",
+        "visual": {
+          "color": "#5a6675",
+          "emissive": "#1f2731",
+          "emissive_intensity_micro": 0,
+          "lane_separation_micro": 0,
+          "opacity_micro": 500000,
+          "primitive": "unknown",
+          "width_micro": 20000
+        }
+      }
+    },
+    "protocol_version": 0,
+    "sequence": 8
+  },
+  {
+    "payload": {
+      "message_type": "relation_materialized",
+      "relation": {
+        "id": "00000000000000000000000000007202",
+        "predicate": "HAS_PAYLOAD",
+        "source": "00000000000000000000000000007010",
+        "target": "00000000000000000000000000007011",
+        "visual": {
+          "color": "#5a6675",
+          "emissive": "#1f2731",
+          "emissive_intensity_micro": 0,
+          "lane_separation_micro": 0,
+          "opacity_micro": 500000,
+          "primitive": "unknown",
+          "width_micro": 20000
+        }
+      }
+    },
+    "protocol_version": 0,
+    "sequence": 9
+  },
+  {
+    "payload": {
+      "message_type": "relation_materialized",
+      "relation": {
+        "id": "00000000000000000000000000007203",
+        "predicate": "PART_OF",
+        "source": "00000000000000000000000000007010",
+        "target": "00000000000000000000000000007002",
+        "visual": {
+          "color": "#5a6675",
+          "emissive": "#1f2731",
+          "emissive_intensity_micro": 0,
+          "lane_separation_micro": 0,
+          "opacity_micro": 500000,
+          "primitive": "unknown",
+          "width_micro": 20000
+        }
+      }
+    },
+    "protocol_version": 0,
+    "sequence": 10
+  },
+  {
+    "payload": {
+      "message_type": "relation_materialized",
+      "relation": {
+        "id": "00000000000000000000000000007204",
+        "predicate": "PROJECTS_AS",
+        "source": "00000000000000000000000000007100",
+        "target": "00000000000000000000000000007010",
+        "visual": {
+          "color": "#5a6675",
+          "emissive": "#1f2731",
+          "emissive_intensity_micro": 0,
+          "lane_separation_micro": 0,
+          "opacity_micro": 500000,
+          "primitive": "unknown",
+          "width_micro": 20000
+        }
+      }
+    },
+    "protocol_version": 0,
+    "sequence": 11
+  }
+]

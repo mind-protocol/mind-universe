@@ -37,5 +37,7 @@ fn main() -> Result<(), UniverseError> {
 }
 
 fn usage() -> UniverseError {
-    UniverseError::Validation("usage: code_activation <translation-manifest.json> <artifact-dir>".into())
+    UniverseError::Validation(
+        "usage: code_activation <translation-manifest.json> <artifact-dir>".into(),
+    )
 }

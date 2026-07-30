@@ -217,6 +217,29 @@ pub enum Operator {
     Return {
         value: Register,
     },
+    /// Bounded runtime loop latch with ONE controlled back-edge and a REQUIRED
+    /// iteration budget held in graph data.
+    ///
+    /// This operator sits at the bottom of a loop body and evaluates an
+    /// epistemic boolean `condition` interpreted as "until": a `true` closes the
+    /// loop and transfers control forward to `exit_next`; a `false` transfers
+    /// control to `loop_next` (the only place a backward target is permitted)
+    /// after charging one iteration against `max_iterations`. When the charged
+    /// iterations would exceed `max_iterations` the VM deterministically traps;
+    /// it never silently exits. Every traversal also consumes one unit of fuel,
+    /// so the loop stays fuel-bounded independently of the iteration budget.
+    ///
+    /// The condition is never coerced: an `Unknown`, `KnownAbsent`,
+    /// `NotMeasured`, or `MeasurementFailed` condition traps rather than being
+    /// read as continue or stop, preserving the epistemic distinction.
+    /// `max_iterations` is graph data and a zero or absent budget is rejected at
+    /// validation, mirroring how `Call` rejects `max_depth == 0`.
+    RepeatUntilWithLimit {
+        condition: Register,
+        loop_next: u32,
+        exit_next: u32,
+        max_iterations: u32,
+    },
 }
 
 impl Operator {
@@ -244,7 +267,10 @@ impl Operator {
             | Self::MakeRecord { output, .. }
             | Self::Propose { output, .. }
             | Self::Call { output, .. } => Some(*output),
-            Self::Branch { .. } | Self::BranchOnEvidence { .. } | Self::Return { .. } => None,
+            Self::Branch { .. }
+            | Self::BranchOnEvidence { .. }
+            | Self::Return { .. }
+            | Self::RepeatUntilWithLimit { .. } => None,
         }
     }
 
@@ -280,6 +306,7 @@ impl Operator {
             }
             Self::Propose { command, .. } => vec![*command],
             Self::Return { value } => vec![*value],
+            Self::RepeatUntilWithLimit { condition, .. } => vec![*condition],
         }
     }
 }
