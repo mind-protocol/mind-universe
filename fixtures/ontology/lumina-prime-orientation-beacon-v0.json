@@ -1,0 +1,814 @@
+{
+  "id": "space:l2:lumina-prime:orientation-beacon-v0",
+  "node_type": "space",
+  "subtype": "orientation_beacon",
+  "content": {
+    "contractKind": "self_verifying_loop",
+    "name": "Lumina Prime Orientation Beacon v0",
+    "parent_scope": {
+      "classification": "contained",
+      "parent_space": "space:l2:lumina-prime:city-v0",
+      "justification": "The beacon is a unique civic infrastructure loop structurally contained by Lumina Prime."
+    },
+    "runtime_moment_subtypes": [
+      "validation_run",
+      "health_assessment"
+    ],
+    "native_law_boundary": "AtomDynamics remains ontology-blind and knows only AtomSpec, AtomBond and support/inhibit/neutral. Location, quadrant, distance, city identity and emergency semantics are typed payload data transformed by Things.",
+    "normal_modes": [
+      "zone_entry",
+      "explicit_locate",
+      "sector_change"
+    ],
+    "emergency_port": {
+      "port_id": "port:l2:lumina-prime:orientation-beacon:emergency-broadcast-v0",
+      "accepted_target_subtype": "emergency_broadcast_authorization",
+      "accepted_relations": [
+        "USES",
+        "DEPENDS_ON"
+      ],
+      "default_state": "unlinked",
+      "rule": "An unlinked port cannot broadcast. A linked node arms the branch only when its identity, authority, scope, message, freshness and non-supersession are measured."
+    }
+  },
+  "members": [
+    {
+      "id": "objective:l2:lumina-prime:orientation-beacon-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "For each fresh admitted orientation trigger, exactly one situated_orientation stimulus is delivered to the addressed Citizen with the exact city identity, quadrant, grid sector, signed east/north offsets and integer ground distance derived from fresh position evidence. Missing or stale evidence remains explicit. Emergency broadcast occurs only through a valid linked authorization node."
+      }
+    },
+    {
+      "id": "pattern:l2:lumina-prime:self-verifying-gps-beacon-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "A persistent Built civic beacon contains two bounded atom circuits: (1) a normal situated-orientation gate and (2) an optional emergency-broadcast gate. Energy only gates evidence flow; a deterministic spatial resolver computes location from integer poses. An independent observer recomputes the fix, validates the event ledger and delivery receipts, then derives a health vector from fresh evidence."
+      }
+    },
+    {
+      "id": "vocabulary:l2:lumina-prime:orientation-beacon-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "BuiltPose": "Persistent authored construction pose of the beacon. It is observed from the canonical Universe and has precedence over Derived or generated layout.",
+          "CitizenPose": "Fresh measured Citizen pose in the Lumina Prime civic coordinate frame.",
+          "CoordinateFrame": {
+            "origin": "BuiltPose of Balise Zéro",
+            "east_axis": "+X",
+            "north_axis": "+Z",
+            "up_axis": "+Y",
+            "unit": "millimetre integers"
+          },
+          "SpatialFix": [
+            "city_id",
+            "city_name",
+            "coordinate_frame_id",
+            "east_mm",
+            "north_mm",
+            "elevation_mm",
+            "distance_ground_mm",
+            "quadrant",
+            "sector_id",
+            "source_beacon_id",
+            "position_status",
+            "observed_at",
+            "valid_until"
+          ],
+          "Quadrant": [
+            "CENTER",
+            "NE",
+            "NW",
+            "SE",
+            "SW"
+          ],
+          "OrientationTrigger": [
+            "zone_entry",
+            "explicit_locate",
+            "sector_change"
+          ],
+          "SituatedOrientation": "Typed local stimulus carrying a machine-readable SpatialFix and a concise human-readable orientation message.",
+          "EmergencyBroadcastAuthorization": "A separately linked self-verifying authority node defining issuer, severity, message, affected zones, validity window, repetition and acknowledgement policy.",
+          "Fog": "Unknown, not_measured or rejected position/energy evidence. Never rendered as a precise fix.",
+          "EntryToken": "Unique token preventing more than one normal emission for the same trigger event."
+        }
+      }
+    },
+    {
+      "id": "behavior:l2:lumina-prime:orientation-beacon-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "A Built beacon pose, a fresh measured Citizen pose, a unique admitted trigger token, an observed Lumina Prime identity, an admitted emission policy, and measured atom energy.",
+        "when": "A Citizen enters the beacon zone, explicitly requests location, crosses a sector boundary, or a valid linked emergency authorization becomes active.",
+        "then": [
+          "Recompute signed east/north offsets in integer millimetres.",
+          "Compute integer ground distance with an integer square root.",
+          "Derive quadrant and sector from the civic coordinate frame.",
+          "Emit at most one typed situated_orientation stimulus per normal trigger token.",
+          "Produce delivery and emission-ledger receipts.",
+          "Run the independent observer and structured evaluation AST.",
+          "Produce fresh validation_run and health_assessment moments."
+        ],
+        "forbidden": [
+          "inventing a quadrant, sector, bearing or distance when position evidence is absent",
+          "using camera pose, embeddings or generated layout as civic position authority",
+          "overwriting a Built beacon pose with Derived or generated coordinates",
+          "encoding distance or semantic meaning as atom energy",
+          "streaming authored, derived, unknown or not_measured bond energy",
+          "emitting twice for one EntryToken",
+          "claiming delivery from renderer animation or an emitter process that merely runs",
+          "broadcasting emergency content without an exact valid linked authorization node",
+          "broadcasting outside the measured affected zone",
+          "pre-creating validation_run or health_assessment",
+          "converting stale, unknown, not_measured or measurement_failed evidence into success"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l2:lumina-prime:orientation-beacon-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "resolve the unique parent city Space and exact beacon BuiltPose",
+          "observe the exact city identity and civic coordinate frame",
+          "admit a fresh trigger token and measured Citizen pose through the membrane",
+          "preserve unknown, not_measured, stale and measurement_failed without substitution",
+          "compute dx = citizen.x - beacon.x and dz = citizen.z - beacon.z using signed integers",
+          "compute distance_ground_mm = isqrt(dx*dx + dz*dz)",
+          "derive CENTER when distance_ground_mm <= center_radius_mm; otherwise derive quadrant from signs of dx and dz",
+          "derive sector_id from floor-divided east/north grid coordinates using deterministic signed integer rules",
+          "assemble a typed SpatialFix with source and freshness metadata",
+          "run the normal atom circuit until quiescence",
+          "emit exactly one situated_orientation stimulus if and only if the orientation gate fires",
+          "persist delivery_receipt and emission_ledger receipt",
+          "when the emergency port is linked, independently validate the target authorization loop",
+          "run the emergency atom circuit only when authority, message, scope, freshness, zone match and non-supersession are measured",
+          "run an independent observer over source evidence, atom ledgers, payloads and receipts",
+          "evaluate the canonical structured AST",
+          "derive health from fresh measured dimensions"
+        ],
+        "spatial_rules": {
+          "integer_only": true,
+          "distance": "ground-plane Euclidean distance via deterministic integer square root",
+          "quadrant_axes": {
+            "east": "+X",
+            "north": "+Z"
+          },
+          "center_radius_mm": 5000,
+          "sector_size_mm": 100000,
+          "sector_encoding": "signed grid cell relative to Balise Zéro, rendered as E{east_cell}:N{north_cell}"
+        },
+        "epistemic_precedence": [
+          "Built",
+          "Observed",
+          "Measured",
+          "Derived",
+          "Unknown"
+        ],
+        "evaluation": "structured_expression_ast",
+        "python_escape_hatch": "forbidden_by_default"
+      }
+    },
+    {
+      "id": "code:l2:lumina-prime:orientation-beacon-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "authority": "Graph-native CodeDefinition for the beacon loop. This JSON file is a portable materialized projection, not independent semantic authority.",
+        "language": "mind-ir+atom-fixture",
+        "entrypoints": [
+          "resolve_spatial_fix",
+          "run_orientation_atoms",
+          "run_emergency_atoms",
+          "emit_situated_stimulus",
+          "observe_orientation_beacon",
+          "evaluate_orientation_beacon_ast"
+        ],
+        "stimulus_schema": {
+          "subtype": "situated_orientation",
+          "required": [
+            "citizen_id",
+            "trigger_id",
+            "mode",
+            "spatial_fix",
+            "source_beacon_id",
+            "emitted_at"
+          ],
+          "human_message_template": "Vous êtes à {city_name}. Quadrant {quadrant}, secteur {sector_id}, à {distance_m} m de Balise Zéro."
+        },
+        "normal_atom_circuit": {
+          "atoms": [
+            {
+              "key": "trigger_measured",
+              "roleAxis": "moment",
+              "threshold": 100,
+              "seed_energy": 0
+            },
+            {
+              "key": "presence_or_request_admitted",
+              "roleAxis": "moment",
+              "threshold": 100,
+              "seed_energy": 0
+            },
+            {
+              "key": "beacon_built_pose_observed",
+              "roleAxis": "thing",
+              "threshold": 100,
+              "seed_energy": 0
+            },
+            {
+              "key": "citizen_pose_measured",
+              "roleAxis": "moment",
+              "threshold": 100,
+              "seed_energy": 0
+            },
+            {
+              "key": "spatial_fix_resolver",
+              "roleAxis": "thing",
+              "threshold": 200,
+              "seed_energy": 0,
+              "required_supports": [
+                "beacon_pose_to_resolver",
+                "citizen_pose_to_resolver"
+              ]
+            },
+            {
+              "key": "city_identity_observed",
+              "roleAxis": "narrative",
+              "threshold": 100,
+              "seed_energy": 0
+            },
+            {
+              "key": "emission_policy_admitted",
+              "roleAxis": "narrative",
+              "threshold": 100,
+              "seed_energy": 0
+            },
+            {
+              "key": "entry_token_fresh",
+              "roleAxis": "moment",
+              "threshold": 100,
+              "seed_energy": 0
+            },
+            {
+              "key": "orientation_gate",
+              "roleAxis": "thing",
+              "threshold": 600,
+              "seed_energy": 0,
+              "required_supports": [
+                "trigger_to_gate",
+                "presence_to_gate",
+                "resolver_to_gate",
+                "identity_to_gate",
+                "policy_to_gate",
+                "entry_token_to_gate"
+              ]
+            },
+            {
+              "key": "stimulus_emitter",
+              "roleAxis": "thing",
+              "threshold": 500,
+              "seed_energy": 0
+            },
+            {
+              "key": "delivery_receipt",
+              "roleAxis": "moment",
+              "threshold": 400,
+              "seed_energy": 0
+            },
+            {
+              "key": "emission_ledger",
+              "roleAxis": "moment",
+              "threshold": 100,
+              "seed_energy": 0
+            }
+          ],
+          "bonds": [
+            {
+              "key": "beacon_pose_to_resolver",
+              "source": "beacon_built_pose_observed",
+              "target": "spatial_fix_resolver",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "citizen_pose_to_resolver",
+              "source": "citizen_pose_measured",
+              "target": "spatial_fix_resolver",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "trigger_to_gate",
+              "source": "trigger_measured",
+              "target": "orientation_gate",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "presence_to_gate",
+              "source": "presence_or_request_admitted",
+              "target": "orientation_gate",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "resolver_to_gate",
+              "source": "spatial_fix_resolver",
+              "target": "orientation_gate",
+              "polarity": "support",
+              "energy": 200,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "identity_to_gate",
+              "source": "city_identity_observed",
+              "target": "orientation_gate",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "policy_to_gate",
+              "source": "emission_policy_admitted",
+              "target": "orientation_gate",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "entry_token_to_gate",
+              "source": "entry_token_fresh",
+              "target": "orientation_gate",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "gate_to_emitter",
+              "source": "orientation_gate",
+              "target": "stimulus_emitter",
+              "polarity": "support",
+              "energy": 500,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "emitter_to_delivery",
+              "source": "stimulus_emitter",
+              "target": "delivery_receipt",
+              "polarity": "support",
+              "energy": 400,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "emitter_to_ledger",
+              "source": "stimulus_emitter",
+              "target": "emission_ledger",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            }
+          ],
+          "external_measured_injections": {
+            "trigger_measured": 100,
+            "presence_or_request_admitted": 100,
+            "beacon_built_pose_observed": 100,
+            "citizen_pose_measured": 100,
+            "city_identity_observed": 100,
+            "emission_policy_admitted": 100,
+            "entry_token_fresh": 100
+          }
+        },
+        "emergency_atom_circuit": {
+          "optional": true,
+          "activation": "exact linked authorization node through USES or DEPENDS_ON",
+          "atoms": [
+            {
+              "key": "emergency_node_linked",
+              "roleAxis": "moment",
+              "threshold": 100,
+              "seed_energy": 0
+            },
+            {
+              "key": "authority_measured",
+              "roleAxis": "narrative",
+              "threshold": 100,
+              "seed_energy": 0
+            },
+            {
+              "key": "message_validated",
+              "roleAxis": "thing",
+              "threshold": 100,
+              "seed_energy": 0
+            },
+            {
+              "key": "broadcast_fresh",
+              "roleAxis": "moment",
+              "threshold": 100,
+              "seed_energy": 0
+            },
+            {
+              "key": "affected_zone_match",
+              "roleAxis": "thing",
+              "threshold": 100,
+              "seed_energy": 0
+            },
+            {
+              "key": "not_superseded",
+              "roleAxis": "moment",
+              "threshold": 100,
+              "seed_energy": 0
+            },
+            {
+              "key": "emergency_gate",
+              "roleAxis": "thing",
+              "threshold": 600,
+              "seed_energy": 0,
+              "required_supports": [
+                "linked_to_emergency_gate",
+                "authority_to_emergency_gate",
+                "message_to_emergency_gate",
+                "fresh_to_emergency_gate",
+                "zone_to_emergency_gate",
+                "supersession_to_emergency_gate"
+              ]
+            },
+            {
+              "key": "emergency_emitter",
+              "roleAxis": "thing",
+              "threshold": 500,
+              "seed_energy": 0
+            },
+            {
+              "key": "emergency_delivery_ledger",
+              "roleAxis": "moment",
+              "threshold": 400,
+              "seed_energy": 0
+            },
+            {
+              "key": "coverage_ledger",
+              "roleAxis": "moment",
+              "threshold": 100,
+              "seed_energy": 0
+            }
+          ],
+          "bonds": [
+            {
+              "key": "linked_to_emergency_gate",
+              "source": "emergency_node_linked",
+              "target": "emergency_gate",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "authority_to_emergency_gate",
+              "source": "authority_measured",
+              "target": "emergency_gate",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "message_to_emergency_gate",
+              "source": "message_validated",
+              "target": "emergency_gate",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "fresh_to_emergency_gate",
+              "source": "broadcast_fresh",
+              "target": "emergency_gate",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "zone_to_emergency_gate",
+              "source": "affected_zone_match",
+              "target": "emergency_gate",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "supersession_to_emergency_gate",
+              "source": "not_superseded",
+              "target": "emergency_gate",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "emergency_gate_to_emitter",
+              "source": "emergency_gate",
+              "target": "emergency_emitter",
+              "polarity": "support",
+              "energy": 500,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "emergency_emitter_to_delivery",
+              "source": "emergency_emitter",
+              "target": "emergency_delivery_ledger",
+              "polarity": "support",
+              "energy": 400,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "emergency_emitter_to_coverage",
+              "source": "emergency_emitter",
+              "target": "coverage_ledger",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "implementation:l2:lumina-prime:orientation-beacon-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "status": "materialized",
+        "artifact": "lumina-prime-orientation-beacon-v0.json",
+        "graph_status": "not_written",
+        "wiring_status": "not_wired",
+        "runtime_status": "not_running",
+        "verification_status": "not_measured",
+        "honesty": "The portable loop definition is materialized and structurally checked locally. It has not been upserted into the canonical Mind graph, wired to universe-physics, executed in Lumina Prime, or proven healthy."
+      }
+    },
+    {
+      "id": "justification:l2:lumina-prime:orientation-beacon-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": [
+          "A civic beacon is useful only when its position claim and delivery are independently provable.",
+          "Signed coordinates plus quadrant, sector and ground distance provide a real GPS-like fix rather than a decorative label.",
+          "Distance remains spatial data; atom energy remains conserved gating energy.",
+          "Built pose precedence preserves the fact that the city was constructed rather than regenerated.",
+          "A separately linked emergency authority keeps exceptional public speech explicit, revocable and auditable."
+        ],
+        "rejected": [
+          "using visual distance from the camera because camera projection is not civic location",
+          "using embedding distance because semantic proximity is not geometric position",
+          "encoding metres as bond energy because energy and spatial measurement are distinct dimensions",
+          "always-on emergency capability because it makes every beacon a silent sovereign broadcaster",
+          "health inferred from process liveness or glowing animation",
+          "a single opaque health score that collapses unrelated failures"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:lumina-prime:orientation-beacon-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "structured_expression_ast",
+        "scenarios": [
+          "fresh_NE_fix",
+          "fresh_NW_fix",
+          "fresh_SE_fix",
+          "fresh_SW_fix",
+          "center_fix",
+          "explicit_locate_request",
+          "sector_change_reemit",
+          "duplicate_entry_token",
+          "missing_citizen_pose",
+          "stale_citizen_pose",
+          "missing_beacon_built_pose",
+          "derived_pose_attempts_to_override_built",
+          "forged_quadrant",
+          "forged_distance",
+          "unmeasured_energy",
+          "delivery_missing",
+          "emergency_port_unlinked",
+          "emergency_link_valid",
+          "emergency_link_invalid_authority",
+          "emergency_message_stale",
+          "emergency_outside_affected_zone",
+          "emergency_superseded"
+        ],
+        "invariants": [
+          "distance_ground_mm equals independent integer recomputation",
+          "quadrant equals independent sign/center-radius recomputation",
+          "sector_id equals independent signed grid recomputation",
+          "one normal delivery per EntryToken",
+          "Built beacon pose beats Derived or generated pose",
+          "all streamed bond energy is measured",
+          "every conducted bond conducts once",
+          "atom energy is conserved",
+          "delivery receipt corresponds to the exact emitted payload",
+          "no emergency output without a valid exact linked authorization"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:lumina-prime:orientation-beacon-observer-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "target": "observability_algorithm:l2:lumina-prime:orientation-beacon-v0",
+        "tests": [
+          "detect a distance altered by one millimetre",
+          "detect a quadrant inconsistent with signed offsets",
+          "detect a generated pose replacing BuiltPose",
+          "detect duplicate delivery for one EntryToken",
+          "detect false delivery receipt",
+          "detect emergency emission with no linked node",
+          "detect valid link with stale or unmeasured authority",
+          "detect out-of-zone emergency delivery",
+          "detect duplicate bond conduction",
+          "detect non-conserved energy",
+          "never convert absent evidence into success",
+          "return measurement_failed when observer execution fails"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l2:lumina-prime:orientation-beacon-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Reads canonical city identity, beacon BuiltPose, raw Citizen pose evidence, trigger token, atom event ledgers, emitted payloads, delivery receipts and optional emergency authorization. It does not trust runtime-declared quadrant, distance, delivery, coverage or health.",
+        "checks": [
+          "unique valid parent Space",
+          "exact beacon identity and BuiltPose",
+          "pose freshness and information status",
+          "integer offset, distance, quadrant and sector recomputation",
+          "Built-over-Derived precedence",
+          "trigger uniqueness and deduplication",
+          "normal atom fire preconditions",
+          "single bond conduction",
+          "integer energy conservation",
+          "measured-only membrane admission",
+          "quiescence",
+          "payload-to-receipt integrity",
+          "actual delivery evidence",
+          "exact emergency link resolution",
+          "emergency authority, freshness, scope and non-supersession",
+          "coverage ledger completeness",
+          "absence preserved as unknown/not_measured",
+          "evidence freshness"
+        ]
+      }
+    },
+    {
+      "id": "metric:l2:lumina-prime:orientation-beacon-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "dimensions": [
+          "city_identity_accuracy",
+          "beacon_built_pose_integrity",
+          "citizen_pose_freshness_ms",
+          "east_offset_error_mm",
+          "north_offset_error_mm",
+          "distance_error_mm",
+          "quadrant_accuracy",
+          "sector_accuracy",
+          "normal_delivery_success_rate",
+          "duplicate_emission_rate",
+          "out_of_scope_emission_rate",
+          "payload_receipt_integrity",
+          "measured_stream_only_rate",
+          "energy_conservation_error_u64",
+          "single_conduction_accuracy",
+          "quiescence_reached",
+          "not_measured_honesty_rate",
+          "emergency_authorization_accuracy",
+          "emergency_coverage_rate",
+          "unauthorized_broadcast_rate",
+          "superseded_broadcast_rate",
+          "observer_fault_detection_rate",
+          "evidence_freshness_ms"
+        ]
+      }
+    },
+    {
+      "id": "health:l2:lumina-prime:orientation-beacon-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "states": [
+          "healthy",
+          "degraded",
+          "stale",
+          "unknown",
+          "not_measured",
+          "measurement_failed"
+        ],
+        "derivation": {
+          "healthy": "All required fresh validation scenarios pass; spatial errors are zero; delivery receipts match actual delivery; energy is conserved; no unauthorized or duplicate emission exists.",
+          "degraded": "Fresh evidence exists but at least one non-catastrophic dimension violates its bound.",
+          "stale": "The latest otherwise valid evidence exceeds the configured freshness window.",
+          "unknown": "Required evidence cannot be resolved to a known state.",
+          "not_measured": "No fresh validation run has measured the required dimensions.",
+          "measurement_failed": "The observer or evaluator failed to produce a trustworthy measurement."
+        },
+        "maintenance": [
+          "retry",
+          "inspect_atom_event_ledger",
+          "inspect_spatial_evidence",
+          "suspend_normal_emission",
+          "suspend_emergency_broadcast",
+          "recalibrate_center_radius",
+          "recalibrate_sector_size",
+          "relink_coordinate_frame",
+          "relink_emergency_authorization",
+          "rematerialize_code_projection",
+          "reconcile_universe_physics_runtime",
+          "ask_human"
+        ]
+      }
+    },
+    {
+      "id": "port:l2:lumina-prime:orientation-beacon:emergency-broadcast-v0",
+      "node_type": "thing",
+      "subtype": "capability_port",
+      "content": {
+        "name": "Emergency broadcast link port",
+        "state": "unlinked",
+        "accepted_target_subtype": "emergency_broadcast_authorization",
+        "accepted_relations": [
+          "USES",
+          "DEPENDS_ON"
+        ],
+        "shape_contract": "exact_authority_scope_message_freshness_coverage",
+        "effect_when_unlinked": "none"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "space:l2:lumina-prime:orientation-beacon-v0",
+      "predicate": "PART_OF",
+      "target": "space:l2:lumina-prime:city-v0"
+    },
+    {
+      "source": "space:l2:lumina-prime:orientation-beacon-v0",
+      "predicate": "IMPLEMENTED_IN",
+      "target": "implementation:l2:lumina-prime:orientation-beacon-v0"
+    },
+    {
+      "source": "space:l2:lumina-prime:orientation-beacon-v0",
+      "predicate": "DEFINED_BY_CODE",
+      "target": "code:l2:lumina-prime:orientation-beacon-v0"
+    },
+    {
+      "source": "code:l2:lumina-prime:orientation-beacon-v0",
+      "predicate": "IMPLEMENTED_BY",
+      "target": "implementation:l2:lumina-prime:orientation-beacon-v0"
+    },
+    {
+      "source": "pattern:l2:lumina-prime:self-verifying-gps-beacon-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l2:lumina-prime:orientation-beacon-v0"
+    },
+    {
+      "source": "behavior:l2:lumina-prime:orientation-beacon-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:lumina-prime:orientation-beacon-v0"
+    },
+    {
+      "source": "implementation:l2:lumina-prime:orientation-beacon-v0",
+      "predicate": "OBSERVED_BY",
+      "target": "observability_algorithm:l2:lumina-prime:orientation-beacon-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:lumina-prime:orientation-beacon-v0",
+      "predicate": "PRODUCES",
+      "target": "metric:l2:lumina-prime:orientation-beacon-v0"
+    },
+    {
+      "source": "metric:l2:lumina-prime:orientation-beacon-v0",
+      "predicate": "FEEDS",
+      "target": "health:l2:lumina-prime:orientation-beacon-v0"
+    },
+    {
+      "source": "objective:l2:lumina-prime:orientation-beacon-v0",
+      "predicate": "SUPPORTS",
+      "target": "space:l2:lumina-prime:orientation-beacon-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:lumina-prime:orientation-beacon-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:lumina-prime:orientation-beacon-observer-v0"
+    }
+  ]
+}
