@@ -258,6 +258,222 @@ pub fn open_behavior_bond_authority_store(
     })
 }
 
+/// A parsed, contract-checked `mind-universe-authority-fixture` envelope with
+/// arbitrary keys. Unlike [`BehaviorBondAuthorityFixture`], this carries no
+/// hardcoded key expectations, so it can install any graph-authored loop.
+#[derive(Debug, Deserialize)]
+struct AuthorityFixture {
+    contract: String,
+    version: u16,
+    universe: UniverseId,
+    #[serde(default)]
+    symbols: Vec<String>,
+    entities: Vec<SeedEntity>,
+    #[serde(default)]
+    relations: Vec<SeedRelation>,
+}
+
+/// The committed result of installing a generic authority fixture on top of the
+/// canonical ontology seed. This is bootstrap tooling: it installs
+/// graph-authored fixtures deterministically and hides no ontology policy (all
+/// activation semantics stay in `OntologyRegistry::load`).
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct AuthorityFixtureInstall {
+    pub snapshot: UniverseSnapshot,
+    pub receipt: CommitReceipt,
+    /// Keys of entities whose content `kind` is `"ontology_changeset"`.
+    pub change_set_keys: Vec<EntityKey>,
+    pub installed_entities: usize,
+    pub installed_relations: usize,
+}
+
+/// Installs the canonical ontology seed into an empty store, then applies ANY
+/// `mind-universe-authority-fixture` as one additive `UniverseTransaction`
+/// committed at a tick boundary. Interns `symbols[] + entity.symbol +
+/// relation.predicate` deterministically. Accepts arbitrary keys; it only
+/// refuses to overwrite base entities/relations or to reference an unknown
+/// endpoint, so it can never silently rewrite canonical state.
+///
+/// It does NOT run `OntologyRegistry::load`; activation is verified
+/// independently by reopening the store (see [`open_authority_store`]).
+pub fn install_authority_fixture(
+    fixture_path: impl AsRef<Path>,
+    store_root: impl AsRef<Path>,
+) -> Result<AuthorityFixtureInstall, UniverseError> {
+    let fixture_path = fixture_path.as_ref();
+    let bytes = fs::read(fixture_path).map_err(|error| UniverseError::Io(error.to_string()))?;
+    let fixture: AuthorityFixture = serde_json::from_slice(&bytes)
+        .map_err(|error| UniverseError::CorruptContent(error.to_string()))?;
+    if fixture.contract != "mind-universe-authority-fixture" || fixture.version != 0 {
+        return Err(UniverseError::UnsupportedVersion(fixture.version));
+    }
+
+    let seed = load_seed(repository_path("fixtures/ontology/canonical-ontology.json"))?;
+    if fixture.universe != seed.universe {
+        return Err(validation(
+            "authority fixture targets a different Universe than the canonical seed",
+        ));
+    }
+
+    let store = UniverseStore::open(store_root.as_ref())?;
+    let mut snapshot = store.install_seed(&seed)?;
+
+    // Additive-only structural guard: never overwrite base graph, never dangle.
+    let base_entities = snapshot
+        .entities
+        .iter()
+        .map(|entity| entity.key)
+        .collect::<BTreeSet<_>>();
+    let base_relations = snapshot
+        .relations
+        .iter()
+        .map(|relation| relation.key)
+        .collect::<BTreeSet<_>>();
+    let mut fixture_entities = BTreeSet::new();
+    for entity in &fixture.entities {
+        if !fixture_entities.insert(entity.key) {
+            return Err(validation(format!(
+                "authority fixture has duplicate entity key {}",
+                entity.key
+            )));
+        }
+        if base_entities.contains(&entity.key) {
+            return Err(validation(format!(
+                "authority fixture entity {} overwrites a base entity",
+                entity.key
+            )));
+        }
+    }
+    let mut fixture_relations = BTreeSet::new();
+    for relation in &fixture.relations {
+        if !fixture_relations.insert(relation.key) {
+            return Err(validation(format!(
+                "authority fixture has duplicate relation key {}",
+                relation.key
+            )));
+        }
+        if base_relations.contains(&relation.key) {
+            return Err(validation(format!(
+                "authority fixture relation {} overwrites a base relation",
+                relation.key
+            )));
+        }
+    }
+    let known_entities = base_entities
+        .union(&fixture_entities)
+        .copied()
+        .collect::<BTreeSet<_>>();
+    for relation in &fixture.relations {
+        if !known_entities.contains(&relation.source) || !known_entities.contains(&relation.target)
+        {
+            return Err(validation(format!(
+                "authority fixture relation {} has an unknown endpoint",
+                relation.key
+            )));
+        }
+    }
+
+    let mut requested = fixture.symbols.clone();
+    requested.extend(fixture.entities.iter().map(|entity| entity.symbol.clone()));
+    requested.extend(
+        fixture
+            .relations
+            .iter()
+            .map(|relation| relation.predicate.clone()),
+    );
+    let symbol_plan = snapshot.plan_symbol_interning(&requested)?;
+    let symbol_ids = requested
+        .iter()
+        .map(|symbol| {
+            symbol_plan
+                .assignments
+                .get(symbol)
+                .copied()
+                .map(|id| (symbol.as_str(), id))
+                .ok_or_else(|| validation(format!("fixture symbol {symbol} was not planned")))
+        })
+        .collect::<Result<BTreeMap<_, _>, _>>()?;
+
+    let mut commands = Vec::with_capacity(
+        usize::from(!symbol_plan.additions.is_empty())
+            + fixture.entities.len()
+            + fixture.relations.len(),
+    );
+    if !symbol_plan.additions.is_empty() {
+        commands.push(UniverseCommand::InternSymbols {
+            symbols: symbol_plan.additions,
+        });
+    }
+    let mut change_set_keys = Vec::new();
+    for entity in &fixture.entities {
+        if entity.content.get("kind").and_then(serde_json::Value::as_str)
+            == Some("ontology_changeset")
+        {
+            change_set_keys.push(entity.key);
+        }
+        commands.push(UniverseCommand::PutEntity {
+            entity: EntityRecord {
+                key: entity.key,
+                generation: entity.generation,
+                symbol: symbol_ids[entity.symbol.as_str()],
+                content: Some(store.append_content(&entity.content)?),
+            },
+        });
+    }
+    for relation in &fixture.relations {
+        commands.push(UniverseCommand::PutRelation {
+            relation: RelationRecord {
+                key: relation.key,
+                generation: relation.generation,
+                source: relation.source,
+                target: relation.target,
+                predicate: symbol_ids[relation.predicate.as_str()],
+                content: relation
+                    .content
+                    .as_ref()
+                    .map(|content| store.append_content(content))
+                    .transpose()?,
+            },
+        });
+    }
+
+    let stem = fixture_path
+        .file_stem()
+        .and_then(|stem| stem.to_str())
+        .unwrap_or("authority-fixture");
+    let transaction = UniverseTransaction::prepare(
+        &snapshot,
+        UniverseWriteSet {
+            base_revision: snapshot.revision,
+            idempotency_key: format!("fixture:authority:{stem}:v1"),
+            causal_ancestry: vec![format!("changeset:{stem}")],
+            commands,
+        },
+    )?;
+    let boundary_tick = Tick(snapshot.tick.0 + 1);
+    let receipt = transaction.commit(&store, &mut snapshot, boundary_tick)?;
+    Ok(AuthorityFixtureInstall {
+        installed_entities: fixture.entities.len(),
+        installed_relations: fixture.relations.len(),
+        change_set_keys,
+        snapshot,
+        receipt,
+    })
+}
+
+/// Independently reopens a store from disk in a fresh [`UniverseStore`], replays
+/// it, and loads the [`OntologyRegistry`]. Returns the reconstructed snapshot
+/// and registry so callers can read back activation state without trusting the
+/// installer's own in-memory snapshot.
+pub fn open_authority_store(
+    store_root: impl AsRef<Path>,
+) -> Result<(UniverseSnapshot, OntologyRegistry), UniverseError> {
+    let store = UniverseStore::open(store_root)?;
+    let snapshot = store.replay(store.load_snapshot()?)?;
+    let registry = OntologyRegistry::load(&store, &snapshot, OntologyLoadBudget::default())?;
+    Ok((snapshot, registry))
+}
+
 fn load_behavior_bond_authority_fixture() -> Result<BehaviorBondAuthorityFixture, UniverseError> {
     let bytes = fs::read(repository_path(
         "fixtures/ontology/behavior-bond-authority.json",

@@ -13,7 +13,7 @@ universe-transactions = { path = "../universe-transactions" }
 universe-ir = { path = "../universe-ir" }
 universe-compiler = { path = "../universe-compiler" }
 universe-vm = { path = "../universe-vm" }
-postgres = { version = "0.19", optional = true }
+postgres = { version = "0.19", optional = true, features = ["with-serde_json-1"] }
 
 [features]
 # Live, read-only PostgreSQL source connector. Kept off by default so the
@@ -23,6 +23,10 @@ live-postgres = ["dep:postgres"]
 
 [[bin]]
 name = "postgres_census"
+required-features = ["live-postgres"]
+
+[[bin]]
+name = "postgres_import"
 required-features = ["live-postgres"]
 
 [dev-dependencies]

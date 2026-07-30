@@ -1,0 +1,15 @@
+{
+  "batch_id": "citizen-world-batch-2",
+  "delta_entity_upserts": 1,
+  "delta_frames": 2,
+  "delta_relation_upserts": 1,
+  "entities_after": 4,
+  "entities_before": 4,
+  "from_revision": 1,
+  "information_status": "measured",
+  "kind": "desktop_world_delta_manifest",
+  "newly_committed": false,
+  "to_revision": 1,
+  "vega_present": true,
+  "whole_universe_in_delta": false
+}

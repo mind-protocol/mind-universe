@@ -1,0 +1,8 @@
+[package]
+name = "universe-stream-bridge"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+universe-core = { path = "../universe-core" }
+universe-protocol = { path = "../universe-protocol" }

@@ -16,3 +16,5 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 tauri = { version = "2", features = [] }
+universe-protocol = { path = "../../../crates/universe-protocol" }
+universe-stream-bridge = { path = "../../../crates/universe-stream-bridge" }

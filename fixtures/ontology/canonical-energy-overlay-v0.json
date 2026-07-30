@@ -1,0 +1,14 @@
+{
+  "overlay": "canonical-energy-overlay-v0",
+  "note": "AUTHORED, UNCALIBRATED integer transfer_energy per canonical relation-predicate. Committed into the store and read back with content-hash verification => measured PROVENANCE (what universe-protocol EnergyTransferMessage::validate requires: epistemic == Measured), NOT fitted-to-data calibration. The magnitudes are chosen, not measured; only their provenance is measured. Kept equal to round(|polarity[0]|*100) so the ride's attractor matches the derived ride: only provenance changed.",
+  "profile_id": "authored_uncalibrated_v0",
+  "status": "active_overlay",
+  "profiles": [
+    { "predicate": "DEFINES", "transfer_energy": 90 },
+    { "predicate": "GROUNDS", "transfer_energy": 85 },
+    { "predicate": "ADDRESSES", "transfer_energy": 85 },
+    { "predicate": "DERIVED_FROM", "transfer_energy": 55 },
+    { "predicate": "SUBCASE_OF", "transfer_energy": 50 },
+    { "predicate": "PART_OF", "transfer_energy": 45 }
+  ]
+}

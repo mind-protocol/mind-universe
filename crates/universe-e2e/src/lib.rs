@@ -2,12 +2,16 @@
 //! no Universe behavior: the query program, selector, limits, and proposal kind
 //! are loaded from graph fixtures.
 
+pub mod behavior_ride;
 pub mod behavior_runtime;
 pub mod board;
 pub mod canonical_ride;
+pub mod canonical_seed_energy;
+pub mod conversation_seed_energy;
 pub mod covalidity;
 pub mod lantern;
 pub mod magic_object;
+pub mod measured_ride;
 
 use serde::{Deserialize, Serialize};
 use std::{

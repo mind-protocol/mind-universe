@@ -1,0 +1,502 @@
+{
+  "contract": "mind-universe-authority-fixture",
+  "version": 0,
+  "universe": "0000000000000000000000000a701091",
+  "provenance": {
+    "note": "Reconciles the previously ungoverned bounded-loop opcode RepeatUntilWithLimit into the graph as one authorized loop. Mirrors the ChangeSet-overlay shape of behavior-bond-authority.json. This file is the graph authority; the repository opcode is the CodeDefinition's Implementation, stated honestly below.",
+    "reconciles_materializations": [
+      "crates/universe-ir/src/lib.rs (Operator::RepeatUntilWithLimit)",
+      "crates/universe-vm/src/lib.rs (executor arm)",
+      "crates/universe-compiler/src/lib.rs (validator arms)",
+      "fixtures/graph-ir/repeat-until-limit.json (text-IR fixture)"
+    ]
+  },
+  "symbols": [
+    "GOVERNS",
+    "ADDRESSED_BY",
+    "SHAPES",
+    "REFINED_BY",
+    "USES_VOCABULARY",
+    "DEFINED_BY",
+    "REALIZED_BY",
+    "CHALLENGED_BY",
+    "OBSERVED_BY",
+    "VERIFIED_BY",
+    "MEASURED_BY",
+    "SUMMARIZED_AS",
+    "REPAIRED_BY",
+    "JUSTIFIED_BY"
+  ],
+  "entities": [
+    {
+      "key": "00000000000000000000000000003100",
+      "symbol": "change",
+      "content": {
+        "kind": "ontology_changeset",
+        "activation": "active_graph_overlay",
+        "base_manifest": "00000000000000000000000000001000",
+        "base_schema_version": "1.17.0",
+        "change_id": "repeat-until-limit-loop-authority-v1",
+        "objective": "Activate one graph-native, self-verifying loop that governs the bounded-loop opcode RepeatUntilWithLimit.",
+        "status": "approved_by_fixture_authority",
+        "target_schema_version": "1.18.0-repeat-until-limit-loop.1"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003101",
+      "symbol": "space",
+      "content": {
+        "kind": "loop_space",
+        "canonical_id": "repeat-until-limit-loop",
+        "title": "Bounded-loop opcode loop",
+        "layer": "L4",
+        "status": "active_overlay",
+        "boundaries": {
+          "reads": ["a single boolean condition register", "the loop CodeDefinition control graph"],
+          "writes": ["control-flow position within one CodeDefinition execution"],
+          "forbidden_effects": ["graph mutation", "capability side effects beyond those declared by the executed program", "silent loop exit", "coercion of a non-boolean condition"],
+          "scope": "one CodeDefinition execution instance",
+          "dependencies": ["universe-vm fuel accounting", "graph_ir_loop_budget max_iterations"],
+          "missing_evidence_behavior": "trap deterministically; never invent continue/stop"
+        }
+      }
+    },
+    {
+      "key": "00000000000000000000000000003102",
+      "symbol": "subentity_goal",
+      "content": {
+        "kind": "loop_objective",
+        "canonical_id": "repeat-until-limit.objective",
+        "statement": "A backward-branching loop must always terminate: it exits forward when its condition is true, and when the charged iterations would exceed max_iterations it traps rather than exiting or looping forever.",
+        "observable_success_condition": "For every execution, the VM either reaches exit_next within max_iterations charged iterations, or traps; it never loops unbounded and never exits without the condition being observed true.",
+        "status": "active"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003103",
+      "symbol": "design_rationale",
+      "content": {
+        "kind": "loop_pattern",
+        "canonical_id": "repeat-until-limit.pattern",
+        "principle": "Bounded backward control transfer. The only permitted backward edge (loop_next) is gated by a measured boolean condition and charged against an explicit iteration budget, on top of per-traversal fuel, giving two independent liveness guarantees.",
+        "status": "active"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003104",
+      "symbol": "narrative",
+      "content": {
+        "kind": "loop_vocabulary",
+        "canonical_id": "repeat-until-limit.vocabulary",
+        "terms": {
+          "condition": "a Register holding a strictly boolean epistemic value; non-boolean or non-measured states are not accepted",
+          "loop_next": "operator index taken when condition is false (the single permitted backward target)",
+          "exit_next": "operator index taken when condition is true (forward exit)",
+          "max_iterations": "graph-data iteration budget; zero or absent is rejected at validation",
+          "trap": "deterministic halt with error, distinct from a normal exit"
+        },
+        "status": "active"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003105",
+      "symbol": "narrative",
+      "content": {
+        "kind": "loop_behavior",
+        "canonical_id": "repeat-until-limit.behavior",
+        "given": "a RepeatUntilWithLimit operator with condition register c, loop_next L, exit_next E, and max_iterations N > 0",
+        "when": "the operator is traversed",
+        "then": [
+          "if c is Measured(true): transfer control to E (forward exit)",
+          "if c is Measured(false) and charged_iterations < N: charge one iteration and transfer control to L (backward)",
+          "if c is Measured(false) and charging would reach or exceed N: trap",
+          "if c is Unknown/KnownAbsent/NotMeasured/MeasurementFailed: trap",
+          "every traversal consumes one unit of fuel"
+        ],
+        "forbidden": ["silent exit on budget exhaustion", "reading a non-boolean condition as continue or stop", "unbounded backward looping"],
+        "status": "active"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003106",
+      "symbol": "narrative",
+      "content": {
+        "kind": "loop_algorithm",
+        "canonical_id": "repeat-until-limit.algorithm",
+        "steps": [
+          "read condition register c",
+          "if c is not Measured(bool) -> trap (preserve epistemic distinction)",
+          "if c == true -> goto exit_next",
+          "if charged_iterations + 1 > max_iterations -> trap",
+          "charged_iterations += 1",
+          "goto loop_next"
+        ],
+        "preserves": ["unknown", "not_measured", "measurement_failed"],
+        "status": "active"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003107",
+      "symbol": "thing",
+      "content": {
+        "kind": "loop_code_definition",
+        "canonical_id": "repeat-until-limit.code_definition",
+        "operator": "repeat_until_with_limit",
+        "ir_shape": {
+          "condition": "Register",
+          "loop_next": "u32",
+          "exit_next": "u32",
+          "max_iterations": "u32"
+        },
+        "canonical_authority": "crates/universe-ir/src/lib.rs :: Operator::RepeatUntilWithLimit",
+        "text_ir_reference": "fixtures/graph-ir/repeat-until-limit.json",
+        "graph_native_reconstruction": "not_yet_supported",
+        "status": "graph_defined"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003108",
+      "symbol": "system_state",
+      "content": {
+        "kind": "loop_implementation",
+        "canonical_id": "repeat-until-limit.implementation",
+        "realization_status": "materialized_text_ir_only",
+        "materialized_in": [
+          "crates/universe-ir/src/lib.rs (Operator::RepeatUntilWithLimit variant + output/inputs arms)",
+          "crates/universe-vm/src/lib.rs (executor arm at ~line 602)",
+          "crates/universe-compiler/src/lib.rs (validator arms at ~lines 1928/1981/2631)",
+          "fixtures/graph-ir/repeat-until-limit.json"
+        ],
+        "graph_native_materialization": "absent: crates/universe-compiler/src/atom.rs reconstructs only opcodes constant/repeat_n/return from graph nodes; repeat_until_with_limit is not reconstructable from a graph_ir_operator cluster yet",
+        "wired": true,
+        "running": "not_measured",
+        "verified": "not_measured",
+        "honesty_note": "This node records where the opcode physically lives today. It does not assert that the loop has been observed to hold at runtime; see the Health node."
+      }
+    },
+    {
+      "key": "00000000000000000000000000003109",
+      "symbol": "design_rationale",
+      "content": {
+        "kind": "loop_justification",
+        "canonical_id": "repeat-until-limit.justification",
+        "statement": "Two independent bounds (per-traversal fuel and an explicit max_iterations charge) guarantee termination even if one is misconfigured. Trapping on non-boolean conditions is chosen over defaulting because a silent default would erase the unknown/not_measured distinction the system is built to preserve.",
+        "rejected_alternatives": [
+          "coerce non-boolean condition to false (rejected: fabricates measurement)",
+          "exit silently on budget exhaustion (rejected: hides non-termination as success)"
+        ],
+        "epistemic": {"state": "design", "value": true},
+        "status": "active"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000310a",
+      "symbol": "thing",
+      "content": {
+        "kind": "loop_validation",
+        "canonical_id": "repeat-until-limit.validation",
+        "fixtures": ["fixtures/graph-ir/repeat-until-limit.json"],
+        "positive_cases": ["condition eventually true within budget -> reaches exit_next with output 'loop-exited'"],
+        "negative_cases": [
+          "condition register holds Unknown -> VM traps",
+          "condition stays false past max_iterations -> VM traps",
+          "max_iterations = 0 or absent -> rejected at compiler validation"
+        ],
+        "expected_results": "each negative case produces a deterministic trap or validation rejection, never a silent exit",
+        "status": "planned",
+        "execution_evidence": "not_measured"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000310b",
+      "symbol": "thing",
+      "content": {
+        "kind": "loop_observer",
+        "canonical_id": "repeat-until-limit.observer",
+        "procedure": "Independently compile fixtures/graph-ir/repeat-until-limit.json, execute it in universe-vm, and assert: (a) the run reaches exit_next within max_iterations, (b) a variant with a non-boolean condition traps, (c) a variant that never satisfies the condition traps at the budget, (d) fuel is charged per traversal.",
+        "inspects": "real VM execution receipts, not the implementation's own claims",
+        "independence": "reads execution outputs; does not trust the Implementation node's status fields",
+        "last_run": "not_measured",
+        "status": "defined"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000310c",
+      "symbol": "thing",
+      "content": {
+        "kind": "loop_observer_validation",
+        "canonical_id": "repeat-until-limit.observer_validation",
+        "purpose": "Prove the observer detects real failures and does not convert missing evidence into success.",
+        "cases": [
+          "mutate the executor to exit silently on budget exhaustion -> observer must fail case (c)",
+          "remove the non-boolean trap -> observer must fail case (b)",
+          "supply no execution receipt -> observer must report not_measured, never healthy"
+        ],
+        "status": "planned",
+        "execution_evidence": "not_measured"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000310d",
+      "symbol": "thing",
+      "content": {
+        "kind": "loop_metric",
+        "canonical_id": "repeat-until-limit.metric",
+        "dimensions": {
+          "compiles": "not_measured",
+          "bounded_exit_observed": "not_measured",
+          "non_boolean_condition_traps": "not_measured",
+          "budget_exceeded_traps": "not_measured",
+          "fuel_charged_per_traversal": "not_measured"
+        },
+        "note": "Dimensions are kept independent; no collapsed scalar score.",
+        "status": "active"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000310e",
+      "symbol": "system_state",
+      "content": {
+        "kind": "loop_health",
+        "canonical_id": "repeat-until-limit.health",
+        "health_state": "not_measured",
+        "justification": "No observer run has been recorded against this loop in the graph. Health cannot be asserted from the presence of the CodeDefinition or from the opcode existing in the repository.",
+        "evidence_freshness": "none",
+        "status": "unknown"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000310f",
+      "symbol": "design_rationale",
+      "content": {
+        "kind": "loop_maintenance",
+        "canonical_id": "repeat-until-limit.maintenance",
+        "affordances": [
+          "retry: re-run the observer against the current build",
+          "inspect: dump VM execution receipts for the fixture",
+          "recalibrate: adjust max_iterations budget in the CodeDefinition",
+          "rematerialize: regenerate fixtures/graph-ir/repeat-until-limit.json from this CodeDefinition once a graph-native materializer exists",
+          "relink: add the missing graph_ir_operator support in crates/universe-compiler/src/atom.rs",
+          "ask_human: escalate if the observer cannot be run"
+        ],
+        "status": "active"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "key": "00000000000000000000000000005100",
+      "source": "00000000000000000000000000003100",
+      "target": "00000000000000000000000000001000",
+      "predicate": "PROPOSES_CHANGE_TO",
+      "content": {
+        "kind": "ontology_relation",
+        "role": "changeset_target",
+        "justification": "The approved ChangeSet explicitly targets the canonical ontology manifest."
+      }
+    },
+    {
+      "key": "00000000000000000000000000005101",
+      "source": "00000000000000000000000000003101",
+      "target": "00000000000000000000000000003100",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The loop Space is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005102",
+      "source": "00000000000000000000000000003102",
+      "target": "00000000000000000000000000003100",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Objective is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005103",
+      "source": "00000000000000000000000000003103",
+      "target": "00000000000000000000000000003100",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Pattern is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005104",
+      "source": "00000000000000000000000000003104",
+      "target": "00000000000000000000000000003100",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Vocabulary is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005105",
+      "source": "00000000000000000000000000003105",
+      "target": "00000000000000000000000000003100",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Behavior is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005106",
+      "source": "00000000000000000000000000003106",
+      "target": "00000000000000000000000000003100",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Algorithm is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005107",
+      "source": "00000000000000000000000000003107",
+      "target": "00000000000000000000000000003100",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The CodeDefinition is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005108",
+      "source": "00000000000000000000000000003108",
+      "target": "00000000000000000000000000003100",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Implementation is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005109",
+      "source": "00000000000000000000000000003109",
+      "target": "00000000000000000000000000003100",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Justification is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "0000000000000000000000000000510a",
+      "source": "0000000000000000000000000000310a",
+      "target": "00000000000000000000000000003100",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Validation is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "0000000000000000000000000000510b",
+      "source": "0000000000000000000000000000310b",
+      "target": "00000000000000000000000000003100",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Observer is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "0000000000000000000000000000510c",
+      "source": "0000000000000000000000000000310c",
+      "target": "00000000000000000000000000003100",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Observer validation is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "0000000000000000000000000000510d",
+      "source": "0000000000000000000000000000310d",
+      "target": "00000000000000000000000000003100",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Metric is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "0000000000000000000000000000510e",
+      "source": "0000000000000000000000000000310e",
+      "target": "00000000000000000000000000003100",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Health is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "0000000000000000000000000000510f",
+      "source": "0000000000000000000000000000310f",
+      "target": "00000000000000000000000000003100",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Maintenance is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000006200",
+      "source": "00000000000000000000000000003101",
+      "target": "00000000000000000000000000003102",
+      "predicate": "GOVERNS",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The loop Space roots and governs its Objective."}
+    },
+    {
+      "key": "00000000000000000000000000006201",
+      "source": "00000000000000000000000000003102",
+      "target": "00000000000000000000000000003103",
+      "predicate": "ADDRESSED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Objective is addressed by the Pattern."}
+    },
+    {
+      "key": "00000000000000000000000000006202",
+      "source": "00000000000000000000000000003102",
+      "target": "00000000000000000000000000003109",
+      "predicate": "JUSTIFIED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Objective is justified by the Justification narrative."}
+    },
+    {
+      "key": "00000000000000000000000000006203",
+      "source": "00000000000000000000000000003103",
+      "target": "00000000000000000000000000003105",
+      "predicate": "SHAPES",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Pattern shapes the observable Behavior."}
+    },
+    {
+      "key": "00000000000000000000000000006204",
+      "source": "00000000000000000000000000003105",
+      "target": "00000000000000000000000000003106",
+      "predicate": "REFINED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Behavior is refined into the ordered Algorithm."}
+    },
+    {
+      "key": "00000000000000000000000000006205",
+      "source": "00000000000000000000000000003105",
+      "target": "00000000000000000000000000003104",
+      "predicate": "USES_VOCABULARY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Behavior uses the loop Vocabulary terms."}
+    },
+    {
+      "key": "00000000000000000000000000006206",
+      "source": "00000000000000000000000000003106",
+      "target": "00000000000000000000000000003107",
+      "predicate": "DEFINED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Algorithm is defined by the canonical CodeDefinition."}
+    },
+    {
+      "key": "00000000000000000000000000006207",
+      "source": "00000000000000000000000000003107",
+      "target": "00000000000000000000000000003108",
+      "predicate": "REALIZED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The CodeDefinition is realized by the current Implementation."}
+    },
+    {
+      "key": "00000000000000000000000000006208",
+      "source": "00000000000000000000000000003107",
+      "target": "0000000000000000000000000000310a",
+      "predicate": "CHALLENGED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The CodeDefinition is challenged by the Validation cases."}
+    },
+    {
+      "key": "00000000000000000000000000006209",
+      "source": "00000000000000000000000000003108",
+      "target": "0000000000000000000000000000310b",
+      "predicate": "OBSERVED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Implementation is observed independently by the Observer."}
+    },
+    {
+      "key": "0000000000000000000000000000620a",
+      "source": "0000000000000000000000000000310b",
+      "target": "0000000000000000000000000000310c",
+      "predicate": "VERIFIED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Observer is itself verified by Observer validation."}
+    },
+    {
+      "key": "0000000000000000000000000000620b",
+      "source": "0000000000000000000000000000310b",
+      "target": "0000000000000000000000000000310d",
+      "predicate": "MEASURED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Observer emits the Metric dimensions."}
+    },
+    {
+      "key": "0000000000000000000000000000620c",
+      "source": "0000000000000000000000000000310d",
+      "target": "0000000000000000000000000000310e",
+      "predicate": "SUMMARIZED_AS",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Metric is summarized as the live Health state."}
+    },
+    {
+      "key": "0000000000000000000000000000620d",
+      "source": "0000000000000000000000000000310e",
+      "target": "0000000000000000000000000000310f",
+      "predicate": "REPAIRED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Health state is repaired through the Maintenance affordances."}
+    }
+  ]
+}

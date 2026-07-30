@@ -1,21 +1,65 @@
-import { useReducer } from "react";
+import { useCallback, useEffect, useReducer } from "react";
 import {
+  AVATAR_ENTITY_ID,
   AVATAR_MAPPING_AUTHORITY,
   avatarFixtureUniverse
 } from "./avatar-fixture";
+import {
+  applySceneAction,
+  gateIntent,
+  initialControlSession,
+  isFixtureGrant,
+  motionBounds,
+  type ActorScene,
+  type SceneAction
+} from "./actor-control";
+import type { Vector3 as Vec3 } from "./contracts";
 import { World } from "./World";
 import { postgresPilotProjection } from "./postgres-pilot-fixture";
-import { applyUniverseEvent } from "./universe-state";
+
+const sceneReducer = (scene: ActorScene, action: SceneAction): ActorScene =>
+  applySceneAction(scene, action, motionBounds);
 
 export default function App() {
   const avatarFixture =
     new URLSearchParams(globalThis.location?.search).get("fixture") === "avatar";
-  const [universe] = useReducer(
-    applyUniverseEvent,
-    avatarFixture ? avatarFixtureUniverse() : postgresPilotProjection.view
-  );
+  const [scene, dispatch] = useReducer(sceneReducer, undefined, () => ({
+    universe: avatarFixtureUniverse(),
+    session: initialControlSession(AVATAR_ENTITY_ID)
+  }));
+
+  // The request/release handshake. G asks the Universe for control of the bound
+  // Actor (granted locally in fixture mode); Esc releases it back to observer.
+  useEffect(() => {
+    if (!avatarFixture) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.repeat) return;
+      if (event.code === "KeyG") {
+        dispatch({ kind: "control", command: { kind: "request" } });
+      } else if (event.code === "Escape") {
+        dispatch({ kind: "control", command: { kind: "release" } });
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [avatarFixture]);
+
+  const onMove = useCallback((displacement: Vec3) => {
+    dispatch({ kind: "move", displacement });
+  }, []);
+
+  const universe = avatarFixture ? scene.universe : postgresPilotProjection.view;
+  const gate = gateIntent(scene.session.control, scene.session.boundActor);
+  const piloting = avatarFixture && gate.kind === "granted";
+
   const state = avatarFixture
-    ? "Deterministic graph projection fixture · Observer"
+    ? piloting
+      ? `Piloting avatar · ZQSD to move · Esc to release${
+          isFixtureGrant(scene.session.control) ? " · fixture grant" : ""
+        }`
+      : scene.session.lastRefusedReason
+        ? `Observer · input refused (${scene.session.lastRefusedReason}) · press G to take control`
+        : "Observer · press G to take control of the avatar"
     : !universe.synchronized
       ? "Awaiting a coherent Universe"
       : universe.control.kind === "granted"
@@ -28,6 +72,9 @@ export default function App() {
         universe={universe}
         entityPresentation={postgresPilotProjection.entityPresentation}
         relationPresentation={postgresPilotProjection.relationPresentation}
+        actorControl={
+          avatarFixture ? { bounds: motionBounds, piloting, onMove } : undefined
+        }
       />
       <header className="projection-heading">
         <p>{avatarFixture ? "Citizen embodiment" : "PostgreSQL identity pilot"}</p>

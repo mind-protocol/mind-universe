@@ -20,8 +20,10 @@ export const avatarMappingFixture =
 export const avatarMotionFixture =
   visualCatalog.motion_profile as unknown as EmbodimentMotionProfile;
 
+export const AVATAR_ENTITY_ID = "fixture:actor:citizen-energy-avatar";
+
 const avatar: MaterializedEntity = {
-  id: "fixture:actor:citizen-energy-avatar",
+  id: AVATAR_ENTITY_ID,
   generation: 0,
   position: [0, 0, 0],
   visual: {

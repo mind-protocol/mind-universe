@@ -1,0 +1,659 @@
+{
+  "contract": "mind-universe-authority-fixture",
+  "version": 0,
+  "universe": "0000000000000000000000000a701091",
+  "provenance": {
+    "note": "Reconciles the physico-semantic vision (Cognitive City Blueprint + Physico-Semantic Armory) into the graph as ONE governing loop, and records this session's learnings as first-class graph nodes. Mirrors the ChangeSet-overlay shape of behavior-bond-authority.json and repeat-until-limit-loop-authority.json. This file is the graph authority; named runtime materializations are the CodeDefinition's Implementation, stated honestly. It is structurally valid but NOT runtime-activatable yet (see learning: THE FORGE GAP).",
+    "reconciles_design_docs": ["Cognitive City Blueprint", "Physico-Semantic Armory", "ideas.md (Angry-Birds prioritization)"],
+    "reconciles_materializations": [
+      "crates/universe-e2e board.rs / canonical_ride.rs / magic_object.rs",
+      "crates/universe-physics (SpringJoint + energy ledger + conservation)",
+      "crates/universe-fields (TopologicalFold lifecycle)",
+      "crates/universe-transactions (ChangeSet + CommitReceipt)",
+      "crates/universe-protocol (measured-energy membrane)"
+    ]
+  },
+  "symbols": [
+    "GOVERNS",
+    "ADDRESSED_BY",
+    "SHAPES",
+    "REFINED_BY",
+    "USES_VOCABULARY",
+    "DEFINED_BY",
+    "REALIZED_BY",
+    "CHALLENGED_BY",
+    "OBSERVED_BY",
+    "VERIFIED_BY",
+    "MEASURED_BY",
+    "SUMMARIZED_AS",
+    "REPAIRED_BY",
+    "JUSTIFIED_BY",
+    "BLOCKS",
+    "MOTIVATES",
+    "INFORMS"
+  ],
+  "entities": [
+    {
+      "key": "00000000000000000000000000003400",
+      "symbol": "change",
+      "content": {
+        "kind": "ontology_changeset",
+        "activation": "active_graph_overlay",
+        "base_manifest": "00000000000000000000000000001000",
+        "base_schema_version": "1.17.0",
+        "change_id": "vision-integration-loop-authority-v1",
+        "objective": "Activate one graph-native loop that turns the physico-semantic vision into health-measured, activatable graph authority instead of decorative fixtures, and record this session's learnings as first-class nodes.",
+        "status": "approved_by_fixture_authority",
+        "target_schema_version": "1.18.0-vision-integration-loop.1"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003401",
+      "symbol": "space",
+      "content": {
+        "kind": "loop_space",
+        "canonical_id": "vision-integration-loop",
+        "title": "Physico-semantic vision integration",
+        "layer": "L2",
+        "status": "active_overlay",
+        "boundaries": {
+          "reads": ["Cognitive City Blueprint", "Physico-Semantic Armory", "existing physics/fields/transactions/protocol materializations"],
+          "writes": ["graph authority overlay only (ChangeSet members + relations)"],
+          "forbidden_effects": ["treating an idea as active because a renderer or fixture shows it", "file-side bypass of the measured-energy membrane", "collapsing distinct operators into one opaque score", "graph mutation of the base ontology"],
+          "scope": "the reconciliation of the vision into governed loops",
+          "dependencies": ["a generic authority-fixture activator (does not exist yet)", "a real energy calibration/measurement path"],
+          "missing_evidence_behavior": "mark not_measured; never assert Measured health from presence of a fixture"
+        }
+      }
+    },
+    {
+      "key": "00000000000000000000000000003402",
+      "symbol": "subentity_goal",
+      "content": {
+        "kind": "loop_objective",
+        "canonical_id": "vision-integration.objective",
+        "statement": "The physico-semantic vision (Cognitive City Blueprint + Physico-Semantic Armory) becomes activatable, health-measured graph authority - not decorative fixtures.",
+        "observable_success_condition": "Each named operator is a governed loop whose Health is Measured (via an independent Observer run), not merely present as a fixture or rendered on a screen.",
+        "current_status": "unmet",
+        "epistemic": {"state": "not_measured"}
+      }
+    },
+    {
+      "key": "00000000000000000000000000003403",
+      "symbol": "design_rationale",
+      "content": {
+        "kind": "loop_pattern",
+        "canonical_id": "vision-integration.pattern",
+        "principle": "Physics-native cognition. Code is thermodynamics; the semantic graph has no natural 'down'; a thinking act carves a potential field Phi and motion follows -grad(Phi); relations are spring constraints resolved at 60Hz; operators are forces, damping, and anchors acting on that field.",
+        "status": "active"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003404",
+      "symbol": "narrative",
+      "content": {
+        "kind": "loop_vocabulary",
+        "canonical_id": "vision-integration.vocabulary",
+        "armory_operators": {
+          "semantic_hoverboard_glisse": "motion along -grad(Phi) with parameters k_slope, k_turn, k_brake",
+          "portal_gun": "zero-distance TopologicalFold between two regions",
+          "gap_gravity_grenade": "spherical ForceLaw applied node_first on a tick to pull toward a gap",
+          "affinity_grappling_hook": "embedding-space springs toward affine nodes",
+          "aegis_shield": "emergency damping -> PROTECTING; strength ~ overload*(1-stability)*(1-tolerance)",
+          "recontextualization_prism": "context_gain += 0.5; past and present coexist without merging",
+          "affordance_slingshot": "candidate_plurality vs decision_pressure; DELIBERATING -> DECIDING",
+          "hysteresis_hourglass": "marge_de_transition (transition margin) preventing chattering",
+          "tombstone_anchor": "rumination = recurrence * unresolved_tension * affective_resonance * (1 - context_gain)",
+          "emergency_killswitch": "BLOCKS into a DMZ"
+        },
+        "city_concepts": {
+          "geology_sedimentation": "layered accretion of settled knowledge",
+          "membrane": "measured-energy boundary that gates what may cross to the renderer",
+          "refinery": "JSONL -> RigidBodies pipeline",
+          "changeset_assembly_line": "bounded, attributable graph mutation",
+          "semantic_temperature": "agitation/volatility measure of a region"
+        },
+        "status": "active"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003405",
+      "symbol": "narrative",
+      "content": {
+        "kind": "loop_behavior",
+        "canonical_id": "vision-integration.behavior",
+        "given": "the two design docs (Cognitive City Blueprint + Physico-Semantic Armory)",
+        "when": "an operator or idea from them is reconciled",
+        "then": [
+          "it exists as a governed loop that reaches an independent Observer",
+          "its Health becomes Measured only after the Observer runs against real evidence"
+        ],
+        "forbidden": [
+          "treating an idea as active merely because a fixture exists",
+          "treating an idea as active merely because a renderer shows it",
+          "asserting Measured health without an Observer run"
+        ],
+        "status": "active"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003406",
+      "symbol": "narrative",
+      "content": {
+        "kind": "loop_algorithm",
+        "canonical_id": "vision-integration.algorithm",
+        "steps": [
+          "locate the runtime materialization and its nearest graph authority; confirm none governs it",
+          "copy the mind-universe-authority-fixture envelope; reuse the canonical universe",
+          "allocate a fresh entity family + two relation families; verify zero collisions",
+          "one ChangeSet entity (approved, active_graph_overlay)",
+          "one member entity per loop part, each carrying honest epistemic status",
+          "exactly one changeset_target to the manifest; one changeset_membership per member; loop_edge relations; all justified",
+          "structural self-check, then activate + independent readback via OntologyRegistry::load"
+        ],
+        "note": "This is the loop-reconciliation template produced earlier this session.",
+        "status": "active"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003407",
+      "symbol": "thing",
+      "content": {
+        "kind": "loop_code_definition",
+        "canonical_id": "vision-integration.code_definition",
+        "realized_parts": {
+          "hoverboard_glisse": "crates/universe-e2e board.rs, canonical_ride.rs",
+          "magic_objects": "crates/universe-e2e magic_object.rs",
+          "springs_and_energy": "crates/universe-physics (SpringJoint + energy ledger + conservation)",
+          "topological_fold": "crates/universe-fields (TopologicalFold)",
+          "changeset_and_receipts": "crates/universe-transactions (ChangeSet + CommitReceipt)",
+          "measured_energy_membrane": "crates/universe-protocol (refuses to stream non-Measured energy)"
+        },
+        "unifying_opportunity": "A single ForceLaw enum variant would unlock Gap Gravity Grenade + Aegis Shield + Tombstone Anchor together.",
+        "status": "graph_defined"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003408",
+      "symbol": "system_state",
+      "content": {
+        "kind": "loop_implementation",
+        "canonical_id": "vision-integration.implementation",
+        "realization_status": "partially_materialized_text_only",
+        "materialized": [
+          "spring joints + energy ledger + conservation (universe-physics)",
+          "TopologicalFold lifecycle (universe-fields)",
+          "ChangeSet + CommitReceipt (universe-transactions)",
+          "measured-energy membrane (universe-protocol)",
+          "glide demo (universe-e2e board.rs / canonical_ride.rs)"
+        ],
+        "planned": [
+          "the 10 Armory operators as first-class primitives",
+          "a single ForceLaw enum variant",
+          "generic authority-fixture activator",
+          "real energy calibration path"
+        ],
+        "wired": false,
+        "running": "not_measured",
+        "verified": "not_measured",
+        "honesty_note": "The substrate largely exists; the named operators/verbs are mostly new. This node records where things physically live; it does not assert the vision is active at runtime."
+      }
+    },
+    {
+      "key": "00000000000000000000000000003409",
+      "symbol": "design_rationale",
+      "content": {
+        "kind": "loop_justification",
+        "canonical_id": "vision-integration.justification",
+        "statement": "Physics-native cognition is chosen because a spring/force/damping substrate makes cognitive dynamics observable and bounded, matching the repo's epistemic-honesty DNA: forces are explicit, energy is conserved and ledgered, and the membrane refuses to stream anything not Measured. The operators map onto this substrate as named forces rather than opaque behaviors, so each can be independently observed.",
+        "rejected_alternatives": [
+          "decorative fixtures/renderers as proof of activation (rejected: presence is not measurement)",
+          "file-side bypass of the membrane (rejected: fabricates Measured energy)"
+        ],
+        "epistemic": {"state": "design", "value": true},
+        "status": "active"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000340a",
+      "symbol": "thing",
+      "content": {
+        "kind": "loop_validation",
+        "canonical_id": "vision-integration.validation",
+        "structural_invariants": ["parse ok", "zero key collisions", "exactly one changeset_target", "every member has a justified changeset_membership", "every relation justified with resolvable endpoints", "within load budget"],
+        "negative_cases": [
+          "a fixture present but never activated must NOT yield Measured health",
+          "a renderer showing the glide must NOT yield Measured health",
+          "derived/not_measured energy must NOT cross the membrane"
+        ],
+        "status": "planned",
+        "execution_evidence": "not_measured"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000340b",
+      "symbol": "thing",
+      "content": {
+        "kind": "loop_observer",
+        "canonical_id": "vision-integration.observer",
+        "procedure": "Independently reopen the store and run OntologyRegistry::load to read this ChangeSet back; then, per operator, require an execution/measurement receipt before marking its Health Measured.",
+        "inspects": "real load + execution receipts, not fixture presence or renderer output",
+        "blocked_by": "no generic authority-fixture activator exists (see learning: THE FORGE GAP)",
+        "last_run": "not_measured",
+        "status": "defined"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000340c",
+      "symbol": "thing",
+      "content": {
+        "kind": "loop_observer_validation",
+        "canonical_id": "vision-integration.observer_validation",
+        "purpose": "Prove the Observer detects real failures and never converts missing evidence into success.",
+        "cases": [
+          "supply a fixture but no activation -> Observer must report not_measured, never healthy",
+          "supply a renderer frame but no measurement -> Observer must report not_measured",
+          "supply derived energy at the membrane -> Observer must report blocked, not streamed"
+        ],
+        "status": "planned",
+        "execution_evidence": "not_measured"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000340d",
+      "symbol": "thing",
+      "content": {
+        "kind": "loop_metric",
+        "canonical_id": "vision-integration.metric",
+        "dimensions": {
+          "changeset_loads_via_registry": "not_measured",
+          "operators_governed_as_loops": "not_measured",
+          "operators_with_measured_health": "not_measured",
+          "felt_glide_crosses_membrane": "not_measured",
+          "energy_conservation_observed": "not_measured"
+        },
+        "note": "Dimensions kept independent; no collapsed scalar score.",
+        "status": "active"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000340e",
+      "symbol": "system_state",
+      "content": {
+        "kind": "loop_health",
+        "canonical_id": "vision-integration.health",
+        "health_state": "not_measured",
+        "justification": "No Observer run has been recorded. There is no generic activator to load this fixture (THE FORGE GAP), so health cannot be asserted from the fixture's existence or from any renderer.",
+        "evidence_freshness": "none",
+        "status": "unknown"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000340f",
+      "symbol": "design_rationale",
+      "content": {
+        "kind": "loop_maintenance",
+        "canonical_id": "vision-integration.maintenance",
+        "affordances": [
+          "build the generic authority-fixture activator first (install -> intern symbols -> activate ChangeSet -> independent readback), itself graph-derived (unblocks THE FORGE GAP)",
+          "build a real energy calibration/measurement path so the felt glide can cross the membrane (unblocks MEMBRANE BLOCKER)",
+          "prioritize one polished gesture (the glide) over many half-built operators (PRIORITIZATION)",
+          "add a single ForceLaw enum variant to unlock grenade+shield+anchor together (SUBSTRATE-VS-VERBS)",
+          "ask_human: escalate if the activator cannot be built graph-natively"
+        ],
+        "status": "active"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003410",
+      "symbol": "moment",
+      "content": {
+        "kind": "session_learning",
+        "canonical_id": "learning.forge_gap",
+        "priority": "highest",
+        "title": "THE FORGE GAP",
+        "observation": "There is NO generic loader/activator for hand-authored authority fixtures. The only consumer of mind-universe-authority-fixture files is hardcoded to behavior-bond-authority.json in universe-testkit (create_/open_behavior_bond_authority_store, validate_fixture_patch asserts BEHAVIOR_BOND_AUTHORITY_KEYS).",
+        "consequence": "Every hand-authored loop - including this vision-integration loop AND the repeat-until-limit loop - is structurally valid but NOT runtime-activatable, so its Health is not_measured.",
+        "meta_prerequisite": "A generic authority-fixture activator (install -> intern symbols -> activate ChangeSet -> independent readback via OntologyRegistry::load) must be built first, itself graph-derived.",
+        "epistemic": {"state": "observed", "evidence": "code read: universe-testkit/src/lib.rs, universe-store/src/ontology.rs"}
+      }
+    },
+    {
+      "key": "00000000000000000000000000003411",
+      "symbol": "moment",
+      "content": {
+        "kind": "session_learning",
+        "canonical_id": "learning.measured_energy_membrane_blocker",
+        "priority": "high",
+        "title": "THE MEASURED-ENERGY MEMBRANE BLOCKER",
+        "observation": "canonical_ride produces only derived / not_measured energy, and universe-protocol refuses to stream non-Measured energy across the membrane.",
+        "consequence": "The felt glide cannot cross to the renderer.",
+        "required_fix": "A real calibration/measurement path that produces Measured energy - NOT a file-side bypass of the membrane.",
+        "epistemic": {"state": "observed"}
+      }
+    },
+    {
+      "key": "00000000000000000000000000003412",
+      "symbol": "narrative",
+      "content": {
+        "kind": "session_learning",
+        "canonical_id": "learning.prioritization",
+        "priority": "high",
+        "title": "PRIORITIZATION (Angry-Birds lesson from ideas.md)",
+        "observation": "One polished gesture (the glide) beats ten half-built magic objects.",
+        "implication": "The substrate largely EXISTS; the named verbs/operators are what is new. Focus effort on making one operator fully felt and measured before proliferating.",
+        "epistemic": {"state": "known", "source": "ideas.md"}
+      }
+    },
+    {
+      "key": "00000000000000000000000000003413",
+      "symbol": "narrative",
+      "content": {
+        "kind": "session_learning",
+        "canonical_id": "learning.substrate_vs_verbs",
+        "priority": "high",
+        "title": "SUBSTRATE-VS-VERBS",
+        "observation": "Already existing substrate: spring joints, damping, energy ledger + conservation, support/inhibit/neutral polarity, BehaviorBond + gates, epistemic opcodes, TopologicalFold lifecycle.",
+        "new_work": "The operators as first-class primitives are mostly new.",
+        "leverage": "A single ForceLaw enum variant would unlock Gap Gravity Grenade + Aegis Shield + Tombstone Anchor together.",
+        "epistemic": {"state": "observed"}
+      }
+    }
+  ],
+  "relations": [
+    {
+      "key": "00000000000000000000000000005400",
+      "source": "00000000000000000000000000003400",
+      "target": "00000000000000000000000000001000",
+      "predicate": "PROPOSES_CHANGE_TO",
+      "content": {"kind": "ontology_relation", "role": "changeset_target", "justification": "The approved ChangeSet explicitly targets the canonical ontology manifest."}
+    },
+    {
+      "key": "00000000000000000000000000005401",
+      "source": "00000000000000000000000000003401",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The loop Space is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005402",
+      "source": "00000000000000000000000000003402",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Objective is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005403",
+      "source": "00000000000000000000000000003403",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Pattern is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005404",
+      "source": "00000000000000000000000000003404",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Vocabulary is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005405",
+      "source": "00000000000000000000000000003405",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Behavior is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005406",
+      "source": "00000000000000000000000000003406",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Algorithm is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005407",
+      "source": "00000000000000000000000000003407",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The CodeDefinition is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005408",
+      "source": "00000000000000000000000000003408",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Implementation is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005409",
+      "source": "00000000000000000000000000003409",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Justification is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "0000000000000000000000000000540a",
+      "source": "0000000000000000000000000000340a",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Validation is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "0000000000000000000000000000540b",
+      "source": "0000000000000000000000000000340b",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Observer is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "0000000000000000000000000000540c",
+      "source": "0000000000000000000000000000340c",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Observer validation is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "0000000000000000000000000000540d",
+      "source": "0000000000000000000000000000340d",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Metric is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "0000000000000000000000000000540e",
+      "source": "0000000000000000000000000000340e",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Health is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "0000000000000000000000000000540f",
+      "source": "0000000000000000000000000000340f",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Maintenance is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005410",
+      "source": "00000000000000000000000000003410",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The learning THE FORGE GAP is an explicit first-class member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005411",
+      "source": "00000000000000000000000000003411",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The learning MEASURED-ENERGY MEMBRANE BLOCKER is an explicit first-class member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005412",
+      "source": "00000000000000000000000000003412",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The learning PRIORITIZATION is an explicit first-class member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005413",
+      "source": "00000000000000000000000000003413",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The learning SUBSTRATE-VS-VERBS is an explicit first-class member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000006400",
+      "source": "00000000000000000000000000003401",
+      "target": "00000000000000000000000000003402",
+      "predicate": "GOVERNS",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The loop Space roots and governs its Objective."}
+    },
+    {
+      "key": "00000000000000000000000000006401",
+      "source": "00000000000000000000000000003402",
+      "target": "00000000000000000000000000003403",
+      "predicate": "ADDRESSED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Objective is addressed by the Pattern."}
+    },
+    {
+      "key": "00000000000000000000000000006402",
+      "source": "00000000000000000000000000003402",
+      "target": "00000000000000000000000000003409",
+      "predicate": "JUSTIFIED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Objective is justified by the Justification narrative."}
+    },
+    {
+      "key": "00000000000000000000000000006403",
+      "source": "00000000000000000000000000003403",
+      "target": "00000000000000000000000000003405",
+      "predicate": "SHAPES",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Pattern shapes the observable Behavior."}
+    },
+    {
+      "key": "00000000000000000000000000006404",
+      "source": "00000000000000000000000000003405",
+      "target": "00000000000000000000000000003406",
+      "predicate": "REFINED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Behavior is refined into the ordered Algorithm."}
+    },
+    {
+      "key": "00000000000000000000000000006405",
+      "source": "00000000000000000000000000003405",
+      "target": "00000000000000000000000000003404",
+      "predicate": "USES_VOCABULARY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Behavior uses the loop Vocabulary terms."}
+    },
+    {
+      "key": "00000000000000000000000000006406",
+      "source": "00000000000000000000000000003406",
+      "target": "00000000000000000000000000003407",
+      "predicate": "DEFINED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Algorithm is defined by the canonical CodeDefinition."}
+    },
+    {
+      "key": "00000000000000000000000000006407",
+      "source": "00000000000000000000000000003407",
+      "target": "00000000000000000000000000003408",
+      "predicate": "REALIZED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The CodeDefinition is realized by the current Implementation."}
+    },
+    {
+      "key": "00000000000000000000000000006408",
+      "source": "00000000000000000000000000003407",
+      "target": "0000000000000000000000000000340a",
+      "predicate": "CHALLENGED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The CodeDefinition is challenged by the Validation cases."}
+    },
+    {
+      "key": "00000000000000000000000000006409",
+      "source": "00000000000000000000000000003408",
+      "target": "0000000000000000000000000000340b",
+      "predicate": "OBSERVED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Implementation is observed independently by the Observer."}
+    },
+    {
+      "key": "0000000000000000000000000000640a",
+      "source": "0000000000000000000000000000340b",
+      "target": "0000000000000000000000000000340c",
+      "predicate": "VERIFIED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Observer is itself verified by Observer validation."}
+    },
+    {
+      "key": "0000000000000000000000000000640b",
+      "source": "0000000000000000000000000000340b",
+      "target": "0000000000000000000000000000340d",
+      "predicate": "MEASURED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Observer emits the Metric dimensions."}
+    },
+    {
+      "key": "0000000000000000000000000000640c",
+      "source": "0000000000000000000000000000340d",
+      "target": "0000000000000000000000000000340e",
+      "predicate": "SUMMARIZED_AS",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Metric is summarized as the live Health state."}
+    },
+    {
+      "key": "0000000000000000000000000000640d",
+      "source": "0000000000000000000000000000340e",
+      "target": "0000000000000000000000000000340f",
+      "predicate": "REPAIRED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Health state is repaired through the Maintenance affordances."}
+    },
+    {
+      "key": "0000000000000000000000000000640e",
+      "source": "00000000000000000000000000003410",
+      "target": "00000000000000000000000000003402",
+      "predicate": "BLOCKS",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "THE FORGE GAP blocks the Objective: no activator exists, so the vision cannot become activatable authority yet."}
+    },
+    {
+      "key": "0000000000000000000000000000640f",
+      "source": "00000000000000000000000000003410",
+      "target": "0000000000000000000000000000340f",
+      "predicate": "MOTIVATES",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "THE FORGE GAP motivates the Maintenance affordance of building a generic authority-fixture activator first."}
+    },
+    {
+      "key": "00000000000000000000000000006410",
+      "source": "00000000000000000000000000003411",
+      "target": "00000000000000000000000000003402",
+      "predicate": "BLOCKS",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "THE MEMBRANE BLOCKER blocks the Objective: the felt glide cannot cross to the renderer without Measured energy."}
+    },
+    {
+      "key": "00000000000000000000000000006411",
+      "source": "00000000000000000000000000003411",
+      "target": "0000000000000000000000000000340f",
+      "predicate": "MOTIVATES",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "THE MEMBRANE BLOCKER motivates the Maintenance affordance of building a real energy calibration path."}
+    },
+    {
+      "key": "00000000000000000000000000006412",
+      "source": "00000000000000000000000000003412",
+      "target": "00000000000000000000000000003402",
+      "predicate": "INFORMS",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "PRIORITIZATION informs the Objective's success condition: one polished, measured gesture before proliferation."}
+    },
+    {
+      "key": "00000000000000000000000000006413",
+      "source": "00000000000000000000000000003412",
+      "target": "0000000000000000000000000000340f",
+      "predicate": "MOTIVATES",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "PRIORITIZATION motivates the Maintenance affordance of finishing one gesture over many."}
+    },
+    {
+      "key": "00000000000000000000000000006414",
+      "source": "00000000000000000000000000003413",
+      "target": "00000000000000000000000000003402",
+      "predicate": "INFORMS",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "SUBSTRATE-VS-VERBS informs the Objective: substrate exists, only the named operators are new."}
+    },
+    {
+      "key": "00000000000000000000000000006415",
+      "source": "00000000000000000000000000003413",
+      "target": "0000000000000000000000000000340f",
+      "predicate": "MOTIVATES",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "SUBSTRATE-VS-VERBS motivates the Maintenance affordance of adding a single ForceLaw enum variant."}
+    }
+  ]
+}

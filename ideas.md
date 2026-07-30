@@ -198,6 +198,59 @@ Rangées par (valeur × proximité du substrat). On en choisit **une**.
   conversations) ne porte l'énergie d'atom. Rider le réel demande soit une **dérivation
   heuristique** (canonique spatial → énergie, à marquer *dérivée/non-mesurée*), soit une **phase
   de modélisation/calibration** des profils d'énergie. Gros, hors substrat existant.
+  - **⚠ La dérivation heuristique existe DÉJÀ mais ne suffit pas au FEEL (vérifié 2026-07-30).**
+    `crates/universe-e2e/src/canonical_ride.rs` ride un vrai voisinage canonique, le carve
+    redirige, déterministe, tagué `derived_uncalibrated / not_measured`, test qui passe. **MAIS**
+    la membrane refuse de la streamer : `universe-protocol/src/lib.rs:218`
+    (`EnergyTransferMessage::validate`) rejette tout transfert dont `epistemic != Measured`
+    (« only measured transfers may be published »), verrouillé par le test
+    `energy_transfer_fails_closed_without_measured_provenance_or_bounds`. Donc un carve **dérivé
+    ne peut pas devenir une glisse *ressentie* sur le wire** — par design. L'adapter TS accepte
+    `not_measured` et `desktop_world_snapshot` écrit des frames-fichier hors `ProtocolStream`,
+    donc on *pourrait* faire passer la glisse dérivée au renderer par un fichier — **NE PAS le
+    faire** : ça contourne délibérément l'invariant de la membrane (interdit par CLAUDE.md).
+    Conséquence : rendre le carve *ressenti* exige de l'énergie **réellement mesurée** (calibration,
+    option A « modélisation »), pas un raccourci dérivé. Le seul chemin qui streame une vraie
+    glisse mesurée aujourd'hui = `desktop_energy_stream` sur un run behavior fixture, **pas** les
+    conversations réelles.
+  - **✅ SLICE CONSTRUITE + VÉRIFIÉE (2026-07-30) : `crates/universe-e2e/src/canonical_seed_energy.rs`.**
+    Port L1 du pattern de seeding du design (`l2:physics:developer-needs-initial-seeding`) : pour
+    chaque relation canonique, construit une phrase source/relation/cible, l'**embed**
+    (`universe-embeddings`), calcule `raw = cos(link,+ancre) − cos(link,−ancre)`, `tanh(raw/temp)`
+    → propensity ∈ (−1,1), puis **conversion d'unité** magnitude→énergie, signe→Support/Inhibit.
+    Tagué `measured:semantic_v0`, **overlay séparé du canonique** (comme l'exige
+    `l1-online-physical-plasticity`). Test déterministe offline (embedder de hachage) qui PASSE.
+    La **seule** décision de modélisation = la paire d'ancres `activation-propensity-v0`, nommée
+    et versionnée (pas smugglée).
+  - **🔎 CE QUE LA MESURE RÉVÈLE (observé, pas supposé) :** sur le store canonique réel, **784
+    relations → seulement ~14 phrases distinctes** (6 prédicats), ex. `source_document --GROUNDS-->
+    protocol` répété à l'identique. L'embedder est fidèle (distinct_propensity == distinct_sentences) :
+    **ce n'est PAS la méthode qui collapse, c'est le graphe canonique qui est *type-level*** — il ne
+    porte pas de texte distinctif par instance. La résolution du terrain ridable est bornée par la
+    distinctivité textuelle du canonique. **La différenciation riche (784 descentes distinctes) vit
+    dans les 500 CONVERSATIONS** (contenu réel des mémoires), pas dans l'ontologie de types. →
+    Prochaine étape pour un vrai relief : seeder sur le *contenu des conversations*, pas seulement
+    les symboles canoniques.
+  - **📈 PROUVÉ PAR MESURE (2026-07-30) : le contenu des conversations lève le plafond.** Mesuré sur
+    l'export ChatGPT réel (`Downloads/…-2026-07-23-…zip`) : **1342 conversations, 17 098 messages,
+    16 812 textes distincts (99,5 % uniques), 11 690 paires-de-réponse distinctes** (parent→child),
+    ~1419 chars/msg. Soit **14 → 11 690 descentes ridables distinctes (×835)** vs le graphe canonique.
+    Le relief riche existe bel et bien — dans le *texte vécu*, pas dans l'ontologie de types. La
+    lecture est locale, en investigation (pas de wiring runtime → respecte `python:0`). Prochain
+    slice Rust : `conversation_seed_energy` sur les paires-de-réponse (même pipeline embed→cosine→
+    tanh→AtomBond, tagué `measured:semantic_v0`).
+  - **✅ SLICE 2 CONSTRUITE + VÉRIFIÉE EN RUST (2026-07-30) :
+    `crates/universe-e2e/src/conversation_seed_energy.rs` + bin `conversation_seed_energy`.** Même
+    pipeline via `SeedContext` partagé (une seule définition d'ancres/maths, refactor de
+    `canonical_seed_energy`). Relations = paires-de-réponse (parent→child) des conversations. 3 tests
+    hermétiques (fixture synthétique, zéro texte privé committé) PASSENT + le canonique reste vert.
+    **Run in-engine sur le vrai corpus** (bin, counts-only, aucun texte persisté) :
+    **1342 conversations, 11 734 paires, 11 496 propensités DISTINCTES** (vs 14 canonique). Le relief
+    riche est matérialisé, mesuré, déterministe. ⚠ CAVEAT honnête : le split support/inhibit
+    (~50/50) reste **arbitraire au hash** — la DIFFÉRENCIATION (11 496) est réelle et indépendante de
+    l'embedder, mais la POLARITÉ n'aura de sens qu'avec le vrai modèle sentence-transformers
+    (`NodeTransformersProvider`). Reste : brancher le vrai embedder ; faire consommer l'overlay par
+    `measured_ride`.
 - **B. 2ᵉ objet = Portal Gun** sur le `TopologicalFold` existant. Prouve
   « tool = thing = objet magique » et branche un `thing` sur un primitif réel.
 - **C. Lanterne** — révèle Fog/vécu/hypothèse *sans bouger*. Le moins cher ;

@@ -1,8 +1,11 @@
 import { Html, Line, Stars } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Fragment, useRef, useState } from "react";
-import type { Group } from "three";
+import type { BufferGeometry, Group } from "three";
 import type { MaterializedEntity, MaterializedRelation } from "./contracts";
+import { ActorControls } from "./ActorControls";
+import type { MotionBounds } from "./actor-control";
+import type { Vector3 as Vec3 } from "./contracts";
 import { Embodiment } from "./EnergyEmbodiment";
 import { validateEmbodimentMapping } from "./embodiment";
 import { EnergyTransferEffect } from "./EnergyTransfer";
@@ -12,6 +15,15 @@ import type {
   RelationPresentation
 } from "./postgres-pilot-fixture";
 import type { UniverseView } from "./universe-state";
+
+// Optional actor-piloting wiring. When present and `piloting` is true, ZQSD
+// drives the bound Actor (ActorControls) and the camera's keyboard translation
+// steps aside; otherwise ZQSD flies the observer camera as before.
+export interface ActorControlProps {
+  readonly bounds: MotionBounds;
+  readonly piloting: boolean;
+  readonly onMove: (displacement: Vec3) => void;
+}
 
 function EntityGeometry({
   primitive
@@ -210,14 +222,63 @@ function Bond({
   );
 }
 
+// The world is a floor, not a void. Entities float above a ground reference
+// that is always present — it may roll up or down, but there is always a "sol"
+// beneath the scene so height reads as height. The surface undulates slowly so
+// it feels alive; its base sits below the lowest fixture entity (world y -3.85).
+function Ground() {
+  const geometry = useRef<BufferGeometry>(null);
+  const SIZE = 120;
+  const SEGMENTS = 72;
+  const BASE_Y = -5.4;
+
+  useFrame(({ clock }) => {
+    const geom = geometry.current;
+    if (!geom) return;
+    const position = geom.attributes.position;
+    const time = clock.elapsedTime;
+    // Plane is rotated flat about X, so local (x, y) span the floor and local z
+    // becomes world height. Displace only z to make the terrain rise and fall.
+    for (let index = 0; index < position.count; index += 1) {
+      const x = position.getX(index);
+      const y = position.getY(index);
+      const height =
+        Math.sin(x * 0.16 + time * 0.35) * 0.7 +
+        Math.cos(y * 0.13 - time * 0.28) * 0.55 +
+        Math.sin((x + y) * 0.08 + time * 0.18) * 0.4;
+      position.setZ(index, height);
+    }
+    position.needsUpdate = true;
+  });
+
+  return (
+    <mesh
+      rotation={[-Math.PI / 2, 0, 0]}
+      position={[0, BASE_Y, 0]}
+      // Chrome, not an entity: never intercept clicks meant for atoms.
+      raycast={() => null}
+    >
+      <planeGeometry ref={geometry} args={[SIZE, SIZE, SEGMENTS, SEGMENTS]} />
+      <meshBasicMaterial
+        color="#2a4a7a"
+        wireframe
+        transparent
+        opacity={0.28}
+      />
+    </mesh>
+  );
+}
+
 export function World({
   universe,
   entityPresentation,
-  relationPresentation
+  relationPresentation,
+  actorControl
 }: {
   readonly universe: UniverseView;
   readonly entityPresentation: ReadonlyMap<string, EntityPresentation>;
   readonly relationPresentation: ReadonlyMap<string, RelationPresentation>;
+  readonly actorControl?: ActorControlProps;
 }) {
   const [selected, setSelected] = useState<string | null>(
     "00000000000000000000000000005005"
@@ -240,6 +301,7 @@ export function World({
       <ambientLight intensity={0.08} />
       <pointLight position={[0, 5, 2]} intensity={10} color="#c9dcff" />
       <Stars radius={70} depth={30} count={900} factor={1.5} fade speed={0.1} />
+      <Ground />
       {[...universe.relations.values()].map((relation) => (
         <Bond
           key={relation.id}
@@ -271,7 +333,14 @@ export function World({
           />
         );
       })}
-      <ObserverControls />
+      <ObserverControls movementEnabled={!actorControl?.piloting} />
+      {actorControl && (
+        <ActorControls
+          bounds={actorControl.bounds}
+          piloting={actorControl.piloting}
+          onMove={actorControl.onMove}
+        />
+      )}
     </Canvas>
   );
 }

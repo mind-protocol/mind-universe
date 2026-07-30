@@ -768,6 +768,8 @@ dependencies = [
  "bytes",
  "fallible-iterator",
  "postgres-protocol",
+ "serde_core",
+ "serde_json",
 ]
 
 [[package]]
@@ -1272,6 +1274,7 @@ dependencies = [
  "universe-assets",
  "universe-compiler",
  "universe-core",
+ "universe-embeddings",
  "universe-fields",
  "universe-ir",
  "universe-physics",
@@ -1380,6 +1383,14 @@ dependencies = [
  "sha2 0.10.9",
  "tempfile",
  "universe-core",
+]
+
+[[package]]
+name = "universe-stream-bridge"
+version = "0.1.0"
+dependencies = [
+ "universe-core",
+ "universe-protocol",
 ]
 
 [[package]]

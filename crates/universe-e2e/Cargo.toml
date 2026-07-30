@@ -12,6 +12,7 @@ sha2.workspace = true
 universe-assets = { path = "../universe-assets" }
 universe-compiler = { path = "../universe-compiler" }
 universe-core = { path = "../universe-core" }
+universe-embeddings = { path = "../universe-embeddings" }
 universe-fields = { path = "../universe-fields" }
 universe-ir = { path = "../universe-ir" }
 universe-physics = { path = "../universe-physics" }

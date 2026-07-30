@@ -8,3 +8,10 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 universe-supervisor = { path = "../../crates/universe-supervisor" }
+universe-protocol = { path = "../../crates/universe-protocol" }
+universe-store = { path = "../../crates/universe-store" }
+universe-core = { path = "../../crates/universe-core" }
+
+[dev-dependencies]
+tempfile = "3"
+serde_json = "1"

@@ -13,7 +13,14 @@ const INITIAL_CAMERA = new Vector3(0, 2, 9);
 const INITIAL_TARGET = new Vector3(0, 0, 0);
 const WORLD_UP = new Vector3(0, 1, 0);
 
-export function ObserverControls() {
+export function ObserverControls({
+  movementEnabled = true
+}: {
+  // When the avatar is being piloted, keyboard translation is handed to
+  // ActorControls so ZQSD moves the body, not the camera. Mouse orbit/zoom/pan
+  // and the R reset stay available so the pilot can still frame the avatar.
+  readonly movementEnabled?: boolean;
+} = {}) {
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null);
   const pressed = useRef(new Set<string>());
   const { camera, gl } = useThree();
@@ -48,6 +55,7 @@ export function ObserverControls() {
   useFrame((_, delta) => {
     const orbit = controls.current;
     if (!orbit) return;
+    if (!movementEnabled) return;
 
     const motion = observerMotion(pressed.current);
     if (motion.forward === 0 && motion.right === 0 && motion.up === 0) return;

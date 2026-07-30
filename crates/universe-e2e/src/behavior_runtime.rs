@@ -487,7 +487,7 @@ pub fn run(config: &BehaviorRuntimeConfig) -> Result<BehaviorRuntimeManifest, E2
     Ok(manifest)
 }
 
-fn verify_complete_binding_query(
+pub fn verify_complete_binding_query(
     query: &LocalBindingSubgraph,
     keys: BehaviorBondAuthorityKeys,
 ) -> Result<(), E2eError> {
@@ -522,7 +522,7 @@ fn verify_complete_binding_query(
     Ok(())
 }
 
-fn build_projection(
+pub fn build_projection(
     store: &UniverseStore,
     snapshot: &UniverseSnapshot,
     registry: &universe_store::ontology::OntologyRegistry,

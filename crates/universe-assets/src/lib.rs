@@ -8,6 +8,7 @@ pub mod census;
 pub mod conversion;
 pub mod invalidation;
 pub mod inventory;
+pub mod layout;
 pub mod visual;
 
 use serde::{Deserialize, Serialize};

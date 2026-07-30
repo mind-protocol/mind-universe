@@ -21,8 +21,8 @@ truth (canonical ontology reconstruction: 231 entities / 784 relations,
 | Status | Count |
 | --- | --- |
 | `[x]` completed and evidenced | 178 |
-| `[~]` in progress | 23 |
-| `[ ]` not started | 265 |
+| `[~]` in progress | 27 |
+| `[ ]` not started | 261 |
 | `[!]` blocked | 0 |
 | **Total** | **466** |
 
@@ -339,9 +339,31 @@ ImportBatch
 
 ### G3 — Deliver a functional Viz
 
-- [ ] Connect Mind Desktop to the authenticated production
+- [~] Connect Mind Desktop to the authenticated production
   snapshot/delta/event protocol with reconnect, sequence-gap detection, resync,
-  backpressure, and honest stale/degraded states.
+  backpressure, and honest stale/degraded states. Logic layer landed +
+  unit-tested: `stream-client.ts` is a deterministic reducer with sequence-gap
+  detection → resync request, backpressure (drops the oldest, counted), stale
+  detection, reconnect tracking, and honest connecting/synchronized/degraded/
+  stale/disconnected states (never `synchronized` while a gap is unresolved).
+  The connector `transport-client.ts` now drives it over an injected `Socket`:
+  hello/welcome handshake, routes server frames into the reducer, emits
+  acknowledgements + resync requests (on gap and on a welcome that demands it),
+  tracks disconnect — auth stays in the caller's socket, never in a protocol
+  message. And `apps/universe-server` now SERVES the protocol for real: it binds
+  the authenticated loopback transport (`RunningProtocolServer`, shared secret
+  from `UNIVERSE_STREAM_SECRET`), projects the supervisor snapshot into a
+  `SituationSnapshotMessage`, and publishes it — verified end-to-end by an
+  integration test where an authenticated `ProtocolClient` receives the boot
+  snapshot and a wrong secret is refused; a further test drives the interactive
+  round-trip (acknowledge is confirmed, a live-published frame is received, a
+  resync is accepted). The TS wire is now aligned byte-exactly: `protocol-auth.ts`
+  encodes the hello like `serde_json`, computes the HMAC-SHA256 proof the server
+  expects (cross-checked against Node crypto), tags the `transport_type`
+  envelopes, and does the 4-byte length-prefix framing. Still open: a webview
+  cannot raw-TCP, so the production bridge is a NATIVE Tauri Rust connector
+  (`ProtocolClient`) forwarding frames to the webview — that glue + non-loopback
+  production hardening remain.
 - [~] Render the complete bounded local situation actually received from the
   Universe: Nodes, Assets, relations, active CodeDefinitions, loops, gates,
   objectives, decisions, evidence, receipts, health, folds, and residency.
@@ -365,17 +387,34 @@ ImportBatch
   `validateEmbodimentMapping`. Proven on a seeded citizen world
   (`citizen-embodiment-resolution.test.ts`). Semantic, physical, and interaction
   mappings from authority remain open.
-- [ ] Make imported PostgreSQL Nodes and converted Assets progressively visible
+- [~] Make imported PostgreSQL Nodes and converted Assets progressively visible
   as their authoritative batches commit, without whole-Universe scans.
-- [ ] Provide usable world-native navigation, focus, selection, expansion,
+  Foundation landed: `desktop_world_delta` streams ONLY a batch's own write-set
+  as `entity_materialized`/`relation_materialized` frames (a demo batch-2 adds
+  one actor → a 2-frame delta, independent of Universe size), and the app folds
+  the delta onto the existing view with sequence continuity
+  (`progressive-delta.test.ts`: 3 → 4 entities, batch-1 never re-sent). The delta
+  *stream* is scan-free (bounded to the write-set); only verification replays.
+  Still open: driving deltas from real imported PostgreSQL/Asset batches and
+  release/tombstone deltas.
+- [~] Provide usable world-native navigation, focus, selection, expansion,
   release, replay trails, epistemic distinctions, and Actor/Observer
-  interaction without default product panels.
+  interaction without default product panels. Interaction logic landed +
+  unit-tested: `navigation.ts` is a pure reducer for focus, (additive) selection,
+  expansion/release, trail toggle, and Actor/Observer control intent, plus
+  `pruneNav` which drops focus/selection/actor for entities removed from the view
+  (e.g. by a delta). Still open: the 3D world-native gestures/rendering on top.
 - [ ] Add deterministic visual fixtures and screenshot/video regression tests
   for normal operation, partial data, stale state, resync, failed receipts,
   broken health, Asset invalidation, and progressive import.
-- [ ] Measure frame time, event-to-photon latency, CPU/GPU memory, draw calls,
+- [~] Measure frame time, event-to-photon latency, CPU/GPU memory, draw calls,
   stream bandwidth, and active-region limits on declared hardware and data
-  sizes.
+  sizes. The stream-measurable subset landed + unit-tested: `stream-metrics.ts`
+  counts frames received/applied/rejected/dropped, bytes (bandwidth), and
+  gaps/resyncs. The renderer-side metrics (frame time, event-to-photon latency,
+  draw calls, GPU memory) require the GPU pipeline and are honestly flagged
+  `gpuMetricsMeasured: false` rather than reported as fabricated zeros. Still
+  open: the GPU-side measurements on declared hardware.
 
 ### Product-goal completion gate
 
