@@ -1,0 +1,694 @@
+{
+  "contract": "mind-universe-authority-fixture",
+  "version": 0,
+  "universe": "0000000000000000000000000a701091",
+  "symbols": [
+    "mutation_bond",
+    "command_kind",
+    "field_schema",
+    "WRITES_KIND",
+    "TARGETS_WRITE",
+    "USES_FIELD_SCHEMA",
+    "WRITES_INTO",
+    "CONSTRUCTED_BY"
+  ],
+  "entities": [
+    {
+      "key": "00000000000000000000000000004000",
+      "symbol": "change",
+      "content": {
+        "activation": "active_graph_overlay",
+        "base_manifest": "00000000000000000000000000001000",
+        "base_schema_version": "1.17.0",
+        "change_id": "mutation-bond-authority-v1",
+        "kind": "ontology_changeset",
+        "members": [
+          "00000000000000000000000000004001",
+          "00000000000000000000000000004010",
+          "00000000000000000000000000004011",
+          "00000000000000000000000000004012",
+          "00000000000000000000000000004030",
+          "00000000000000000000000000004031",
+          "00000000000000000000000000004032",
+          "00000000000000000000000000004033",
+          "00000000000000000000000000004034",
+          "00000000000000000000000000004060",
+          "00000000000000000000000000004061",
+          "00000000000000000000000000004062",
+          "00000000000000000000000000004063",
+          "00000000000000000000000000004064",
+          "00000000000000000000000000004070",
+          "00000000000000000000000000004071",
+          "00000000000000000000000000004072",
+          "00000000000000000000000000004073",
+          "00000000000000000000000000004074",
+          "00000000000000000000000000004075"
+        ],
+        "objective": "Activate the MutationBond graph vocabulary and one fully relation-bound MutationBond whose only effect compiles to the four kernel write verbs.",
+        "status": "approved_by_fixture_authority",
+        "target_schema_version": "1.18.0-mutation-bond.1"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004001",
+      "symbol": "protocol",
+      "content": {
+        "compilation": {
+          "command_kinds": [
+            "intern_symbols",
+            "put_entity",
+            "put_relation",
+            "tombstone_relation"
+          ],
+          "missing_binding": "not_measured_and_inert",
+          "no_fifth_write_verb": true,
+          "predicate_name_dispatch": false,
+          "reification": "executable_relations_only",
+          "unresolved_ontology_gap": "reject"
+        },
+        "contract_id": "mutation-bond-projection",
+        "contract_version": "1.0.0",
+        "kind": "atom_projection_contract",
+        "mutation_bond_shape": {
+          "CONSTRUCTED_BY": {
+            "cardinality": "one_or_more",
+            "target_groups": [
+              "evidence",
+              "design"
+            ]
+          },
+          "TARGETS_WRITE": {
+            "cardinality": "exactly_one",
+            "target": "any_atom"
+          },
+          "USES_FIELD_SCHEMA": {
+            "cardinality": "exactly_one",
+            "target_kind": "field_schema"
+          },
+          "WRITES_INTO": {
+            "cardinality": "exactly_one",
+            "target_kind": "space"
+          },
+          "WRITES_KIND": {
+            "cardinality": "exactly_one",
+            "target_kind": "command_kind"
+          }
+        },
+        "status": "active_graph_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004010",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "mutation_bond",
+        "definition_kind": "semantic_type",
+        "description": "A reified executable write-relation whose bindings remain graph relations and whose only effect compiles to the four kernel write verbs.",
+        "kind": "ontology_extension_definition",
+        "status": "active_overlay",
+        "stored_node_type": "thing"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004011",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "command_kind",
+        "definition_kind": "semantic_type",
+        "description": "One of the four closed kernel write verbs (intern_symbols, put_entity, put_relation, tombstone_relation) a MutationBond may emit.",
+        "kind": "ontology_extension_definition",
+        "status": "active_overlay",
+        "stored_node_type": "thing"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004012",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "field_schema",
+        "definition_kind": "semantic_type",
+        "description": "The declared shape of the content a MutationBond writes, so the write is bounded and inspectable rather than free-form.",
+        "kind": "ontology_extension_definition",
+        "status": "active_overlay",
+        "stored_node_type": "thing"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004030",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "WRITES_KIND",
+        "definition_kind": "predicate",
+        "endpoint_constraint": {
+          "source_types": [
+            "mutation_bond"
+          ],
+          "target": "command_kind"
+        },
+        "family": "workflow",
+        "kind": "ontology_extension_definition",
+        "physical_profile": "00000000000000000000000000004060",
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004031",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "TARGETS_WRITE",
+        "definition_kind": "predicate",
+        "endpoint_constraint": {
+          "source_types": [
+            "mutation_bond"
+          ],
+          "target": "any_atom"
+        },
+        "family": "workflow",
+        "kind": "ontology_extension_definition",
+        "physical_profile": "00000000000000000000000000004061",
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004032",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "USES_FIELD_SCHEMA",
+        "definition_kind": "predicate",
+        "endpoint_constraint": {
+          "source_types": [
+            "mutation_bond"
+          ],
+          "target": "field_schema"
+        },
+        "family": "contextual",
+        "kind": "ontology_extension_definition",
+        "physical_profile": "00000000000000000000000000004062",
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004033",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "WRITES_INTO",
+        "definition_kind": "predicate",
+        "endpoint_constraint": {
+          "source_types": [
+            "mutation_bond"
+          ],
+          "target": "space"
+        },
+        "family": "contextual",
+        "kind": "ontology_extension_definition",
+        "physical_profile": "00000000000000000000000000004063",
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004034",
+      "symbol": "terme",
+      "content": {
+        "canonical": true,
+        "canonical_id": "CONSTRUCTED_BY",
+        "definition_kind": "predicate",
+        "endpoint_constraint": {
+          "source_types": [
+            "mutation_bond"
+          ],
+          "target": "evidence_or_design"
+        },
+        "family": "evidence",
+        "kind": "ontology_extension_definition",
+        "physical_profile": "00000000000000000000000000004064",
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004060",
+      "symbol": "mechanism",
+      "content": {
+        "kind": "atom_projection_profile",
+        "logic": {
+          "default_role": "neutral",
+          "transfers_energy": false
+        },
+        "predicate": "WRITES_KIND",
+        "profile_id": "atom-profile-WRITES_KIND",
+        "spatial": {
+          "materialization": "none"
+        },
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004061",
+      "symbol": "mechanism",
+      "content": {
+        "kind": "atom_projection_profile",
+        "logic": {
+          "default_role": "neutral",
+          "transfers_energy": false
+        },
+        "predicate": "TARGETS_WRITE",
+        "profile_id": "atom-profile-TARGETS_WRITE",
+        "spatial": {
+          "materialization": "none"
+        },
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004062",
+      "symbol": "mechanism",
+      "content": {
+        "kind": "atom_projection_profile",
+        "logic": {
+          "default_role": "neutral",
+          "transfers_energy": false
+        },
+        "predicate": "USES_FIELD_SCHEMA",
+        "profile_id": "atom-profile-USES_FIELD_SCHEMA",
+        "spatial": {
+          "materialization": "none"
+        },
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004063",
+      "symbol": "mechanism",
+      "content": {
+        "kind": "atom_projection_profile",
+        "logic": {
+          "default_role": "neutral",
+          "transfers_energy": false
+        },
+        "predicate": "WRITES_INTO",
+        "profile_id": "atom-profile-WRITES_INTO",
+        "spatial": {
+          "materialization": "none"
+        },
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004064",
+      "symbol": "mechanism",
+      "content": {
+        "kind": "atom_projection_profile",
+        "logic": {
+          "default_role": "neutral",
+          "transfers_energy": false
+        },
+        "predicate": "CONSTRUCTED_BY",
+        "profile_id": "atom-profile-CONSTRUCTED_BY",
+        "spatial": {
+          "materialization": "none"
+        },
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004070",
+      "symbol": "mutation_bond",
+      "content": {
+        "kind": "mutation_bond_instance",
+        "runtime_binding": {
+          "kind": "mutation_bond",
+          "value": {
+            "authority": {
+              "change_set": "00000000000000000000000000004000",
+              "change_set_revision": 1,
+              "hashes_status": "not_yet_materialized"
+            },
+            "budgets": {
+              "lifetime_ticks": 4,
+              "max_entities": 1,
+              "max_relations": 0,
+              "max_total_energy": 1000000,
+              "max_wake_cost": 4,
+              "max_writes": 1
+            },
+            "command_kind": "put_entity"
+          }
+        },
+        "status": "active_fixture"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004071",
+      "symbol": "command_kind",
+      "content": {
+        "command_kind": "put_entity",
+        "kind": "command_kind_instance",
+        "note": "The sole kernel write verb this bond is authorized to emit.",
+        "status": "active_fixture"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004072",
+      "symbol": "claim",
+      "content": {
+        "kind": "mutation_write_target",
+        "label": "the entity this bond will put",
+        "status": "not_measured",
+        "target_kind": "entity"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004073",
+      "symbol": "field_schema",
+      "content": {
+        "field_schema": {
+          "content_kind": "built_position",
+          "required_fields": [
+            "x",
+            "y",
+            "z"
+          ]
+        },
+        "kind": "field_schema_instance",
+        "status": "active_fixture"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004074",
+      "symbol": "space",
+      "content": {
+        "kind": "mutation_target_space",
+        "label": "the bounded Space this bond may write into",
+        "space_role": "l1_personal_graph",
+        "status": "active_fixture"
+      }
+    },
+    {
+      "key": "00000000000000000000000000004075",
+      "symbol": "observation",
+      "content": {
+        "constructor": "authority-fixture",
+        "epistemic": {
+          "state": "measured",
+          "value": true
+        },
+        "kind": "mutation_construction",
+        "statement": "This MutationBond was constructed by the approved authority fixture."
+      }
+    }
+  ],
+  "relations": [
+    {
+      "key": "00000000000000000000000000007000",
+      "source": "00000000000000000000000000004000",
+      "target": "00000000000000000000000000001000",
+      "predicate": "PROPOSES_CHANGE_TO",
+      "content": {
+        "justification": "The approved ChangeSet explicitly targets the canonical ontology manifest.",
+        "kind": "ontology_relation",
+        "role": "changeset_target"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007001",
+      "source": "00000000000000000000000000004001",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The atom-projection contract is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007002",
+      "source": "00000000000000000000000000004010",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The mutation_bond semantic type is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007003",
+      "source": "00000000000000000000000000004011",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The command_kind semantic type is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007004",
+      "source": "00000000000000000000000000004012",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The field_schema semantic type is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007005",
+      "source": "00000000000000000000000000004030",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The WRITES_KIND predicate is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007006",
+      "source": "00000000000000000000000000004031",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The TARGETS_WRITE predicate is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007007",
+      "source": "00000000000000000000000000004032",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The USES_FIELD_SCHEMA predicate is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007008",
+      "source": "00000000000000000000000000004033",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The WRITES_INTO predicate is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007009",
+      "source": "00000000000000000000000000004034",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The CONSTRUCTED_BY predicate is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000700a",
+      "source": "00000000000000000000000000004060",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The WRITES_KIND projection profile is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000700b",
+      "source": "00000000000000000000000000004061",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The TARGETS_WRITE projection profile is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000700c",
+      "source": "00000000000000000000000000004062",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The USES_FIELD_SCHEMA projection profile is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000700d",
+      "source": "00000000000000000000000000004063",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The WRITES_INTO projection profile is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000700e",
+      "source": "00000000000000000000000000004064",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The CONSTRUCTED_BY projection profile is an explicit member of the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000700f",
+      "source": "00000000000000000000000000004070",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The executable MutationBond instance belongs to the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007010",
+      "source": "00000000000000000000000000004071",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The bound command_kind node belongs to the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007011",
+      "source": "00000000000000000000000000004072",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The write-target node belongs to the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007012",
+      "source": "00000000000000000000000000004073",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The field-schema node belongs to the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007013",
+      "source": "00000000000000000000000000004074",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The target Space node belongs to the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007014",
+      "source": "00000000000000000000000000004075",
+      "target": "00000000000000000000000000004000",
+      "predicate": "PART_OF",
+      "content": {
+        "justification": "The construction justification node belongs to the approved ChangeSet.",
+        "kind": "ontology_relation",
+        "role": "changeset_membership"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007100",
+      "source": "00000000000000000000000000004070",
+      "target": "00000000000000000000000000004071",
+      "predicate": "WRITES_KIND",
+      "content": {
+        "justification": "This relation binds the sole kernel write verb this bond emits.",
+        "kind": "ontology_relation",
+        "role": "mutation_binding"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007101",
+      "source": "00000000000000000000000000004070",
+      "target": "00000000000000000000000000004072",
+      "predicate": "TARGETS_WRITE",
+      "content": {
+        "justification": "This relation binds the single atom this bond will write.",
+        "kind": "ontology_relation",
+        "role": "mutation_binding"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007102",
+      "source": "00000000000000000000000000004070",
+      "target": "00000000000000000000000000004073",
+      "predicate": "USES_FIELD_SCHEMA",
+      "content": {
+        "justification": "This relation binds the declared field schema bounding the written content.",
+        "kind": "ontology_relation",
+        "role": "mutation_binding"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007103",
+      "source": "00000000000000000000000000004070",
+      "target": "00000000000000000000000000004074",
+      "predicate": "WRITES_INTO",
+      "content": {
+        "justification": "This relation binds the bounded Space this bond may write into.",
+        "kind": "ontology_relation",
+        "role": "mutation_binding"
+      }
+    },
+    {
+      "key": "00000000000000000000000000007104",
+      "source": "00000000000000000000000000004070",
+      "target": "00000000000000000000000000004075",
+      "predicate": "CONSTRUCTED_BY",
+      "content": {
+        "justification": "This relation binds the measured construction justification for this bond.",
+        "kind": "ontology_relation",
+        "role": "mutation_binding"
+      }
+    }
+  ]
+}

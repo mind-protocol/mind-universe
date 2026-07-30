@@ -1,0 +1,613 @@
+{
+  "contract": "mind-universe-authority-fixture",
+  "version": 0,
+  "universe": "0000000000000000000000000a701091",
+  "provenance": {
+    "note": "Translates the ChatGPT-authored 'Visual Health Chain' self-verifying-loop bundle (nodes-as-code convention) into ONE governing mind-universe authority-fixture loop, mirroring the ChangeSet-overlay shape of vision-integration-loop-authority.json. Each bundle role node becomes one loop_* member; the two runtime production_rules and the visual_contract are carried as content on the loop_space (they are produced by execution, not pre-created as entities). Two required additions are folded in: (1) toolkit TOTALITY on a declared rayon, and (2) binding to the concrete visual-embodiment/1 primitive contract in crates/universe-assets/src/visual.rs. This file is the graph authority; it is structurally valid and activatable, but no runtime Observer has run, so loop Health remains not_measured.",
+    "source_bundle": "visual-health-chain-bundle.py (module_id space:mind-meta:visual-health-chain-v0)",
+    "template_mirrored": "fixtures/ontology/vision-integration-loop-authority.json",
+    "primitive_contract_authority": "crates/universe-assets/src/visual.rs (visual-embodiment/1)"
+  },
+  "symbols": [
+    "GOVERNS",
+    "ADDRESSED_BY",
+    "SHAPES",
+    "REFINED_BY",
+    "USES_VOCABULARY",
+    "DEFINED_BY",
+    "REALIZED_BY",
+    "CHALLENGED_BY",
+    "OBSERVED_BY",
+    "VERIFIED_BY",
+    "MEASURED_BY",
+    "SUMMARIZED_AS",
+    "REPAIRED_BY",
+    "JUSTIFIED_BY"
+  ],
+  "entities": [
+    {
+      "key": "00000000000000000000000000003500",
+      "symbol": "change",
+      "content": {
+        "kind": "ontology_changeset",
+        "activation": "active_graph_overlay",
+        "base_manifest": "00000000000000000000000000001000",
+        "base_schema_version": "1.17.0",
+        "change_id": "visual-health-chain-loop-authority-v1",
+        "objective": "Activate the ChatGPT-authored Visual Health Chain self-verifying loop as health-measured graph authority: a shared evidence-bearing visual spine that is TOTAL on its declared rayon and bound to the concrete visual-embodiment/1 primitive contract.",
+        "status": "approved_by_fixture_authority",
+        "target_schema_version": "1.18.0-visual-health-chain-loop.1"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003501",
+      "symbol": "space",
+      "content": {
+        "kind": "loop_space",
+        "canonical_id": "visual-health-chain",
+        "source_node_id": "space:mind-meta:visual-health-chain-v0",
+        "contractKind": "self_verifying_loop",
+        "title": "Visual Health Chain",
+        "version": 0,
+        "layer": "L2",
+        "status": "active_overlay",
+        "classification": "shared",
+        "parentScope": {
+          "kind": "shared",
+          "justification": "Reusable health-chain contract consumed by toolkit loops through USES or DEPENDS_ON; it is not structurally owned by one exclusive toolkit."
+        },
+        "implementationState": "graph-defined",
+        "epistemicStatus": "observed",
+        "runtimeMomentsArePrecreated": false,
+        "runtimeMomentSubtypes": ["validation_run", "health_assessment"],
+        "requiredRoleSubtypes": ["objective", "pattern", "vocabulary", "behavior", "algorithm", "code", "implementation", "justification", "validation", "observability_algorithm", "metric", "health"],
+        "requiredRelations": ["IMPLEMENTED_IN", "DEFINED_BY_CODE", "IMPLEMENTED_BY", "JUSTIFIED_BY", "VALIDATED_BY", "OBSERVED_BY", "PRODUCES", "FEEDS", "SUPPORTS"],
+        "boundaries": {
+          "reads": ["the toolkit loop roles/relations/physicalization binding", "canonical graph snapshot", "construction and commit receipts", "runtime validation output", "renderer object+relation+primitive manifest", "render budget telemetry", "freshness timestamps", "toolkit primitive allowlist"],
+          "writes": ["graph authority overlay only (ChangeSet members + relations)"],
+          "forbidden_effects": ["displaying energy/motion/position/importance from a signal that is not measured", "overwriting Built placement with Derived placement", "default or self-reported healthy", "collapsing health dimensions into one opaque score", "using a primitive outside the toolkit allowed set", "a coverage hole in the declared rayon", "silently dropping an out-of-rayon configuration instead of declaring it out-of-scope"],
+          "scope": "the shared visual health chain spine and its per-toolkit bindings",
+          "dependencies": ["a generic authority-fixture activator", "the concrete visual-embodiment/1 contract in crates/universe-assets/src/visual.rs"],
+          "missing_evidence_behavior": "mark not_measured; emit the defined identity/fog instruction; never assert healthy from the presence of a fixture or renderer frame"
+        },
+        "rayon": {
+          "description": "The declared TOTAL configuration space. A toolkit kit MUST be a total function on this rayon: exactly one defined instruction (render AND affordance) per in-rayon configuration; an out-of-rayon configuration must be explicitly declared out-of-scope, never silently dropped.",
+          "axes": {
+            "roleAxis": {"cardinality": 5, "members": ["Actor", "Moment", "Narrative", "Space", "Thing"], "note": "The five universal node types this repository enumerates; each visual piece carries exactly one."},
+            "declaredSemanticTypes": {"cardinality": "toolkit-enumerable", "note": "The finite, closed set of semanticTypes the toolkit declares a mapping for. A semanticType inside the rayon with no mapping is a coverage hole."},
+            "lod_state": {"cardinality": 4, "members": ["hot", "sleeping", "aggregated", "dormant"], "note": "Renderer residencies (visual-embodiment/1 lod_states)."},
+            "signalState": {"cardinality": 27, "signals": ["energy", "weight", "embedding"], "perSignal": ["measured", "absent", "not_measured"], "note": "Each of the three signals independently takes one of three states -> 3^3 = 27 combinations."},
+            "relationFamily": {"cardinality": 6, "members": ["energizing", "inhibiting", "fork", "answer", "structural", "neutral"]},
+            "atomStateBand": {"cardinality": 5, "members": ["below_threshold", "at_threshold", "fired", "inhibited", "starved"], "appliesTo": "energy kit only"}
+          },
+          "cardinality_formula": "roleAxis(5) x |declaredSemanticTypes| x lod_state(4) x signalState(27) x relationFamily(6); the energy kit additionally x atomStateBand(5)",
+          "totality_rule": "Every in-rayon configuration maps to exactly one defined instruction. A configuration with no instruction is a coverage hole (rejected, naming the missing config). An ambiguous configuration (more than one instruction) is rejected. An out-of-rayon configuration must be declared out-of-scope, never silently dropped.",
+          "never_invent_reconciliation": "Totality does NOT conflict with 'never invent': the not_measured and absent configurations have a DEFINED instruction that is identity/fog (recognizable shell, empty measurement socket, no fabricated value). Identity/fog is still exactly one defined instruction."
+        },
+        "runtime_production_rules": [
+          {"producer": "validation:mind-meta:visual-health-chain:v0", "relation": "PRODUCES", "runtime_moment_subtype": "validation_run", "precreated": false, "required_fields": ["run_id", "loop_id", "validation_id", "started_at", "finished_at", "fixture_results", "invariant_results", "evidence_refs", "execution_status"]},
+          {"producer": "health:mind-meta:visual-health-chain:v0", "relation": "PRODUCES", "runtime_moment_subtype": "health_assessment", "precreated": false, "required_fields": ["assessment_id", "loop_id", "observer_run_ref", "metric_samples", "derived_state", "derived_at", "fresh_until", "evidence_refs", "failure_front"]}
+        ],
+        "visual_contract": {
+          "identityBeforeStatus": true,
+          "colorOnlyForbidden": true,
+          "statusChannels": {
+            "healthy": ["complete geometry", "stable alignment", "continuous flow"],
+            "degraded": ["local tension", "misalignment", "reduced flow", "bounded discontinuity"],
+            "stale": ["motion frozen", "age marker", "expired evidence label"],
+            "unknown": ["recognizable shell", "unresolved interior", "explicit unknown label"],
+            "not_measured": ["empty measurement socket", "no inferred value", "not measured label"],
+            "measurement_failed": ["broken measurement path", "failure marker at origin", "downstream interruption"],
+            "known_absent": ["bounded explicit absence", "proof-of-absence reference"],
+            "measured": ["value marker", "provenance", "freshness"],
+            "observed": ["observation trace", "evidence reference"]
+          },
+          "failurePropagationExample": {"observer": "measurement_failed", "metric": "not_measured", "health_assessment": "measurement_failed", "implementation_health": "unknown"},
+          "toolkitBindingExamples": {"room": "cards, strings, clips, test bench", "machine": "modules, cables, sensors, diagnostic bus", "garden": "roots, sap flow, branches, sentinel organs", "city": "buildings, roads, observatory, maintenance network", "blueprint": "functional blocks, signal lines, diagnostic layers"}
+        },
+        "loop_canonical_relations": [
+          {"from": "pattern:mind-meta:visual-health-chain:v0", "type": "IMPLEMENTED_IN", "to": "implementation:mind-meta:visual-health-chain:v0"},
+          {"from": "algorithm:mind-meta:visual-health-chain:v0", "type": "DEFINED_BY_CODE", "to": "code:mind-meta:visual-health-chain:v0"},
+          {"from": "code:mind-meta:visual-health-chain:v0", "type": "IMPLEMENTED_BY", "to": "implementation:mind-meta:visual-health-chain:v0"},
+          {"from": "objective:mind-meta:visual-health-chain:v0", "type": "JUSTIFIED_BY", "to": "justification:mind-meta:visual-health-chain:v0"},
+          {"from": "behavior:mind-meta:visual-health-chain:v0", "type": "VALIDATED_BY", "to": "validation:mind-meta:visual-health-chain:v0"},
+          {"from": "observability_algorithm:mind-meta:visual-health-chain:v0", "type": "VALIDATED_BY", "to": "validation:mind-meta:visual-health-chain-observer:v0"},
+          {"from": "implementation:mind-meta:visual-health-chain:v0", "type": "OBSERVED_BY", "to": "observability_algorithm:mind-meta:visual-health-chain:v0"},
+          {"from": "observability_algorithm:mind-meta:visual-health-chain:v0", "type": "PRODUCES", "to": "metric:mind-meta:visual-health-chain:v0"},
+          {"from": "metric:mind-meta:visual-health-chain:v0", "type": "FEEDS", "to": "health:mind-meta:visual-health-chain:v0"},
+          {"from": "health:mind-meta:visual-health-chain:v0", "type": "SUPPORTS", "to": "objective:mind-meta:visual-health-chain:v0"},
+          {"from": "pattern:mind-meta:visual-health-chain:v0", "type": "SUPPORTS", "to": "objective:mind-meta:visual-health-chain:v0"},
+          {"from": "vocabulary:mind-meta:visual-health-chain:v0", "type": "SUPPORTS", "to": "behavior:mind-meta:visual-health-chain:v0"},
+          {"from": "algorithm:mind-meta:visual-health-chain:v0", "type": "SUPPORTS", "to": "behavior:mind-meta:visual-health-chain:v0"},
+          {"from": "health:mind-meta:visual-health-chain:v0", "type": "SUPPORTS", "to": "maintenance:mind-meta:visual-health-chain:v0"}
+        ]
+      }
+    },
+    {
+      "key": "00000000000000000000000000003502",
+      "symbol": "subentity_goal",
+      "content": {
+        "kind": "loop_objective",
+        "canonical_id": "visual-health-chain.objective",
+        "source_node_id": "objective:mind-meta:visual-health-chain:v0",
+        "observableSuccessCondition": "For every toolkit instance, an observer can trace the exact path from semantic promise to fresh evidence and derived health; each visual piece is modulated by its lifecycle, epistemic and health statuses without inventing missing signals or masking causal breaks.",
+        "successCriteria": ["Every required loop role has one visible, addressable representation.", "Every visible canonical edge resolves to a real allowed relation.", "The first causal break is visually localized.", "Downstream uncertainty is derived without falsely degrading upstream implementation state.", "No healthy state exists without a fresh runtime HealthAssessment.", "Built placement always takes precedence over Derived placement.", "Unmeasured energy, position or activity is never visually fabricated.", "Every configuration in the declared rayon maps to exactly one defined instruction (toolkit kit is total)."],
+        "epistemic": {"state": "not_measured"}
+      }
+    },
+    {
+      "key": "00000000000000000000000000003503",
+      "symbol": "design_rationale",
+      "content": {
+        "kind": "loop_pattern",
+        "canonical_id": "visual-health-chain.pattern",
+        "source_node_id": "pattern:mind-meta:visual-health-chain:v0",
+        "name": "Evidence-bearing visual spine",
+        "description": "A shared canonical health spine separates semantic identity, execution, observation, measurement, health derivation and repair. Toolkits bind the spine to their own physical archetypes while preserving the same causal topology and status semantics.",
+        "canonicalPath": ["objective", "pattern", "behavior", "algorithm", "code", "implementation", "validation", "validation_run(runtime)", "observability_algorithm", "metric", "health_assessment(runtime)", "health", "maintenance"],
+        "invariants": ["Identity shape is determined by semantic role, not by health color.", "Status modulates an existing identity; status never replaces semantic identity.", "Color is never the sole status channel.", "Runtime moments are produced by execution and never pre-seeded."],
+        "status": "active"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003504",
+      "symbol": "narrative",
+      "content": {
+        "kind": "loop_vocabulary",
+        "canonical_id": "visual-health-chain.vocabulary",
+        "source_node_id": "vocabulary:mind-meta:visual-health-chain:v0",
+        "terms": {
+          "semantic_identity": "The role and meaning represented by a visual piece.",
+          "lifecycle_status": ["planned", "graph-defined", "materialized", "wired", "running", "verified"],
+          "epistemic_status": ["observed", "measured", "known_absent", "unknown", "not_measured", "measurement_failed"],
+          "health_status": ["healthy", "degraded", "stale", "unknown", "not_measured", "measurement_failed"],
+          "built": "A position or construction committed by an actor.",
+          "derived": "A reconstructible suggestion or generated placement.",
+          "fresh_evidence": "Evidence whose age is within the metric-specific TTL.",
+          "failure_front": "The first causal point where evidence or execution ceases to satisfy the contract.",
+          "downstream_indeterminate": "A state whose value cannot be established because an upstream proof is unavailable or failed.",
+          "maintenance_affordance": "A reversible action offered to restore measurement, wiring, calibration or materialization.",
+          "rayon": "The declared, enumerable total configuration space on which a toolkit kit must be a total function.",
+          "coverage_hole": "An in-rayon configuration with no defined instruction (a totality violation)."
+        },
+        "forbiddenConflations": ["running == healthy", "empty_result == known_absent", "missing_value == 0", "rendered == committed", "file_exists == deployed", "observer_failure == implementation_degraded", "stale_healthy_measurement == healthy"],
+        "status": "active"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003505",
+      "symbol": "narrative",
+      "content": {
+        "kind": "loop_behavior",
+        "canonical_id": "visual-health-chain.behavior",
+        "source_node_id": "behavior:mind-meta:visual-health-chain:v0",
+        "given": ["A toolkit loop with semantic roles, relations and a physicalization binding.", "Current graph state, construction receipts and runtime evidence.", "Explicit lifecycle, epistemic and health statuses where available."],
+        "when": ["The toolkit is materialized or refreshed.", "A runtime validation or observation produces new evidence.", "Evidence becomes stale, missing or fails to measure.", "A user inspects or repairs a visual piece."],
+        "then": ["Render each role with its semantic archetype.", "Modulate geometry, filling, motion, continuity and labels from orthogonal statuses.", "Render only relations that exist and are allowed.", "Reveal the first causal failure front and downstream consequences.", "Expose evidence provenance, freshness and maintenance affordances.", "Produce runtime ValidationRun and HealthAssessment moments only through execution.", "For every configuration in the declared rayon (roleAxis x declaredSemanticTypes x lod_state x signalState x relationFamily, and atomStateBand for the energy kit), emit exactly one defined instruction covering BOTH render AND affordance; the not_measured / absent configurations emit the identity/fog instruction rather than a fabricated value."],
+        "forbidden": ["Display energy, motion, importance or position from a signal that is not measured.", "Invent a position for an absent signal.", "Overwrite Built placement with Derived placement.", "Display healthy by default or from implementation self-report.", "Collapse health dimensions into one opaque score.", "Treat an absent proof as a successful proof.", "Use a primitive outside the toolkit's allowed primitive set.", "Hide a measurement failure by reusing an old healthy state.", "Pre-create validation_run or health_assessment moments.", "Leave a configuration inside the declared rayon with no instruction (a coverage hole) or with an ambiguous / multiple instruction.", "Drop an out-of-rayon configuration silently instead of explicitly declaring it out-of-scope."],
+        "status": "active"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003506",
+      "symbol": "narrative",
+      "content": {
+        "kind": "loop_algorithm",
+        "canonical_id": "visual-health-chain.algorithm",
+        "source_node_id": "algorithm:mind-meta:visual-health-chain:v0",
+        "orderedSteps": ["Resolve the toolkit loop and verify exactly one valid parent-scope classification.", "Resolve the 12 required role subtypes and the 9 required relation types.", "Load the toolkit PhysicalizationBinding and its allowed primitive set.", "Read canonical Built state, then optional Derived state.", "Apply Built-over-Derived precedence per visual property.", "Collect fresh runtime evidence without substituting missing values.", "Assign lifecycle and epistemic statuses independently for every piece.", "Enumerate the declared rayon and confirm exactly one defined instruction per in-rayon configuration (identity/fog for not_measured / absent), rejecting coverage holes.", "Run validation expression AST against fixtures and live evidence.", "Create a validation_run moment from actual execution output.", "Run the independent observer against graph, receipts, renderer manifest and budgets.", "Emit a metric vector with per-dimension provenance and freshness.", "Evaluate health through the canonical health expression AST.", "Create a health_assessment moment from measured evidence.", "Render the failure front, downstream indeterminacy and repair affordances.", "Re-observe the resulting physicalization and record discrepancies."],
+        "precedenceRules": [{"property": "position", "order": ["Built", "Derived", "IdentityDefault"]}, {"property": "orientation", "order": ["Built", "Derived", "IdentityDefault"]}, {"property": "semantic_identity", "order": ["CanonicalRole"]}, {"property": "status_modulation", "order": ["MeasuredStatus", "ExplicitUnknown"]}],
+        "epistemicPreservation": {"missing": "unknown", "never_executed": "not_measured", "execution_failed": "measurement_failed", "proved_absent": "known_absent", "observed_not_quantified": "observed", "quantified_with_provenance": "measured"},
+        "totality_note": "Totality over the rayon preserves 'never invent': the not_measured / absent configurations resolve to the identity/fog instruction (a single defined instruction), so no configuration is left undefined AND no missing value is fabricated.",
+        "status": "active"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003507",
+      "symbol": "thing",
+      "content": {
+        "kind": "loop_code_definition",
+        "canonical_id": "visual-health-chain.code_definition",
+        "source_node_id": "code:mind-meta:visual-health-chain:v0",
+        "authority": "graph-native",
+        "language": "causal-expression-ast-v1",
+        "moduleEnvelope": {"id": "string", "node_type": "space", "subtype": "string", "content.contractKind": "self_verifying_loop"},
+        "pieceStateSchema": {"lifecycle": ["planned", "graph-defined", "materialized", "wired", "running", "verified"], "epistemic": ["observed", "measured", "known_absent", "unknown", "not_measured", "measurement_failed"], "health": ["healthy", "degraded", "stale", "unknown", "not_measured", "measurement_failed"], "evidenceRefs": "string[]", "observedAt": "timestamp|null", "evidenceAgeSeconds": "number|null", "blockingCauses": "string[]"},
+        "healthExpressionAst": {"op": "cond", "branches": [{"if": {"op": "eq", "left": {"ref": "observer.execution_status"}, "right": "failure"}, "then": "measurement_failed"}, {"if": {"op": "eq", "left": {"ref": "required_measurements.executed"}, "right": false}, "then": "not_measured"}, {"if": {"op": "gt", "left": {"ref": "evidence.age_seconds"}, "right": {"ref": "evidence.ttl_seconds"}}, "then": "stale"}, {"if": {"op": "gt", "left": {"ref": "hard_invariant_failures.count"}, "right": 0}, "then": "degraded"}, {"if": {"op": "and", "args": [{"op": "eq", "left": {"ref": "required_measurements.complete"}, "right": true}, {"op": "eq", "left": {"ref": "all_thresholds.pass"}, "right": true}, {"op": "eq", "left": {"ref": "evidence.fresh"}, "right": true}]}, "then": "healthy"}], "else": "unknown"},
+        "noImplicitPython": true,
+        "pythonEscapeHatch": {"allowed": true, "sandboxed": true, "mustBeExplicit": true, "mayNotSetHealthDirectly": true},
+        "primitive_contract": {
+          "note": "The bundle's placeholder primitives are replaced by the concrete visual-embodiment/1 contract that the mind-desktop renderer and universe-assets both enforce.",
+          "schema_version": "visual-embodiment/1",
+          "authority_source": "crates/universe-assets/src/visual.rs",
+          "allowed_primitives": ["icosphere", "sphere", "capsule", "points", "fresnel_shell"],
+          "form_primitive_tuple": {
+            "arity": 8,
+            "fields": ["kind", "part_name", "palette_role", "offset(vec3)", "rotation(vec3)", "scale(vec3>0)", "particle_count", "particle_size"],
+            "constraints": {"kind": "must be one of allowed_primitives", "offset": "finite vec3", "rotation": "finite vec3", "scale": "vec3 with every component strictly > 0", "particle_count": "integer; contributes to particle_budget only when kind == points", "particle_size": "number"}
+          },
+          "primitive_budget": {"max": 12, "rule": "each form has at most primitive_budget primitives; primitive_budget in 1..=12"},
+          "particle_budget": {"max": 160, "rule": "sum of particle_count over 'points' primitives must not exceed particle_budget"},
+          "lod_states": {"required_residencies": ["dormant", "aggregated", "sleeping", "hot"], "rule": "each residency maps to a defined form; missing residency falls back to the declared fallback_form, never an invented form"},
+          "dynamics": {"tuple": ["inMin", "inMax", "outMin", "outMax"], "rule": "bounded mapping tuples: input range [inMin,inMax] maps to output range [outMin,outMax]; no unbounded modulation"}
+        },
+        "status": "graph_defined"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003508",
+      "symbol": "system_state",
+      "content": {
+        "kind": "loop_implementation",
+        "canonical_id": "visual-health-chain.implementation",
+        "source_node_id": "implementation:mind-meta:visual-health-chain:v0",
+        "state": "graph-defined",
+        "honestStatus": "The canonical module, rules, fixtures and physicalization contract are defined in this bundle. No claim is made that it is materialized, wired, running or verified in the live Mind runtime.",
+        "components": ["Shared semantic health spine", "Status modulation contract", "Expression AST health evaluator", "Independent observer procedure", "Validation and observer-validation fixtures", "Metric vector", "Maintenance affordance definitions", "Toolkit binding interface"],
+        "toolkitBindingInterface": {"toolkitId": "SemanticId", "roleArchetypes": "Record<LoopRole, PhysicalArchetype>", "relationArchetypes": "Record<RelationType, PhysicalRelationArchetype>", "statusMappings": "Record<Status, VisualTransformation>", "allowedPrimitives": "PrimitiveId[]", "budgets": "RenderBudget", "maintenanceAffordances": "Record<FailureKind, AffordanceId[]>"},
+        "materialized_substrate_note": "The concrete allowedPrimitives / budgets / lod_states that this interface abstracts are realized by crates/universe-assets/src/visual.rs (visual-embodiment/1). This node records where the contract physically lives; it does not assert runtime activation.",
+        "wired": false,
+        "running": "not_measured",
+        "verified": "not_measured"
+      }
+    },
+    {
+      "key": "00000000000000000000000000003509",
+      "symbol": "design_rationale",
+      "content": {
+        "kind": "loop_justification",
+        "canonical_id": "visual-health-chain.justification",
+        "source_node_id": "justification:mind-meta:visual-health-chain:v0",
+        "whyItSatisfiesObjective": ["A shared causal spine makes all toolkit health states comparable without forcing one visual style.", "Orthogonal statuses prevent 'running', 'measured' and 'healthy' from being conflated.", "Independent observation prevents implementation self-report from manufacturing success.", "Built-over-Derived precedence preserves authored spatial meaning.", "Runtime-produced moments preserve epistemic honesty and freshness.", "Failure-front rendering makes repair causal rather than cosmetic.", "Totality over a declared rayon guarantees no silent coverage hole while identity/fog keeps unmeasured configurations honest."],
+        "rejectedAlternatives": [{"alternative": "Single red/green toolkit badge", "reason": "Hides the first failing mechanism and collapses unrelated dimensions."}, {"alternative": "Toolkit-specific health logic", "reason": "Creates divergent semantics and six incompatible definitions of health."}, {"alternative": "Renderer self-report", "reason": "A displayed object is not proof of semantic fidelity or committed state."}, {"alternative": "Default healthy until failure", "reason": "Fabricates health before measurement."}, {"alternative": "Embedding-derived layout as authority", "reason": "Can silently overwrite actor-built spatial semantics."}, {"alternative": "Partial (non-total) kit that renders only the configurations it happens to handle", "reason": "Leaves silent coverage holes; a configuration with no instruction is indistinguishable from an intended blank."}],
+        "epistemic": {"state": "design", "value": true},
+        "status": "active"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000350a",
+      "symbol": "thing",
+      "content": {
+        "kind": "loop_validation",
+        "canonical_id": "visual-health-chain.validation",
+        "source_node_id": "validation:mind-meta:visual-health-chain:v0",
+        "evaluator": "causal-expression-ast-v1",
+        "invariants": ["Exactly one valid parent-scope classification exists.", "All 12 required roles resolve.", "All required visible edges resolve to allowed canonical relations.", "No runtime moment exists before execution.", "Healthy requires a fresh produced HealthAssessment.", "Built precedence violations equal zero.", "Not-measured signals produce no semantic modulation.", "The renderer manifest contains no forbidden primitive.", "A measurement failure cannot be converted to zero or success.", "The toolkit kit is total on the declared rayon (zero coverage holes).", "Every rendered primitive obeys the visual-embodiment/1 contract (allowed kind, arity 8, within primitive_budget and particle_budget)."],
+        "primitive_contract_reference": {"schema_version": "visual-embodiment/1", "allowed_primitives": ["icosphere", "sphere", "capsule", "points", "fresnel_shell"], "arity": 8, "primitive_budget_max": 12, "particle_budget_max": 160, "source": "crates/universe-assets/src/visual.rs"},
+        "fixtures": [
+          {"id": "fixture:missing-energy", "setup": {"energy": {"epistemic": "not_measured"}}, "expect": ["no energy modulation", "identity geometry preserved", "health not inferred from energy"]},
+          {"id": "fixture:measured-energy", "setup": {"energy": {"epistemic": "measured", "value": 0.72, "provenance": "sensor:test"}}, "expect": ["bounded energy modulation", "provenance visible", "freshness recorded"]},
+          {"id": "fixture:built-beats-derived", "setup": {"builtPosition": [2, 4, 1], "derivedPosition": [9, 9, 9]}, "expect": {"renderedPosition": [2, 4, 1], "precedenceViolations": 0}},
+          {"id": "fixture:observer-failure", "setup": {"observerExecution": "failure"}, "expect": {"metric": "not_measured", "healthAssessment": "measurement_failed", "implementationHealth": "unknown"}},
+          {"id": "fixture:stale-proof", "setup": {"previousHealth": "healthy", "evidenceAgeSeconds": 900, "ttlSeconds": 300}, "expect": {"health": "stale"}},
+          {"id": "fixture:forbidden-primitive", "setup": {"rendererPrimitives": ["icosphere", "glow_orb"]}, "expect": {"health": "degraded", "failureFront": "physicalization_manifest", "reason": "glow_orb is not in visual-embodiment/1 ALLOWED_PRIMITIVES [icosphere, sphere, capsule, points, fresnel_shell]; icosphere is allowed"}},
+          {"id": "fixture:arity-8", "setup": {"formPrimitive": ["icosphere", "core", "primary", [0, 0, 0], [0, 0, 0], [1, 1, 1], 0]}, "expect": {"validation": "failure", "failureFront": "physicalization_manifest", "reason": "primitive tuple arity is 7; visual-embodiment/1 requires arity 8 [kind, part_name, palette_role, offset, rotation, scale, particle_count, particle_size] (particle_size missing)"}},
+          {"id": "fixture:budget", "setup": {"formPrimitiveCount": 13, "primitiveBudget": 12}, "expect": {"validation": "failure", "failureFront": "physicalization_manifest", "reason": "form exceeds primitive_budget (13 > 12); visual-embodiment/1 caps primitive_budget at 12"}},
+          {"id": "fixture:coverage-hole", "setup": {"declaredSemanticType": "unmapped_semantic_type", "inRayon": true, "mapping": null}, "expect": {"validation": "failure", "rejection": "coverage hole: in-rayon configuration {roleAxis, semanticType=unmapped_semantic_type, lod_state, signalState, relationFamily} has no defined instruction", "namesMissingConfig": true}},
+          {"id": "fixture:precreated-runtime-moment", "setup": {"preexistingMoment": "health_assessment", "producedByExecution": false}, "expect": {"validation": "failure"}},
+          {"id": "fixture:empty-is-not-absence", "setup": {"queryResult": [], "queryCompleteness": "unknown"}, "expect": {"epistemic": "unknown", "not": "known_absent"}}
+        ],
+        "status": "planned",
+        "execution_evidence": "not_measured"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000350b",
+      "symbol": "thing",
+      "content": {
+        "kind": "loop_observer",
+        "canonical_id": "visual-health-chain.observer",
+        "source_node_id": "observability_algorithm:mind-meta:visual-health-chain:v0",
+        "role_subtype": "observability_algorithm",
+        "independence": {"mustNotTrust": ["implementation health claim", "renderer success flag", "process running state", "file presence"], "evidenceSources": ["canonical graph snapshot", "construction and commit receipts", "runtime validation output", "renderer object and relation manifest", "frame/render budget telemetry", "freshness timestamps", "toolkit primitive allowlist"]},
+        "procedure": ["Resolve the loop snapshot independently from the implementation.", "Verify parent-scope classification.", "Enumerate required roles and canonical relations.", "Read construction receipts for Built spatial properties.", "Read the renderer manifest and compare objects, edges and primitives.", "Compare displayed status modulations with measured signal statuses.", "Verify no not_measured signal caused semantic modulation.", "Enumerate the declared rayon and count coverage holes (in-rayon configurations with no defined instruction).", "Calculate per-dimension metrics with provenance.", "Locate the first causal failure front.", "Emit metric samples and evidence references.", "Pass the vector to the health evaluator without setting health directly."],
+        "failureSemantics": {"observer_never_run": "not_measured", "observer_runtime_error": "measurement_failed", "evidence_incomplete": "unknown", "proof_of_absence": "known_absent"},
+        "last_run": "not_measured",
+        "status": "defined"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000350c",
+      "symbol": "thing",
+      "content": {
+        "kind": "loop_observer_validation",
+        "canonical_id": "visual-health-chain.observer_validation",
+        "source_node_id": "validation:mind-meta:visual-health-chain-observer:v0",
+        "role": "observer_validation",
+        "purpose": "Prove that the observer detects real faults and does not convert missing proof into success.",
+        "fixtures": [
+          {"id": "observer-test:broken-visible-edge", "fault": "Display an edge absent from the canonical graph.", "mustDetect": "relation_fidelity failure"},
+          {"id": "observer-test:missing-proof", "fault": "Remove all measurement evidence.", "mustDetect": "not_measured", "mustNotReturn": "healthy"},
+          {"id": "observer-test:stale-evidence", "fault": "Advance evidence age beyond TTL.", "mustDetect": "stale"},
+          {"id": "observer-test:renderer-lies", "fault": "Renderer claims Built while no construction receipt exists.", "mustDetect": "semantic fidelity failure"},
+          {"id": "observer-test:coverage-hole", "fault": "Add an in-rayon semanticType with no mapping.", "mustDetect": "coverage hole naming the missing configuration", "mustNotReturn": "healthy"},
+          {"id": "observer-test:healthy-control", "fault": null, "mustReturn": "healthy only when all required fresh evidence passes"}
+        ],
+        "status": "planned",
+        "execution_evidence": "not_measured"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000350d",
+      "symbol": "thing",
+      "content": {
+        "kind": "loop_metric",
+        "canonical_id": "visual-health-chain.metric",
+        "source_node_id": "metric:mind-meta:visual-health-chain:v0",
+        "kind_of_metric": "vector",
+        "forbidOpaqueAggregate": true,
+        "dimensions": [
+          {"name": "role_coverage_ratio", "unit": "ratio", "target": 1.0},
+          {"name": "relation_fidelity_ratio", "unit": "ratio", "target": 1.0},
+          {"name": "semantic_identity_fidelity_ratio", "unit": "ratio", "target": 1.0},
+          {"name": "built_precedence_violations", "unit": "count", "target": 0},
+          {"name": "unmeasured_signal_honesty_ratio", "unit": "ratio", "target": 1.0},
+          {"name": "energy_measurement_honesty_ratio", "unit": "ratio", "target": 1.0},
+          {"name": "primitive_compliance_ratio", "unit": "ratio", "target": 1.0, "measured_against": "visual-embodiment/1 (allowed kinds, arity 8, primitive_budget<=12, particle_budget<=160)"},
+          {"name": "failure_front_localization_ratio", "unit": "ratio", "target": 1.0},
+          {"name": "evidence_freshness_seconds", "unit": "seconds", "threshold": "metric-specific TTL"},
+          {"name": "observer_false_negative_count", "unit": "count", "target": 0},
+          {"name": "observer_false_positive_count", "unit": "count", "target": 0},
+          {"name": "render_cpu_ms", "unit": "milliseconds", "threshold": "toolkit budget"},
+          {"name": "render_gpu_ms", "unit": "milliseconds", "threshold": "toolkit budget"},
+          {"name": "draw_call_count", "unit": "count", "threshold": "toolkit budget"},
+          {"name": "visual_legibility_task_success_ratio", "unit": "ratio", "target": "toolkit-defined"},
+          {"name": "rayon_coverage_ratio", "unit": "ratio", "target": 1.0, "note": "defined instructions / |declared rayon|; 1.0 means the kit is total on its rayon"},
+          {"name": "coverage_holes", "unit": "list", "target": [], "note": "the enumerated in-rayon configurations with no defined instruction; must be empty"}
+        ],
+        "primitive_contract_reference": {"schema_version": "visual-embodiment/1", "allowed_primitives": ["icosphere", "sphere", "capsule", "points", "fresnel_shell"], "arity": 8, "primitive_budget_max": 12, "particle_budget_max": 160, "source": "crates/universe-assets/src/visual.rs", "note": "primitive_compliance_ratio is measured against this concrete contract"},
+        "sampleRequirements": ["value", "epistemic_status", "evidence_ref", "observed_at", "ttl_seconds", "observer_run_ref"],
+        "status": "active"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000350e",
+      "symbol": "system_state",
+      "content": {
+        "kind": "loop_health",
+        "canonical_id": "visual-health-chain.health",
+        "source_node_id": "health:mind-meta:visual-health-chain:v0",
+        "states": {"healthy": "Fresh complete evidence satisfies all hard invariants and thresholds.", "degraded": "Fresh evidence proves one or more bounded failures while measurement remains valid.", "stale": "A previous assessment exists but its evidence exceeds TTL.", "unknown": "Available evidence is insufficient to determine health.", "not_measured": "The required observer or measurement has not executed.", "measurement_failed": "Measurement execution was attempted but failed."},
+        "derivationAuthority": "code:mind-meta:visual-health-chain:v0#healthExpressionAst",
+        "rules": ["Health is derived only from a fresh metric vector.", "HealthAssessment is produced at runtime.", "Observer failure yields measurement_failed for the assessment and unknown for unobserved implementation health.", "A stale previous healthy assessment yields stale, never healthy.", "Known absence is an epistemic fact attached to evidence, not a health state."],
+        "health_state": "not_measured",
+        "justification": "No runtime Observer has executed against this overlay, so no fresh metric vector or HealthAssessment exists. Health cannot be asserted from the fixture's presence.",
+        "evidence_freshness": "none",
+        "status": "unknown"
+      }
+    },
+    {
+      "key": "0000000000000000000000000000350f",
+      "symbol": "design_rationale",
+      "content": {
+        "kind": "loop_maintenance",
+        "canonical_id": "visual-health-chain.maintenance",
+        "source_node_id": "maintenance:mind-meta:visual-health-chain:v0",
+        "role_subtype": "maintenance",
+        "actions": [
+          {"id": "maintenance:retry-observer", "when": ["not_measured", "measurement_failed"], "effect": "Run the observer again without changing semantic state."},
+          {"id": "maintenance:inspect-evidence", "when": ["unknown", "measurement_failed", "degraded"], "effect": "Open evidence refs, freshness and first failure front."},
+          {"id": "maintenance:suspend-modulation", "when": ["measurement_failed", "unknown"], "effect": "Remove unproven dynamic modulation while preserving identity shape."},
+          {"id": "maintenance:recalibrate-bounds", "when": ["degraded"], "effect": "Recompute bounded visual mappings from measured fixtures."},
+          {"id": "maintenance:relink-semantic-type", "when": ["degraded", "unknown"], "effect": "Restore a missing semantic-to-archetype binding (also closes a coverage hole)."},
+          {"id": "maintenance:rematerialize-catalog", "when": ["degraded", "measurement_failed"], "effect": "Rebuild physical primitives from canonical visual-embodiment/1 definitions."},
+          {"id": "maintenance:restore-built-state", "when": ["degraded"], "effect": "Rollback Derived overwrites and replay valid construction receipts."},
+          {"id": "maintenance:request-human", "when": ["unknown", "measurement_failed"], "effect": "Request a human decision only when evidence cannot safely resolve ambiguity."}
+        ],
+        "status": "active"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "key": "00000000000000000000000000005500",
+      "source": "00000000000000000000000000003500",
+      "target": "00000000000000000000000000001000",
+      "predicate": "PROPOSES_CHANGE_TO",
+      "content": {"kind": "ontology_relation", "role": "changeset_target", "justification": "The approved ChangeSet explicitly targets the canonical ontology manifest."}
+    },
+    {
+      "key": "00000000000000000000000000005501",
+      "source": "00000000000000000000000000003501",
+      "target": "00000000000000000000000000003500",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The loop Space is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005502",
+      "source": "00000000000000000000000000003502",
+      "target": "00000000000000000000000000003500",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Objective is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005503",
+      "source": "00000000000000000000000000003503",
+      "target": "00000000000000000000000000003500",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Pattern is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005504",
+      "source": "00000000000000000000000000003504",
+      "target": "00000000000000000000000000003500",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Vocabulary is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005505",
+      "source": "00000000000000000000000000003505",
+      "target": "00000000000000000000000000003500",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Behavior is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005506",
+      "source": "00000000000000000000000000003506",
+      "target": "00000000000000000000000000003500",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Algorithm is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005507",
+      "source": "00000000000000000000000000003507",
+      "target": "00000000000000000000000000003500",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The CodeDefinition is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005508",
+      "source": "00000000000000000000000000003508",
+      "target": "00000000000000000000000000003500",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Implementation is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005509",
+      "source": "00000000000000000000000000003509",
+      "target": "00000000000000000000000000003500",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Justification is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "0000000000000000000000000000550a",
+      "source": "0000000000000000000000000000350a",
+      "target": "00000000000000000000000000003500",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Validation is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "0000000000000000000000000000550b",
+      "source": "0000000000000000000000000000350b",
+      "target": "00000000000000000000000000003500",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Observer is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "0000000000000000000000000000550c",
+      "source": "0000000000000000000000000000350c",
+      "target": "00000000000000000000000000003500",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Observer validation is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "0000000000000000000000000000550d",
+      "source": "0000000000000000000000000000350d",
+      "target": "00000000000000000000000000003500",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Metric is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "0000000000000000000000000000550e",
+      "source": "0000000000000000000000000000350e",
+      "target": "00000000000000000000000000003500",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Health is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "0000000000000000000000000000550f",
+      "source": "0000000000000000000000000000350f",
+      "target": "00000000000000000000000000003500",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The Maintenance is an explicit member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005510",
+      "source": "00000000000000000000000000003501",
+      "target": "00000000000000000000000000003502",
+      "predicate": "GOVERNS",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The loop Space roots and governs its Objective."}
+    },
+    {
+      "key": "00000000000000000000000000005511",
+      "source": "00000000000000000000000000003502",
+      "target": "00000000000000000000000000003503",
+      "predicate": "ADDRESSED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Objective is addressed by the Pattern (evidence-bearing visual spine)."}
+    },
+    {
+      "key": "00000000000000000000000000005512",
+      "source": "00000000000000000000000000003502",
+      "target": "00000000000000000000000000003509",
+      "predicate": "JUSTIFIED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Objective is justified by the Justification narrative (mirrors bundle relation objective JUSTIFIED_BY justification)."}
+    },
+    {
+      "key": "00000000000000000000000000005513",
+      "source": "00000000000000000000000000003503",
+      "target": "00000000000000000000000000003505",
+      "predicate": "SHAPES",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Pattern shapes the observable Behavior."}
+    },
+    {
+      "key": "00000000000000000000000000005514",
+      "source": "00000000000000000000000000003505",
+      "target": "00000000000000000000000000003506",
+      "predicate": "REFINED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Behavior is refined into the ordered Algorithm."}
+    },
+    {
+      "key": "00000000000000000000000000005515",
+      "source": "00000000000000000000000000003505",
+      "target": "00000000000000000000000000003504",
+      "predicate": "USES_VOCABULARY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Behavior uses the loop Vocabulary terms (mirrors bundle vocabulary SUPPORTS behavior)."}
+    },
+    {
+      "key": "00000000000000000000000000005516",
+      "source": "00000000000000000000000000003506",
+      "target": "00000000000000000000000000003507",
+      "predicate": "DEFINED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Algorithm is defined by the canonical CodeDefinition (mirrors bundle algorithm DEFINED_BY_CODE code)."}
+    },
+    {
+      "key": "00000000000000000000000000005517",
+      "source": "00000000000000000000000000003507",
+      "target": "00000000000000000000000000003508",
+      "predicate": "REALIZED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The CodeDefinition is realized by the current Implementation (mirrors bundle code IMPLEMENTED_BY implementation)."}
+    },
+    {
+      "key": "00000000000000000000000000005518",
+      "source": "00000000000000000000000000003507",
+      "target": "0000000000000000000000000000350a",
+      "predicate": "CHALLENGED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The CodeDefinition is challenged by the Validation fixtures (mirrors bundle behavior VALIDATED_BY validation)."}
+    },
+    {
+      "key": "00000000000000000000000000005519",
+      "source": "00000000000000000000000000003508",
+      "target": "0000000000000000000000000000350b",
+      "predicate": "OBSERVED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Implementation is observed independently by the Observer (mirrors bundle implementation OBSERVED_BY observability_algorithm)."}
+    },
+    {
+      "key": "0000000000000000000000000000551a",
+      "source": "0000000000000000000000000000350b",
+      "target": "0000000000000000000000000000350c",
+      "predicate": "VERIFIED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Observer is itself verified by Observer validation (mirrors bundle observability_algorithm VALIDATED_BY observer_validation)."}
+    },
+    {
+      "key": "0000000000000000000000000000551b",
+      "source": "0000000000000000000000000000350b",
+      "target": "0000000000000000000000000000350d",
+      "predicate": "MEASURED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Observer emits the Metric dimensions (mirrors bundle observability_algorithm PRODUCES metric)."}
+    },
+    {
+      "key": "0000000000000000000000000000551c",
+      "source": "0000000000000000000000000000350d",
+      "target": "0000000000000000000000000000350e",
+      "predicate": "SUMMARIZED_AS",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Metric is summarized as the live Health state (mirrors bundle metric FEEDS health)."}
+    },
+    {
+      "key": "0000000000000000000000000000551d",
+      "source": "0000000000000000000000000000350e",
+      "target": "0000000000000000000000000000350f",
+      "predicate": "REPAIRED_BY",
+      "content": {"kind": "ontology_relation", "role": "loop_edge", "justification": "The Health state is repaired through the Maintenance affordances (mirrors bundle health SUPPORTS maintenance)."}
+    }
+  ]
+}
