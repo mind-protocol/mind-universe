@@ -3,6 +3,7 @@ import {
   type EmbodimentMotionProfile,
   type EnergyTransfer,
   type EnergyTransferPrimitive,
+  type EntityAudio,
   type EntityEmbodiment,
   type EntityMotionPrimitive,
   type EntityVisualPrimitive,
@@ -112,6 +113,23 @@ function embodimentFromFrame(value: unknown): EntityEmbodiment | undefined {
   };
 }
 
+// Resolves the optional audio facet a projector attaches when the entity's
+// graph content declares an audio pointer. Only a frame with a non-empty `src`
+// yields audio; a missing/invalid facet is dropped so the entity is simply
+// silent — the renderer never fabricates a source. `loop` defaults to true (the
+// feature: audio things loop); `gain` defaults to full and is clamped to [0, 1].
+function audioFromFrame(value: unknown): EntityAudio | undefined {
+  const raw = object(value);
+  if (!raw) return undefined;
+  const src = string(raw.src);
+  if (!src || src.length === 0) return undefined;
+  const loop = typeof raw.loop === "boolean" ? raw.loop : true;
+  const gainMicro =
+    raw.gain_micro === undefined ? VISUAL_MICROUNITS : safeInteger(raw.gain_micro);
+  if (gainMicro === null) return undefined;
+  return { src, loop, gain: Math.min(1, gainMicro / VISUAL_MICROUNITS) };
+}
+
 // Position components are a layout, so they may be negative — unlike the
 // non-negative visual microunit fields parsed with safeInteger.
 function signedInteger(value: unknown): number | null {
@@ -187,12 +205,14 @@ export function universeEventFromServerFrame(
     const primitive = oneOf(visualRaw.primitive, entityPrimitives) ?? "unknown";
     const motion = oneOf(visualRaw.motion, entityMotions) ?? "still";
     const embodiment = embodimentFromFrame(raw.embodiment);
+    const audio = audioFromFrame(raw.audio);
     const entity: MaterializedEntity = {
       id,
       generation,
       position,
       visual: { primitive, motion, material },
-      ...(embodiment ? { embodiment } : {})
+      ...(embodiment ? { embodiment } : {}),
+      ...(audio ? { audio } : {})
     };
     return {
       version: DESKTOP_PROTOCOL_VERSION,

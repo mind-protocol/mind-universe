@@ -158,7 +158,12 @@ pub fn ride_measured_semantic(
         nodes.push(PartNode {
             key: target.0,
             role: Role::Moment,
-            function: if is_support_target { "candidate" } else { "blocked" }.into(),
+            function: if is_support_target {
+                "candidate"
+            } else {
+                "blocked"
+            }
+            .into(),
             binding: None,
             threshold: CANDIDATE_THRESHOLD,
             seed_energy: 0,
@@ -170,7 +175,11 @@ pub fn ride_measured_semantic(
     let mut ranked: Vec<(EntityKey, u64)> = support_energy.iter().map(|(k, v)| (*k, *v)).collect();
     ranked.sort_by(|left, right| right.1.cmp(&left.1).then(left.0 .0.cmp(&right.0 .0)));
     let carve_target = ranked.get(1).map(|(key, _)| *key);
-    let boost = ranked.first().map(|(_, energy)| *energy).unwrap_or(0).max(1);
+    let boost = ranked
+        .first()
+        .map(|(_, energy)| *energy)
+        .unwrap_or(0)
+        .max(1);
     if let Some(target) = carve_target {
         nodes.push(PartNode {
             key: CARVE_KEY,
@@ -253,7 +262,10 @@ mod tests {
         println!("{ride:#?}");
 
         assert_eq!(ride.epistemic_status, "measured:semantic_v0");
-        assert!(ride.support_candidates >= 1, "need a real neighborhood to ride");
+        assert!(
+            ride.support_candidates >= 1,
+            "need a real neighborhood to ride"
+        );
         assert!(ride.attractor.is_some());
         assert!(ride.energy_conserved && ride.quiescent);
 

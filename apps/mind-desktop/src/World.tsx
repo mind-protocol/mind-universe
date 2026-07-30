@@ -1,8 +1,14 @@
 import { Html, Line, Stars } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Fragment, useRef, useState } from "react";
-import type { BufferGeometry, Group } from "three";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { PlaneGeometry } from "three";
+import type { Group } from "three";
 import type { MaterializedEntity, MaterializedRelation } from "./contracts";
+import {
+  TERRAIN_SEGMENTS,
+  TERRAIN_SIZE,
+  terrainHeight
+} from "./terrain";
 import { ActorControls } from "./ActorControls";
 import type { MotionBounds } from "./actor-control";
 import type { Vector3 as Vec3 } from "./contracts";
@@ -222,50 +228,83 @@ function Bond({
   );
 }
 
-// The world is a floor, not a void. Entities float above a ground reference
-// that is always present — it may roll up or down, but there is always a "sol"
-// beneath the scene so height reads as height. The surface undulates slowly so
-// it feels alive; its base sits below the lowest fixture entity (world y -3.85).
+// The city sits on land, not in a void (ontology3d: Space is a territory). The
+// ground is a stable elevation field — it rises and falls across the map as
+// districts, but is solid rather than animated, so buildings can rest on it. The
+// same relief is rendered twice: a dark land mass for body, and a luminous grid on
+// top reading as streets/blocks. Both share one displaced geometry so there is a
+// single, deterministic surface (which the foundations also sample).
 function Ground() {
-  const geometry = useRef<BufferGeometry>(null);
-  const SIZE = 120;
-  const SEGMENTS = 72;
-  const BASE_Y = -5.4;
-
-  useFrame(({ clock }) => {
-    const geom = geometry.current;
-    if (!geom) return;
+  const geometry = useMemo(() => {
+    const geom = new PlaneGeometry(
+      TERRAIN_SIZE,
+      TERRAIN_SIZE,
+      TERRAIN_SEGMENTS,
+      TERRAIN_SEGMENTS
+    );
     const position = geom.attributes.position;
-    const time = clock.elapsedTime;
-    // Plane is rotated flat about X, so local (x, y) span the floor and local z
-    // becomes world height. Displace only z to make the terrain rise and fall.
+    // The mesh is rotated flat about X, so a plane vertex (px, py) lands at world
+    // (px, localZ, -py). Displacing local z therefore sets world height y, and the
+    // world footprint is (px, -py) — exactly what terrainHeight expects.
     for (let index = 0; index < position.count; index += 1) {
-      const x = position.getX(index);
-      const y = position.getY(index);
-      const height =
-        Math.sin(x * 0.16 + time * 0.35) * 0.7 +
-        Math.cos(y * 0.13 - time * 0.28) * 0.55 +
-        Math.sin((x + y) * 0.08 + time * 0.18) * 0.4;
-      position.setZ(index, height);
+      const px = position.getX(index);
+      const py = position.getY(index);
+      position.setZ(index, terrainHeight(px, -py));
     }
     position.needsUpdate = true;
-  });
+    geom.computeVertexNormals();
+    return geom;
+  }, []);
+
+  useEffect(() => () => geometry.dispose(), [geometry]);
 
   return (
-    <mesh
-      rotation={[-Math.PI / 2, 0, 0]}
-      position={[0, BASE_Y, 0]}
-      // Chrome, not an entity: never intercept clicks meant for atoms.
-      raycast={() => null}
-    >
-      <planeGeometry ref={geometry} args={[SIZE, SIZE, SEGMENTS, SEGMENTS]} />
-      <meshBasicMaterial
-        color="#2a4a7a"
-        wireframe
-        transparent
-        opacity={0.28}
-      />
-    </mesh>
+    // Chrome, not entities: neither surface intercepts clicks meant for buildings.
+    <group rotation={[-Math.PI / 2, 0, 0]} raycast={() => null}>
+      <mesh geometry={geometry} raycast={() => null}>
+        <meshStandardMaterial
+          color="#0a1424"
+          roughness={0.95}
+          metalness={0}
+          transparent
+          opacity={0.9}
+        />
+      </mesh>
+      <mesh geometry={geometry} raycast={() => null}>
+        <meshBasicMaterial color="#2f5488" wireframe transparent opacity={0.3} />
+      </mesh>
+    </group>
+  );
+}
+
+// Every building is rooted to the land. A foundation drops a slender support
+// column from an entity down to the terrain directly beneath it and marks its plot
+// with a luminous footprint. This grounds otherwise-floating atoms into a skyline
+// without moving them — the position stays authored; only its relation to the land
+// is made visible (ontology3d foundation family: roots, pillars, foundations).
+function Foundation({ entity }: { readonly entity: MaterializedEntity }) {
+  const [x, y, z] = entity.position;
+  const groundY = terrainHeight(x, z);
+  const height = Math.max(0.1, y - groundY);
+  const color = entity.embodiment
+    ? entity.embodiment.mapping.palette.shell
+    : entity.visual.material.color;
+
+  return (
+    <group raycast={() => null}>
+      <mesh position={[x, groundY + height / 2, z]} raycast={() => null}>
+        <cylinderGeometry args={[0.045, 0.11, height, 6]} />
+        <meshBasicMaterial color={color} transparent opacity={0.22} />
+      </mesh>
+      <mesh
+        position={[x, groundY + 0.03, z]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        raycast={() => null}
+      >
+        <ringGeometry args={[0.24, 0.42, 24]} />
+        <meshBasicMaterial color={color} transparent opacity={0.42} />
+      </mesh>
+    </group>
   );
 }
 
@@ -302,6 +341,9 @@ export function World({
       <pointLight position={[0, 5, 2]} intensity={10} color="#c9dcff" />
       <Stars radius={70} depth={30} count={900} factor={1.5} fade speed={0.1} />
       <Ground />
+      {[...universe.entities.values()].map((entity) => (
+        <Foundation key={`foundation-${entity.id}`} entity={entity} />
+      ))}
       {[...universe.relations.values()].map((relation) => (
         <Bond
           key={relation.id}

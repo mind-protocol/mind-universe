@@ -21,8 +21,8 @@ truth (canonical ontology reconstruction: 231 entities / 784 relations,
 | Status | Count |
 | --- | --- |
 | `[x]` completed and evidenced | 178 |
-| `[~]` in progress | 27 |
-| `[ ]` not started | 261 |
+| `[~]` in progress | 28 |
+| `[ ]` not started | 260 |
 | `[!]` blocked | 0 |
 | **Total** | **466** |
 
@@ -42,13 +42,15 @@ adaptation, phase 4 code migration, phase 5 physics import (`physics_pilot.rs`,
 receipt `artifacts/postgres-import/physics-pilot-20260730-001`: 4 profiles →
 1 adapted_inert / 1 compatibility / 1 unresolved / 1 quarantined, 0 bound to the
 live simulation, 4 activation refusals) — but remains incomplete: activation into
-canonical authority is the deliberate final gap. G3 (Viz/Mind Desktop): the
-real-store→renderer path now exists — `desktop_world_snapshot` projects a live
-store into `entity_materialized`/`relation_materialized` frames the app parses
-and folds into its view (proven end-to-end over the conversion store, 286/890) —
-but G3 remains incomplete (richer facets, progressive deltas, and
-graph-authority visual resolution are open). The bootstrap completion gate is
-open. Highest-leverage
+canonical authority is the deliberate final gap. G3 (Viz/Mind Desktop): all
+seven sub-items are now `[~]` with evidence — real-store→renderer projection,
+graph-authority visual resolution (residency→form, epistemic→material),
+progressive batch deltas, an authenticated transport served by universe-server
+with a native Tauri bridge (each layer verified), stream health/metrics +
+world-native navigation reducers, and deterministic SVG visual-regression
+fixtures. What remains within them is the runtime edge: a live desktop-shell run,
+GPU-side metrics + true WebGL pixel/video diffing, non-loopback hardening, and
+the richer render facets. The bootstrap completion gate is open. Highest-leverage
 open gaps blocking bootstrap v0: graph triggers, authenticated production
 transport, cryptographic Genesis signing, and the 10 M / 10 M scale proof.
 
@@ -360,10 +362,15 @@ ImportBatch
   resync is accepted). The TS wire is now aligned byte-exactly: `protocol-auth.ts`
   encodes the hello like `serde_json`, computes the HMAC-SHA256 proof the server
   expects (cross-checked against Node crypto), tags the `transport_type`
-  envelopes, and does the 4-byte length-prefix framing. Still open: a webview
-  cannot raw-TCP, so the production bridge is a NATIVE Tauri Rust connector
-  (`ProtocolClient`) forwarding frames to the webview — that glue + non-loopback
-  production hardening remain.
+  envelopes, and does the 4-byte length-prefix framing. And the NATIVE bridge is
+  now built end-to-end: the workspace crate `universe-stream-bridge` connects a
+  `ProtocolClient` and drains frames to a sink (unit-tested against a real
+  ephemeral server — frames delivered, wrong secret refused); the Tauri command
+  `start_universe_stream` (src-tauri, compiles under `cargo check`) forwards each
+  frame to the webview as a `universe-frame` event; and `tauri-stream.ts` folds
+  them through the tested `ingestFrame`. Every layer is verified independently.
+  Still open: a live end-to-end run inside the desktop shell (needs a display)
+  and non-loopback production hardening.
 - [~] Render the complete bounded local situation actually received from the
   Universe: Nodes, Assets, relations, active CodeDefinitions, loops, gates,
   objectives, decisions, evidence, receipts, health, folds, and residency.
@@ -404,9 +411,20 @@ ImportBatch
   expansion/release, trail toggle, and Actor/Observer control intent, plus
   `pruneNav` which drops focus/selection/actor for entities removed from the view
   (e.g. by a delta). Still open: the 3D world-native gestures/rendering on top.
-- [ ] Add deterministic visual fixtures and screenshot/video regression tests
+- [~] Add deterministic visual fixtures and screenshot/video regression tests
   for normal operation, partial data, stale state, resync, failed receipts,
-  broken health, Asset invalidation, and progressive import.
+  broken health, Asset invalidation, and progressive import. Deterministic SVG
+  regression landed: `scene-svg.ts` renders a UniverseView to a byte-stable SVG
+  that resembles the 3D ontology — an oblique pseudo-3D camera (depth-sorted)
+  draws each entity's graph-resolved embodiment FORM (energy core + emissive halo
+  + internal particles + semi-humanoid capsule limbs) with epistemic modulation —
+  and `scene-svg.regression.test.ts` snapshots committed golden SVGs for
+  normal operation, partial data, progressive import, and stale/degraded health
+  (`src/__snapshots__/scene-*.svg`) — plus an assertion that an `unknown` entity
+  renders visibly dimmer than a `measured` one. Still open: true WebGL
+  pixel/video diffing (needs a GPU + headless browser harness) and the
+  richer scenarios (resync, failed receipts, Asset invalidation) that need more
+  view state.
 - [~] Measure frame time, event-to-photon latency, CPU/GPU memory, draw calls,
   stream bandwidth, and active-region limits on declared hardware and data
   sizes. The stream-measurable subset landed + unit-tested: `stream-metrics.ts`

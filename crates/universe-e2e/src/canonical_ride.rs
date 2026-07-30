@@ -222,7 +222,8 @@ fn choose_conflict_start(
         best = match best {
             Some((best_rough, best_fan, best_key))
                 if (best_rough, best_fan) > (roughened, fan_out)
-                    || ((best_rough, best_fan) == (roughened, fan_out) && best_key <= entity.key) =>
+                    || ((best_rough, best_fan) == (roughened, fan_out)
+                        && best_key <= entity.key) =>
             {
                 Some((best_rough, best_fan, best_key))
             }
@@ -319,7 +320,12 @@ fn build_ride(
         nodes.push(PartNode {
             key: target.0,
             role: Role::Moment,
-            function: if is_support_target { "candidate" } else { "blocked" }.into(),
+            function: if is_support_target {
+                "candidate"
+            } else {
+                "blocked"
+            }
+            .into(),
             binding: None,
             threshold: CANDIDATE_THRESHOLD,
             seed_energy: 0,
@@ -553,11 +559,17 @@ pub fn derive_ride_from_canonical_measured(
     // hashes. This is what makes the provenance MEASURED.
     let readback = store.replay(store.load_snapshot()?)?;
     let registry = OntologyRegistry::load(&store, &readback, OntologyLoadBudget::default())?;
-    let symbol = readback.symbol_id("authored_energy_profile").ok_or_else(|| {
-        E2eError::Contract("authored_energy_profile symbol missing after commit".into())
-    })?;
+    let symbol = readback
+        .symbol_id("authored_energy_profile")
+        .ok_or_else(|| {
+            E2eError::Contract("authored_energy_profile symbol missing after commit".into())
+        })?;
     let mut authored: BTreeMap<String, (u64, String)> = BTreeMap::new();
-    for entity in readback.entities.iter().filter(|entity| entity.symbol == symbol) {
+    for entity in readback
+        .entities
+        .iter()
+        .filter(|entity| entity.symbol == symbol)
+    {
         let content_ref = entity
             .content
             .as_ref()
@@ -588,7 +600,10 @@ pub fn derive_ride_from_canonical_measured(
     build_ride(
         &readback,
         start,
-        &|name| classify_sign(&registry, name).and_then(|pol| authored.get(name).map(|(e, _)| (pol, *e))),
+        &|name| {
+            classify_sign(&registry, name)
+                .and_then(|pol| authored.get(name).map(|(e, _)| (pol, *e)))
+        },
         "measured_authored / uncalibrated".into(),
         provenance,
     )
@@ -680,9 +695,27 @@ mod tests {
             },
         ];
         let bonds = vec![
-            PartBond { key: 10, source: 1, target: 2, polarity: BondPolarity::Support, energy: 100 },
-            PartBond { key: 11, source: 1, target: 3, polarity: BondPolarity::Support, energy: 100 },
-            PartBond { key: 12, source: 1, target: 2, polarity: BondPolarity::Inhibit, energy: 10 },
+            PartBond {
+                key: 10,
+                source: 1,
+                target: 2,
+                polarity: BondPolarity::Support,
+                energy: 100,
+            },
+            PartBond {
+                key: 11,
+                source: 1,
+                target: 3,
+                polarity: BondPolarity::Support,
+                energy: 100,
+            },
+            PartBond {
+                key: 12,
+                source: 1,
+                target: 2,
+                polarity: BondPolarity::Inhibit,
+                energy: 10,
+            },
         ];
         let object = MagicObject::from_parts(
             "synthetic-roughness".into(),
@@ -725,7 +758,8 @@ mod tests {
         // Only provenance changed: authored magnitudes equal the derived ones, so
         // the same neighborhood yields the same attractor.
         let temp2 = tempfile::tempdir().unwrap();
-        let derived = derive_ride_from_canonical(&repository(), &temp2.path().join("store")).unwrap();
+        let derived =
+            derive_ride_from_canonical(&repository(), &temp2.path().join("store")).unwrap();
         assert_eq!(ride.start, derived.start);
         assert_eq!(ride.attractor, derived.attractor);
         assert_eq!(ride.support_candidates, derived.support_candidates);

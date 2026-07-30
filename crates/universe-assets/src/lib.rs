@@ -4,6 +4,7 @@
 //! graph data. This crate only validates those generic contracts, installs
 //! content-addressed projections, and records independently observed evidence.
 
+pub mod actor_control;
 pub mod census;
 pub mod conversion;
 pub mod invalidation;

@@ -86,9 +86,16 @@ describe("bounded displacement", () => {
     expect(d[0]).toBeCloseTo(0);
   });
 
-  it("withholds a forbidden axis (up) even at full intent", () => {
+  it("rises along the vertical axis on the shipped (buoyant) fixture", () => {
     const upIntent = { forward: 0, right: 0, up: 1, speedMultiplier: 1 } as const;
-    expect(actorDisplacement(upIntent, 0.05, BASIS, motionBounds)).toEqual([0, 0, 0]);
+    const d = actorDisplacement(upIntent, 0.016, BASIS, motionBounds);
+    expect(d[1]).toBeGreaterThan(0); // up basis is +Y
+  });
+
+  it("withholds any axis the contract does not permit", () => {
+    const grounded: MotionBounds = { ...motionBounds, axes: { forward: true, right: true, up: false } };
+    const upIntent = { forward: 0, right: 0, up: 1, speedMultiplier: 1 } as const;
+    expect(actorDisplacement(upIntent, 0.05, BASIS, grounded)).toEqual([0, 0, 0]);
   });
 
   it("never exceeds max_tick_displacement, even on a stalled frame", () => {
@@ -178,7 +185,7 @@ describe("bounds validation", () => {
 
   it("loads the shipped fixture as a valid bound", () => {
     expect(motionBounds.boundActor).toBe(AVATAR);
-    expect(motionBounds.axes.up).toBe(false);
+    expect(motionBounds.axes.up).toBe(true);
   });
 });
 

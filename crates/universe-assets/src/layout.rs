@@ -307,7 +307,7 @@ pub fn compute(input: &LayoutInput) -> Result<Layout, LayoutError> {
     let depth = compute_depths(&radii, &parent)?;
     let max_depth = depth.values().copied().max().unwrap_or(0);
 
-    // Children grouped by parent space (None = root frame). Ordered by key.
+    // Children grouped by parent space (None = root frame).
     let mut groups: BTreeMap<Option<EntityKey>, Vec<EntityKey>> = BTreeMap::new();
     for key in radii.keys() {
         groups
@@ -316,11 +316,31 @@ pub fn compute(input: &LayoutInput) -> Result<Layout, LayoutError> {
             .push(*key);
     }
 
-    // --- Local force-directed placement, one group at a time. ---
+    // --- Bottom-up placement so a container's EFFECTIVE radius reflects its
+    // packed contents. Process the deepest groups first; a Space then enters its
+    // parent's packing already sized to hold everything inside it, which is what
+    // keeps neighbouring Spaces' contents from colliding. ---
+    let mut eff: BTreeMap<EntityKey, f64> = radii.clone(); // effective radius per node
     let mut local: BTreeMap<EntityKey, [f64; 3]> = BTreeMap::new();
-    for (_, members) in &groups {
-        let placed = layout_group(members, &radii, &input.links, &input.params);
+
+    let mut ordered: Vec<Option<EntityKey>> = groups.keys().copied().collect();
+    // Deepest member depth first. Members of a group all share one depth.
+    ordered.sort_by(|a, b| {
+        let da = a.map(|p| depth[&p] + 1).unwrap_or(0);
+        let db = b.map(|p| depth[&p] + 1).unwrap_or(0);
+        db.cmp(&da)
+    });
+    for parent_space in ordered {
+        let members = &groups[&parent_space];
+        let (placed, bounding) = layout_group(members, &eff, &input.links, &input.params);
         local.extend(placed);
+        // A container reserves, in its own (parent) frame, the room its contents
+        // occupy one level down: the local bounding radius times the descent scale.
+        if let Some(space) = parent_space {
+            let contents = bounding * input.params.scale_per_descent;
+            let base = radii[&space];
+            eff.insert(space, base.max(contents));
+        }
     }
 
     // --- Compose global positions outward from the root, scaling per descent. ---
@@ -353,7 +373,9 @@ pub fn compute(input: &LayoutInput) -> Result<Layout, LayoutError> {
             position: global[key],
             depth: depth[key],
             scale: input.params.scale_per_descent.powi(depth[key] as i32),
-            radius: radii[key] * input.params.scale_per_descent.powi(depth[key] as i32),
+            // Effective radius (a container's grows to hold its contents), in the
+            // global frame.
+            radius: eff[key] * input.params.scale_per_descent.powi(depth[key] as i32),
             space: parent.get(key).copied(),
         })
         .collect();
@@ -438,15 +460,15 @@ fn layout_group(
     radii: &BTreeMap<EntityKey, f64>,
     links: &[LayoutLink],
     params: &LayoutParams,
-) -> BTreeMap<EntityKey, [f64; 3]> {
+) -> (BTreeMap<EntityKey, [f64; 3]>, f64) {
     let n = members.len();
     let mut pos: BTreeMap<EntityKey, [f64; 3]> = BTreeMap::new();
     if n == 0 {
-        return pos;
+        return (pos, 0.0);
     }
     if n == 1 {
         pos.insert(members[0], [0.0, 0.0, 0.0]);
-        return pos;
+        return (pos, radii[&members[0]]);
     }
 
     let index: BTreeMap<EntityKey, usize> =
@@ -477,9 +499,7 @@ fn layout_group(
     let group_links: Vec<&LayoutLink> = links
         .iter()
         .filter(|link| {
-            !link.inside
-                && member_set.contains(&link.source)
-                && member_set.contains(&link.target)
+            !link.inside && member_set.contains(&link.source) && member_set.contains(&link.target)
         })
         .collect();
 
@@ -551,7 +571,13 @@ fn layout_group(
 
     pack(&keys, radii, &mut pos, params.packing_passes);
     center(&keys, &mut pos);
-    pos
+
+    // Local bounding radius: furthest node centre plus its own radius.
+    let bounding = keys
+        .iter()
+        .map(|key| norm(pos[key]) + radii[key])
+        .fold(0.0_f64, f64::max);
+    (pos, bounding)
 }
 
 /// Bounded overlap resolution: push overlapping pairs apart by half the overlap
@@ -578,7 +604,11 @@ fn pack(
                         scale(d, 1.0 / dist)
                     } else {
                         let seed = (a as f64 + 1.0) * 0.7548776662; // plastic-number jitter
-                        [seed.fract() - 0.5, ((a + b) as f64 * 0.3).fract() - 0.5, 0.5]
+                        [
+                            seed.fract() - 0.5,
+                            ((a + b) as f64 * 0.3).fract() - 0.5,
+                            0.5,
+                        ]
                     };
                     let push = (min_sep - dist.max(1e-6)) * 0.5;
                     let pd = scale(normalize(dir), push);
@@ -656,7 +686,9 @@ mod tests {
     use super::*;
 
     fn nodes(keys: &[u128]) -> Vec<LayoutNode> {
-        keys.iter().map(|k| LayoutNode::new(EntityKey(*k))).collect()
+        keys.iter()
+            .map(|k| LayoutNode::new(EntityKey(*k)))
+            .collect()
     }
 
     #[test]
@@ -702,15 +734,83 @@ mod tests {
             params: LayoutParams::default(),
         };
         let layout = compute(&input).unwrap();
-        let room = layout.placements.iter().find(|p| p.key == EntityKey(1)).unwrap();
-        let desk = layout.placements.iter().find(|p| p.key == EntityKey(2)).unwrap();
-        let pen = layout.placements.iter().find(|p| p.key == EntityKey(3)).unwrap();
+        let room = layout
+            .placements
+            .iter()
+            .find(|p| p.key == EntityKey(1))
+            .unwrap();
+        let desk = layout
+            .placements
+            .iter()
+            .find(|p| p.key == EntityKey(2))
+            .unwrap();
+        let pen = layout
+            .placements
+            .iter()
+            .find(|p| p.key == EntityKey(3))
+            .unwrap();
         assert_eq!(room.depth, 0);
         assert_eq!(desk.depth, 1);
         assert_eq!(pen.depth, 2);
-        assert!(desk.scale < room.scale, "descent must shrink absolute scale");
+        assert!(
+            desk.scale < room.scale,
+            "descent must shrink absolute scale"
+        );
         assert!(pen.scale < desk.scale, "each descent shrinks further");
         assert!(pen.radius < desk.radius && desk.radius < room.radius);
+    }
+
+    #[test]
+    fn sibling_spaces_contents_do_not_collide() {
+        // root(1) ⊃ {A(2), B(3)}; A ⊃ {4,5,6,7}; B ⊃ {8,9,10,11}. With a large
+        // descent scale the contents would spill past a fixed-size container and
+        // A's nodes would hit B's — unless the container hitbox is sized to hold
+        // its packed contents. Assert zero cross-space collisions.
+        let mut links = vec![
+            LayoutLink::containment(EntityKey(2), EntityKey(1)),
+            LayoutLink::containment(EntityKey(3), EntityKey(1)),
+        ];
+        let a_kids = [4u128, 5, 6, 7];
+        let b_kids = [8u128, 9, 10, 11];
+        for k in a_kids {
+            links.push(LayoutLink::containment(EntityKey(k), EntityKey(2)));
+        }
+        for k in b_kids {
+            links.push(LayoutLink::containment(EntityKey(k), EntityKey(3)));
+        }
+        let mut all: Vec<u128> = vec![1, 2, 3];
+        all.extend(a_kids);
+        all.extend(b_kids);
+        let params = LayoutParams {
+            scale_per_descent: 0.5, // large descent ⇒ contents nearly fill the parent
+            ..LayoutParams::default()
+        };
+        let layout = compute(&LayoutInput {
+            nodes: nodes(&all),
+            links,
+            params,
+        })
+        .unwrap();
+        let find = |k: u128| {
+            *layout
+                .placements
+                .iter()
+                .find(|p| p.key == EntityKey(k))
+                .unwrap()
+        };
+        for &a in &a_kids {
+            for &b in &b_kids {
+                let (pa, pb) = (find(a), find(b));
+                let sep = norm(sub(pa.position, pb.position));
+                let min = pa.radius + pb.radius;
+                assert!(
+                    sep + 1e-9 >= min,
+                    "cross-space collision {a}/{b}: sep={sep} < min={min}"
+                );
+            }
+        }
+        // And the metric agrees no PEERS overlap anywhere in the tree.
+        assert_eq!(layout.residual_overlaps, 0);
     }
 
     #[test]
@@ -751,7 +851,10 @@ mod tests {
         let layout = compute(&input).unwrap();
         let p1 = layout.position(EntityKey(1)).unwrap();
         let p2 = layout.position(EntityKey(2)).unwrap();
-        assert!(p1[1] < p2[1], "positive-hierarchy source should sit below target");
+        assert!(
+            p1[1] < p2[1],
+            "positive-hierarchy source should sit below target"
+        );
     }
 
     #[test]
@@ -766,7 +869,10 @@ mod tests {
         let layout = compute(&input).unwrap();
         let p1 = layout.position(EntityKey(1)).unwrap();
         let p2 = layout.position(EntityKey(2)).unwrap();
-        assert!(p1[1] > p2[1], "negative-hierarchy source should sit above target");
+        assert!(
+            p1[1] > p2[1],
+            "negative-hierarchy source should sit above target"
+        );
     }
 
     #[test]
@@ -791,7 +897,10 @@ mod tests {
         };
         let ds = dist(strong);
         let dw = dist(weak);
-        assert!(ds < dw, "stronger bond must settle closer: strong={ds} weak={dw}");
+        assert!(
+            ds < dw,
+            "stronger bond must settle closer: strong={ds} weak={dw}"
+        );
     }
 
     #[test]
@@ -903,7 +1012,11 @@ mod tests {
         );
         let link = &input.links[0];
         assert_eq!(link.hierarchy, 0.0, "unknown predicate is not hierarchical");
-        assert_eq!(link.polarity, [0.5, 0.5], "unknown predicate is neutrally bonded");
+        assert_eq!(
+            link.polarity,
+            [0.5, 0.5],
+            "unknown predicate is neutrally bonded"
+        );
     }
 
     #[test]
@@ -922,7 +1035,10 @@ mod tests {
             DEFAULT_RADIUS,
             LayoutParams::default(),
         );
-        assert!(input.links.is_empty(), "a link to an absent node is not placeable");
+        assert!(
+            input.links.is_empty(),
+            "a link to an absent node is not placeable"
+        );
     }
 
     #[test]
@@ -932,6 +1048,9 @@ mod tests {
             links: vec![],
             params: LayoutParams::default(),
         };
-        assert_eq!(compute(&input), Err(LayoutError::DuplicateNode(EntityKey(1))));
+        assert_eq!(
+            compute(&input),
+            Err(LayoutError::DuplicateNode(EntityKey(1)))
+        );
     }
 }

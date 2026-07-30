@@ -5,6 +5,10 @@ mod transport;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeSet, VecDeque};
 use universe_core::{EntityKey, Epistemic, RelationKey, Revision, Tick, UniverseError, UniverseId};
+use universe_physics::{
+    assess_atom_physical_health, AtomExecutionReceipt, AtomPhysicalHealthCheck,
+    AtomPhysicalHealthObservation, AtomTransfer, BondPolarity,
+};
 use universe_store::{EntityRecord, RelationRecord};
 use universe_supervisor::{RuntimeInventory, Supervisor};
 
@@ -246,6 +250,111 @@ fn is_hex_color(value: &str) -> bool {
     value.len() == 7
         && value.starts_with('#')
         && value[1..].bytes().all(|byte| byte.is_ascii_hexdigit())
+}
+
+/// Classifies the epistemic provenance of energy taken from a bounded physical
+/// execution, using the independent physical-health observer rather than
+/// trusting the caller's own claim.
+///
+/// Energy is `Measured` only when the observer finds the run **conserved its
+/// energy** and **reached quiescence** — a settled deterministic descent.
+/// Anything less is honestly downgraded (`NotMeasured` / `MeasurementFailed`) so
+/// the streaming membrane refuses to render an unsettled or unverifiable descent
+/// as a felt glide. This never upgrades a derived value: a magnitude that was
+/// not produced by a real execution has no receipt to pass through here.
+pub fn measured_transfer_epistemic(receipt: &AtomExecutionReceipt) -> EnergyTransferEpistemic {
+    let health = assess_atom_physical_health(AtomPhysicalHealthObservation::Executed(receipt));
+    let conserved = matches!(
+        health.energy_conservation,
+        Epistemic::Measured(AtomPhysicalHealthCheck::Pass)
+    );
+    let converged = matches!(
+        health.convergence,
+        Epistemic::Measured(AtomPhysicalHealthCheck::Pass)
+    );
+    if conserved && converged {
+        EnergyTransferEpistemic::Measured
+    } else if matches!(
+        health.energy_conservation,
+        Epistemic::MeasurementFailed { .. }
+    ) {
+        EnergyTransferEpistemic::MeasurementFailed
+    } else {
+        EnergyTransferEpistemic::NotMeasured
+    }
+}
+
+/// Builds a membrane-eligible [`EnergyTransferMessage`] from a **measured**
+/// physical execution.
+///
+/// This is the legitimate path from a bounded [`AtomExecutionReceipt`] to a
+/// streamable energy transfer. It does two things the raw struct literal cannot:
+///
+/// 1. It proves the transfer **belongs to the executed run** — the same bond,
+///    endpoints, polarity, and energy the deterministic solver actually
+///    recorded. A fabricated or code-derived magnitude has no matching recorded
+///    transfer and is refused here, before the membrane.
+/// 2. It derives the epistemic tag from the independent physical-health observer
+///    ([`measured_transfer_epistemic`]) instead of asserting `Measured`. A
+///    genuinely conserved, quiescent descent yields `Measured` and crosses the
+///    membrane; an unsettled or unverifiable one yields a non-`Measured` tag and
+///    the membrane's own [`EnergyTransferMessage::validate`] refuses it.
+///
+/// The energy magnitude carried on the wire is exactly the value the solver
+/// moved across the bond — a read-back measurement, not a relabel.
+#[allow(clippy::too_many_arguments)]
+pub fn energy_transfer_from_execution(
+    universe: UniverseId,
+    revision: Revision,
+    tick: Tick,
+    transfer_id: impl Into<String>,
+    execution_id: impl Into<String>,
+    intention_id: impl Into<String>,
+    receipt: &AtomExecutionReceipt,
+    transfer: &AtomTransfer,
+    gate_microunits: u32,
+    visual: EnergyTransferVisualMessage,
+) -> Result<EnergyTransferMessage, ProtocolStreamError> {
+    let belongs = receipt
+        .run
+        .steps
+        .iter()
+        .any(|step| step.transfers.iter().any(|recorded| recorded == transfer));
+    if !belongs {
+        return Err(ProtocolStreamError::InvalidEnergyTransfer(
+            "transfer is not part of the measured execution receipt".into(),
+        ));
+    }
+    let epistemic = measured_transfer_epistemic(receipt);
+    let outcome = if epistemic == EnergyTransferEpistemic::Measured {
+        EnergyTransferOutcome::Measured
+    } else {
+        EnergyTransferOutcome::Rejected
+    };
+    let message = EnergyTransferMessage {
+        universe,
+        revision,
+        tick,
+        transfer_id: transfer_id.into(),
+        execution_id: execution_id.into(),
+        intention_id: intention_id.into(),
+        relation_id: transfer.bond,
+        source: transfer.source,
+        target: transfer.target,
+        direction: EnergyTransferDirection::SourceToTarget,
+        polarity: match transfer.polarity {
+            BondPolarity::Support => EnergyTransferPolarity::Support,
+            BondPolarity::Inhibit => EnergyTransferPolarity::Inhibit,
+            BondPolarity::Neutral => EnergyTransferPolarity::Neutral,
+        },
+        energy: transfer.energy,
+        gate_microunits,
+        outcome,
+        epistemic,
+        visual,
+    };
+    message.validate()?;
+    Ok(message)
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -1107,6 +1216,235 @@ mod tests {
             Err(ProtocolStreamError::InvalidEnergyTransfer(_))
         ));
         assert_eq!(stream.latest_published(), StreamSequence(0));
+    }
+
+    fn visual() -> EnergyTransferVisualMessage {
+        EnergyTransferVisualMessage {
+            primitive: EnergyTransferVisualPrimitive::EnergyPacket,
+            color: "#fff3c4".into(),
+            emissive: "#ffd76a".into(),
+            emissive_intensity_microunits: 4 * VISUAL_MICROUNITS,
+            radius_microunits: 90_000,
+            opacity_microunits: VISUAL_MICROUNITS,
+            duration_ms: 240,
+        }
+    }
+
+    /// A support atom seeds 100, fires, and conducts 100 to a downstream atom;
+    /// the bounded solver reaches quiescence and conserves energy.
+    fn conserved_quiescent_receipt() -> universe_physics::AtomExecutionReceipt {
+        universe_physics::execute_local_atom_cluster(
+            universe_physics::LocalAtomCluster {
+                atoms: vec![
+                    universe_physics::AtomSpec {
+                        key: EntityKey(1),
+                        threshold: 100,
+                        seed_energy: 100,
+                        required_supports: Vec::new(),
+                        inhibition_threshold: None,
+                    },
+                    universe_physics::AtomSpec {
+                        key: EntityKey(2),
+                        threshold: 100,
+                        seed_energy: 0,
+                        required_supports: vec![RelationKey(1)],
+                        inhibition_threshold: None,
+                    },
+                ],
+                bonds: vec![universe_physics::AtomBond {
+                    key: RelationKey(1),
+                    source: EntityKey(1),
+                    target: EntityKey(2),
+                    polarity: BondPolarity::Support,
+                    energy: 100,
+                }],
+                injections: Vec::new(),
+            },
+            universe_physics::AtomExecutionBudget {
+                max_atoms: 2,
+                max_bonds: 1,
+                max_steps: 3,
+                max_total_energy: 100,
+            },
+        )
+        .unwrap()
+    }
+
+    /// A three-atom chain forced to stop after a single step: a real, conserved,
+    /// but UNSETTLED (step-budget-exhausted) execution.
+    fn conserved_unsettled_receipt() -> universe_physics::AtomExecutionReceipt {
+        universe_physics::execute_local_atom_cluster(
+            universe_physics::LocalAtomCluster {
+                atoms: vec![
+                    universe_physics::AtomSpec {
+                        key: EntityKey(1),
+                        threshold: 100,
+                        seed_energy: 100,
+                        required_supports: Vec::new(),
+                        inhibition_threshold: None,
+                    },
+                    universe_physics::AtomSpec {
+                        key: EntityKey(2),
+                        threshold: 100,
+                        seed_energy: 0,
+                        required_supports: vec![RelationKey(1)],
+                        inhibition_threshold: None,
+                    },
+                    universe_physics::AtomSpec {
+                        key: EntityKey(3),
+                        threshold: 100,
+                        seed_energy: 0,
+                        required_supports: vec![RelationKey(2)],
+                        inhibition_threshold: None,
+                    },
+                ],
+                bonds: vec![
+                    universe_physics::AtomBond {
+                        key: RelationKey(1),
+                        source: EntityKey(1),
+                        target: EntityKey(2),
+                        polarity: BondPolarity::Support,
+                        energy: 100,
+                    },
+                    universe_physics::AtomBond {
+                        key: RelationKey(2),
+                        source: EntityKey(2),
+                        target: EntityKey(3),
+                        polarity: BondPolarity::Support,
+                        energy: 100,
+                    },
+                ],
+                injections: Vec::new(),
+            },
+            universe_physics::AtomExecutionBudget {
+                max_atoms: 3,
+                max_bonds: 2,
+                max_steps: 1,
+                max_total_energy: 100,
+            },
+        )
+        .unwrap()
+    }
+
+    fn first_transfer(receipt: &universe_physics::AtomExecutionReceipt) -> AtomTransfer {
+        receipt
+            .run
+            .steps
+            .iter()
+            .flat_map(|step| step.transfers.iter())
+            .next()
+            .cloned()
+            .expect("execution recorded at least one transfer")
+    }
+
+    #[test]
+    fn conserved_quiescent_execution_yields_a_measured_transfer_that_crosses_the_membrane() {
+        let receipt = conserved_quiescent_receipt();
+        assert_eq!(
+            measured_transfer_epistemic(&receipt),
+            EnergyTransferEpistemic::Measured
+        );
+        let transfer = first_transfer(&receipt);
+        assert_eq!(
+            transfer.energy, 100,
+            "measured magnitude is the conducted energy"
+        );
+
+        let message = energy_transfer_from_execution(
+            UniverseId(1),
+            Revision(7),
+            Tick(1),
+            "transfer-1",
+            "execution-1",
+            "intention-1",
+            &receipt,
+            &transfer,
+            VISUAL_MICROUNITS,
+            visual(),
+        )
+        .expect("a genuinely measured transfer builds a valid message");
+        assert_eq!(message.epistemic, EnergyTransferEpistemic::Measured);
+        assert_eq!(message.outcome, EnergyTransferOutcome::Measured);
+        assert_eq!(message.energy, transfer.energy);
+
+        // The membrane accepts it on a real bounded stream.
+        let mut stream = ProtocolStream::new("desktop-energy", budget(2)).unwrap();
+        let frame = stream
+            .publish(
+                CorrelationId("energy".into()),
+                ServerPayload::EnergyTransfer(message),
+            )
+            .expect("membrane admits the genuinely measured transfer");
+        assert_eq!(frame.sequence, StreamSequence(1));
+    }
+
+    #[test]
+    fn a_derived_magnitude_not_produced_by_the_execution_is_refused() {
+        let receipt = conserved_quiescent_receipt();
+        // Same shape as the recorded transfer but a code-derived magnitude the
+        // solver never moved. It has no matching recorded transfer.
+        let mut fabricated = first_transfer(&receipt);
+        fabricated.energy += 1;
+
+        let error = energy_transfer_from_execution(
+            UniverseId(1),
+            Revision(7),
+            Tick(1),
+            "transfer-1",
+            "execution-1",
+            "intention-1",
+            &receipt,
+            &fabricated,
+            VISUAL_MICROUNITS,
+            visual(),
+        )
+        .unwrap_err();
+        assert!(matches!(
+            error,
+            ProtocolStreamError::InvalidEnergyTransfer(reason)
+                if reason.contains("not part of the measured execution")
+        ));
+    }
+
+    #[test]
+    fn an_unsettled_but_real_execution_is_downgraded_and_refused_by_the_membrane() {
+        let receipt = conserved_unsettled_receipt();
+        assert_eq!(
+            receipt.convergence,
+            universe_physics::AtomConvergence::StepBudgetExhausted
+        );
+        assert!(
+            receipt.energy.conserved,
+            "the partial run still conserved energy"
+        );
+        // Conserved energy alone is not a settled descent: the observer withholds
+        // Measured because the run did not reach quiescence.
+        assert_eq!(
+            measured_transfer_epistemic(&receipt),
+            EnergyTransferEpistemic::NotMeasured
+        );
+
+        let transfer = first_transfer(&receipt);
+        let error = energy_transfer_from_execution(
+            UniverseId(1),
+            Revision(7),
+            Tick(1),
+            "transfer-1",
+            "execution-1",
+            "intention-1",
+            &receipt,
+            &transfer,
+            VISUAL_MICROUNITS,
+            visual(),
+        )
+        .unwrap_err();
+        // The membrane rule itself (EnergyTransferMessage::validate) refuses the
+        // non-measured transfer.
+        assert!(matches!(
+            error,
+            ProtocolStreamError::InvalidEnergyTransfer(reason)
+                if reason.contains("only measured transfers may be published")
+        ));
     }
 
     fn record(key: u128) -> EntityRecord {

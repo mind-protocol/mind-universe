@@ -181,8 +181,11 @@ fn main() -> Result<(), Err> {
         }
         let last_id = node_ids.last().cloned().expect("non-empty batch");
 
-        let receipt_atom =
-            EntityKey(key_u128(&["receipt", &graph_id, input_cursor.as_deref().unwrap_or("start")])?);
+        let receipt_atom = EntityKey(key_u128(&[
+            "receipt",
+            &graph_id,
+            input_cursor.as_deref().unwrap_or("start"),
+        ])?);
         let idempotency_key = format!(
             "live-import:{graph_id}:after:{}",
             input_cursor.as_deref().unwrap_or("start")
@@ -203,10 +206,16 @@ fn main() -> Result<(), Err> {
 
         if !snapshot.event_keys.contains(&idempotency_key) {
             let plan = snapshot.plan_symbol_interning(
-                &[SYM_SOURCE, SYM_IDENTITY, SYM_RECEIPT, SYM_IMPORTS_FROM, SYM_HAS_RECEIPT]
-                    .iter()
-                    .map(|s| s.to_string())
-                    .collect::<Vec<_>>(),
+                &[
+                    SYM_SOURCE,
+                    SYM_IDENTITY,
+                    SYM_RECEIPT,
+                    SYM_IMPORTS_FROM,
+                    SYM_HAS_RECEIPT,
+                ]
+                .iter()
+                .map(|s| s.to_string())
+                .collect::<Vec<_>>(),
             )?;
             let sym = |name: &str| -> Result<u32, Err> {
                 plan.assignments
@@ -323,9 +332,15 @@ fn main() -> Result<(), Err> {
                 .map(|c| rb_store.read_content(c))
                 .transpose()?
                 .and_then(|stored| {
-                    stored.get("row_sha256").and_then(Value::as_str).map(|s| s.to_owned())
+                    stored
+                        .get("row_sha256")
+                        .and_then(Value::as_str)
+                        .map(|s| s.to_owned())
                 })
-                == content_value.get("row_sha256").and_then(Value::as_str).map(|s| s.to_owned());
+                == content_value
+                    .get("row_sha256")
+                    .and_then(Value::as_str)
+                    .map(|s| s.to_owned());
             if ok {
                 batch_ok += 1;
             }

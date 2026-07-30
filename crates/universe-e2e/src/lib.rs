@@ -12,6 +12,7 @@ pub mod covalidity;
 pub mod lantern;
 pub mod magic_object;
 pub mod measured_ride;
+pub mod neighborhood_arc;
 
 use serde::{Deserialize, Serialize};
 use std::{

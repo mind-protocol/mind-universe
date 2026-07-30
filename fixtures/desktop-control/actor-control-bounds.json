@@ -5,7 +5,7 @@
   "bound_actor": "fixture:actor:citizen-energy-avatar",
   "max_speed": 4.0,
   "max_tick_displacement": 0.35,
-  "axes": { "forward": true, "right": true, "up": false },
+  "axes": { "forward": true, "right": true, "up": true },
   "gate_rule": "granted_bound_actor_only",
-  "justification": "The avatar is a grounded semi-humanoid energy Citizen. Piloting is a gated bounded-intent projection: only a `granted` control over the bound Actor turns ZQSD input into motion, clamped to max_tick_displacement per applied delta so a stalled frame cannot teleport the body. Vertical motion is withheld (axes.up=false) because the fixture Actor has no measured flight capability — an ungranted or unauthorized axis is refused, never treated as a permitted default."
+  "justification": "The avatar is a semi-humanoid energy Citizen with buoyant embodiment, so all three axes are permitted: ZQSD drives the ground plane and E/Space/C drive vertical rise and descent. Piloting is a gated bounded-intent projection: only a `granted` control over the bound Actor turns input into motion, clamped to max_tick_displacement per applied delta so a stalled frame cannot teleport the body. Any axis the contract does NOT permit is refused, never treated as a permitted default — the gate, not the input, decides motion."
 }

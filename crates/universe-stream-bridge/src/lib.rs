@@ -9,8 +9,8 @@
 
 use std::net::SocketAddr;
 use universe_protocol::{
-    AuthenticationSecret, ProtocolClient, ProtocolHello, ProtocolReadEvent, ProtocolTransportConfig,
-    ProtocolTransportError, ResumeResult, ServerFrame,
+    AuthenticationSecret, ProtocolClient, ProtocolHello, ProtocolReadEvent,
+    ProtocolTransportConfig, ProtocolTransportError, ResumeResult, ServerFrame,
 };
 
 /// What the sink asks the drain loop to do after each frame.

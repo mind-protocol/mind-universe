@@ -406,7 +406,10 @@ pub fn install_authority_fixture(
     }
     let mut change_set_keys = Vec::new();
     for entity in &fixture.entities {
-        if entity.content.get("kind").and_then(serde_json::Value::as_str)
+        if entity
+            .content
+            .get("kind")
+            .and_then(serde_json::Value::as_str)
             == Some("ontology_changeset")
         {
             change_set_keys.push(entity.key);

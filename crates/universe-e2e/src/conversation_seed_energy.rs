@@ -159,12 +159,15 @@ pub fn seed_energy_from_conversations<P: EmbeddingProvider>(
     let model = context.model.clone();
     let model_revision = context.model_revision.clone();
 
-    let mut bonds = Vec::new();
-    let (mut support, mut inhibit, mut neutral) = (0usize, 0usize, 0usize);
-    let mut distinct_propensities = BTreeSet::new();
-    let mut distinct_sentences = BTreeSet::new();
-    let mut reply_pairs_measured = 0usize;
-
+    // Gather every reply-pair first, then measure the whole batch in one encode
+    // call — so a real (subprocess) embedder loads its model once, not per pair.
+    struct Pending {
+        conversation_id: String,
+        parent_role: String,
+        child_role: String,
+        sentence: String,
+    }
+    let mut pending: Vec<Pending> = Vec::new();
     for conversation in conversations {
         let conversation_id = conversation
             .get("conversation_id")
@@ -172,32 +175,46 @@ pub fn seed_energy_from_conversations<P: EmbeddingProvider>(
             .unwrap_or("<unknown>")
             .to_owned();
         for pair in reply_pairs(conversation, max_chars_per_message) {
-            let sentence = format!(
-                "Message ({}): {}. Reply ({}): {}.",
-                pair.parent_role, pair.parent_text, pair.child_role, pair.child_text
-            );
-            let scalar = context.measure(&sentence)?;
-            reply_pairs_measured += 1;
-            distinct_propensities.insert(scalar.propensity_micro);
-            distinct_sentences.insert(sentence.clone());
-            match scalar.polarity {
-                BondPolarity::Support => support += 1,
-                BondPolarity::Inhibit => inhibit += 1,
-                BondPolarity::Neutral => neutral += 1,
-            }
-            if bonds.len() < max_bonds_retained {
-                bonds.push(ConversationBond {
-                    conversation_id: conversation_id.clone(),
-                    parent_role: pair.parent_role,
-                    child_role: pair.child_role,
-                    sentence,
-                    cos_positive_micro: scalar.cos_positive_micro,
-                    cos_negative_micro: scalar.cos_negative_micro,
-                    propensity_micro: scalar.propensity_micro,
-                    polarity: scalar.polarity,
-                    energy: scalar.energy,
-                });
-            }
+            pending.push(Pending {
+                conversation_id: conversation_id.clone(),
+                sentence: format!(
+                    "Message ({}): {}. Reply ({}): {}.",
+                    pair.parent_role, pair.parent_text, pair.child_role, pair.child_text
+                ),
+                parent_role: pair.parent_role,
+                child_role: pair.child_role,
+            });
+        }
+    }
+    let sentences: Vec<String> = pending.iter().map(|item| item.sentence.clone()).collect();
+    let scalars = context.measure_batch(&sentences)?;
+
+    let mut bonds = Vec::new();
+    let (mut support, mut inhibit, mut neutral) = (0usize, 0usize, 0usize);
+    let mut distinct_propensities = BTreeSet::new();
+    let mut distinct_sentences = BTreeSet::new();
+    let reply_pairs_measured = pending.len();
+
+    for (item, scalar) in pending.into_iter().zip(scalars) {
+        distinct_propensities.insert(scalar.propensity_micro);
+        distinct_sentences.insert(item.sentence.clone());
+        match scalar.polarity {
+            BondPolarity::Support => support += 1,
+            BondPolarity::Inhibit => inhibit += 1,
+            BondPolarity::Neutral => neutral += 1,
+        }
+        if bonds.len() < max_bonds_retained {
+            bonds.push(ConversationBond {
+                conversation_id: item.conversation_id,
+                parent_role: item.parent_role,
+                child_role: item.child_role,
+                sentence: item.sentence,
+                cos_positive_micro: scalar.cos_positive_micro,
+                cos_negative_micro: scalar.cos_negative_micro,
+                propensity_micro: scalar.propensity_micro,
+                polarity: scalar.polarity,
+                energy: scalar.energy,
+            });
         }
     }
 
@@ -249,17 +266,47 @@ mod tests {
             conversation(
                 "conv-a",
                 &[
-                    ("n0", None, "user", "How does the membrane admit a stimulus?"),
-                    ("n1", Some("n0"), "assistant", "It gates energy through a bounded frontier."),
-                    ("n2", Some("n1"), "user", "And what blocks a contradiction from propagating?"),
-                    ("n3", Some("n2"), "assistant", "Inhibitory bonds raise the firing threshold."),
+                    (
+                        "n0",
+                        None,
+                        "user",
+                        "How does the membrane admit a stimulus?",
+                    ),
+                    (
+                        "n1",
+                        Some("n0"),
+                        "assistant",
+                        "It gates energy through a bounded frontier.",
+                    ),
+                    (
+                        "n2",
+                        Some("n1"),
+                        "user",
+                        "And what blocks a contradiction from propagating?",
+                    ),
+                    (
+                        "n3",
+                        Some("n2"),
+                        "assistant",
+                        "Inhibitory bonds raise the firing threshold.",
+                    ),
                 ],
             ),
             conversation(
                 "conv-b",
                 &[
-                    ("m0", None, "user", "Seed the board energy from real recency signal."),
-                    ("m1", Some("m0"), "assistant", "Recency maps to seed energy; provenance stays measured."),
+                    (
+                        "m0",
+                        None,
+                        "user",
+                        "Seed the board energy from real recency signal.",
+                    ),
+                    (
+                        "m1",
+                        Some("m0"),
+                        "assistant",
+                        "Recency maps to seed energy; provenance stays measured.",
+                    ),
                 ],
             ),
         ]

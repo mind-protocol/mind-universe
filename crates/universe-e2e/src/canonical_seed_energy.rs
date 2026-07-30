@@ -256,8 +256,26 @@ impl<P: EmbeddingProvider> SeedContext<P> {
             .encode(&[sentence.to_owned()])
             .map_err(map_error)?
             .swap_remove(0);
-        let cos_positive_micro = cosine(&link, &self.positive).map_err(map_error)?;
-        let cos_negative_micro = cosine(&link, &self.negative).map_err(map_error)?;
+        self.scalar_from_link(&link)
+    }
+
+    /// Measure many sentences in ONE encode call. Essential for the real
+    /// (subprocess) embedder: it loads its model once per encode, so batching
+    /// turns N model loads into one. Order-preserving.
+    pub fn measure_batch(&mut self, sentences: &[String]) -> Result<Vec<MeasuredScalar>, E2eError> {
+        if sentences.is_empty() {
+            return Ok(Vec::new());
+        }
+        let links = self.runtime.encode(sentences).map_err(map_error)?;
+        links
+            .iter()
+            .map(|link| self.scalar_from_link(link))
+            .collect()
+    }
+
+    fn scalar_from_link(&self, link: &QuantizedEmbedding) -> Result<MeasuredScalar, E2eError> {
+        let cos_positive_micro = cosine(link, &self.positive).map_err(map_error)?;
+        let cos_negative_micro = cosine(link, &self.negative).map_err(map_error)?;
         let raw = cos_positive_micro - cos_negative_micro;
         let propensity = (raw as f64 / TEMPERATURE_MICRO as f64).tanh();
         let propensity_micro = (propensity * SCORE_SCALE as f64).round() as i64;

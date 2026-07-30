@@ -55,7 +55,10 @@ fn run() -> Result<(), Box<dyn Error>> {
     println!("total relations in store: {}", snapshot.relations.len());
     println!("universe revision       : {}", snapshot.revision.0);
     println!("activation_state        : {:?}", registry.activation_state);
-    println!("active_schema_version   : {}", registry.active_schema_version);
+    println!(
+        "active_schema_version   : {}",
+        registry.active_schema_version
+    );
     println!("authority_hash          : {}", registry.authority_hash);
     println!(
         "overlay members total   : {}",
@@ -78,8 +81,14 @@ fn run() -> Result<(), Box<dyn Error>> {
     for change_set in &registry.active_change_sets {
         println!("\n-- ChangeSet {} --", change_set.key);
         println!("  change_id            : {}", change_set.change_id);
-        println!("  base_schema_version  : {}", change_set.base_schema_version);
-        println!("  target_schema_version: {}", change_set.target_schema_version);
+        println!(
+            "  base_schema_version  : {}",
+            change_set.base_schema_version
+        );
+        println!(
+            "  target_schema_version: {}",
+            change_set.target_schema_version
+        );
         println!("  content_hash         : {}", change_set.content_hash);
         println!("  member count         : {}", change_set.members.len());
         println!("  members:");
@@ -132,7 +141,9 @@ fn run() -> Result<(), Box<dyn Error>> {
 
     println!("\nRESULT: OntologyRegistry::load ACCEPTED the fixture and the ChangeSet is ACTIVE.");
     println!("        (activation_state above is the loader's own verdict; not_measured health");
-    println!("         claims inside member content are graph data, not a runtime health measurement.)");
+    println!(
+        "         claims inside member content are graph data, not a runtime health measurement.)"
+    );
     Ok(())
 }
 

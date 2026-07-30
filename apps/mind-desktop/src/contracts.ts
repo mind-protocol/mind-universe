@@ -135,12 +135,23 @@ export interface EntityVisualDescriptor {
   readonly material: VisualMaterial;
 }
 
+// A `thing` whose graph content declares an audio pointer carries this facet.
+// The projection surfaces it verbatim from graph content — the renderer never
+// invents a source. `loop` is the behavior (the feature: audio things loop);
+// `gain` is the linear volume in [0, 1].
+export interface EntityAudio {
+  readonly src: string;
+  readonly loop: boolean;
+  readonly gain: number;
+}
+
 export interface MaterializedEntity {
   readonly id: EntityId;
   readonly generation: number;
   readonly position: Vector3;
   readonly visual: EntityVisualDescriptor;
   readonly embodiment?: EntityEmbodiment;
+  readonly audio?: EntityAudio;
 }
 
 export interface RelationVisualDescriptor {

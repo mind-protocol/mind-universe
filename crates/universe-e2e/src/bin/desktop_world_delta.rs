@@ -15,7 +15,9 @@ use std::{env, error::Error, fs, path::PathBuf};
 use universe_assets::visual::{derive, VisualCatalog, VisualPolicy};
 use universe_core::{EntityKey, RelationKey, Tick};
 use universe_store::{EntityRecord, RelationRecord, UniverseStore};
-use universe_transactions::{CommitReceipt, UniverseCommand, UniverseTransaction, UniverseWriteSet};
+use universe_transactions::{
+    CommitReceipt, UniverseCommand, UniverseTransaction, UniverseWriteSet,
+};
 
 const PROTOCOL_VERSION: u16 = 0;
 const MICRO: f64 = 1_000_000.0;
@@ -218,7 +220,10 @@ fn resolve_visual(
     let Some(semantic_type) = content.get("semantic_type").and_then(Value::as_str) else {
         return Ok((neutral_material(), None));
     };
-    let residency = content.get("residency").and_then(Value::as_str).unwrap_or("dormant");
+    let residency = content
+        .get("residency")
+        .and_then(Value::as_str)
+        .unwrap_or("dormant");
     let epistemic = content
         .get("epistemic_state")
         .and_then(Value::as_str)

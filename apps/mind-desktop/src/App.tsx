@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useReducer } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import {
   AVATAR_ENTITY_ID,
   AVATAR_MAPPING_AUTHORITY,
   avatarFixtureUniverse
 } from "./avatar-fixture";
+import { audioFixtureUniverse } from "./audio-fixture";
+import { AudioLoops } from "./AudioLoops";
 import {
   applySceneAction,
   gateIntent,
@@ -21,12 +23,20 @@ const sceneReducer = (scene: ActorScene, action: SceneAction): ActorScene =>
   applySceneAction(scene, action, motionBounds);
 
 export default function App() {
-  const avatarFixture =
-    new URLSearchParams(globalThis.location?.search).get("fixture") === "avatar";
+  const fixtureParam = new URLSearchParams(globalThis.location?.search).get(
+    "fixture"
+  );
+  const avatarFixture = fixtureParam === "avatar";
+  const audioFixture = fixtureParam === "audio";
   const [scene, dispatch] = useReducer(sceneReducer, undefined, () => ({
     universe: avatarFixtureUniverse(),
     session: initialControlSession(AVATAR_ENTITY_ID)
   }));
+
+  // Audio loops start muted so the first "unmute" click doubles as the user
+  // gesture that browser autoplay policy requires before sound may play.
+  const [muted, setMuted] = useState(true);
+  const audioUniverse = useMemo(() => audioFixtureUniverse(), []);
 
   // The request/release handshake. G asks the Universe for control of the bound
   // Actor (granted locally in fixture mode); Esc releases it back to observer.
@@ -48,9 +58,16 @@ export default function App() {
     dispatch({ kind: "move", displacement });
   }, []);
 
-  const universe = avatarFixture ? scene.universe : postgresPilotProjection.view;
+  const universe = avatarFixture
+    ? scene.universe
+    : audioFixture
+      ? audioUniverse
+      : postgresPilotProjection.view;
   const gate = gateIntent(scene.session.control, scene.session.boundActor);
   const piloting = avatarFixture && gate.kind === "granted";
+  const hasAudio = [...universe.entities.values()].some(
+    (entity) => entity.audio !== undefined
+  );
 
   const state = avatarFixture
     ? piloting
@@ -76,6 +93,17 @@ export default function App() {
           avatarFixture ? { bounds: motionBounds, piloting, onMove } : undefined
         }
       />
+      <AudioLoops entities={universe.entities} muted={muted} />
+      {hasAudio && (
+        <button
+          type="button"
+          className="audio-toggle"
+          aria-pressed={!muted}
+          onClick={() => setMuted((value) => !value)}
+        >
+          {muted ? "🔇 Sound off" : "🔊 Sound on"}
+        </button>
+      )}
       <header className="projection-heading">
         <p>{avatarFixture ? "Citizen embodiment" : "PostgreSQL identity pilot"}</p>
         <strong>

@@ -10,5 +10,6 @@ serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
 universe-core = { path = "../universe-core" }
+universe-physics = { path = "../universe-physics" }
 universe-store = { path = "../universe-store" }
 universe-supervisor = { path = "../universe-supervisor" }

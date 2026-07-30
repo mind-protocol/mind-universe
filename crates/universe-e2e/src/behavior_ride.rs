@@ -103,7 +103,10 @@ mod tests {
         assert!(glide.loop_health_closed);
         assert!(is_content_hash(&glide.artifact_hash));
         assert!(is_content_hash(&glide.execution_receipt_hash));
-        assert_eq!(glide.epistemic_status, "measured / executed / hash-verified");
+        assert_eq!(
+            glide.epistemic_status,
+            "measured / executed / hash-verified"
+        );
         assert!(glide.transfer_energy > 0);
     }
 }
