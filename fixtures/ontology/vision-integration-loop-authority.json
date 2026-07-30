@@ -358,6 +358,82 @@
         "leverage": "A single ForceLaw enum variant would unlock Gap Gravity Grenade + Aegis Shield + Tombstone Anchor together.",
         "epistemic": {"state": "observed"}
       }
+    },
+    {
+      "key": "00000000000000000000000000003414",
+      "symbol": "narrative",
+      "content": {
+        "kind": "session_learning",
+        "canonical_id": "learning.diegetic_layer_is_a_human_affordance",
+        "priority": "high",
+        "title": "DIEGETIC-LAYER-IS-A-HUMAN-AFFORDANCE",
+        "decision": "The 3D/physical 'skin' need not be causal; it is a legibility/accessibility layer FOR HUMANS. An AI can disable it - AIs operate on the raw graph, not the castle.",
+        "implication": "Cosmetic is not cheating: it is a translation layer for a mind that needs space and gravity to understand.",
+        "source": "design discussion 2026-07-30",
+        "epistemic": {"state": "known", "disposition": "decided"}
+      }
+    },
+    {
+      "key": "00000000000000000000000000003415",
+      "symbol": "moment",
+      "content": {
+        "kind": "session_learning",
+        "canonical_id": "learning.cost_is_energy",
+        "priority": "high",
+        "title": "COST-IS-ENERGY",
+        "observation": "Tool/traversal cost can be denominated in the EXISTING conserved AtomEnergyLedger (invariant: initial+injected == stored, universe-physics). 'Cost = distance travelled by the Board' is not a metaphor: it is energy spent to traverse.",
+        "ledger_fact_epistemic": "observed",
+        "billing_status": "planned",
+        "billing_epistemic": "not_measured",
+        "note": "The currency already exists (observed); only billing traversal against it remains (planned / not_measured).",
+        "source": "design discussion 2026-07-30",
+        "epistemic": {"state": "observed"}
+      }
+    },
+    {
+      "key": "00000000000000000000000000003416",
+      "symbol": "narrative",
+      "content": {
+        "kind": "session_learning",
+        "canonical_id": "learning.fun_is_the_product",
+        "priority": "high",
+        "title": "FUN-IS-THE-PRODUCT / EMERGENT-PLAY-IS-VALUE",
+        "decision": "Emergent creation is first-class value ('Minecraft for cognition'): if users open boost-potion shops, build castles, or repaint the Mona Lisa in a loop, that IS the win.",
+        "constraint": "Do NOT over-apply causal purity. Strict physical causality is REQUIRED ONLY at the safety trio (Hysteresis / Tombstone / Prism, which protect the mind); the creative/economic layer may be beautiful and emergent.",
+        "source": "design discussion 2026-07-30",
+        "epistemic": {"state": "known", "disposition": "decided"}
+      }
+    },
+    {
+      "key": "00000000000000000000000000003417",
+      "symbol": "narrative",
+      "content": {
+        "kind": "session_learning",
+        "canonical_id": "learning.three_layers_not_two",
+        "priority": "high",
+        "title": "THREE-LAYERS-NOT-TWO",
+        "decision": "Distinguish three layers, not two: (1) Truth - must be real/measured/honest (epistemic states, energy ledger); (2) Legibility - must be FAITHFUL, not causal (seeing the graph); (3) Diegetic play - fun, emergent, disable-able.",
+        "correction": "The earlier 'causal vs cosmetic' tension was a false dichotomy that conflated Legibility (load-bearing) with Play (optional).",
+        "relates_to": ["learning.legibility_is_the_present_unlock", "learning.substrate_vs_verbs"],
+        "source": "design discussion 2026-07-30",
+        "epistemic": {"state": "known", "disposition": "decided"}
+      }
+    },
+    {
+      "key": "00000000000000000000000000003418",
+      "symbol": "moment",
+      "content": {
+        "kind": "session_learning",
+        "canonical_id": "learning.legibility_is_the_present_unlock",
+        "priority": "highest",
+        "title": "LEGIBILITY-IS-THE-PRESENT-UNLOCK",
+        "observation": "The core present value of the viz is NOT physics-causality but making the invisible graph VISIBLE. Epistemic states rendered in space (measured / unknown / known_absent / measurement_failed), seen live in the running viz today, give trust unattainable from reading JSONL.",
+        "human_statement": "I have never been able to see what was in this graph, and that changes everything.",
+        "framing": "Legibility of the graph - not the physics being causal - is what 'changes everything' right now. Physics-causality is the later unlock; legibility is the present one.",
+        "relates_to": ["learning.measured_energy_membrane_blocker"],
+        "source": "design discussion 2026-07-30",
+        "epistemic": {"state": "observed"}
+      }
     }
   ],
   "relations": [
@@ -654,6 +730,132 @@
       "target": "0000000000000000000000000000340f",
       "predicate": "MOTIVATES",
       "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "SUBSTRATE-VS-VERBS motivates the Maintenance affordance of adding a single ForceLaw enum variant."}
+    },
+    {
+      "key": "00000000000000000000000000005414",
+      "source": "00000000000000000000000000003414",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The learning DIEGETIC-LAYER-IS-A-HUMAN-AFFORDANCE is an explicit first-class member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005415",
+      "source": "00000000000000000000000000003415",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The learning COST-IS-ENERGY is an explicit first-class member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005416",
+      "source": "00000000000000000000000000003416",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The learning FUN-IS-THE-PRODUCT is an explicit first-class member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005417",
+      "source": "00000000000000000000000000003417",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The learning THREE-LAYERS-NOT-TWO is an explicit first-class member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000005418",
+      "source": "00000000000000000000000000003418",
+      "target": "00000000000000000000000000003400",
+      "predicate": "PART_OF",
+      "content": {"kind": "ontology_relation", "role": "changeset_membership", "justification": "The learning LEGIBILITY-IS-THE-PRESENT-UNLOCK is an explicit first-class member of the approved ChangeSet."}
+    },
+    {
+      "key": "00000000000000000000000000006416",
+      "source": "00000000000000000000000000003414",
+      "target": "00000000000000000000000000003402",
+      "predicate": "INFORMS",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "DIEGETIC-LAYER-IS-A-HUMAN-AFFORDANCE informs the Objective: the diegetic skin is a human legibility affordance, not a causal requirement for activation."}
+    },
+    {
+      "key": "00000000000000000000000000006417",
+      "source": "00000000000000000000000000003414",
+      "target": "0000000000000000000000000000340f",
+      "predicate": "MOTIVATES",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "DIEGETIC-LAYER-IS-A-HUMAN-AFFORDANCE motivates a Maintenance affordance: keep the diegetic layer disable-able for AI consumers of the raw graph."}
+    },
+    {
+      "key": "00000000000000000000000000006418",
+      "source": "00000000000000000000000000003415",
+      "target": "00000000000000000000000000003402",
+      "predicate": "INFORMS",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "COST-IS-ENERGY informs the Objective: traversal cost can be denominated in the existing conserved energy ledger."}
+    },
+    {
+      "key": "00000000000000000000000000006419",
+      "source": "00000000000000000000000000003415",
+      "target": "0000000000000000000000000000340f",
+      "predicate": "MOTIVATES",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "COST-IS-ENERGY motivates a Maintenance affordance: bill Board traversal against AtomEnergyLedger (planned, not_measured)."}
+    },
+    {
+      "key": "0000000000000000000000000000641a",
+      "source": "00000000000000000000000000003416",
+      "target": "00000000000000000000000000003402",
+      "predicate": "INFORMS",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "FUN-IS-THE-PRODUCT informs the Objective: emergent play is first-class value; causal purity is required only at the safety trio."}
+    },
+    {
+      "key": "0000000000000000000000000000641b",
+      "source": "00000000000000000000000000003416",
+      "target": "0000000000000000000000000000340f",
+      "predicate": "MOTIVATES",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "FUN-IS-THE-PRODUCT motivates a Maintenance affordance: restrict strict causal enforcement to Hysteresis/Tombstone/Prism, keep the creative layer emergent."}
+    },
+    {
+      "key": "0000000000000000000000000000641c",
+      "source": "00000000000000000000000000003417",
+      "target": "00000000000000000000000000003402",
+      "predicate": "INFORMS",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "THREE-LAYERS-NOT-TWO informs the Objective: Truth (measured), Legibility (faithful), Diegetic play (optional) are distinct layers."}
+    },
+    {
+      "key": "0000000000000000000000000000641d",
+      "source": "00000000000000000000000000003417",
+      "target": "0000000000000000000000000000340f",
+      "predicate": "MOTIVATES",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "THREE-LAYERS-NOT-TWO motivates a Maintenance affordance: never enforce causal purity on the Legibility or Play layers."}
+    },
+    {
+      "key": "0000000000000000000000000000641e",
+      "source": "00000000000000000000000000003418",
+      "target": "00000000000000000000000000003402",
+      "predicate": "INFORMS",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "LEGIBILITY-IS-THE-PRESENT-UNLOCK informs the Objective's present success condition: making the invisible graph visible is the value delivered today."}
+    },
+    {
+      "key": "0000000000000000000000000000641f",
+      "source": "00000000000000000000000000003418",
+      "target": "0000000000000000000000000000340f",
+      "predicate": "MOTIVATES",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "LEGIBILITY-IS-THE-PRESENT-UNLOCK motivates a Maintenance affordance: prioritize faithful epistemic-state rendering over physics-causality for the present unlock."}
+    },
+    {
+      "key": "00000000000000000000000000006420",
+      "source": "00000000000000000000000000003417",
+      "target": "00000000000000000000000000003418",
+      "predicate": "INFORMS",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "THREE-LAYERS-NOT-TWO relates to LEGIBILITY-IS-THE-PRESENT-UNLOCK: the Legibility layer is exactly the load-bearing, present-unlock layer."}
+    },
+    {
+      "key": "00000000000000000000000000006421",
+      "source": "00000000000000000000000000003417",
+      "target": "00000000000000000000000000003413",
+      "predicate": "INFORMS",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "THREE-LAYERS-NOT-TWO relates to SUBSTRATE-VS-VERBS: the substrate already realizes the Truth layer; the verbs and skins live in Legibility and Play."}
+    },
+    {
+      "key": "00000000000000000000000000006422",
+      "source": "00000000000000000000000000003418",
+      "target": "00000000000000000000000000003411",
+      "predicate": "INFORMS",
+      "content": {"kind": "ontology_relation", "role": "learning_edge", "justification": "LEGIBILITY-IS-THE-PRESENT-UNLOCK relates to THE MEASURED-ENERGY MEMBRANE BLOCKER: physics-causality (the felt glide crossing the membrane) is the later unlock; legibility is the present one."}
     }
   ]
 }
