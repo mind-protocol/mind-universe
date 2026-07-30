@@ -10,11 +10,13 @@
 //! shadow-executes, and activates nothing. None of these ever migrates running
 //! code, activates physics, or makes a PostgreSQL row executable.
 
+pub mod code_activation;
 pub mod code_migration;
 pub mod code_pilot;
 pub mod code_translation;
 pub mod cursor;
 pub mod ontology_pilot;
+pub mod physics_pilot;
 
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeSet, path::Path};

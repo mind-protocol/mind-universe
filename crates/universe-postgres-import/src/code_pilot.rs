@@ -357,7 +357,12 @@ pub fn materialize_seed(manifest: &CodePilotManifest) -> Result<GraphSeed, Unive
         SYM_GOVERNED_BY,
     )];
     for node in &manifest.nodes {
-        relations.push(relation(&mut next, node.atom, manifest.source.atom, SYM_GOVERNED_BY));
+        relations.push(relation(
+            &mut next,
+            node.atom,
+            manifest.source.atom,
+            SYM_GOVERNED_BY,
+        ));
     }
 
     Ok(GraphSeed {
@@ -509,7 +514,12 @@ pub fn run_code_pilot(
             .iter()
             .find(|entity| entity.key == node.atom)
             .and_then(|entity| entity.content.as_ref())
-            .ok_or_else(|| validation(format!("code Node {} missing after replay", node.source_label)))?;
+            .ok_or_else(|| {
+                validation(format!(
+                    "code Node {} missing after replay",
+                    node.source_label
+                ))
+            })?;
         let value = final_store.read_content(content)?;
 
         // Inertness stamps, read back from the store (never trusted from memory).
@@ -537,10 +547,13 @@ pub fn run_code_pilot(
         }
 
         // Provenance completeness, measured from stored content.
-        let provenance_ok = value.get("source_id").and_then(Value::as_str) == Some(node.source_id.as_str())
-            && value.get("content_sha256").and_then(Value::as_str) == Some(node.content_sha256.as_str())
+        let provenance_ok = value.get("source_id").and_then(Value::as_str)
+            == Some(node.source_id.as_str())
+            && value.get("content_sha256").and_then(Value::as_str)
+                == Some(node.content_sha256.as_str())
             && value.get("source_revision").and_then(Value::as_u64) == Some(node.source_revision)
-            && value.get("import_batch").and_then(Value::as_str) == Some(manifest.import_batch.as_str())
+            && value.get("import_batch").and_then(Value::as_str)
+                == Some(manifest.import_batch.as_str())
             && value.get("code_kind").and_then(Value::as_str) == Some(node.code_kind.as_str());
         if provenance_ok {
             provenance_complete += 1;
@@ -654,7 +667,12 @@ fn entity(key: EntityKey, symbol: &str, content: Value) -> SeedEntity {
     }
 }
 
-fn relation(next: &mut u128, source: EntityKey, target: EntityKey, predicate: &str) -> SeedRelation {
+fn relation(
+    next: &mut u128,
+    source: EntityKey,
+    target: EntityKey,
+    predicate: &str,
+) -> SeedRelation {
     let result = SeedRelation {
         key: RelationKey(*next),
         generation: 0,

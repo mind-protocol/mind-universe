@@ -1,0 +1,13 @@
+{
+  "ir_version": 0,
+  "revision": 5,
+  "required_capabilities": [],
+  "operators": [
+    {"op":"call","target":2,"output":0,"max_depth":2},
+    {"op":"return","value":0},
+    {"op":"call","target":4,"output":1,"max_depth":2},
+    {"op":"return","value":1},
+    {"op":"constant","value":{"type":"integer","value":7},"output":2},
+    {"op":"return","value":2}
+  ]
+}

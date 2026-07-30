@@ -94,6 +94,16 @@ pub enum VmError {
     EvidenceUnavailable(EpistemicState),
     #[error("proposal budget exhausted")]
     ProposalBudgetExhausted,
+    #[error("call depth budget {limit} exceeded")]
+    CallDepthExceeded { limit: u32 },
+}
+
+/// One live call frame: where control resumes in the caller and which caller
+/// register receives the callee's returned value.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct CallFrame {
+    return_pc: usize,
+    output: Register,
 }
 
 pub trait VmHost {
@@ -275,6 +285,7 @@ pub fn execute(
     let mut trace = Vec::new();
     let mut result = Value::Unit;
     let mut program_counter = 0usize;
+    let mut call_stack: Vec<CallFrame> = Vec::new();
 
     while program_counter < bytecode.instructions.len() {
         let index = program_counter;
@@ -553,9 +564,33 @@ pub fn execute(
                 proposals.push(proposal.clone());
                 Some(proposal.command)
             }
+            Operator::Call {
+                target,
+                output,
+                max_depth,
+            } => {
+                if call_stack.len() as u64 + 1 > u64::from(*max_depth) {
+                    return Err(VmError::CallDepthExceeded { limit: *max_depth });
+                }
+                call_stack.push(CallFrame {
+                    return_pc: index + 1,
+                    output: *output,
+                });
+                next_program_counter = *target as usize;
+                None
+            }
             Operator::Return { value } => {
-                result = register(&registers, *value)?.clone();
-                returned = true;
+                let value = register(&registers, *value)?.clone();
+                match call_stack.pop() {
+                    Some(frame) => {
+                        registers.insert(frame.output, value);
+                        next_program_counter = frame.return_pc;
+                    }
+                    None => {
+                        result = value;
+                        returned = true;
+                    }
+                }
                 None
             }
         };
@@ -798,6 +833,10 @@ mod tests {
             "../../../fixtures/graph-ir/evidence-branch.json"
         ))
         .unwrap()
+    }
+
+    fn call_depth_fixture() -> CodeDefinition {
+        serde_json::from_str(include_str!("../../../fixtures/graph-ir/call-depth.json")).unwrap()
     }
 
     fn behavior_loop_health_fixture() -> CodeDefinition {
@@ -1292,6 +1331,67 @@ mod tests {
             assert_eq!(interpreted.result, Value::Text(expected.into()));
             assert_eq!(interpreted.fuel_used, 4);
         }
+    }
+
+    #[test]
+    fn call_returns_callee_value_and_resumes_caller() {
+        let code = call_depth_fixture();
+        let bytecode = compile(&code).unwrap();
+        let interpreted = execute_program(
+            &code,
+            &mut Host,
+            &BTreeMap::new(),
+            Revision(40),
+            Tick(11),
+            ExecutionLimits {
+                fuel: 16,
+                max_proposals: 0,
+            },
+        )
+        .unwrap();
+        let compiled = execute(
+            &bytecode,
+            &mut Host,
+            &BTreeMap::new(),
+            Revision(40),
+            Tick(11),
+            ExecutionLimits {
+                fuel: 16,
+                max_proposals: 0,
+            },
+        )
+        .unwrap();
+        assert_eq!(interpreted, compiled);
+        // Two nested calls (depth 2) resolve to the innermost constant, proving
+        // control returns to each caller and the returned value is bound into
+        // the caller's output register.
+        assert_eq!(interpreted.result, Value::Integer(7));
+        // call, call, constant, return, return, return.
+        assert_eq!(interpreted.fuel_used, 6);
+    }
+
+    #[test]
+    fn call_depth_budget_traps_deterministically() {
+        // The budget lives in graph data: tightening the inner call's declared
+        // max_depth below the live nesting depth must trap, never truncate.
+        let mut code = call_depth_fixture();
+        let Operator::Call { max_depth, .. } = &mut code.operators[2] else {
+            panic!("fixture operator 2 must be a call");
+        };
+        *max_depth = 1;
+        let error = execute_program(
+            &code,
+            &mut Host,
+            &BTreeMap::new(),
+            Revision(40),
+            Tick(11),
+            ExecutionLimits {
+                fuel: 16,
+                max_proposals: 0,
+            },
+        )
+        .unwrap_err();
+        assert_eq!(error, VmError::CallDepthExceeded { limit: 1 });
     }
 
     #[test]

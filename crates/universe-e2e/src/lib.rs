@@ -4,6 +4,7 @@
 
 pub mod behavior_runtime;
 pub mod board;
+pub mod canonical_ride;
 pub mod covalidity;
 pub mod magic_object;
 

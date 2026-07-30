@@ -93,6 +93,27 @@ pub struct Gesture<'a> {
     pub energy: u64,
 }
 
+/// One node of a derived (non-fixture) cluster passed to [`MagicObject::from_parts`].
+pub struct PartNode {
+    pub key: u128,
+    pub role: Role,
+    pub function: String,
+    pub binding: Option<String>,
+    pub threshold: u64,
+    pub seed_energy: u64,
+    pub required_supports: Vec<u128>,
+    pub inhibition_threshold: Option<u64>,
+}
+
+/// One bond of a derived cluster passed to [`MagicObject::from_parts`].
+pub struct PartBond {
+    pub key: u128,
+    pub source: u128,
+    pub target: u128,
+    pub polarity: BondPolarity,
+    pub energy: u64,
+}
+
 /// The settled result of wielding the object: which nodes fired, their support,
 /// and the physical ledger. Each object *interprets* this in its own terms.
 #[derive(Clone, Debug)]
@@ -174,6 +195,55 @@ impl MagicObject {
         let bytes = fs::read(path).map_err(|error| E2eError::Io(error.to_string()))?;
         let blueprint: Blueprint = serde_json::from_slice(&bytes)
             .map_err(|error| E2eError::Contract(error.to_string()))?;
+        Self::decorate(blueprint)
+    }
+
+    /// Decorate a derived, in-memory cluster (not a fixture) into a magic object,
+    /// reusing the exact same blueprint validation as [`Self::load`]. This is the
+    /// single path shared by fixtures and by derived rides over the real store.
+    pub fn from_parts(
+        name: String,
+        space: u128,
+        space_name: Option<String>,
+        policy: GradientPolicy,
+        nodes: Vec<PartNode>,
+        bonds: Vec<PartBond>,
+    ) -> Result<Self, E2eError> {
+        let blueprint = Blueprint {
+            magic_object: name,
+            space: SpaceDecl {
+                key: space,
+                role: Role::Space,
+                name: space_name,
+            },
+            gradient_policy: policy,
+            contents: nodes
+                .into_iter()
+                .map(|node| ContentDecl {
+                    key: node.key,
+                    role: node.role,
+                    function: node.function,
+                    measurement_binding: node.binding,
+                    physics: PhysicsDecl {
+                        threshold: node.threshold,
+                        seed_energy: node.seed_energy,
+                        required_supports: node.required_supports,
+                        inhibition_threshold: node.inhibition_threshold,
+                    },
+                })
+                .collect(),
+            bonds: bonds
+                .into_iter()
+                .map(|bond| BondDecl {
+                    key: bond.key,
+                    source: bond.source,
+                    target: bond.target,
+                    polarity: bond.polarity,
+                    energy: bond.energy,
+                })
+                .collect(),
+            activation: None,
+        };
         Self::decorate(blueprint)
     }
 

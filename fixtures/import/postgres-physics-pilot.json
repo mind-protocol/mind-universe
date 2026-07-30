@@ -1,0 +1,94 @@
+{
+  "contract_version": 0,
+  "universe": "0000000000000000000000000000a000",
+  "source": {
+    "atom": "0000000000000000000000000000a001",
+    "authority_id": "postgres:legacy:physics_profiles",
+    "source_graph_scope": ["legacy.relation_physics"],
+    "observed_at": "2026-07-30T00:00:00Z",
+    "mapping_version": "0.4.0"
+  },
+  "changeset": {
+    "atom": "0000000000000000000000000000a010",
+    "change_id": "postgres-physics-inert-import-v0",
+    "authority": "graph_first_physics_import_authority",
+    "status": "approved_for_inert_import"
+  },
+  "profiles": [
+    {
+      "atom": "0000000000000000000000000000a100",
+      "source_predicate": "UNLOCKS",
+      "source_graph_scope": ["legacy.relation_physics"],
+      "provenance": {
+        "source_id": "legacy.relation_physics:UNLOCKS",
+        "source_revision": 4,
+        "import_batch": "postgres-physics-import-batch-001",
+        "content_sha256": "a1f0c3d2e4b5968778695a4b3c2d1e0fa1f0c3d2e4b5968778695a4b3c2d1e0f"
+      },
+      "profile": {
+        "family": "enablement",
+        "collisionGroup": "forward_enablement",
+        "hierarchy": 0.15,
+        "permanence": 0.65,
+        "polarity": [0.95, 0.15],
+        "mode": "composite"
+      }
+    },
+    {
+      "atom": "0000000000000000000000000000a101",
+      "source_predicate": "CONTAINS",
+      "source_graph_scope": ["legacy.relation_physics"],
+      "provenance": {
+        "source_id": "legacy.relation_physics:CONTAINS",
+        "source_revision": 4,
+        "import_batch": "postgres-physics-import-batch-001",
+        "content_sha256": "b2e1d4c3f5a6879889786b5c4d3e2f10b2e1d4c3f5a6879889786b5c4d3e2f10"
+      },
+      "profile": {
+        "family": "containment",
+        "collisionGroup": "nesting",
+        "hierarchy": 0.8,
+        "permanence": 0.7,
+        "polarity": [0.2, 0.9]
+      }
+    },
+    {
+      "atom": "0000000000000000000000000000a102",
+      "source_predicate": "MYSTERY_LINK",
+      "source_graph_scope": ["legacy.relation_physics"],
+      "provenance": {
+        "source_id": "legacy.relation_physics:MYSTERY_LINK",
+        "source_revision": 4,
+        "import_batch": "postgres-physics-import-batch-001",
+        "content_sha256": "c3d2e5f4a6b798a99a897c6d5e4f3021c3d2e5f4a6b798a99a897c6d5e4f3021"
+      },
+      "profile": {
+        "hierarchy": 0.4,
+        "permanence": 0.5,
+        "polarity": [0.3, 0.6],
+        "mode": "composite"
+      }
+    },
+    {
+      "atom": "0000000000000000000000000000a103",
+      "source_predicate": "BROKEN_FLUX",
+      "source_graph_scope": ["legacy.relation_physics"],
+      "provenance": {
+        "source_id": "legacy.relation_physics:BROKEN_FLUX",
+        "source_revision": 4,
+        "import_batch": "postgres-physics-import-batch-001",
+        "content_sha256": "d4e3f6a5b7c8a9baab9a8d7e6f504132d4e3f6a5b7c8a9baab9a8d7e6f504132"
+      },
+      "profile": {
+        "family": "flux",
+        "hierarchy": 0.4,
+        "permanence": 0.7,
+        "polarity": [1.7, 0.2],
+        "mode": "composite"
+      }
+    }
+  ],
+  "receipt_atom": "0000000000000000000000000000a020",
+  "receipt_relation": "0000000000000000000000000000afff",
+  "relation_key_start": "0000000000000000000000000000a200"
+}

@@ -196,6 +196,24 @@ pub enum Operator {
         command: Register,
         output: Register,
     },
+    /// Bounded subroutine invocation with a REQUIRED runtime call-depth budget.
+    ///
+    /// Control transfers forward to `target`, the entry of a callee region that
+    /// ends in `Return`; the callee's returned value is bound into `output` and
+    /// control resumes at the following operator. Registers are shared with the
+    /// caller: the callee may read any register the caller has already assigned,
+    /// but `output` is defined only once the call returns.
+    ///
+    /// `max_depth` is graph data and caps the number of simultaneously live call
+    /// frames. Exceeding it is a deterministic trap, never a silent truncation.
+    /// Because `target` must point forward the static call graph is a DAG, so
+    /// termination is structurally guaranteed independently of the budget; the
+    /// budget bounds live stack depth for nested calls.
+    Call {
+        target: u32,
+        output: Register,
+        max_depth: u32,
+    },
     Return {
         value: Register,
     },
@@ -224,14 +242,15 @@ impl Operator {
             | Self::Hydrate { output, .. }
             | Self::CapabilityCall { output, .. }
             | Self::MakeRecord { output, .. }
-            | Self::Propose { output, .. } => Some(*output),
+            | Self::Propose { output, .. }
+            | Self::Call { output, .. } => Some(*output),
             Self::Branch { .. } | Self::BranchOnEvidence { .. } | Self::Return { .. } => None,
         }
     }
 
     pub fn inputs(&self) -> Vec<Register> {
         match self {
-            Self::Input { .. } | Self::Constant { .. } => vec![],
+            Self::Input { .. } | Self::Constant { .. } | Self::Call { .. } => vec![],
             Self::Compare { left, right, .. } | Self::BooleanBinary { left, right, .. } => {
                 vec![*left, *right]
             }

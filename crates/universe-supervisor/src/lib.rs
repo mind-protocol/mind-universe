@@ -65,8 +65,15 @@ pub struct SupervisorHealth {
     /// Physics phase health is owned by the physics subsystem, not the
     /// supervisor, so this is `NotMeasured` here.
     pub physics: Epistemic<HealthLevel>,
-    /// Effect/transport health. Transport activations are counted, but
-    /// success/failure outcomes are not yet retained, so this is `NotMeasured`.
+    /// Effect/transport health, derived from real observed transport receipts.
+    ///
+    /// This is `NotMeasured` until at least one genuine transport receipt has
+    /// been observed. Once evidence exists the level is a structural fact about
+    /// the observed outcome set, not a tunable threshold: every observed
+    /// transport succeeded is `Nominal`; a mix of observed successes and
+    /// failures is `Degraded`; every observed transport failed is `Failed`.
+    /// `Nominal` therefore reflects positive success evidence for each observed
+    /// transport, never mere absence of an error.
     pub effect: Epistemic<HealthLevel>,
     /// Semantic / Behavior Loop health is measured by the compiler's Loop-health
     /// evidence, not by the supervisor, so this is `NotMeasured` here.
@@ -672,6 +679,12 @@ pub struct Supervisor {
     pending: Vec<UniverseTransaction>,
     runtime_activations: BTreeMap<(RuntimeMechanismKind, String), u64>,
     observed_transport_receipts: BTreeSet<String>,
+    /// Count of distinct observed transport receipts whose outcome was a
+    /// success. Owned evidence backing the `effect` health dimension.
+    observed_transport_successes: u64,
+    /// Count of distinct observed transport receipts whose outcome was a
+    /// failure. Owned evidence backing the `effect` health dimension.
+    observed_transport_failures: u64,
     processed_effect_receipts: BTreeSet<String>,
 }
 
@@ -698,6 +711,8 @@ impl Supervisor {
             pending: Vec::new(),
             runtime_activations: BTreeMap::new(),
             observed_transport_receipts: BTreeSet::new(),
+            observed_transport_successes: 0,
+            observed_transport_failures: 0,
             processed_effect_receipts: BTreeSet::new(),
         })
     }
@@ -747,7 +762,7 @@ impl Supervisor {
                 data_integrity: Epistemic::NotMeasured,
                 execution: Epistemic::NotMeasured,
                 physics: Epistemic::NotMeasured,
-                effect: Epistemic::NotMeasured,
+                effect: self.effect_health(),
                 semantic_loop: Epistemic::NotMeasured,
             },
         }
@@ -789,18 +804,43 @@ impl Supervisor {
         Ok(receipt)
     }
 
-    /// Records a transport only when an actual transport receipt exists.
+    /// Records a transport only when an actual transport receipt exists, and
+    /// retains its measured outcome as evidence for the `effect` health
+    /// dimension. Duplicate receipt ids are ignored so a single transport is
+    /// never double-counted.
     pub fn observe_transport_receipt(
         &mut self,
         transport_name: impl Into<String>,
         receipt_id: impl Into<String>,
-        _receipt: &EffectReceipt,
+        receipt: &EffectReceipt,
     ) -> bool {
         if !self.observed_transport_receipts.insert(receipt_id.into()) {
             return false;
         }
+        match receipt {
+            EffectReceipt::TransportSucceeded { .. } => self.observed_transport_successes += 1,
+            EffectReceipt::TransportFailed { .. } => self.observed_transport_failures += 1,
+        }
         self.record_activation(RuntimeMechanismKind::Transport, transport_name);
         true
+    }
+
+    /// Derives effect/transport health from real observed transport outcomes.
+    ///
+    /// Returns `NotMeasured` until at least one genuine transport receipt has
+    /// been observed. The level is a structural fact about the observed outcome
+    /// set — not a tunable threshold — so no organization-specific policy lives
+    /// here.
+    fn effect_health(&self) -> Epistemic<HealthLevel> {
+        match (
+            self.observed_transport_successes,
+            self.observed_transport_failures,
+        ) {
+            (0, 0) => Epistemic::NotMeasured,
+            (_, 0) => Epistemic::Measured(HealthLevel::Nominal),
+            (0, _) => Epistemic::Measured(HealthLevel::Failed),
+            (_, _) => Epistemic::Measured(HealthLevel::Degraded),
+        }
     }
 
     /// Executes a capability through its real adapter and lets graph-owned
@@ -1093,6 +1133,56 @@ mod tests {
 
         supervisor.advance(&mut RecordingHook::default()).unwrap();
         assert_eq!(supervisor.status().pending_commit_backlog, 0);
+    }
+
+    #[test]
+    fn effect_health_is_measured_only_from_observed_transport_outcomes() {
+        let temp = tempfile::tempdir().unwrap();
+        let genesis = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../fixtures/genesis/minimal-genesis.json");
+
+        // No transport observed yet: effect health is NotMeasured, never
+        // fabricated as Nominal from the mere absence of a failure.
+        let mut supervisor = Supervisor::boot(temp.path(), genesis.clone()).unwrap();
+        assert_eq!(supervisor.status().health.effect, Epistemic::NotMeasured);
+
+        // A single observed success is positive evidence for that transport, so
+        // the dimension becomes Measured(Nominal).
+        let success = EffectReceipt::TransportSucceeded {
+            response: b"ok".to_vec(),
+        };
+        assert!(supervisor.observe_transport_receipt("safe.echo", "effect-ok", &success));
+        assert_eq!(
+            supervisor.status().health.effect,
+            Epistemic::Measured(HealthLevel::Nominal)
+        );
+        // A duplicate receipt id is ignored, so evidence is not double-counted
+        // and the level does not change.
+        assert!(!supervisor.observe_transport_receipt("safe.echo", "effect-ok", &success));
+        assert_eq!(
+            supervisor.status().health.effect,
+            Epistemic::Measured(HealthLevel::Nominal)
+        );
+
+        // One observed failure alongside a success is a mixed outcome set, a
+        // structural Degraded — not derived from any tuned threshold.
+        let failure = EffectReceipt::TransportFailed {
+            reason: "adapter refused".into(),
+        };
+        assert!(supervisor.observe_transport_receipt("safe.echo", "effect-bad", &failure));
+        assert_eq!(
+            supervisor.status().health.effect,
+            Epistemic::Measured(HealthLevel::Degraded)
+        );
+
+        // A separate supervisor whose only observed transport failed reports
+        // Measured(Failed): there is zero successful-transport evidence.
+        let mut only_failures = Supervisor::boot(temp.path(), genesis).unwrap();
+        assert!(only_failures.observe_transport_receipt("safe.echo", "only-bad", &failure));
+        assert_eq!(
+            only_failures.status().health.effect,
+            Epistemic::Measured(HealthLevel::Failed)
+        );
     }
 
     #[test]

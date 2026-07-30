@@ -3,7 +3,7 @@
 mod transport;
 
 use serde::{Deserialize, Serialize};
-use std::collections::VecDeque;
+use std::collections::{BTreeSet, VecDeque};
 use universe_core::{EntityKey, Epistemic, RelationKey, Revision, Tick, UniverseError, UniverseId};
 use universe_store::{EntityRecord, RelationRecord};
 use universe_supervisor::{RuntimeInventory, Supervisor};
@@ -296,6 +296,8 @@ pub enum ServerPayload {
     EnergyTransfer(EnergyTransferMessage),
     QueryResult(LocalQueryResultMessage),
     ReadEntity(ReadEntityResponse),
+    ContentListing(ContentListingResponse),
+    HydratedContent(HydrateContentResponse),
     Receipt(ReceiptMessage),
     Heartbeat(HeartbeatMessage),
 }
@@ -318,6 +320,8 @@ pub struct ResynchronizeRequest {
 pub enum ClientPayload {
     Query(LocalQueryRequest),
     ReadEntity(ReadEntityRequest),
+    ListContent(ContentListingRequest),
+    HydrateContent(HydrateContentRequest),
     Acknowledge(AcknowledgeMessage),
     Resynchronize(ResynchronizeRequest),
 }
@@ -381,6 +385,7 @@ pub enum ProtocolStreamError {
         latest_published: StreamSequence,
     },
     InvalidEnergyTransfer(String),
+    InvalidVisibilityRequest(String),
     Serialization(String),
 }
 
@@ -627,6 +632,159 @@ pub struct ReadEntityResponse {
     pub result: Epistemic<EntityRecord>,
 }
 
+/// A capability label an actor must hold to observe a content ref.
+///
+/// Labels are materialized from the graph's visibility relations and supplied
+/// to the protocol as data. They are never a constant policy compiled into the
+/// dispatcher, so a change in what an actor may see is a change in graph data,
+/// not in this crate.
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+pub struct VisibilityLabel(pub String);
+
+/// One content ref together with the label the graph requires to observe it.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct VisibleContent {
+    pub required_label: VisibilityLabel,
+    pub record: EntityRecord,
+}
+
+/// The bounded, graph-materialized visibility projection for one local
+/// situation.
+///
+/// This is data provided by the caller from the graph's visibility relations.
+/// The protocol consults it; it does not invent visibility. Listing is bounded
+/// by an explicit per-request budget, so there is no whole-situation export
+/// path, and hydration is refused for any ref whose required label the actor
+/// does not present.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct VisibilityCatalog {
+    pub revision: Revision,
+    pub tick: Tick,
+    pub content: Vec<VisibleContent>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct ContentListingRequest {
+    pub request_id: String,
+    pub actor: EntityKey,
+    pub presented_labels: Vec<VisibilityLabel>,
+    pub max_refs: u32,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct ContentListingResponse {
+    pub request_id: String,
+    pub revision: Revision,
+    pub tick: Tick,
+    pub completion: QueryCompletion,
+    /// Only the content refs the presented labels permit, bounded by the
+    /// request budget.
+    pub visible: Vec<EntityKey>,
+    /// Count of catalog refs the actor is not permitted to observe. Reported so
+    /// a filtered listing is never mistaken for proven absence of content.
+    pub withheld: usize,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct HydrateContentRequest {
+    pub request_id: String,
+    pub actor: EntityKey,
+    pub presented_labels: Vec<VisibilityLabel>,
+    pub key: EntityKey,
+}
+
+/// The honest outcome of a hydration attempt.
+///
+/// `VisibilityDenied` (the ref exists but its label was not presented) is kept
+/// distinct from `Absent` (the ref is not in the catalog). A denied ref is
+/// never collapsed into known-absent.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "outcome", rename_all = "snake_case")]
+pub enum HydrationOutcome {
+    Delivered(EntityRecord),
+    VisibilityDenied { required_label: VisibilityLabel },
+    Absent,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct HydrateContentResponse {
+    pub request_id: String,
+    pub revision: Revision,
+    pub tick: Tick,
+    pub outcome: HydrationOutcome,
+}
+
+impl VisibilityCatalog {
+    /// Returns only the content refs the presented labels permit, bounded by
+    /// `max_refs`. When more permitted refs exist than the budget admits, the
+    /// completion is `BudgetExhausted`; there is no unbounded export path.
+    pub fn list(
+        &self,
+        request: &ContentListingRequest,
+    ) -> Result<ContentListingResponse, ProtocolStreamError> {
+        if request.max_refs == 0 {
+            return Err(ProtocolStreamError::InvalidVisibilityRequest(
+                "max_refs must be non-zero".into(),
+            ));
+        }
+        let held: BTreeSet<&VisibilityLabel> = request.presented_labels.iter().collect();
+        let mut visible = Vec::new();
+        let mut permitted_total: usize = 0;
+        let mut withheld: usize = 0;
+        for item in &self.content {
+            if held.contains(&item.required_label) {
+                permitted_total += 1;
+                if (visible.len() as u64) < u64::from(request.max_refs) {
+                    visible.push(item.record.key);
+                }
+            } else {
+                withheld += 1;
+            }
+        }
+        let completion = if permitted_total > visible.len() {
+            QueryCompletion::BudgetExhausted
+        } else {
+            QueryCompletion::Complete
+        };
+        Ok(ContentListingResponse {
+            request_id: request.request_id.clone(),
+            revision: self.revision,
+            tick: self.tick,
+            completion,
+            visible,
+            withheld,
+        })
+    }
+
+    /// Delivers a content record only when the presented labels satisfy the
+    /// ref's required label. A ref present but not permitted is refused with
+    /// `VisibilityDenied`; a ref absent from the catalog is `Absent`. A ref the
+    /// actor never listed is still gated: crafting the request directly cannot
+    /// bypass the label check.
+    pub fn hydrate(&self, request: &HydrateContentRequest) -> HydrateContentResponse {
+        let held: BTreeSet<&VisibilityLabel> = request.presented_labels.iter().collect();
+        let outcome = match self
+            .content
+            .iter()
+            .find(|item| item.record.key == request.key)
+        {
+            None => HydrationOutcome::Absent,
+            Some(item) if held.contains(&item.required_label) => {
+                HydrationOutcome::Delivered(item.record.clone())
+            }
+            Some(item) => HydrationOutcome::VisibilityDenied {
+                required_label: item.required_label.clone(),
+            },
+        };
+        HydrateContentResponse {
+            request_id: request.request_id.clone(),
+            revision: self.revision,
+            tick: self.tick,
+            outcome,
+        }
+    }
+}
+
 pub struct HeadlessProtocol<'a> {
     supervisor: &'a Supervisor,
 }
@@ -664,6 +822,30 @@ impl<'a> HeadlessProtocol<'a> {
             tick: snapshot.tick,
             result,
         })
+    }
+
+    /// Lists the content refs a presented capability set may observe within a
+    /// graph-materialized visibility projection. The projection is supplied by
+    /// the caller from graph visibility relations; the protocol never invents
+    /// it. The listing is bounded by the request budget, so it is not a
+    /// whole-situation export.
+    pub fn list_content(
+        &self,
+        catalog: &VisibilityCatalog,
+        request: ContentListingRequest,
+    ) -> Result<ContentListingResponse, ProtocolStreamError> {
+        catalog.list(&request)
+    }
+
+    /// Hydrates a single content ref only when the presented capability set
+    /// satisfies the ref's graph-required label. Refusal (`VisibilityDenied`)
+    /// is honest and distinct from `Absent`.
+    pub fn hydrate_content(
+        &self,
+        catalog: &VisibilityCatalog,
+        request: HydrateContentRequest,
+    ) -> HydrateContentResponse {
+        catalog.hydrate(&request)
     }
 
     pub fn runtime_inventory(&self) -> RuntimeInventory {
@@ -925,5 +1107,164 @@ mod tests {
             Err(ProtocolStreamError::InvalidEnergyTransfer(_))
         ));
         assert_eq!(stream.latest_published(), StreamSequence(0));
+    }
+
+    fn record(key: u128) -> EntityRecord {
+        EntityRecord {
+            key: EntityKey(key),
+            generation: 0,
+            symbol: 0,
+            content: None,
+        }
+    }
+
+    fn labelled(key: u128, label: &str) -> VisibleContent {
+        VisibleContent {
+            required_label: VisibilityLabel(label.into()),
+            record: record(key),
+        }
+    }
+
+    fn catalog() -> VisibilityCatalog {
+        VisibilityCatalog {
+            revision: Revision(9),
+            tick: Tick(14),
+            content: vec![
+                labelled(1, "public"),
+                labelled(2, "public"),
+                labelled(3, "secret"),
+            ],
+        }
+    }
+
+    fn listing_request(labels: &[&str], max_refs: u32) -> ContentListingRequest {
+        ContentListingRequest {
+            request_id: "listing-1".into(),
+            actor: EntityKey(100),
+            presented_labels: labels
+                .iter()
+                .map(|l| VisibilityLabel((*l).into()))
+                .collect(),
+            max_refs,
+        }
+    }
+
+    fn hydrate_request(key: u128, labels: &[&str]) -> HydrateContentRequest {
+        HydrateContentRequest {
+            request_id: "hydrate-1".into(),
+            actor: EntityKey(100),
+            presented_labels: labels
+                .iter()
+                .map(|l| VisibilityLabel((*l).into()))
+                .collect(),
+            key: EntityKey(key),
+        }
+    }
+
+    #[test]
+    fn visibility_gates_listing_and_distinguishes_denied_from_absent() {
+        let catalog = catalog();
+
+        // A public-only actor sees exactly the public refs; the secret ref is
+        // withheld, not reported as absent.
+        let listing = catalog.list(&listing_request(&["public"], 8)).unwrap();
+        assert_eq!(listing.visible, vec![EntityKey(1), EntityKey(2)]);
+        assert_eq!(listing.withheld, 1);
+        assert_eq!(listing.completion, QueryCompletion::Complete);
+
+        // A permitted ref hydrates.
+        let delivered = catalog.hydrate(&hydrate_request(1, &["public"]));
+        assert!(matches!(
+            delivered.outcome,
+            HydrationOutcome::Delivered(ref got) if *got == record(1)
+        ));
+
+        // Crafting a hydration request for a ref the actor never listed is still
+        // refused: the label gate cannot be bypassed. Denial is NOT absence.
+        let denied = catalog.hydrate(&hydrate_request(3, &["public"]));
+        assert!(matches!(
+            denied.outcome,
+            HydrationOutcome::VisibilityDenied { ref required_label }
+                if *required_label == VisibilityLabel("secret".into())
+        ));
+        assert_ne!(denied.outcome, HydrationOutcome::Absent);
+
+        // A ref absent from the catalog is honestly Absent, distinct from denial.
+        let absent = catalog.hydrate(&hydrate_request(999, &["public", "secret"]));
+        assert_eq!(absent.outcome, HydrationOutcome::Absent);
+
+        // Presenting the secret label unlocks the previously denied ref.
+        let unlocked = catalog.hydrate(&hydrate_request(3, &["public", "secret"]));
+        assert!(matches!(unlocked.outcome, HydrationOutcome::Delivered(_)));
+    }
+
+    #[test]
+    fn visibility_listing_is_bounded_and_refuses_a_zero_budget() {
+        let catalog = catalog();
+
+        // A budget smaller than the permitted set yields a bounded page and an
+        // honest BudgetExhausted completion: no whole-situation export.
+        let bounded = catalog.list(&listing_request(&["public"], 1)).unwrap();
+        assert_eq!(bounded.visible, vec![EntityKey(1)]);
+        assert_eq!(bounded.completion, QueryCompletion::BudgetExhausted);
+
+        // A zero budget is refused rather than silently treated as unbounded.
+        assert!(matches!(
+            catalog.list(&listing_request(&["public"], 0)),
+            Err(ProtocolStreamError::InvalidVisibilityRequest(_))
+        ));
+    }
+
+    #[test]
+    fn visibility_messages_round_trip_on_the_wire() {
+        let catalog = catalog();
+        let stream_id = StreamId("visibility".into());
+
+        // The listing response round-trips as a server frame.
+        let listing = catalog.list(&listing_request(&["public"], 8)).unwrap();
+        let listing_frame = ServerFrame {
+            protocol_version: PROTOCOL_VERSION,
+            stream_id: stream_id.clone(),
+            sequence: StreamSequence(1),
+            correlation: CorrelationId("listing".into()),
+            payload: ServerPayload::ContentListing(listing),
+        };
+        let encoded = serde_json::to_vec(&listing_frame).unwrap();
+        assert_eq!(
+            serde_json::from_slice::<ServerFrame>(&encoded).unwrap(),
+            listing_frame
+        );
+
+        // All three hydration outcomes round-trip and stay distinct.
+        for hydrated in [
+            catalog.hydrate(&hydrate_request(1, &["public"])),
+            catalog.hydrate(&hydrate_request(3, &["public"])),
+            catalog.hydrate(&hydrate_request(999, &["public"])),
+        ] {
+            let payload = ServerPayload::HydratedContent(hydrated);
+            let bytes = serde_json::to_vec(&payload).unwrap();
+            assert_eq!(
+                serde_json::from_slice::<ServerPayload>(&bytes).unwrap(),
+                payload
+            );
+        }
+
+        // The requests round-trip as client frames.
+        for payload in [
+            ClientPayload::ListContent(listing_request(&["public"], 4)),
+            ClientPayload::HydrateContent(hydrate_request(2, &["public"])),
+        ] {
+            let frame = ClientFrame {
+                protocol_version: PROTOCOL_VERSION,
+                stream_id: stream_id.clone(),
+                correlation: CorrelationId("request".into()),
+                payload,
+            };
+            let bytes = serde_json::to_vec(&frame).unwrap();
+            assert_eq!(
+                serde_json::from_slice::<ClientFrame>(&bytes).unwrap(),
+                frame
+            );
+        }
     }
 }

@@ -21,8 +21,11 @@ fn main() -> Result<(), UniverseError> {
 
     let evidence_bytes = serde_json::to_vec_pretty(&evidence)
         .map_err(|error| UniverseError::CorruptContent(error.to_string()))?;
-    std::fs::write(artifact_dir.join("code-pilot-evidence.json"), evidence_bytes)
-        .map_err(|error| UniverseError::Io(error.to_string()))?;
+    std::fs::write(
+        artifact_dir.join("code-pilot-evidence.json"),
+        evidence_bytes,
+    )
+    .map_err(|error| UniverseError::Io(error.to_string()))?;
 
     // The receipt is deterministic; write the exact bytes that were stored so the
     // artifact can be independently compared against the store.

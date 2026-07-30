@@ -37,8 +37,13 @@ converted to content-addressed Assets and independently read back (receipts
 Desktop renderer consumes instead of hard-coding; and a live rebuild/invalidation
 transition is recorded (`invalidation.rs`, receipts
 `artifacts/assets/node-asset-invalidation-20260730-00{1,2}`). G2 (PostgreSQL
-import) and G3 (Viz/Mind Desktop) remain incomplete. The bootstrap completion
-gate is open. Highest-leverage
+import) advances through bounded, inert, fixture-driven pilots — phase 3 ontology
+adaptation, phase 4 code migration, phase 5 physics import (`physics_pilot.rs`,
+receipt `artifacts/postgres-import/physics-pilot-20260730-001`: 4 profiles →
+1 adapted_inert / 1 compatibility / 1 unresolved / 1 quarantined, 0 bound to the
+live simulation, 4 activation refusals) — but remains incomplete: activation into
+canonical authority is the deliberate final gap. G3 (Viz/Mind Desktop) remains
+incomplete. The bootstrap completion gate is open. Highest-leverage
 open gaps blocking bootstrap v0: graph triggers, authenticated production
 transport, cryptographic Genesis signing, and the 10 M / 10 M scale proof.
 

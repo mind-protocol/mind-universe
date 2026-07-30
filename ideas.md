@@ -189,12 +189,15 @@ la pente + la vibration + le cri du chœur le lui demandent.
 
 Rangées par (valeur × proximité du substrat). On en choisit **une**.
 
-- **A. Faire rider la board sur le STORE CANONIQUE (ridable aujourd'hui).** Le graphe
-  canonique (231/784) porte déjà des `physical_profile` (positions), lus par le vertical
-  slice e2e. Lecture locale bornée d'un voisinage → décorer en `space` → la board le ride,
-  **sans rien activer**. L'import Postgres, lui, reste inerte tant que la **phase de
-  physicalisation manquante** (mapping approuvé → `physical_profile` sur les Assets réels)
-  n'existe pas — gap déclaré, gros à combler. Ne pas confondre les deux substrats.
+- **A. Board sur données réelles = bloqué par un GAP DE MODÉLISATION (vérifié).** Deux
+  physiques distinctes, non connectées : (1) le `physical_profile` canonique = descripteurs
+  **spatiaux** (`polarity`/`hierarchy`/`permanence`), `prototype_not_calibrated` — pour le
+  layout/spring, **pas** l'énergie d'atom ; (2) `BehaviorPhysicalProfileContent`
+  (threshold/seed/transfer_energy entiers) = la spreading-activation que la board ride, présente
+  **uniquement dans des fixtures écrites à la main**. Aucun corpus réel (import inerte, ou
+  conversations) ne porte l'énergie d'atom. Rider le réel demande soit une **dérivation
+  heuristique** (canonique spatial → énergie, à marquer *dérivée/non-mesurée*), soit une **phase
+  de modélisation/calibration** des profils d'énergie. Gros, hors substrat existant.
 - **B. 2ᵉ objet = Portal Gun** sur le `TopologicalFold` existant. Prouve
   « tool = thing = objet magique » et branche un `thing` sur un primitif réel.
 - **C. Lanterne** — révèle Fog/vécu/hypothèse *sans bouger*. Le moins cher ;

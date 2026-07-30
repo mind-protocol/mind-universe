@@ -1901,6 +1901,30 @@ pub fn validate(code: &CodeDefinition) -> Result<(), CompileError> {
                     successors[index].push(target_index);
                 }
             }
+            Operator::Call {
+                target, max_depth, ..
+            } => {
+                if *max_depth == 0 {
+                    return Err(CompileError::ZeroBound(index));
+                }
+                let target_index = *target as usize;
+                if target_index >= operator_count {
+                    return Err(CompileError::InvalidBranchTarget {
+                        operator: index,
+                        target: *target,
+                    });
+                }
+                if target_index <= index {
+                    return Err(CompileError::UnboundedCycle {
+                        operator: index,
+                        target: *target,
+                    });
+                }
+                // The callee entry is reachable through the call edge; the
+                // dynamic return to `index + 1` is added below because `Call`
+                // is not a terminator.
+                successors[index].push(target_index);
+            }
             _ => {}
         }
         if let Some(output) = op.output() {
@@ -2447,6 +2471,62 @@ mod tests {
             Err(CompileError::InvalidBranchTarget {
                 operator: 1,
                 target: 9
+            })
+        );
+    }
+
+    fn call_program(target: u32, max_depth: u32) -> CodeDefinition {
+        CodeDefinition {
+            ir_version: IR_VERSION,
+            revision: Revision(5),
+            required_capabilities: vec![],
+            operators: vec![
+                Operator::Call {
+                    target,
+                    output: 0,
+                    max_depth,
+                },
+                Operator::Return { value: 0 },
+                Operator::Constant {
+                    value: Value::Integer(7),
+                    output: 1,
+                },
+                Operator::Return { value: 1 },
+            ],
+        }
+    }
+
+    #[test]
+    fn forward_call_with_budget_validates_and_compiles() {
+        let artifact = compile(&call_program(2, 2)).unwrap();
+        assert_eq!(artifact.instructions.len(), 4);
+    }
+
+    #[test]
+    fn call_requires_a_nonzero_depth_budget() {
+        // An unbounded (zero) call-depth budget must be rejected, not defaulted.
+        assert_eq!(
+            validate(&call_program(2, 0)),
+            Err(CompileError::ZeroBound(0))
+        );
+    }
+
+    #[test]
+    fn call_rejects_backward_and_out_of_range_targets() {
+        // A backward call target would be a static recursion cycle; forbidding
+        // it keeps the call graph a terminating DAG.
+        assert_eq!(
+            validate(&call_program(0, 2)),
+            Err(CompileError::UnboundedCycle {
+                operator: 0,
+                target: 0,
+            })
+        );
+        assert_eq!(
+            validate(&call_program(9, 2)),
+            Err(CompileError::InvalidBranchTarget {
+                operator: 0,
+                target: 9,
             })
         );
     }
