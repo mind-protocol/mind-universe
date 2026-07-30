@@ -1,0 +1,14 @@
+{
+  "ir_version": 0,
+  "revision": 0,
+  "required_capabilities": [],
+  "operators": [
+    {"op":"constant","value":{"type":"text","value":"built_position"},"output":0},
+    {"op":"constant","value":{"type":"text","value":"placed by a runtime IR gesture (wield): execute_program -> Propose -> translate_mutation_receipt -> commit"},"output":1},
+    {"op":"constant","value":{"type":"text","value":"built"},"output":2},
+    {"op":"make_record","fields":[["kind",0],["note",1],["provenance",2]],"output":3},
+    {"op":"make_record","fields":[["content",3]],"output":4},
+    {"op":"propose","command":4,"output":5},
+    {"op":"return","value":5}
+  ]
+}

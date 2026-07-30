@@ -11,6 +11,7 @@ use serde_json::Value;
 use universe_core::{EntityKey, RelationKey, Revision, UniverseError};
 use universe_store::{ContentRef, EntityRecord, RelationRecord, UniverseStore};
 use universe_transactions::{UniverseCommand, UniverseWriteSet};
+use universe_vm::ExecutionReceipt;
 
 /// The four kernel write verbs, as a closed type. Isomorphic to the
 /// `UniverseCommand` variants a MutationBond may compile to; a fifth verb is
@@ -173,6 +174,60 @@ pub fn translate_mutation_proposal(
         causal_ancestry,
         commands: vec![command],
     })
+}
+
+/// Bridge a VM (`universe_ir`) value to a plain serde_json value so content a
+/// runtime `Propose` produced can be content-addressed. Unlike serde's tagged
+/// form (`{"type":"record",...}`), this yields plain objects/strings — a record's
+/// fields become object keys. Values that cannot occur inside placement content
+/// (`Content`/`Epistemic`) degrade to null rather than fabricating a shape.
+pub fn ir_value_to_json(value: &universe_ir::Value) -> Value {
+    use universe_ir::Value as Ir;
+    match value {
+        Ir::Unit => Value::Null,
+        Ir::Bool(flag) => Value::Bool(*flag),
+        Ir::Integer(number) => Value::Number((*number).into()),
+        Ir::Text(text) => Value::String(text.clone()),
+        Ir::Entity(key) => Value::String(format!("{key}")),
+        Ir::List(items) => Value::Array(items.iter().map(ir_value_to_json).collect()),
+        Ir::Record(fields) => Value::Object(
+            fields
+                .iter()
+                .map(|(name, value)| (name.clone(), ir_value_to_json(value)))
+                .collect(),
+        ),
+        Ir::Content(_) | Ir::Epistemic(_) | Ir::EpistemicState(_) => Value::Null,
+    }
+}
+
+/// The wieldable runtime path: take the single proposal a VM `Propose` produced,
+/// bridge it to json, and compile it through the pure [`translate_mutation_proposal`].
+/// This is what makes "place a node" a *runtime gesture* instead of a hand-built
+/// write set — the generic analog of the fixture-only `translate_fixture_proposal`.
+pub fn translate_mutation_receipt(
+    plan: &MutationPlan,
+    receipt: &ExecutionReceipt,
+    store: &UniverseStore,
+    base_revision: Revision,
+    idempotency_key: String,
+    causal_ancestry: Vec<String>,
+) -> Result<Option<UniverseWriteSet>, UniverseError> {
+    if receipt.proposals.len() != 1 {
+        return Err(validation(format!(
+            "expected exactly one graph proposal, found {}",
+            receipt.proposals.len()
+        )));
+    }
+    let proposal = ir_value_to_json(&receipt.proposals[0].command);
+    translate_mutation_proposal(
+        plan,
+        &proposal,
+        store,
+        base_revision,
+        idempotency_key,
+        causal_ancestry,
+    )
+    .map(Some)
 }
 
 #[cfg(test)]
@@ -423,5 +478,72 @@ mod tests {
         )
         .unwrap_err();
         assert!(matches!(err, UniverseError::Validation(_)));
+    }
+
+    #[test]
+    fn ir_value_to_json_yields_plain_objects() {
+        let ir = universe_ir::Value::Record(std::collections::BTreeMap::from([
+            (
+                "kind".to_string(),
+                universe_ir::Value::Text("built_position".into()),
+            ),
+            ("weight".to_string(), universe_ir::Value::Integer(7)),
+        ]));
+        let json = ir_value_to_json(&ir);
+        assert_eq!(json["kind"], "built_position");
+        assert_eq!(json["weight"], 7);
+    }
+
+    #[test]
+    fn translate_mutation_receipt_compiles_a_runtime_proposal() {
+        let (_dir, store) = scratch_store();
+        let content = universe_ir::Value::Record(std::collections::BTreeMap::from([
+            (
+                "kind".to_string(),
+                universe_ir::Value::Text("built_position".into()),
+            ),
+            (
+                "provenance".to_string(),
+                universe_ir::Value::Text("built".into()),
+            ),
+        ]));
+        let command = universe_ir::Value::Record(std::collections::BTreeMap::from([(
+            "content".to_string(),
+            content,
+        )]));
+        let receipt = universe_vm::ExecutionReceipt {
+            code_revision: Revision(0),
+            starting_universe_revision: Revision(0),
+            starting_tick: universe_core::Tick(0),
+            code_hash: "test".into(),
+            fuel_used: 0,
+            result: universe_ir::Value::Unit,
+            proposals: vec![universe_vm::WriteProposal { command }],
+            trace: vec![],
+        };
+        let plan = MutationPlan::PutEntity {
+            key: EntityKey(0x9020),
+            generation: 0,
+            symbol: 7,
+            content_field: Some("content".into()),
+        };
+        let ws = translate_mutation_receipt(
+            &plan,
+            &receipt,
+            &store,
+            Revision(0),
+            "mutation:receipt:v0".into(),
+            vec![],
+        )
+        .unwrap()
+        .unwrap();
+        match &ws.commands[0] {
+            UniverseCommand::PutEntity { entity } => {
+                let read = store.read_content(entity.content.as_ref().unwrap()).unwrap();
+                assert_eq!(read["kind"], "built_position");
+                assert_eq!(read["provenance"], "built");
+            }
+            other => panic!("expected PutEntity, got {other:?}"),
+        }
     }
 }
