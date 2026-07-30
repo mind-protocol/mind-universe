@@ -230,6 +230,115 @@ pub fn translate_mutation_receipt(
     .map(Some)
 }
 
+/// The mutation shape a MutationBond graph object furnishes: which kernel verb it
+/// emits, the semantic type of the entity it writes, the proposal field carrying
+/// the content, and the content contract (required fields). Projected FROM the
+/// bond so the runtime hardcodes none of it — the bond in the graph IS the action.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct BondProjection {
+    pub command_kind: MutationCommandKind,
+    pub content_kind: String,
+    pub content_field: String,
+    pub required_fields: Vec<String>,
+}
+
+/// Project a MutationBond into its [`BondProjection`]. `bond_content` is the bond
+/// instance node's content (carrying `runtime_binding.value.command_kind`);
+/// `field_schema_content` is the node reached by the bond's `USES_FIELD_SCHEMA`
+/// relation (carrying `field_schema.content_kind` + `required_fields`). Kept pure
+/// over the two content documents so the graph-walk (relation resolution, content
+/// reads) stays in the caller and this stays unit-testable.
+pub fn project_mutation_bond(
+    bond_content: &Value,
+    field_schema_content: &Value,
+) -> Result<BondProjection, UniverseError> {
+    let command_kind = match bond_content
+        .pointer("/runtime_binding/value/command_kind")
+        .and_then(Value::as_str)
+        .ok_or_else(|| validation("bond content lacks runtime_binding.value.command_kind"))?
+    {
+        "intern_symbols" => MutationCommandKind::InternSymbols,
+        "put_entity" => MutationCommandKind::PutEntity,
+        "put_relation" => MutationCommandKind::PutRelation,
+        "tombstone_relation" => MutationCommandKind::TombstoneRelation,
+        other => {
+            return Err(validation(format!(
+                "bond command_kind `{other}` is not one of the four kernel verbs"
+            )))
+        }
+    };
+    let schema = field_schema_content
+        .get("field_schema")
+        .ok_or_else(|| validation("field schema content lacks a `field_schema` object"))?;
+    let content_kind = schema
+        .get("content_kind")
+        .and_then(Value::as_str)
+        .ok_or_else(|| validation("field schema lacks content_kind"))?
+        .to_string();
+    let required_fields = schema
+        .get("required_fields")
+        .and_then(Value::as_array)
+        .map(|items| {
+            items
+                .iter()
+                .filter_map(|item| item.as_str().map(str::to_owned))
+                .collect()
+        })
+        .unwrap_or_default();
+    // The proposal field carrying the content; runtime convention is `content`
+    // unless the schema names another.
+    let content_field = schema
+        .get("proposal_field")
+        .and_then(Value::as_str)
+        .unwrap_or("content")
+        .to_string();
+    Ok(BondProjection {
+        command_kind,
+        content_kind,
+        content_field,
+        required_fields,
+    })
+}
+
+impl BondProjection {
+    /// Complete the projected shape into a runnable [`MutationPlan`] once the
+    /// runtime has resolved the target key and its interned symbol.
+    pub fn into_put_entity_plan(
+        &self,
+        key: EntityKey,
+        symbol: u32,
+    ) -> Result<MutationPlan, UniverseError> {
+        if self.command_kind != MutationCommandKind::PutEntity {
+            return Err(validation(format!(
+                "into_put_entity_plan called on a {:?} bond",
+                self.command_kind
+            )));
+        }
+        Ok(MutationPlan::PutEntity {
+            key,
+            generation: 0,
+            symbol,
+            content_field: Some(self.content_field.clone()),
+        })
+    }
+
+    /// Enforce the bond's content contract: the proposed content must carry every
+    /// field the schema requires. A missing field is a failure, never a default.
+    pub fn validate_content(&self, content: &Value) -> Result<(), UniverseError> {
+        let object = content
+            .as_object()
+            .ok_or_else(|| validation("proposed content is not an object"))?;
+        for field in &self.required_fields {
+            if !object.contains_key(field) {
+                return Err(validation(format!(
+                    "proposed content is missing required field `{field}`"
+                )));
+            }
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -545,5 +654,74 @@ mod tests {
             }
             other => panic!("expected PutEntity, got {other:?}"),
         }
+    }
+
+    #[test]
+    fn project_mutation_bond_reads_the_shape_from_the_graph() {
+        let bond = serde_json::json!({"runtime_binding":{"value":{"command_kind":"put_entity"}}});
+        let schema = serde_json::json!({"field_schema":{"content_kind":"built_position","required_fields":["x","y","z"]}});
+        let projection = project_mutation_bond(&bond, &schema).unwrap();
+        assert_eq!(projection.command_kind, MutationCommandKind::PutEntity);
+        assert_eq!(projection.content_kind, "built_position");
+        assert_eq!(projection.content_field, "content");
+        assert_eq!(projection.required_fields, vec!["x", "y", "z"]);
+    }
+
+    #[test]
+    fn projected_bond_builds_a_put_entity_plan() {
+        let bond = serde_json::json!({"runtime_binding":{"value":{"command_kind":"put_entity"}}});
+        let schema = serde_json::json!({"field_schema":{"content_kind":"built_position","required_fields":["x"]}});
+        let projection = project_mutation_bond(&bond, &schema).unwrap();
+        let plan = projection.into_put_entity_plan(EntityKey(0x9020), 7).unwrap();
+        match plan {
+            MutationPlan::PutEntity {
+                key,
+                symbol,
+                content_field,
+                ..
+            } => {
+                assert_eq!(key, EntityKey(0x9020));
+                assert_eq!(symbol, 7);
+                assert_eq!(content_field.as_deref(), Some("content"));
+            }
+            other => panic!("expected PutEntity plan, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn bond_content_contract_rejects_a_missing_required_field() {
+        let bond = serde_json::json!({"runtime_binding":{"value":{"command_kind":"put_entity"}}});
+        let schema = serde_json::json!({"field_schema":{"content_kind":"built_position","required_fields":["x","y","z"]}});
+        let projection = project_mutation_bond(&bond, &schema).unwrap();
+        projection
+            .validate_content(&serde_json::json!({"x":1.0,"y":2.0,"z":3.0}))
+            .unwrap();
+        let err = projection
+            .validate_content(&serde_json::json!({"x":1.0,"y":2.0}))
+            .unwrap_err();
+        assert!(matches!(err, UniverseError::Validation(_)));
+    }
+
+    #[test]
+    fn projects_the_real_mutation_bond_authority_fixture() {
+        // The projection reads the shape from the ACTUAL authored fixture, not a
+        // synthetic stand-in: the real bond in the graph furnishes the plan.
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../..")
+            .join("fixtures/ontology/mutation-bond-authority.json");
+        let fixture: Value = serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap();
+        let entities = fixture["entities"].as_array().unwrap();
+        let bond = entities
+            .iter()
+            .find(|entity| entity["content"]["kind"] == "mutation_bond_instance")
+            .expect("fixture has a mutation_bond_instance");
+        let schema = entities
+            .iter()
+            .find(|entity| entity["content"]["kind"] == "field_schema_instance")
+            .expect("fixture has a field_schema_instance");
+        let projection = project_mutation_bond(&bond["content"], &schema["content"]).unwrap();
+        assert_eq!(projection.command_kind, MutationCommandKind::PutEntity);
+        assert_eq!(projection.content_kind, "built_position");
+        assert_eq!(projection.required_fields, vec!["x", "y", "z"]);
     }
 }
