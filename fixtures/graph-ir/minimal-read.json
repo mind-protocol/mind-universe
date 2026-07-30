@@ -1,0 +1,24 @@
+{
+  "ir_version": 0,
+  "revision": 1,
+  "required_capabilities": ["local_query"],
+  "operators": [
+    {"op":"input","name":"actor","output":0},
+    {"op":"constant","value":{"type":"entity","value":"00000000000000000000000000000005"},"output":1},
+    {"op":"query_open","spec":{"origin":0,"selector":1,"budget":{"max_entities":8,"max_relations":8,"max_depth":4},"timeout_ticks":2,"allow_approximate":false},"output":2},
+    {"op":"query_await","handle":2,"output":3},
+    {"op":"filter_truthy","input":3,"field":"eligible","max_items":8,"output":4},
+    {"op":"top_k","input":4,"score_field":"resonance","limit":1,"output":5},
+    {"op":"hydrate","input":5,"max_items":1,"max_bytes":1024,"output":6},
+    {"op":"constant","value":{"type":"text","value":"result_type"},"output":7},
+    {"op":"follow_one","source":1,"predicate":7,"output":8},
+    {"op":"entity_symbol","entity":8,"output":9},
+    {"op":"input","name":"result_entity","output":10},
+    {"op":"constant","value":{"type":"text","value":"put_entity"},"output":11},
+    {"op":"constant","value":{"type":"integer","value":0},"output":12},
+    {"op":"constant","value":{"type":"unit"},"output":13},
+    {"op":"make_record","fields":[["command",11],["entity",10],["generation",12],["symbol",9],["content",13],["result_type",8],["result",6]],"output":14},
+    {"op":"propose","command":14,"output":15},
+    {"op":"return","value":15}
+  ]
+}

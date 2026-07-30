@@ -1,0 +1,17 @@
+{"instruction":0,"source_node":0,"fuel_before":64,"operation":"Input { name: \"actor\", output: 0 }"}
+{"instruction":1,"source_node":1,"fuel_before":63,"operation":"Constant { value: Entity(EntityKey(5)), output: 1 }"}
+{"instruction":2,"source_node":2,"fuel_before":62,"operation":"QueryOpen { spec: QuerySpec { origin: 0, selector: 1, budget: QueryBudget { max_entities: 8, max_relations: 8, max_depth: 4 }, timeout_ticks: 2, allow_approximate: false }, output: 2 }"}
+{"instruction":3,"source_node":3,"fuel_before":61,"operation":"QueryAwait { handle: 2, output: 3 }"}
+{"instruction":4,"source_node":4,"fuel_before":60,"operation":"FilterTruthy { input: 3, field: \"eligible\", max_items: 8, output: 4 }"}
+{"instruction":5,"source_node":5,"fuel_before":59,"operation":"TopK { input: 4, score_field: \"resonance\", limit: 1, output: 5 }"}
+{"instruction":6,"source_node":6,"fuel_before":58,"operation":"Hydrate { input: 5, max_items: 1, max_bytes: 1024, output: 6 }"}
+{"instruction":7,"source_node":7,"fuel_before":57,"operation":"Constant { value: Text(\"result_type\"), output: 7 }"}
+{"instruction":8,"source_node":8,"fuel_before":56,"operation":"FollowOne { source: 1, predicate: 7, output: 8 }"}
+{"instruction":9,"source_node":9,"fuel_before":55,"operation":"EntitySymbol { entity: 8, output: 9 }"}
+{"instruction":10,"source_node":10,"fuel_before":54,"operation":"Input { name: \"result_entity\", output: 10 }"}
+{"instruction":11,"source_node":11,"fuel_before":53,"operation":"Constant { value: Text(\"put_entity\"), output: 11 }"}
+{"instruction":12,"source_node":12,"fuel_before":52,"operation":"Constant { value: Integer(0), output: 12 }"}
+{"instruction":13,"source_node":13,"fuel_before":51,"operation":"Constant { value: Unit, output: 13 }"}
+{"instruction":14,"source_node":14,"fuel_before":50,"operation":"MakeRecord { fields: [(\"command\", 11), (\"entity\", 10), (\"generation\", 12), (\"symbol\", 9), (\"content\", 13), (\"result_type\", 8), (\"result\", 6)], output: 14 }"}
+{"instruction":15,"source_node":15,"fuel_before":49,"operation":"Propose { command: 14, output: 15 }"}
+{"instruction":16,"source_node":16,"fuel_before":48,"operation":"Return { value: 15 }"}

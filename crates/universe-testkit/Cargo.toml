@@ -1,0 +1,10 @@
+[package]
+name = "universe-testkit"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde_json.workspace = true
+universe-core = { path = "../universe-core" }
+universe-store = { path = "../universe-store" }

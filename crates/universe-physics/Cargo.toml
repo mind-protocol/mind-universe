@@ -1,0 +1,10 @@
+[package]
+name = "universe-physics"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+rapier3d = "0.22"
+serde.workspace = true
+universe-core = { path = "../universe-core" }

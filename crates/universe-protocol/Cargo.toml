@@ -1,0 +1,11 @@
+[package]
+name = "universe-protocol"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true
+universe-core = { path = "../universe-core" }
+universe-store = { path = "../universe-store" }
+universe-supervisor = { path = "../universe-supervisor" }

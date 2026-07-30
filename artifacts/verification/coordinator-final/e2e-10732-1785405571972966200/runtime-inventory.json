@@ -1,0 +1,9 @@
+{
+  "mechanisms": [
+    {
+      "kind": "executor",
+      "name": "universe-vm",
+      "activations": 1
+    }
+  ]
+}

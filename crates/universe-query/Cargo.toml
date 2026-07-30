@@ -1,0 +1,14 @@
+[package]
+name = "universe-query"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true
+universe-core = { path = "../universe-core" }
+universe-physics = { path = "../universe-physics" }
+
+[dev-dependencies]
+universe-store = { path = "../universe-store" }
+universe-testkit = { path = "../universe-testkit" }

@@ -1,0 +1,16 @@
+[package]
+name = "universe-vm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true
+thiserror.workspace = true
+universe-compiler = { path = "../universe-compiler" }
+universe-core = { path = "../universe-core" }
+universe-ir = { path = "../universe-ir" }
+
+[dev-dependencies]
+serde_json.workspace = true
+universe-query = { path = "../universe-query" }

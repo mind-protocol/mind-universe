@@ -1,0 +1,22 @@
+[package]
+name = "universe-e2e"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+universe-core = { path = "../universe-core" }
+universe-fields = { path = "../universe-fields" }
+universe-ir = { path = "../universe-ir" }
+universe-physics = { path = "../universe-physics" }
+universe-protocol = { path = "../universe-protocol" }
+universe-query = { path = "../universe-query" }
+universe-store = { path = "../universe-store" }
+universe-supervisor = { path = "../universe-supervisor" }
+universe-transactions = { path = "../universe-transactions" }
+universe-vm = { path = "../universe-vm" }
+
+[dev-dependencies]
+tempfile = "3"
