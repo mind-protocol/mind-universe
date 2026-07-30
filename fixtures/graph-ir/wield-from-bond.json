@@ -1,0 +1,16 @@
+{
+  "ir_version": 0,
+  "revision": 0,
+  "required_capabilities": [],
+  "operators": [
+    {"op":"constant","value":{"type":"text","value":"built_position"},"output":0},
+    {"op":"constant","value":{"type":"integer","value":33},"output":1},
+    {"op":"constant","value":{"type":"integer","value":0},"output":2},
+    {"op":"constant","value":{"type":"integer","value":-8},"output":3},
+    {"op":"constant","value":{"type":"text","value":"built"},"output":4},
+    {"op":"make_record","fields":[["kind",0],["x",1],["y",2],["z",3],["provenance",4]],"output":5},
+    {"op":"make_record","fields":[["content",5]],"output":6},
+    {"op":"propose","command":6,"output":7},
+    {"op":"return","value":7}
+  ]
+}
