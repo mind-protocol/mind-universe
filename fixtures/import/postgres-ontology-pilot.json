@@ -1,0 +1,140 @@
+{
+  "contract_version": 0,
+  "universe": "00000000000000000000000000006000",
+  "source": {
+    "atom": "00000000000000000000000000006001",
+    "authority_id": "postgres:mind@snapshot-20260730",
+    "source_graph_scope": ["l2:mind-protocol", "l2:mind-blueprints", "l2:mind-kernel"],
+    "observed_at": "2026-07-30T00:00:00Z",
+    "ontology_revision": 106
+  },
+  "changeset": {
+    "atom": "00000000000000000000000000006002",
+    "change_id": "postgres-ontology-activation-v0",
+    "authority": "graph_ontology_review_authority",
+    "status": "approved_by_ontology_review"
+  },
+  "bindings": [
+    {
+      "atom": "00000000000000000000000000006010",
+      "source_label": "node_type:thing",
+      "binding_kind": "universal_type",
+      "source_graph_scope": ["l2:mind-protocol", "l2:mind-blueprints", "l2:mind-kernel"],
+      "mapping_revision": 1,
+      "ontology_revision": 106,
+      "target": "thing",
+      "source_is_code": false,
+      "validation": { "universal_type": "thing" },
+      "decision": "activated",
+      "justification": "Source node_type 'thing' binds to the universal Thing type, validated within the exact source-graph scope and pinned ontology revision."
+    },
+    {
+      "atom": "00000000000000000000000000006011",
+      "source_label": "subtype:code_definition",
+      "binding_kind": "semantic_type",
+      "source_graph_scope": ["l2:mind-protocol", "l2:mind-blueprints", "l2:mind-kernel"],
+      "mapping_revision": 1,
+      "ontology_revision": 106,
+      "target": "code_definition",
+      "source_is_code": true,
+      "validation": { "stored_node_type": "thing" },
+      "decision": "unresolved",
+      "justification": "code_definition is executable source; it must remain an unresolved Problem until phase 4 code migration, never activated as a canonical semantic type."
+    },
+    {
+      "atom": "00000000000000000000000000006012",
+      "source_label": "relation_type:CALLS",
+      "binding_kind": "predicate",
+      "source_graph_scope": ["l2:mind-protocol"],
+      "mapping_revision": 1,
+      "ontology_revision": 106,
+      "target": "CALLS",
+      "source_is_code": false,
+      "validation": {
+        "direction": "directed",
+        "source_endpoint_type": "thing",
+        "target_endpoint_type": "thing",
+        "cardinality": "many_to_many",
+        "family": "reference"
+      },
+      "decision": "activated",
+      "justification": "CALLS relates two resolved Thing endpoints with a validated directed reference predicate in the pinned ontology revision."
+    },
+    {
+      "atom": "00000000000000000000000000006013",
+      "source_label": "relation_type:SUPERSEDED_BY",
+      "binding_kind": "predicate",
+      "source_graph_scope": ["l2:mind-protocol"],
+      "mapping_revision": 1,
+      "ontology_revision": 106,
+      "target": "SUPERSEDED_BY",
+      "source_is_code": false,
+      "validation": {
+        "direction": "directed",
+        "source_endpoint_type": "thing",
+        "target_endpoint_type": "thing",
+        "cardinality": "many_to_one",
+        "family": "lifecycle"
+      },
+      "decision": "activated",
+      "justification": "SUPERSEDED_BY relates two resolved Thing endpoints with a validated lifecycle predicate; direction and cardinality confirmed."
+    },
+    {
+      "atom": "00000000000000000000000000006014",
+      "source_label": "relation_type:MATERIALIZED_AS",
+      "binding_kind": "predicate",
+      "source_graph_scope": ["l2:mind-blueprints", "l2:mind-kernel"],
+      "mapping_revision": 1,
+      "ontology_revision": 106,
+      "target": "MATERIALIZED_AS",
+      "source_is_code": false,
+      "validation": {
+        "direction": "directed",
+        "source_endpoint_type": "thing",
+        "target_endpoint_type": "thing",
+        "family": "lifecycle"
+      },
+      "decision": "compatibility",
+      "justification": "MATERIALIZED_AS resembles an existing lifecycle predicate but is not an exact canonical match; recorded as compatibility evidence rather than activated."
+    },
+    {
+      "atom": "00000000000000000000000000006015",
+      "source_label": "relation_type:IMPLEMENTED_BY",
+      "binding_kind": "predicate",
+      "source_graph_scope": ["l2:mind-protocol"],
+      "mapping_revision": 1,
+      "ontology_revision": 106,
+      "target": "IMPLEMENTED_BY",
+      "source_is_code": false,
+      "validation": {
+        "direction": "directed",
+        "source_endpoint_type": "algorithm",
+        "target_endpoint_type": "thing",
+        "family": "reference"
+      },
+      "decision": "quarantined",
+      "justification": "IMPLEMENTED_BY has an 'algorithm' source endpoint that is not resolved to a universe type within scope; quarantined pending endpoint resolution."
+    },
+    {
+      "atom": "00000000000000000000000000006016",
+      "source_label": "relation_type:DEFINED_BY_CODE",
+      "binding_kind": "predicate",
+      "source_graph_scope": ["l2:mind-protocol"],
+      "mapping_revision": 1,
+      "ontology_revision": 106,
+      "target": "DEFINED_BY_CODE",
+      "source_is_code": false,
+      "validation": {
+        "direction": "directed",
+        "source_endpoint_type": "algorithm",
+        "target_endpoint_type": "code_definition",
+        "family": "reference"
+      },
+      "decision": "quarantined",
+      "justification": "DEFINED_BY_CODE points at an unresolved code_definition endpoint; quarantined until code migration resolves the target."
+    }
+  ],
+  "receipt_atom": "000000000000000000000000000060f0",
+  "receipt_relation": "00000000000000000000000000006fff",
+  "relation_key_start": "00000000000000000000000000006e00"
+}

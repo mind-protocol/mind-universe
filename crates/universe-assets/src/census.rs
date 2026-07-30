@@ -44,6 +44,18 @@ pub struct RequirementRule {
     /// Why this kind carries this requirement — an explicit, reviewable claim,
     /// never a silent default.
     pub justification: String,
+    /// For a `required` kind, the content field that carries the projectable
+    /// payload (e.g. `document` for a source, `value` for a contract). The
+    /// conversion mechanism projects exactly this field, so the policy — not
+    /// hard-coded native logic — decides where a Node's Asset payload lives.
+    /// Must be absent for non-`required` kinds.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub payload_field: Option<String>,
+    /// Optional content field carrying the payload's declared canonical-JSON
+    /// digest. When present, the conversion refuses a Node whose projected
+    /// payload does not reproduce this digest, rather than misprojecting it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub declared_digest_field: Option<String>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -82,6 +94,25 @@ impl CensusPolicy {
                     rule.kind
                 )));
             }
+            if rule.requirement == "required" {
+                if rule
+                    .payload_field
+                    .as_deref()
+                    .map(str::trim)
+                    .unwrap_or("")
+                    .is_empty()
+                {
+                    return Err(validation(format!(
+                        "required census rule for {} must declare a non-empty payload_field",
+                        rule.kind
+                    )));
+                }
+            } else if rule.payload_field.is_some() || rule.declared_digest_field.is_some() {
+                return Err(validation(format!(
+                    "census rule for {} must not declare a payload_field unless it is required",
+                    rule.kind
+                )));
+            }
             if !kinds.insert(rule.kind.clone()) {
                 return Err(validation(format!(
                     "census rule for {} is duplicated",
@@ -98,6 +129,12 @@ impl CensusPolicy {
             .find(|rule| rule.kind == kind)
             .map(|rule| rule.requirement.as_str())
             .unwrap_or(self.default_requirement.as_str())
+    }
+
+    /// The full rule declared for a kind, if any — used by the conversion
+    /// mechanism to locate a required Node's declared payload field.
+    pub fn rule_for(&self, kind: &str) -> Option<&RequirementRule> {
+        self.rules.iter().find(|rule| rule.kind == kind)
     }
 }
 
@@ -128,7 +165,7 @@ pub struct CensusReceipt {
 /// Resolves a Node's classification kind: the content `kind`, refined to
 /// `ontology_definition:<definition_kind>` for ontology definitions so the six
 /// definition sub-kinds can carry distinct requirements.
-fn node_kind(content: &Value) -> String {
+pub(crate) fn node_kind(content: &Value) -> String {
     let kind = content
         .get("kind")
         .and_then(Value::as_str)
@@ -323,6 +360,9 @@ mod tests {
             receipt.requirement_counts["required"]
         );
         assert!(receipt.requirement_counts["required"] >= 1);
+        // The canonical policy now classifies every kind: no Node stays unknown.
+        assert_eq!(receipt.class_counts["unknown"], 0);
+        assert_eq!(receipt.requirement_counts["unknown"], 0);
         assert_eq!(receipt.epistemic_state, "measured");
         assert_eq!(receipt.policy_hash.len(), 64);
     }

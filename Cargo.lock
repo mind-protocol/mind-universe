@@ -838,9 +838,12 @@ dependencies = [
  "serde",
  "serde_json",
  "tempfile",
+ "universe-compiler",
  "universe-core",
+ "universe-ir",
  "universe-store",
  "universe-transactions",
+ "universe-vm",
 ]
 
 [[package]]

@@ -1,0 +1,109 @@
+{
+  "magic_object": "board-descent-v0",
+  "blueprint_version": 0,
+  "doc": "Un objet magique = un `space` (role: conteneur, 'borne la diffusion') qui contient un cluster de nodes typés par role, et dont la gradient-policy gouverne comment l'energie injectee par l'actor (le rider) diffuse. La board transforme une conversation en pente: descendre = propagation d'activation bornee a ce space. Vocabulaire (moment, open_question/narrative, claim, gating, LEADS_TO, QUESTIONS, ANSWERS, CONTRADICTS) et roleAxis (actor/moment/narrative/space/thing) pris du store canonique.",
+  "space": {
+    "key": 0,
+    "role": "space",
+    "semantic_type": "space",
+    "name": "board (snowboard)",
+    "governs": "borne la diffusion de l'activation au cluster de descente; contient les nodes de l'objet et confine l'energie a leur voisinage."
+  },
+  "gradient_policy": {
+    "energizes": ["LEADS_TO", "CAUSES", "FEEDS", "CONVERGES_IN"],
+    "inhibits": ["CONTRADICTS", "BLOCKS", "INHIBITS"],
+    "fork_predicate": "QUESTIONS",
+    "answer_predicate": "ANSWERS",
+    "note": "Le 'bas' n'est pas grave dans le graphe: la policy le fabrique en energisant ces predicats. Carver = energiser une autre famille."
+  },
+  "contents": [
+    {
+      "key": 1,
+      "role": "moment",
+      "function": "here",
+      "semantic_type": "moment",
+      "claim": "Position courante dans la conversation. L'actor y injecte l'energie.",
+      "physics": { "threshold": 1, "seed_energy": 300, "required_supports": [], "inhibition_threshold": null }
+    },
+    {
+      "key": 2,
+      "role": "moment",
+      "function": "candidate",
+      "semantic_type": "moment",
+      "claim": "Message aval fortement causal (pente raide). Attracteur par defaut.",
+      "physics": { "threshold": 150, "seed_energy": 0, "required_supports": [], "inhibition_threshold": 1 }
+    },
+    {
+      "key": 3,
+      "role": "moment",
+      "function": "candidate",
+      "semantic_type": "moment",
+      "claim": "Message aval faiblement causal (pente douce). Ne fire pas sans carve.",
+      "physics": { "threshold": 150, "seed_energy": 0, "required_supports": [], "inhibition_threshold": null }
+    },
+    {
+      "key": 4,
+      "role": "narrative",
+      "function": "fork",
+      "semantic_type": "open_question",
+      "claim": "Question ouverte (attracteur qui retient). Reste Fog tant qu'aucune reponse n'est mesuree.",
+      "physics": { "threshold": 100, "seed_energy": 0, "required_supports": [204], "inhibition_threshold": null }
+    },
+    {
+      "key": 5,
+      "role": "narrative",
+      "function": "roughness",
+      "semantic_type": "claim",
+      "measurement_binding": "contradiction",
+      "claim": "Contradiction active (attracteur) qui rend la pente vers A infranchissable.",
+      "physics": { "threshold": 1, "seed_energy": 0, "required_supports": [], "inhibition_threshold": null }
+    },
+    {
+      "key": 6,
+      "role": "thing",
+      "function": "carve_gate",
+      "semantic_type": "gating",
+      "measurement_binding": "carve_b",
+      "claim": "Routeur: laisse passer en transformant. Le geste de carve energise un LEADS_TO vers B.",
+      "physics": { "threshold": 1, "seed_energy": 0, "required_supports": [], "inhibition_threshold": null }
+    },
+    {
+      "key": 7,
+      "role": "thing",
+      "function": "answer_gate",
+      "semantic_type": "gating",
+      "measurement_binding": "answer_q",
+      "claim": "Routeur: route la reponse contrefactuelle vers le fork et materialise la branche non prise.",
+      "physics": { "threshold": 1, "seed_energy": 0, "required_supports": [], "inhibition_threshold": null }
+    }
+  ],
+  "bonds": [
+    { "key": 201, "source": 1, "target": 2, "predicate": "LEADS_TO", "polarity": "support", "energy": 200, "justification": "Descente principale: forte continuite causale vers A." },
+    { "key": 202, "source": 1, "target": 3, "predicate": "LEADS_TO", "polarity": "support", "energy": 100, "justification": "Descente secondaire: continuite faible vers B." },
+    { "key": 203, "source": 2, "target": 4, "predicate": "QUESTIONS", "polarity": "neutral", "energy": 0, "justification": "A ouvre une question; structure sans energie propre." },
+    { "key": 204, "source": 7, "target": 4, "predicate": "ANSWERS", "polarity": "support", "energy": 100, "justification": "Une reponse mesuree materialise la branche du fork." },
+    { "key": 205, "source": 5, "target": 2, "predicate": "CONTRADICTS", "polarity": "inhibit", "energy": 1, "justification": "La contradiction inhibe la descente vers A au lieu d'etre moyennee." },
+    { "key": 206, "source": 6, "target": 3, "predicate": "LEADS_TO", "polarity": "support", "energy": 150, "justification": "Le carve reponderes le bas vers B." }
+  ],
+  "gestures": [
+    { "binding": "carve_b", "meaning": "carver: renforce la pente vers B" },
+    { "binding": "contradiction", "meaning": "rugosite: bloque la pente vers A" },
+    { "binding": "answer_q", "meaning": "prononcer la contrefactuelle: materialise le fork" }
+  ],
+  "activation": {
+    "key": 8,
+    "role": "narrative",
+    "shape": "sphere",
+    "explains": 0,
+    "predicate": "EXPLAINS",
+    "capability": "wield_board",
+    "how": "La sphere flotte au-dessus de la board et enonce son protocole. Chausse la board (te lier au space), pousse pour injecter l'energie au node 'here', puis carve/freine pour rediriger le bas.",
+    "gestures": ["carve_b", "contradiction", "answer_q"],
+    "runtime": "graph ChangeSet -> phase Commit (CommitReceipt) -> phase Physics (spreading-activation bornee sur AtomDynamics, APRES le commit) -> readback independant. La physique ne tourne jamais avant le recu de commit.",
+    "promise": "Deforme le voisinage local en pente ridable; l'atom aval qui fire = le pas suivant.",
+    "forbidden": [
+      "activer une transform physique sans recu de commit",
+      "inventer une pente la ou l'intensite est non-mesuree (Fog reste Fog)"
+    ]
+  }
+}

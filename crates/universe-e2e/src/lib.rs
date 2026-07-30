@@ -3,7 +3,9 @@
 //! are loaded from graph fixtures.
 
 pub mod behavior_runtime;
+pub mod board;
 pub mod covalidity;
+pub mod magic_object;
 
 use serde::{Deserialize, Serialize};
 use std::{

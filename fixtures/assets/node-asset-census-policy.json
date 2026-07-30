@@ -5,7 +5,20 @@
     {
       "kind": "ontology_source",
       "requirement": "required",
-      "justification": "Carries an embedded provenance document — a concrete content payload projectable as a content-addressed Asset."
+      "justification": "Carries an embedded provenance document — a concrete content payload projectable as a content-addressed Asset.",
+      "payload_field": "document",
+      "declared_digest_field": "canonical_json_sha256"
+    },
+    {
+      "kind": "ontology_contract",
+      "requirement": "required",
+      "justification": "Carries a concrete `value` payload (principles, constraints, hierarchies) — a content-bearing document projectable as a content-addressed Asset, distinct from the pure-semantic ontology definitions.",
+      "payload_field": "value"
+    },
+    {
+      "kind": "ontology_manifest",
+      "requirement": "intentionally_assetless",
+      "justification": "Corpus-level governance record (declared counts, known gaps, source hashes, status); describes the ontology as a whole and is authority metadata, not a separately projectable content payload."
     },
     {
       "kind": "ontology_definition:stored_node_type",

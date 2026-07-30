@@ -1,0 +1,74 @@
+{
+  "contract_version": 0,
+  "universe": "00000000000000000000000000009000",
+  "source": {
+    "atom": "00000000000000000000000000009001",
+    "authority_id": "postgres:mind@snapshot-20260730",
+    "source_graph_scope": ["l2:mind-protocol", "l2:mind-blueprints", "l2:mind-kernel"],
+    "observed_at": "2026-07-30T00:00:00Z",
+    "source_revision": 106
+  },
+  "changeset": {
+    "atom": "00000000000000000000000000009002",
+    "change_id": "postgres-code-inert-import-v0",
+    "authority": "graph_code_import_authority",
+    "status": "approved_by_code_import_review"
+  },
+  "barrier_atom": "00000000000000000000000000009003",
+  "import_batch": "postgres-code-import-batch-001",
+  "nodes": [
+    {
+      "atom": "00000000000000000000000000009010",
+      "source_label": "code_definition:reconcile_l1_blueprint",
+      "source_id": "code_definition/8f21ac04",
+      "source_graph": "l2:mind-protocol",
+      "code_kind": "code_definition",
+      "content_sha256": "11111111111111111111111111111111111111111111111111111111111111aa",
+      "source_revision": 106,
+      "justification": "Source code_definition left unresolved by phase 3; imported here as an inert, non-executable Node preserving full provenance and quarantined from activation."
+    },
+    {
+      "atom": "00000000000000000000000000009011",
+      "source_label": "function:notify_citizen_workspace",
+      "source_id": "function/2b90fe17",
+      "source_graph": "l2:mind-protocol",
+      "code_kind": "function",
+      "content_sha256": "22222222222222222222222222222222222222222222222222222222222222bb",
+      "source_revision": 104,
+      "justification": "PostgreSQL function symbol imported as inert provenance-bearing Node; its body is never imported nor made dispatchable."
+    },
+    {
+      "atom": "00000000000000000000000000009012",
+      "source_label": "procedure:rebuild_projection_cache",
+      "source_id": "procedure/74cc0912",
+      "source_graph": "l2:mind-kernel",
+      "code_kind": "procedure",
+      "content_sha256": "33333333333333333333333333333333333333333333333333333333333333cc",
+      "source_revision": 106,
+      "justification": "Stored procedure symbol imported as inert Node; no execution plan is imported and activation is refused."
+    },
+    {
+      "atom": "00000000000000000000000000009013",
+      "source_label": "trigger_function:on_moment_appended",
+      "source_id": "trigger_function/aa14b0e3",
+      "source_graph": "l2:mind-blueprints",
+      "code_kind": "trigger_function",
+      "content_sha256": "44444444444444444444444444444444444444444444444444444444444444dd",
+      "source_revision": 101,
+      "justification": "Trigger function symbol imported as inert Node; the trigger is deliberately not wired, so nothing can dispatch it."
+    },
+    {
+      "atom": "00000000000000000000000000009014",
+      "source_label": "algorithm_implementation:score_relevance_v3",
+      "source_id": "algorithm_implementation/df5521c8",
+      "source_graph": "l2:mind-kernel",
+      "code_kind": "algorithm_implementation",
+      "content_sha256": "55555555555555555555555555555555555555555555555555555555555555ee",
+      "source_revision": 106,
+      "justification": "Algorithm implementation symbol imported as inert Node with pinned source revision; execution requires a later approved ChangeSet and shadow evidence out of scope here."
+    }
+  ],
+  "receipt_atom": "000000000000000000000000000090f0",
+  "receipt_relation": "00000000000000000000000000009fff",
+  "relation_key_start": "00000000000000000000000000009e00"
+}

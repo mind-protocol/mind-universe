@@ -20,16 +20,25 @@ truth (canonical ontology reconstruction: 231 entities / 784 relations,
 
 | Status | Count |
 | --- | --- |
-| `[x]` completed and evidenced | 172 |
+| `[x]` completed and evidenced | 178 |
 | `[~]` in progress | 21 |
-| `[ ]` not started | 273 |
+| `[ ]` not started | 267 |
 | `[!]` blocked | 0 |
 | **Total** | **466** |
 
-~63% of tracked items are not complete (294 of 466). No items are hard-blocked.
+~62% of tracked items are not complete (288 of 466). No items are hard-blocked.
 
-Product goals G1 (Node→Asset), G2 (PostgreSQL import), G3 (Viz/Mind Desktop)
-are all incomplete. The bootstrap completion gate is open. Highest-leverage
+G1 (Node→Asset) — all six sub-items are now `[x]` with evidence: the whole
+canonical corpus is classified with `unknown = 0`; all 26 required
+content-bearing Nodes (3 `ontology_source` + 23 `ontology_contract`) are
+converted to content-addressed Assets and independently read back (receipts
+`artifacts/assets/*-20260730-002`); the *visual* mapping is a graph authority
+(`visual.rs`, receipt `artifacts/assets/visual-mapping-20260730-001`) the Mind
+Desktop renderer consumes instead of hard-coding; and a live rebuild/invalidation
+transition is recorded (`invalidation.rs`, receipts
+`artifacts/assets/node-asset-invalidation-20260730-00{1,2}`). G2 (PostgreSQL
+import) and G3 (Viz/Mind Desktop) remain incomplete. The bootstrap completion
+gate is open. Highest-leverage
 open gaps blocking bootstrap v0: graph triggers, authenticated production
 transport, cryptographic Genesis signing, and the 10 M / 10 M scale proof.
 
@@ -45,20 +54,46 @@ Active parallel work streams (launched 2026-07-30):
 
 ### G1 — Complete the Node-to-Asset conversion
 
-- [ ] Inventory every Node that still lacks its required Asset projection and
+- [x] Inventory every Node that still lacks its required Asset projection and
   classify it as converted, partial, blocked, intentionally assetless, or
-  unknown.
-- [ ] Define Asset identity, content pointers, hashes, versions, provenance,
+  unknown. Evidence: `universe-assets` census over the canonical corpus
+  classifies all 234 Nodes (`fixtures/assets/node-asset-census-policy.json`),
+  `unknown = 0`; receipt `artifacts/assets/node-asset-census-20260730-002`.
+- [x] Define Asset identity, content pointers, hashes, versions, provenance,
   visual/physical mappings, lifecycle, and invalidation in graph authority.
-- [ ] Convert Nodes progressively into content-addressed Assets without making
+  Identity (content-addressed `asset_id`), payload hashes, versions,
+  `DERIVED_FROM`/`USES_MAPPING` provenance, lifecycle, and invalidation signals
+  are materialized; physical mappings live in `physical_profile` Nodes; the
+  *visual* mapping is now a graph authority too — `universe-assets/src/visual.rs`
+  materializes the `visual-embodiment/1` catalog as a content-addressed Asset,
+  bound by `semantic_type` (`PROJECTS_AS`), validated by the renderer's own
+  budgets, with an epistemic-honesty invariant. Evidence:
+  `artifacts/assets/visual-mapping-20260730-001` (parity + honesty held); the
+  Mind Desktop renderer now consumes the fixture instead of hard-coding it.
+- [x] Convert Nodes progressively into content-addressed Assets without making
   repository files, renderer objects, or generated bundles authoritative.
-- [ ] Preserve the canonical Node and its stable identity; an Asset is a
+  Evidence: 26 required Nodes (3 `ontology_source` + 23 `ontology_contract`)
+  converted through one attributable idempotent ChangeSet;
+  `artifacts/assets/node-asset-conversion-20260730-002` (`canonical_node_replaced: false`).
+- [x] Preserve the canonical Node and its stable identity; an Asset is a
   derived, reproducible projection and never a semantic replacement.
-- [ ] Rebuild or invalidate an Asset deterministically when its authoritative
-  Node, mapping, or revision changes.
-- [ ] Independently read every converted Asset back through the real store and
+  Evidence: conversion receipt `nodes_preserved: true`; source content hashes
+  unchanged after conversion.
+- [x] Rebuild or invalidate an Asset deterministically when its authoritative
+  Node, mapping, or revision changes. `universe-assets/src/invalidation.rs` runs
+  a live, recorded transition: a `current` Asset is superseded when the
+  authoritative mapping revision advances (1→2) — a new `current` Asset is built
+  and an `INVALIDATED_BY` edge supersedes the old one, so effective lifecycle is
+  derived structurally (append-only; the Node is never edited). Independent
+  readback shows `current` 1→1 / `stale` 0→1 with the old Asset transitioning;
+  deterministic + idempotent. Evidence:
+  `artifacts/assets/node-asset-invalidation-20260730-002` (committing run, the
+  transition) and `-001` (idempotent replay). Demonstrated trigger is the
+  mapping-revision change; the supersession mechanism is trigger-agnostic.
+- [x] Independently read every converted Asset back through the real store and
   report missing, stale, corrupt, duplicate, and orphaned projections
-  separately.
+  separately. Evidence: independent reopen + re-census confirms 26 assets, 26
+  unique asset_ids/payload hashes, 0 missing/corrupt/duplicate/orphaned.
 
 ### G2 — Import and adapt PostgreSQL Nodes progressively
 

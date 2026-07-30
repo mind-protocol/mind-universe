@@ -31,8 +31,7 @@ const SCHEMA_VERSION: &str = "visual-embodiment/1";
 // graph authority is validated by the SAME limits the renderer enforces.
 const MAX_PRIMITIVES: u64 = 12;
 const MAX_PARTICLES: u64 = 160;
-const ALLOWED_PRIMITIVES: [&str; 5] =
-    ["icosphere", "sphere", "capsule", "points", "fresnel_shell"];
+const ALLOWED_PRIMITIVES: [&str; 5] = ["icosphere", "sphere", "capsule", "points", "fresnel_shell"];
 /// Renderer residency LOD keys (`PhysicalResidency` in contracts.ts).
 const RESIDENCIES: [&str; 4] = ["hot", "sleeping", "aggregated", "dormant"];
 /// The six epistemic states the visual authority must be able to render
@@ -139,7 +138,9 @@ impl VisualPolicy {
 pub fn validate_catalog(catalog: &VisualCatalog) -> Result<(), UniverseError> {
     let mapping = &catalog.mapping;
     if mapping.get("schema_version").and_then(Value::as_str) != Some(SCHEMA_VERSION) {
-        return Err(validation("catalog schema_version must be visual-embodiment/1"));
+        return Err(validation(
+            "catalog schema_version must be visual-embodiment/1",
+        ));
     }
     let primitive_budget = mapping
         .get("primitive_budget")
@@ -179,7 +180,9 @@ pub fn validate_catalog(catalog: &VisualCatalog) -> Result<(), UniverseError> {
                 .as_array()
                 .ok_or_else(|| validation(format!("form {name} primitive is not a tuple")))?;
             if tuple.len() != 8 {
-                return Err(validation(format!("form {name} primitive tuple arity is not 8")));
+                return Err(validation(format!(
+                    "form {name} primitive tuple arity is not 8"
+                )));
             }
             let kind = tuple[0]
                 .as_str()
@@ -239,7 +242,9 @@ pub fn validate_policy(policy: &VisualPolicy) -> Result<(), UniverseError> {
         }
     }
     if policy.bindings.is_empty() && policy.default_authority.is_none() {
-        return Err(validation("visual policy binds nothing and declares no fallback"));
+        return Err(validation(
+            "visual policy binds nothing and declares no fallback",
+        ));
     }
     for binding in &policy.bindings {
         if binding.authority_id.trim().is_empty() || binding.justification.trim().is_empty() {
@@ -312,7 +317,11 @@ pub fn derive(
     let modulation = policy
         .epistemic_modulation
         .get(epistemic_state)
-        .ok_or_else(|| validation(format!("epistemic state {epistemic_state} is not modulated")))?;
+        .ok_or_else(|| {
+            validation(format!(
+                "epistemic state {epistemic_state} is not modulated"
+            ))
+        })?;
     let form_name = resolve_form_name(&catalog.mapping, residency)?.to_owned();
     let primitive_count = catalog
         .mapping
@@ -324,14 +333,26 @@ pub fn derive(
 
     let material = &catalog.mapping["material"];
     let palette = &catalog.mapping["palette"];
-    let core_opacity = material.get("core_opacity").and_then(Value::as_f64).unwrap_or(1.0);
+    let core_opacity = material
+        .get("core_opacity")
+        .and_then(Value::as_f64)
+        .unwrap_or(1.0);
     let core_emissive = material
         .get("core_emissive_intensity")
         .and_then(Value::as_f64)
         .unwrap_or(0.0);
-    let base_color = palette.get("core").and_then(Value::as_str).unwrap_or("#ffffff");
-    let emissive_color = palette.get("emissive").and_then(Value::as_str).unwrap_or("#ffffff");
-    let color = modulation.hue.clone().unwrap_or_else(|| base_color.to_owned());
+    let base_color = palette
+        .get("core")
+        .and_then(Value::as_str)
+        .unwrap_or("#ffffff");
+    let emissive_color = palette
+        .get("emissive")
+        .and_then(Value::as_str)
+        .unwrap_or("#ffffff");
+    let color = modulation
+        .hue
+        .clone()
+        .unwrap_or_else(|| base_color.to_owned());
 
     let modulated = json!({
         "color": color,
@@ -455,10 +476,34 @@ fn build_seed(catalog: &VisualCatalog, policy: &VisualPolicy) -> Result<GraphSee
     ];
 
     let mut relations = vec![
-        seed_relation(RELATION_BASE, MAPPING_ATOM, CONTRACT_ATOM, "GOVERNED_BY", None),
-        seed_relation(RELATION_BASE + 1, CHANGESET_ATOM, CONTRACT_ATOM, "GOVERNED_BY", None),
-        seed_relation(RELATION_BASE + 2, MAPPING_ATOM, CATALOG_ATOM, "HAS_PAYLOAD", None),
-        seed_relation(RELATION_BASE + 3, MAPPING_ATOM, CHANGESET_ATOM, "PART_OF", None),
+        seed_relation(
+            RELATION_BASE,
+            MAPPING_ATOM,
+            CONTRACT_ATOM,
+            "GOVERNED_BY",
+            None,
+        ),
+        seed_relation(
+            RELATION_BASE + 1,
+            CHANGESET_ATOM,
+            CONTRACT_ATOM,
+            "GOVERNED_BY",
+            None,
+        ),
+        seed_relation(
+            RELATION_BASE + 2,
+            MAPPING_ATOM,
+            CATALOG_ATOM,
+            "HAS_PAYLOAD",
+            None,
+        ),
+        seed_relation(
+            RELATION_BASE + 3,
+            MAPPING_ATOM,
+            CHANGESET_ATOM,
+            "PART_OF",
+            None,
+        ),
     ];
 
     let mut relation_key = RELATION_BASE + 4;
@@ -524,7 +569,8 @@ pub fn materialize(
         .as_ref()
         .ok_or_else(|| validation("visual mapping Asset has no content"))
         .and_then(|content| readback_store.read_content(content))?;
-    let nodes_preserved = mapping_content.get("canonical_node_replaced") == Some(&Value::Bool(false));
+    let nodes_preserved =
+        mapping_content.get("canonical_node_replaced") == Some(&Value::Bool(false));
 
     let catalog_entity = readback
         .entities
@@ -563,8 +609,13 @@ pub fn materialize(
     for binding in &policy.bindings {
         for residency in RESIDENCIES {
             for epistemic in EPISTEMIC_STATES {
-                let Some(resolution) =
-                    derive(policy, catalog, &binding.semantic_type, residency, epistemic)?
+                let Some(resolution) = derive(
+                    policy,
+                    catalog,
+                    &binding.semantic_type,
+                    residency,
+                    epistemic,
+                )?
                 else {
                     continue;
                 };
@@ -579,7 +630,11 @@ pub fn materialize(
                         .material
                         .get("opacity")
                         .and_then(Value::as_f64)
-                        .zip(catalog.mapping["material"].get("core_opacity").and_then(Value::as_f64))
+                        .zip(
+                            catalog.mapping["material"]
+                                .get("core_opacity")
+                                .and_then(Value::as_f64),
+                        )
                         .is_some_and(|(shown, base)| shown >= base);
                     if emits || opaque {
                         honesty_invariant_held = false;
@@ -729,11 +784,20 @@ mod tests {
             .unwrap();
         assert!(!unknown.confident);
         assert_eq!(
-            unknown.material.get("emissiveIntensity").and_then(Value::as_f64),
+            unknown
+                .material
+                .get("emissiveIntensity")
+                .and_then(Value::as_f64),
             Some(0.0)
         );
-        let opacity = unknown.material.get("opacity").and_then(Value::as_f64).unwrap();
-        let base = catalog.mapping["material"]["core_opacity"].as_f64().unwrap();
+        let opacity = unknown
+            .material
+            .get("opacity")
+            .and_then(Value::as_f64)
+            .unwrap();
+        let base = catalog.mapping["material"]["core_opacity"]
+            .as_f64()
+            .unwrap();
         assert!(opacity < base);
     }
 
@@ -742,9 +806,15 @@ mod tests {
         let catalog = catalog();
         let mut policy = policy();
         policy.default_authority = None; // remove the fallback
-        assert!(derive(&policy, &catalog, "thing_without_binding", "hot", "measured")
-            .unwrap()
-            .is_none());
+        assert!(derive(
+            &policy,
+            &catalog,
+            "thing_without_binding",
+            "hot",
+            "measured"
+        )
+        .unwrap()
+        .is_none());
     }
 
     #[test]

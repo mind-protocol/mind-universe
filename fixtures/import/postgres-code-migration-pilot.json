@@ -1,0 +1,182 @@
+{
+  "contract_version": 0,
+  "universe": "00000000000000000000000000007000",
+  "source": {
+    "atom": "00000000000000000000000000007001",
+    "authority_id": "postgres:mind@snapshot-20260730",
+    "source_graph_scope": ["l2:mind-protocol", "l2:mind-blueprints", "l2:mind-kernel"],
+    "observed_at": "2026-07-30T00:00:00Z",
+    "ontology_revision": 106
+  },
+  "batch": {
+    "atom": "00000000000000000000000000007002",
+    "batch_id": "postgres-code-migration-classify-v0",
+    "receipt_atom": "000000000000000000000000000070f0",
+    "receipt_relation": "00000000000000000000000000007fff",
+    "relation_key_start": "00000000000000000000000000007e00"
+  },
+  "candidates": [
+    {
+      "legacy_asset_atom": "00000000000000000000000000007100",
+      "task_atom": "00000000000000000000000000007200",
+      "definition_atom": "00000000000000000000000000007300",
+      "source_label": "declarative:all-l1-reconciliation",
+      "graph_id": "l2:mind-protocol",
+      "source_id": "code:l2:blueprint:all-l1-reconciliation-v0",
+      "source_form": "declarative_graph_ir",
+      "row_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "source_revision": 3,
+      "code_definition_revision": 1,
+      "declared": {
+        "effects": [],
+        "capabilities": [],
+        "has_timeout": true,
+        "has_cancellation": true,
+        "bounded_loops": true,
+        "budget_bounded": true,
+        "hidden_predicate_dispatch": false
+      },
+      "justification": "Declarative reconciliation expressible directly in Graph IR; bounded, timed, cancellable, no external effects."
+    },
+    {
+      "legacy_asset_atom": "00000000000000000000000000007101",
+      "task_atom": "00000000000000000000000000007201",
+      "source_label": "python:subentity-behavior-capture",
+      "graph_id": "l2:mind-protocol",
+      "source_id": "code:l1:training:subentity-behavior-capture-v0",
+      "source_form": "python",
+      "row_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "source_revision": 2,
+      "declared": {
+        "effects": ["l1_memory_write"],
+        "capabilities": ["l1_memory"],
+        "has_timeout": true,
+        "has_cancellation": true,
+        "bounded_loops": true,
+        "budget_bounded": true,
+        "hidden_predicate_dispatch": false
+      },
+      "justification": "Python NodeCode with a declared, capability-backed memory effect; safe to keep inert as a migration task, rewrite required before any activation."
+    },
+    {
+      "legacy_asset_atom": "00000000000000000000000000007102",
+      "task_atom": "00000000000000000000000000007202",
+      "source_label": "cypher:whole-graph-traversal",
+      "graph_id": "l2:mind-protocol",
+      "source_id": "query:l2:reconciliation:whole-graph-scan-v0",
+      "source_form": "cypher",
+      "row_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "source_revision": 1,
+      "declared": {
+        "effects": [],
+        "capabilities": [],
+        "has_timeout": false,
+        "has_cancellation": false,
+        "bounded_loops": false,
+        "budget_bounded": false,
+        "hidden_predicate_dispatch": false
+      },
+      "justification": "Cypher program performs implicit whole-graph traversal with no bound, timeout, or cancellation; must be rejected until bounded local-query semantics are established."
+    },
+    {
+      "legacy_asset_atom": "00000000000000000000000000007103",
+      "task_atom": "00000000000000000000000000007203",
+      "source_label": "postgres_function:status_default_trigger",
+      "graph_id": "l2:mind-kernel",
+      "source_id": "pgfn:mind_nodes:status_default_v0",
+      "source_form": "postgres_function",
+      "row_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "source_revision": 5,
+      "declared": {
+        "effects": ["row_status_mutation"],
+        "capabilities": [],
+        "has_timeout": false,
+        "has_cancellation": false,
+        "bounded_loops": true,
+        "budget_bounded": false,
+        "hidden_predicate_dispatch": true
+      },
+      "justification": "PostgreSQL trigger mixes storage default with status policy; must split storage primitive from decision policy and stay quarantined."
+    },
+    {
+      "legacy_asset_atom": "00000000000000000000000000007104",
+      "task_atom": "00000000000000000000000000007204",
+      "source_label": "external:chatgpt-autonomy-extension",
+      "graph_id": "l2:mind-protocol",
+      "source_id": "code:l2:browser:chatgpt-autonomy-extension-source-v0",
+      "source_form": "external_transport",
+      "row_sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+      "source_revision": 4,
+      "declared": {
+        "effects": ["browser_navigation"],
+        "capabilities": ["browser_tab_adapter"],
+        "has_timeout": true,
+        "has_cancellation": true,
+        "bounded_loops": true,
+        "budget_bounded": true,
+        "hidden_predicate_dispatch": false
+      },
+      "justification": "Browser extension is an external transport; a capability intent plus authorized adapter is declared, but it stays capability-disabled until a real receipt path exists."
+    },
+    {
+      "legacy_asset_atom": "00000000000000000000000000007105",
+      "task_atom": "00000000000000000000000000007205",
+      "source_label": "generated:toast-sound-bundle",
+      "graph_id": "l2:mind-protocol",
+      "source_id": "code:l1:viz:toast-sound-web-audio-v1",
+      "source_form": "generated_file",
+      "row_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+      "source_revision": 1,
+      "declared": {
+        "effects": [],
+        "capabilities": [],
+        "has_timeout": false,
+        "has_cancellation": false,
+        "bounded_loops": true,
+        "budget_bounded": true,
+        "hidden_predicate_dispatch": false
+      },
+      "justification": "Deterministic generated bundle; projected as a content-addressed inert Asset linked to its canonical definition, not executed."
+    },
+    {
+      "legacy_asset_atom": "00000000000000000000000000007106",
+      "task_atom": "00000000000000000000000000007206",
+      "source_label": "trace:reflective-answer-execution",
+      "graph_id": "l2:mind-protocol",
+      "source_id": "moment:l2:mcp:reflective-answer-execution-2026-07-01",
+      "source_form": "historical_trace",
+      "row_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+      "source_revision": 1,
+      "declared": {
+        "effects": [],
+        "capabilities": [],
+        "has_timeout": false,
+        "has_cancellation": false,
+        "bounded_loops": true,
+        "budget_bounded": true,
+        "hidden_predicate_dispatch": false
+      },
+      "justification": "Historical execution trace preserved as observation evidence; it is never executable code."
+    },
+    {
+      "legacy_asset_atom": "00000000000000000000000000007107",
+      "task_atom": "00000000000000000000000000007207",
+      "source_label": "obsolete:node-created-viz-toast",
+      "graph_id": "l2:mind-protocol",
+      "source_id": "code:l1:debug:node-created-viz-toast:v0",
+      "source_form": "obsolete",
+      "row_sha256": "8888888888888888888888888888888888888888888888888888888888888888",
+      "source_revision": 1,
+      "declared": {
+        "effects": [],
+        "capabilities": [],
+        "has_timeout": false,
+        "has_cancellation": false,
+        "bounded_loops": true,
+        "budget_bounded": true,
+        "hidden_predicate_dispatch": false
+      },
+      "justification": "Superseded debug toast code; preserved as a source Asset with a retirement Problem and quarantined."
+    }
+  ]
+}

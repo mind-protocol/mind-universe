@@ -16,7 +16,7 @@
 //!   embedded document does not hash to its declared digest is refused, not
 //!   silently projected.
 
-use crate::census::{run_census, CensusPolicy};
+use crate::census::{node_kind, run_census, CensusPolicy};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::{collections::BTreeMap, path::Path};
@@ -31,13 +31,15 @@ use universe_transactions::{
 const CONTRACT_ATOM: EntityKey = EntityKey(0xA000);
 const MAPPING_ATOM: EntityKey = EntityKey(0xA001);
 const CHANGESET_ATOM: EntityKey = EntityKey(0xA002);
-const PAYLOAD_BASE: u128 = 0xA100;
-const ASSET_BASE: u128 = 0xA110;
-const RELATION_BASE: u128 = 0xA200;
+// Bases kept far apart so payload, asset, and relation key ranges never overlap
+// regardless of how many required Nodes a corpus declares.
+const PAYLOAD_BASE: u128 = 0xB0000;
+const ASSET_BASE: u128 = 0xC0000;
+const RELATION_BASE: u128 = 0xD0000;
 
-const CONTRACT_ID: &str = "canonical-source-conversion-v0";
-const MAPPING_ID: &str = "ontology-source-document-v0";
-const CHANGE_ID: &str = "asset-conversion-ontology-sources-v0";
+const CONTRACT_ID: &str = "canonical-content-conversion-v0";
+const MAPPING_ID: &str = "canonical-content-projection-v0";
+const CHANGE_ID: &str = "asset-conversion-canonical-content-v0";
 const AUTHORITY: &str = "graph_first_conversion_authority";
 const STATUS: &str = "approved_for_conversion";
 
@@ -86,6 +88,8 @@ pub struct ConversionReceipt {
 
 struct SourceToConvert {
     key: EntityKey,
+    kind: String,
+    payload_field: String,
     content_sha256: String,
     document: Value,
     payload_sha256: String,
@@ -108,7 +112,10 @@ fn asset_id(source: &SourceToConvert) -> Result<String, UniverseError> {
     ))
 }
 
-fn collect_required_sources(
+/// Collects every Node the policy declares `required`, projecting the exact
+/// content field the policy names as its payload. The set of convertible kinds
+/// is therefore graph-declared (in the census policy), not hard-coded here.
+fn collect_required_nodes(
     store: &UniverseStore,
     snapshot: &UniverseSnapshot,
     policy: &CensusPolicy,
@@ -119,29 +126,46 @@ fn collect_required_sources(
             continue;
         };
         let content = store.read_content(content_ref)?;
-        if content.get("kind").and_then(Value::as_str) != Some("ontology_source") {
+        let kind = node_kind(&content);
+        // An Asset projection is itself derived content, never a Node to convert.
+        if kind == "asset_projection" || kind == "asset_payload" {
             continue;
         }
-        if policy.requirement_for("ontology_source") != "required" {
+        let Some(rule) = policy.rule_for(&kind) else {
+            continue;
+        };
+        if rule.requirement != "required" {
             continue;
         }
-        let document = content
-            .get("document")
-            .cloned()
-            .ok_or_else(|| validation(format!("source {} has no document", entity.key)))?;
+        // `validate()` guarantees a required rule carries a non-empty payload_field.
+        let payload_field = rule
+            .payload_field
+            .as_deref()
+            .ok_or_else(|| validation(format!("required kind {kind} declares no payload_field")))?;
+        let document = content.get(payload_field).cloned().ok_or_else(|| {
+            validation(format!(
+                "{kind} Node {} has no `{payload_field}` payload",
+                entity.key
+            ))
+        })?;
         let payload_sha256 = canonical_hash(&document)?;
-        // Faithful derivation: the projected payload must reproduce the source's
-        // own declared digest, or the Node is refused rather than misprojected.
-        if let Some(declared) = content.get("canonical_json_sha256").and_then(Value::as_str) {
-            if declared != payload_sha256 {
-                return Err(validation(format!(
-                    "source {} document does not match its declared canonical_json_sha256",
-                    entity.key
-                )));
+        // Faithful derivation: when the policy names a declared-digest field, the
+        // projected payload must reproduce it, or the Node is refused rather than
+        // misprojected.
+        if let Some(digest_field) = rule.declared_digest_field.as_deref() {
+            if let Some(declared) = content.get(digest_field).and_then(Value::as_str) {
+                if declared != payload_sha256 {
+                    return Err(validation(format!(
+                        "{kind} Node {} payload does not match its declared `{digest_field}`",
+                        entity.key
+                    )));
+                }
             }
         }
         sources.push(SourceToConvert {
             key: entity.key,
+            kind,
+            payload_field: payload_field.to_owned(),
             content_sha256: content_ref.sha256.clone(),
             document,
             payload_sha256,
@@ -161,9 +185,9 @@ pub fn convert_sources(
     let base_revision = snapshot.revision;
     let census_before = run_census(&store, &snapshot, policy)?.class_counts;
 
-    let sources = collect_required_sources(&store, &snapshot, policy)?;
+    let sources = collect_required_nodes(&store, &snapshot, policy)?;
     if sources.is_empty() {
-        return Err(validation("no required source Node to convert"));
+        return Err(validation("no required Node to convert"));
     }
 
     let converted: Vec<ConvertedSource> = sources
@@ -224,8 +248,9 @@ pub fn convert_sources(
                 "kind": "asset_projection_mapping",
                 "mapping_id": MAPPING_ID,
                 "revision": 1,
-                "output_kind": "ontology_source_document",
+                "output_kind": "canonical_content_projection",
                 "media_type": "application/json",
+                "projects": "the policy-declared payload field of a required canonical Node",
             }),
         )?);
         commands.push(put_entity(
@@ -253,6 +278,8 @@ pub fn convert_sources(
                     "content_address": format!("sha256:{}", source.payload_sha256),
                     "payload_sha256": source.payload_sha256,
                     "media_type": "application/json",
+                    "source_kind": source.kind,
+                    "payload_field": source.payload_field,
                     "value": source.document,
                 }),
             )?);
@@ -267,6 +294,7 @@ pub fn convert_sources(
                     "content_address": format!("sha256:{}", source.payload_sha256),
                     "payload_sha256": source.payload_sha256,
                     "source_node": source.key,
+                    "source_node_kind": source.kind,
                     "source_node_content_sha256": source.content_sha256,
                     "mapping": MAPPING_ATOM,
                     "mapping_revision": 1,
@@ -493,14 +521,18 @@ mod tests {
         let policy = policy();
         let receipt = convert_sources(temp.path(), &policy).unwrap();
 
+        // The canonical policy declares 3 ontology_source + 23 ontology_contract
+        // Nodes as required content-bearing projections.
         assert!(receipt.newly_committed);
-        assert_eq!(receipt.converted.len(), 3);
-        assert_eq!(receipt.assets_read_back, 3);
+        assert_eq!(receipt.converted.len(), 26);
+        assert_eq!(receipt.assets_read_back, 26);
         assert!(receipt.nodes_preserved);
-        assert_eq!(receipt.census_before["blocked"], 3);
+        assert_eq!(receipt.census_before["blocked"], 26);
         assert_eq!(receipt.census_before["converted"], 0);
         assert_eq!(receipt.census_after["blocked"], 0);
-        assert_eq!(receipt.census_after["converted"], 3);
+        assert_eq!(receipt.census_after["converted"], 26);
+        // Every unknown kind is now classified: none remain.
+        assert_eq!(receipt.census_after.get("unknown").copied().unwrap_or(0), 0);
         assert!(receipt.final_revision > receipt.base_revision);
     }
 
@@ -516,6 +548,6 @@ mod tests {
         assert!(!second.newly_committed);
         assert_eq!(first.final_revision, second.final_revision);
         assert_eq!(first.final_snapshot_hash, second.final_snapshot_hash);
-        assert_eq!(second.census_after["converted"], 3);
+        assert_eq!(second.census_after["converted"], 26);
     }
 }

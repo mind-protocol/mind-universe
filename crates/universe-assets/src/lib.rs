@@ -6,6 +6,7 @@
 
 pub mod census;
 pub mod conversion;
+pub mod invalidation;
 pub mod inventory;
 pub mod visual;
 

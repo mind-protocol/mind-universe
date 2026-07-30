@@ -1,10 +1,20 @@
-//! Bounded PostgreSQL identity and inert-relation import bootstrap.
+//! Bounded PostgreSQL identity, inert-relation, and ontology-adaptation bootstrap.
 //!
 //! PostgreSQL rows are source evidence. This crate materializes graph-owned
-//! import contracts, inert Assets, endpoint-resolution outcomes, and receipts;
-//! it never activates ontology, predicates, physics, or code.
+//! import contracts, inert Assets, endpoint-resolution outcomes, and receipts.
+//! The identity and relation pilots activate nothing. The ontology pilot
+//! (`ontology_pilot`) may activate *type and predicate mappings* through an
+//! approved, source-graph-scoped, revision-pinned ChangeSet. The code-migration
+//! pilot (`code_migration`) only *classifies* code into inert LegacyCodeAssets
+//! and CodeMigrationTasks and applies a computed safety gate — it compiles,
+//! shadow-executes, and activates nothing. None of these ever migrates running
+//! code, activates physics, or makes a PostgreSQL row executable.
 
+pub mod code_migration;
+pub mod code_pilot;
+pub mod code_translation;
 pub mod cursor;
+pub mod ontology_pilot;
 
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeSet, path::Path};

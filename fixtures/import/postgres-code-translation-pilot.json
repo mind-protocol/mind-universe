@@ -1,0 +1,29 @@
+{
+  "contract_version": 0,
+  "universe": "00000000000000000000000000008000",
+  "source": {
+    "atom": "00000000000000000000000000008001",
+    "authority_id": "postgres:mind@snapshot-20260730",
+    "source_id": "code:l2:blueprint:all-l1-reconciliation-v0",
+    "row_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "source_revision": 3
+  },
+  "definition_atom": "00000000000000000000000000008010",
+  "batch": {
+    "atom": "00000000000000000000000000008002",
+    "batch_id": "postgres-code-translation-reconciliation-v0",
+    "receipt_atom": "000000000000000000000000000080f0",
+    "receipt_relation": "00000000000000000000000000008fff",
+    "relation_key_start": "00000000000000000000000000008e00"
+  },
+  "inputs": {
+    "l1_state": 7,
+    "blueprint_state": 7
+  },
+  "expected": {
+    "reconciled": true,
+    "proposal_count": 1
+  },
+  "fuel": 64,
+  "max_proposals": 1
+}
