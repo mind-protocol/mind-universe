@@ -1,0 +1,405 @@
+{
+  "id": "space:l2:mind-universe:underground-toolkit-v0",
+  "node_type": "space",
+  "subtype": "underground_toolkit",
+  "content": {
+    "contractKind": "construct",
+    "name": "Underground toolkit v0 (réseau souterrain — mécanismes immuables)",
+    "dominant_scale": "infrastructure",
+    "lineage": "Modeled on the Micro-energy circuit toolkit v1 (the 'micro-electric' kit): the same AtomDynamics energetic vocabulary — atoms as gates, bonds as one-shot conductions, thresholds, required-support AND latches, inhibition, starvation, quiescence — physicalized underground as sealed pipes, transformation stations, valves and manholes.",
+    "parent_scope": {
+      "classification": "standalone",
+      "justification": "Portable bootstrap toolkit awaiting installation under the canonical infrastructure/physicalization registry Space. It has exactly one scope classification and is not structurally owned by one exclusive parent yet; no PART_OF edge is written to an unbuilt parent."
+    },
+    "runtime_moment_subtypes": ["validation_run", "health_assessment"],
+    "native_law_boundary": "AtomDynamics knows only AtomSpec, AtomBond and support/inhibit/neutral. Underground is a physicalization grammar and a CAPABILITY boundary; it adds no predicate meaning to the native law. Which actor may mutate a mechanism is authorization data on ports and affordances, never a term in the atom law.",
+    "purpose": "Contain the mechanisms that citizens must NOT be able to modify. The underground is the physicalization of the trusted, immutable substrate: pipes carry energy between mechanisms, transformation stations transform it, valves gate it, and manholes expose bounded read-only inspection. A citizen may look down every manhole; only a Genesis/maintenance authority may open a sealed station and mutate what is inside.",
+    "immutability_contract": {
+      "citizen_capabilities": ["observe", "inspect_through_manhole", "trace_flow", "read_receipts"],
+      "citizen_forbidden": ["reroute_pipe", "retune_station", "open_valve", "edit_mechanism", "commit_any_mutation"],
+      "authority_only_capabilities": ["open_sealed_station", "retune_threshold", "reroute_conduit", "install_mechanism", "decommission_mechanism"],
+      "rule": "Every mutate affordance resolves to a required authority capability. A manhole grants observe only; opening a manhole never widens capability. An unauthorized mutate intent fails closed, restores the prior state exactly, and is reported — it is never silently dropped nor rendered as a completed change.",
+      "sealed_default": "sealed_read_only"
+    }
+  },
+  "members": [
+    {
+      "id": "objective:l2:mind-universe:underground-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "For every underground mechanism, a citizen can observe its live energetic state through a manhole — pipes, stations, valves, thresholds and one-shot conductions rendered as faithful projections of fresh admitted integer AtomDynamics evidence — while EVERY mutation affordance is gated behind an authority capability the citizen does not hold. No citizen gesture ever mutates a mechanism; energy is conserved; each conduit conducts at most once; and Fog is never converted into intensity."
+      }
+    },
+    {
+      "id": "pattern:l2:mind-universe:underground-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "A bounded subterranean Space seals the immutable substrate under a surface. Homogeneous atoms physicalize as transformation stations (roleAxis thing: routers that transform), sources as energy wells (roleAxis actor: pumps), passages as junctions (roleAxis moment), attractors as reservoirs (roleAxis narrative), and the Space itself as a bounding vault that carries no energy. Exact bonds physicalize as welded pipes conducting once; thresholds as gauge marks; required supports as AND manifolds; inhibition as a closing valve; starvation as a pressure collapse; quiescence as a settled network. Access is split into two strictly separate affordance surfaces: MANHOLES expose observe-only inspection to anyone; SEALED HATCHES expose mutation only to an authority capability. The capability boundary is the physical seal.",
+        "epistemic_honesty": "A manhole view is not authority; opening it is not editing. A rendered flow animation is not a commit. An unmeasured pipe is Fog, not zero pressure. A sealed station whose evidence is stale reads stale, never healthy-by-default."
+      }
+    },
+    {
+      "id": "vocabulary:l2:mind-universe:underground-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "UndergroundVault": "The bounded Space that seals the immutable substrate; roleAxis space, carries no energy, bounds diffusion.",
+          "TransformationStation": "A sealed housing physicalizing an atom of roleAxis thing — a router that lets energy through while transforming it. Its internals are mutable only by an authority capability.",
+          "EnergyWell": "An actor-roleAxis atom: the pump where measured energy is injected. Underground, the injection point of the substrate, not a citizen gesture.",
+          "Conduit": "A welded pipe physicalizing an AtomBond. Conducts exactly once when its source station first fires. Its polarity colors it: support (pressurized/warm), inhibit (cold/valved), neutral (dry, energy 0).",
+          "Manifold": "A required-supports AND junction: the downstream station stays 'awaiting pressure' until every named upstream conduit has pulsed.",
+          "Valve": "An inhibition gate: when inhibition_energy reaches inhibition_threshold the downstream fire is blocked WITHOUT erasing accumulated support.",
+          "Manhole": "A bounded, read-only inspection port over a mechanism. Grants the observe/inspect capability set only. Opening it never widens capability and never mutates.",
+          "SealedHatch": "The mutation access surface of a station. Resolves to a required authority capability; a citizen holds none. Fails closed for the unauthorized.",
+          "GaugeMark": "The visible threshold a station must reach to fire.",
+          "PressureCollapse": "Starvation: outgoing admitted energy exceeds current support; the station cannot fire or conduct.",
+          "SettledNetwork": "Quiescence: no station can fire.",
+          "Fog": "Energy not_measured or rejected by the membrane; rendered as explicit fog, never as an invented pressure.",
+          "AuthorityCapability": "The capability required to open a SealedHatch or issue a mutate intent underground. Held by Genesis/maintenance actors, not by ordinary citizens."
+        }
+      }
+    },
+    {
+      "id": "behavior:l2:mind-universe:underground-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "A valid bounded AtomSpec/AtomBond substrate, measured energy statuses, a visual catalog, the observing actor's capability set, and an optional measured authority injection.",
+        "when": "The runtime performs run_until_quiescent, a citizen opens a manhole to inspect, or any actor issues a mutate intent against a station, valve or conduit.",
+        "then": [
+          "Physicalize the fresh event ledger: each station fires at most once, each admitted conduit conducts once at source fire, integer energy is transferred and conserved.",
+          "Render every manhole view as observe-only: the citizen sees state, flow, thresholds and receipts, and is offered no mutation affordance.",
+          "Resolve every mutate intent against the required authority capability; admit it only for an actor that holds the capability.",
+          "Fail an unauthorized mutate intent closed, restore the prior state exactly, and emit a rejection receipt.",
+          "Produce runtime validation_run / health_assessment moments from actual execution."
+        ],
+        "forbidden": [
+          "reading predicate names inside the native AtomDynamics law",
+          "offering, to an actor without the authority capability, any affordance that reroutes a conduit, retunes a station, opens a valve or edits a mechanism",
+          "letting the act of opening a manhole widen an actor's capability",
+          "streaming authored, derived, unknown or not_measured conduit energy",
+          "conducting the same conduit twice",
+          "firing a starved, valved or incomplete-manifold station",
+          "erasing support when inhibition arrives",
+          "transporting energy on a neutral conduit",
+          "presenting a renderer flow animation as a commit receipt",
+          "rendering an unauthorized-but-rejected mutation as if it had taken effect",
+          "silently dropping an unauthorized mutate intent instead of failing it closed with a receipt",
+          "pre-creating validation_run or health_assessment"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l2:mind-universe:underground-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "validate exact u64 AtomSpec and AtomBond invariants",
+          "admit only measured seed, injection and conduit energy through the membrane",
+          "initialize support, inhibition, received supports and fired_at for every station",
+          "inject measured authority/source energy at the energy wells when present",
+          "select the deterministic wave of fireable, non-starved, non-valved stations whose manifolds are complete",
+          "subtract exact total outgoing energy from each firing source",
+          "conduct each outgoing conduit once: support adds to target support, inhibit adds to target inhibition, neutral transports zero",
+          "repeat waves until the network settles (quiescence)",
+          "verify admitted integer energy conservation",
+          "for an inspection: resolve the manhole to the observe-only affordance set and render state without inventing energy",
+          "for a mutate intent: resolve the required authority capability, admit only if held, else fail closed and restore prior state",
+          "emit the commit or rejection receipt",
+          "run the independent observer and the structured evaluation AST",
+          "derive health from fresh validation evidence"
+        ],
+        "capability_resolution": "manhole -> observe-only-set; sealed_hatch -> require(authority_capability). No affordance escalates capability; an absent capability fails closed, never degrades to a mutation.",
+        "scheduler_projection": "deterministic-wave-ticks/1; exact same-tick tie semantics must be reconciled with the canonical Rust crate when integrated.",
+        "python_escape_hatch": "forbidden_by_default"
+      }
+    },
+    {
+      "id": "code:l2:mind-universe:underground-toolkit-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "authority": "Graph-native CodeDefinition projection for the portable Underground toolkit; this JSON file is a materialized projection, not independent semantic authority.",
+        "language": "mind-ir+atom-fixture",
+        "entrypoints": [
+          "run_substrate_until_quiescent",
+          "physicalize_underground",
+          "open_manhole_observe_only",
+          "resolve_mutate_capability",
+          "commit_or_reject_mutation",
+          "observe_underground",
+          "evaluate_underground_ast"
+        ],
+        "capability_gate": {
+          "port_id": "port:l2:mind-universe:underground:sealed-hatch-v0",
+          "observe_capabilities": ["observe", "inspect_through_manhole", "trace_flow", "read_receipts"],
+          "required_mutate_capability": "authority:underground-maintenance",
+          "default_state": "sealed_read_only",
+          "on_unauthorized": ["fail_closed", "restore_prior_state", "emit_rejection_receipt"],
+          "rule": "A mutate intent is admitted only when the acting capability set contains authority:underground-maintenance. Opening a manhole grants none of it."
+        }
+      }
+    },
+    {
+      "id": "implementation:l2:mind-universe:underground-toolkit-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "status": "materialized",
+        "artifact": "underground-toolkit-v0.json",
+        "graph_status": "written",
+        "wiring_status": "not_wired",
+        "runtime_status": "not_running",
+        "verification_status": "not_measured",
+        "honesty": "The portable Underground toolkit is materialized and structurally shaped as a self-verifying loop. This field is written BEFORE injection; after an injector commits it, the on-disk graph carries the loop while this embedded field reads stale (WRITTEN but not wired, executed, or proven healthy). The capability seal is declared, not yet enforced by a running resolver."
+      }
+    },
+    {
+      "id": "justification:l2:mind-universe:underground-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": [
+          "The trusted substrate must be legible without being editable: citizens depend on these mechanisms and must be able to inspect why they behave as they do, but a citizen who could retune a station or reroute a conduit could break the invariants everyone else relies on.",
+          "Making immutability a CAPABILITY boundary rather than a visual convention means the seal is enforced at admission, not merely drawn: an unauthorized mutate intent fails closed and restores state, instead of being hidden by a renderer.",
+          "Manholes give bounded, honest observation: exactly the observe capability, nothing more, so transparency never leaks into authority.",
+          "Reusing the micro-circuit's integer AtomDynamics vocabulary underground keeps the substrate's dynamics measurable and conserved, so a rendered flow is a projection of evidence, not an attractive fiction.",
+          "A separate authority hatch keeps maintenance possible without exposing it to citizens — the substrate stays repairable by the right actor and immutable to the wrong one."
+        ],
+        "rejected": [
+          "immutability as a read-only visual flag, because a flag a renderer honors is not a seal an admission path enforces",
+          "one shared capability for observe and mutate, because observation would then imply authority",
+          "letting a manhole 'unlock' editing, because opening an inspection port must never widen capability",
+          "silently ignoring unauthorized mutate intents, because silence is indistinguishable from success and leaves no receipt",
+          "predicate-driven native dispatch, because the atom law must remain ontology-blind and the authorization must stay data",
+          "floating-point pressure, because the canonical law counts conserved integer energy",
+          "health inferred from a running pump, because execution is not validation"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:mind-universe:underground-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "structured_expression_ast",
+        "scenarios": [
+          "substrate_runs_to_quiescence",
+          "manhole_inspection_offers_observe_only",
+          "citizen_mutate_intent_fails_closed",
+          "authority_mutate_intent_admitted",
+          "opening_manhole_does_not_widen_capability",
+          "unauthorized_reroute_restores_prior_state",
+          "valve_blocks_fire_without_erasing_support",
+          "starved_station_does_not_fire",
+          "incomplete_manifold_awaits_all_supports",
+          "conduit_conducts_exactly_once",
+          "neutral_conduit_transports_zero",
+          "unmeasured_conduit_energy_rejected",
+          "rejected_mutation_not_rendered_as_effect",
+          "receipt_emitted_for_reject_and_commit"
+        ],
+        "negative_invariants": [
+          "threshold zero rejected",
+          "inhibition threshold zero rejected",
+          "duplicate required supports rejected",
+          "non-incoming required support rejected",
+          "neutral conduit with nonzero energy rejected",
+          "unmeasured authority injection rejected",
+          "mutate affordance offered to non-authority rejected"
+        ],
+        "invariants": [
+          "every mutate affordance resolves to a required authority capability",
+          "a manhole grants exactly the observe-only set",
+          "opening a manhole never changes the acting capability set",
+          "an unauthorized mutate intent fails closed and restores prior state exactly",
+          "admitted integer energy is conserved",
+          "every conduit conducts at most once",
+          "no station fires while starved, valved, or with an incomplete manifold",
+          "all streamed conduit energy is measured",
+          "not_measured energy renders as Fog, never as pressure"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:mind-universe:underground-observer-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "target": "observability_algorithm:l2:mind-universe:underground-toolkit-v0",
+        "tests": [
+          "detect a mutation affordance offered to an actor without the authority capability",
+          "detect a manhole whose opening widened capability",
+          "detect an unauthorized mutation that was rendered as if committed",
+          "detect an unauthorized mutate intent dropped without a rejection receipt",
+          "detect forged final energy",
+          "detect false emissive rendering on not_measured energy",
+          "detect duplicate conduit conduction",
+          "detect a valve that erased support instead of blocking",
+          "detect a missing or invalid receipt",
+          "detect a forbidden primitive or exceeded budget",
+          "never convert absent evidence into success"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l2:mind-universe:underground-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Reads the source substrate fixture, the physicalized event trace, final station states, the membrane decision, the acting capability set, each resolved affordance, the commit/rejection receipt and the catalog. It does not trust a runtime-declared health field, a renderer success flag, or an implementation self-report of immutability.",
+        "checks": [
+          "every mutate affordance requires an authority capability",
+          "manhole affordance sets contain observe-only capabilities",
+          "opening a manhole leaves the acting capability set unchanged",
+          "unauthorized mutate intent failed closed and restored prior state",
+          "rejected mutation produced a rejection receipt and no state delta",
+          "integer energy conservation",
+          "station fire preconditions",
+          "single conduction per conduit",
+          "support / inhibition / neutral target deltas exact",
+          "required supports (manifold) exact",
+          "inhibition (valve) without support deletion",
+          "starvation (pressure collapse) correctness",
+          "measured-only membrane admission",
+          "Fog and emissive honesty",
+          "quiescence (settled network)",
+          "receipt integrity",
+          "primitive and particle budgets"
+        ]
+      }
+    },
+    {
+      "id": "metric:l2:mind-universe:underground-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "dimensions": [
+          "mutate_affordance_authority_gated_rate",
+          "manhole_observe_only_accuracy",
+          "capability_non_escalation_rate",
+          "unauthorized_mutation_fail_closed_rate",
+          "rejected_mutation_state_delta_count",
+          "energy_conservation_error_u64",
+          "energy_conserved",
+          "single_conduction_accuracy",
+          "fire_condition_accuracy",
+          "manifold_required_support_accuracy",
+          "valve_inhibition_accuracy",
+          "starvation_accuracy",
+          "neutral_zero_transport_accuracy",
+          "measured_stream_only_rate",
+          "membrane_admission_accuracy",
+          "false_energy_display_rate",
+          "not_measured_honesty_rate",
+          "quiescence_reached",
+          "receipt_integrity",
+          "primitive_budget_compliance",
+          "particle_budget_compliance",
+          "observer_fault_detection_rate",
+          "evidence_freshness_ms"
+        ]
+      }
+    },
+    {
+      "id": "health:l2:mind-universe:underground-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "states": ["healthy", "degraded", "stale", "unknown", "not_measured", "measurement_failed"],
+        "derivation": {
+          "healthy": "All required fresh validation scenarios pass: every mutate affordance was authority-gated, no manhole widened capability, every unauthorized mutation failed closed and restored state, energy was conserved, every conduit conducted once, and no not_measured energy was rendered as pressure.",
+          "degraded": "Fresh evidence exists but at least one non-catastrophic dimension violates its bound.",
+          "stale": "The latest otherwise valid evidence exceeds the configured freshness window.",
+          "unknown": "Required evidence cannot be resolved to a known state.",
+          "not_measured": "No fresh validation run has measured the required dimensions.",
+          "measurement_failed": "The observer or evaluator failed to produce a trustworthy measurement."
+        },
+        "maintenance": [
+          "retry",
+          "inspect_event_ledger",
+          "inspect_capability_resolution",
+          "suspend_station",
+          "close_valve",
+          "recalibrate_visual_bounds",
+          "relink_semantic_type",
+          "rematerialize_catalog",
+          "reissue_authority_capability",
+          "reconcile_rust_scheduler",
+          "ask_human"
+        ]
+      }
+    },
+    {
+      "id": "port:l2:mind-universe:underground:sealed-hatch-v0",
+      "node_type": "thing",
+      "subtype": "capability_port",
+      "content": {
+        "name": "Sealed maintenance hatch (mutation access)",
+        "state": "sealed_read_only",
+        "observe_capabilities": ["observe", "inspect_through_manhole", "trace_flow", "read_receipts"],
+        "required_mutate_capability": "authority:underground-maintenance",
+        "shape_contract": "observe_set_disjoint_from_mutate_set",
+        "reader_predicate": "actor_holds(authority:underground-maintenance)",
+        "effect_when_unauthorized": "fail_closed_and_restore",
+        "manhole_note": "Manholes are separate observe-only ports; this hatch is the ONLY mutation surface and it requires the authority capability."
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "space:l2:mind-universe:underground-toolkit-v0",
+      "predicate": "IMPLEMENTED_IN",
+      "target": "implementation:l2:mind-universe:underground-toolkit-v0"
+    },
+    {
+      "source": "space:l2:mind-universe:underground-toolkit-v0",
+      "predicate": "DEFINED_BY_CODE",
+      "target": "code:l2:mind-universe:underground-toolkit-v0"
+    },
+    {
+      "source": "code:l2:mind-universe:underground-toolkit-v0",
+      "predicate": "IMPLEMENTED_BY",
+      "target": "implementation:l2:mind-universe:underground-toolkit-v0"
+    },
+    {
+      "source": "pattern:l2:mind-universe:underground-toolkit-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l2:mind-universe:underground-toolkit-v0"
+    },
+    {
+      "source": "behavior:l2:mind-universe:underground-toolkit-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:mind-universe:underground-toolkit-v0"
+    },
+    {
+      "source": "implementation:l2:mind-universe:underground-toolkit-v0",
+      "predicate": "OBSERVED_BY",
+      "target": "observability_algorithm:l2:mind-universe:underground-toolkit-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:mind-universe:underground-toolkit-v0",
+      "predicate": "PRODUCES",
+      "target": "metric:l2:mind-universe:underground-toolkit-v0"
+    },
+    {
+      "source": "metric:l2:mind-universe:underground-toolkit-v0",
+      "predicate": "FEEDS",
+      "target": "health:l2:mind-universe:underground-toolkit-v0"
+    },
+    {
+      "source": "objective:l2:mind-universe:underground-toolkit-v0",
+      "predicate": "SUPPORTS",
+      "target": "space:l2:mind-universe:underground-toolkit-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:mind-universe:underground-toolkit-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:mind-universe:underground-observer-v0"
+    }
+  ]
+}

@@ -332,6 +332,11 @@ pub enum TriggerEventKind {
     HealthFailure,
     ScheduledTick,
     OperatorRequest,
+    /// A construct's trigger atom crossed its threshold in the physics step
+    /// (`AtomStep.fired`). This is the universal self-wake signal: a construct
+    /// wires itself into the field and is woken when the solver reports the
+    /// firing for free — never a poll. The event's subject is the fired atom.
+    AtomFired,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]

@@ -549,6 +549,12 @@ impl MutableAdjacencyOverlay {
             UniverseMutation::PutEntity { entity } => {
                 self.added_entities.insert(entity.key);
             }
+            UniverseMutation::SupersedeEntity { .. } => {
+                // The entity already exists in the base snapshot; superseding
+                // revises its content only. The overlay tracks entity existence
+                // and relation incidence, not entity content, so a supersede
+                // leaves the adjacency overlay unchanged.
+            }
             UniverseMutation::PutRelation { relation } => {
                 self.remove_added_relation(relation.key);
                 self.tombstones.remove(&relation.key);
@@ -741,6 +747,11 @@ pub enum UniverseMutation {
     PutEntity {
         entity: EntityRecord,
     },
+    /// Revise the content of an existing entity in place. Preserves the key,
+    /// requires a strictly greater generation than the current record.
+    SupersedeEntity {
+        entity: EntityRecord,
+    },
     PutRelation {
         relation: RelationRecord,
     },
@@ -902,6 +913,28 @@ fn apply_mutation(
             }
             snapshot.entities.push(entity.clone());
             snapshot.entities.sort_by_key(|record| record.key);
+        }
+        UniverseMutation::SupersedeEntity { entity } => {
+            if entity.symbol as usize >= snapshot.symbols.len() {
+                return Err(UniverseError::Validation(
+                    "entity references an unknown symbol".into(),
+                ));
+            }
+            let index = snapshot
+                .entities
+                .iter()
+                .position(|existing| existing.key == entity.key)
+                .ok_or_else(|| {
+                    UniverseError::Validation("entity supersede target is absent".into())
+                })?;
+            if entity.generation <= snapshot.entities[index].generation {
+                return Err(UniverseError::Validation(
+                    "entity supersede generation must be strictly greater than the current record"
+                        .into(),
+                ));
+            }
+            // Key is unchanged, so ordering and every referencing relation hold.
+            snapshot.entities[index] = entity.clone();
         }
         UniverseMutation::PutRelation { relation } => {
             if relation.predicate as usize >= snapshot.symbols.len() {
@@ -1729,6 +1762,161 @@ mod tests {
             recovered.canonical_hash().unwrap(),
             expected.canonical_hash().unwrap()
         );
+    }
+
+    #[test]
+    fn supersede_revises_entity_in_place_preserving_key_and_relations() {
+        let mut snapshot = UniverseSnapshot::empty(UniverseId(9));
+        snapshot.symbols.push("thing".into());
+        snapshot.symbols.push("construct".into());
+        // Two entities and a relation between them.
+        let put_a = EventRecord::new(
+            snapshot.universe,
+            snapshot.revision,
+            Tick(1),
+            "put-a",
+            UniverseMutation::PutEntity {
+                entity: EntityRecord {
+                    key: EntityKey(1),
+                    generation: 0,
+                    symbol: 0,
+                    content: None,
+                },
+            },
+        )
+        .unwrap();
+        apply_event(&mut snapshot, &put_a).unwrap();
+        let put_b = EventRecord::new(
+            snapshot.universe,
+            snapshot.revision,
+            Tick(2),
+            "put-b",
+            UniverseMutation::PutEntity {
+                entity: EntityRecord {
+                    key: EntityKey(2),
+                    generation: 0,
+                    symbol: 0,
+                    content: None,
+                },
+            },
+        )
+        .unwrap();
+        apply_event(&mut snapshot, &put_b).unwrap();
+        let put_rel = EventRecord::new(
+            snapshot.universe,
+            snapshot.revision,
+            Tick(3),
+            "put-rel",
+            UniverseMutation::PutRelation {
+                relation: RelationRecord {
+                    key: RelationKey(10),
+                    generation: 0,
+                    source: EntityKey(1),
+                    target: EntityKey(2),
+                    predicate: 0,
+                    content: None,
+                },
+            },
+        )
+        .unwrap();
+        apply_event(&mut snapshot, &put_rel).unwrap();
+
+        // Supersede entity 1: bump generation, swap its symbol (stand-in for a
+        // content revision such as contractKind self_verifying_loop -> construct).
+        let supersede = EventRecord::new(
+            snapshot.universe,
+            snapshot.revision,
+            Tick(4),
+            "supersede-a",
+            UniverseMutation::SupersedeEntity {
+                entity: EntityRecord {
+                    key: EntityKey(1),
+                    generation: 1,
+                    symbol: 1,
+                    content: None,
+                },
+            },
+        )
+        .unwrap();
+        apply_event(&mut snapshot, &supersede).unwrap();
+
+        let revised = snapshot
+            .entities
+            .iter()
+            .find(|e| e.key == EntityKey(1))
+            .unwrap();
+        assert_eq!(revised.generation, 1);
+        assert_eq!(revised.symbol, 1, "record was replaced in place");
+        assert_eq!(
+            snapshot.entities.iter().filter(|e| e.key == EntityKey(1)).count(),
+            1,
+            "no duplicate key introduced"
+        );
+        assert!(
+            snapshot.relations.iter().any(|r| r.key == RelationKey(10)),
+            "relation referencing the superseded entity survives"
+        );
+    }
+
+    #[test]
+    fn supersede_absent_entity_is_rejected() {
+        let mut snapshot = UniverseSnapshot::empty(UniverseId(9));
+        snapshot.symbols.push("thing".into());
+        let event = EventRecord::new(
+            snapshot.universe,
+            snapshot.revision,
+            Tick(1),
+            "supersede-missing",
+            UniverseMutation::SupersedeEntity {
+                entity: EntityRecord {
+                    key: EntityKey(42),
+                    generation: 1,
+                    symbol: 0,
+                    content: None,
+                },
+            },
+        )
+        .unwrap();
+        assert!(apply_event(&mut snapshot, &event).is_err());
+    }
+
+    #[test]
+    fn supersede_requires_strictly_greater_generation() {
+        let mut snapshot = UniverseSnapshot::empty(UniverseId(9));
+        snapshot.symbols.push("thing".into());
+        let put = EventRecord::new(
+            snapshot.universe,
+            snapshot.revision,
+            Tick(1),
+            "put",
+            UniverseMutation::PutEntity {
+                entity: EntityRecord {
+                    key: EntityKey(1),
+                    generation: 0,
+                    symbol: 0,
+                    content: None,
+                },
+            },
+        )
+        .unwrap();
+        apply_event(&mut snapshot, &put).unwrap();
+        // Same generation (0) must be rejected.
+        let stale = EventRecord::new(
+            snapshot.universe,
+            snapshot.revision,
+            Tick(2),
+            "supersede-stale",
+            UniverseMutation::SupersedeEntity {
+                entity: EntityRecord {
+                    key: EntityKey(1),
+                    generation: 0,
+                    symbol: 0,
+                    content: None,
+                },
+            },
+        )
+        .unwrap();
+        assert!(apply_event(&mut snapshot, &stale).is_err());
     }
 
     #[test]

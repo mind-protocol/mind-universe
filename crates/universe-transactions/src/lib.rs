@@ -16,6 +16,14 @@ pub enum UniverseCommand {
     PutEntity {
         entity: EntityRecord,
     },
+    /// Replace the content of an EXISTING entity, preserving its stable key.
+    /// The new record must carry a strictly greater `generation` than the
+    /// record it supersedes. Entity keys are otherwise append-only; this is the
+    /// only path that revises an entity's content in place, and it never
+    /// changes the key, so every relation that references the entity survives.
+    SupersedeEntity {
+        entity: EntityRecord,
+    },
     PutRelation {
         relation: RelationRecord,
     },
@@ -30,6 +38,7 @@ impl UniverseCommand {
         match self {
             Self::InternSymbols { symbols } => UniverseMutation::InternSymbols { symbols },
             Self::PutEntity { entity } => UniverseMutation::PutEntity { entity },
+            Self::SupersedeEntity { entity } => UniverseMutation::SupersedeEntity { entity },
             Self::PutRelation { relation } => UniverseMutation::PutRelation { relation },
             Self::TombstoneRelation {
                 relation,
