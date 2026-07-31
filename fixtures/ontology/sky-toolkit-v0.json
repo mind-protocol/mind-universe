@@ -4,24 +4,29 @@
   "subtype": "sky_toolkit",
   "content": {
     "contractKind": "construct",
-    "name": "Sky toolkit v0 (ciel constitutionnel — constellations de villes)",
+    "name": "Sky toolkit v0 (programmable luminous constellations)",
     "dominant_scale": "civic",
-    "lineage": "Shares the Micro-energy circuit toolkit's AtomDynamics vocabulary (the 'micro-electric' kit), but physicalized in the SKY: atoms are stars, support bonds are constellation lines, measured support is luminosity. It is the celestial pole of the Underground toolkit — the Underground seals the immutable substrate BENEATH the city; the Sky raises the city's constitution ABOVE it, legible from everywhere. See [[space:l2:mind-universe:underground-toolkit-v0]].",
+    "lineage": "Shares the Micro-energy circuit toolkit's AtomDynamics vocabulary (the 'micro-electric' kit), lifted into the SKY at civic scale. It is the celestial pole of the Underground toolkit: the Underground programs the immutable substrate BENEATH the city; the Sky programs freely-authored constellations ABOVE it, legible from everywhere. See [[space:l2:mind-universe:underground-toolkit-v0]].",
     "parent_scope": {
       "classification": "standalone",
       "justification": "Portable bootstrap toolkit awaiting installation under the canonical civic/physicalization registry Space. Exactly one scope classification; no PART_OF edge is written to an unbuilt parent."
     },
     "runtime_moment_subtypes": ["validation_run", "health_assessment"],
-    "native_law_boundary": "AtomDynamics knows only AtomSpec, AtomBond and support/inhibit/neutral. The Sky is a physicalization grammar and a CAPABILITY boundary; it adds no predicate meaning to the native law. Luminosity is a rendering of measured support energy; whether an article may be amended is authorization data on the amendment port, never a term in the atom law.",
-    "purpose": "Encode each city's constitution in the sky as a constellation of luminous, interconnected articles. Every constitutional article is a Star whose brightness is its MEASURED ratification; every constitutional relation is a Constellation line; the founding article (the End Game the city was planted to preserve) is the Pole Star, aligned above the civic-origin beacon. The constitution is visible from anywhere in the city and readable by every citizen, but a citizen may only look up: adding, altering or removing a star or a line is a constitutional-authority act, never a private gesture.",
-    "sky_contract": {
-      "star": "one constitutional article, physicalized as a luminous point whose brightness = measured ratification energy",
-      "constellation_line": "one constitutional relation (depends-on, derives-from, amends) between two articles, physicalized as a drawn line of light",
-      "pole_star": "the founding article / End Game; the brightest, the orientation anchor; sits directly above the civic-origin beacon so the sky and the ground share one zero",
-      "citizen_capabilities": ["observe", "read_constitution", "trace_lineage", "orient_by_pole_star"],
-      "citizen_forbidden": ["add_star", "alter_article", "remove_star", "draw_line", "sever_line", "amend_constitution"],
-      "authority_only_capabilities": ["ratify_article", "amend_constitution", "add_star", "sever_line", "supersede_article"],
-      "rule": "A star shines only when its ratification support is present and MEASURED; an unratified or unknown article renders as Fog (dark), never as a bright star. An amendment is admitted only from a constitutional-authority capability; an unauthorized amendment fails closed, leaves the sky exactly as it was, and is reported.",
+    "native_law_boundary": "AtomDynamics knows only AtomSpec, AtomBond and support/inhibit/neutral. The Sky is a physicalization grammar over that law: it renders and runs an atom circuit as a luminous constellation. It adds no predicate meaning; luminosity is a rendering of measured support energy, and what any given constellation MEANS is supplied by its author as data, never hard-coded in the toolkit.",
+    "purpose": "Program anything, in the sky, via atoms. An author composes an atom circuit — AtomSpecs (thresholds, seeds, required-support AND-gates, inhibition) and AtomBonds (support / inhibit / neutral) — and the Sky toolkit physicalizes it as a constellation of luminous, interconnected stars and RUNS it: stars light when their measured support meets threshold, luminosity conducts along the lines once, the constellation settles at quiescence. Any behaviour expressible as AtomDynamics — a computation, a process, a loop, an orientation myth, a city's constitution — becomes a constellation overhead. The atom law is general (thresholds + AND-gates + inhibition + conduction), so the sky is a general programming surface, not a fixed picture.",
+    "programming_contract": {
+      "star": "one atom of the authored program, physicalized as a luminous point; brightness = its measured support energy",
+      "constellation_line": "one AtomBond, physicalized as a line of light; support = warm/pressurised, inhibit = cold/severing, neutral = drawn but dark (carries 0)",
+      "constellation": "the whole authored atom circuit, rendered AND run as a settling field of light",
+      "expressive_power": "thresholds, required-support AND-gates, inhibition, one-shot conduction, starvation, quiescence — the full AtomDynamics law; any program in that law is authorable in the sky",
+      "examples": {
+        "constitution": "articles as stars, constitutional relations as lines, the founding article as a Pole Star above the civic-origin beacon — ONE application, not the toolkit's definition",
+        "process": "steps as stars that light in order along support lines",
+        "guard": "an inhibition line that keeps a star dark until a condition clears"
+      },
+      "author_capabilities": ["author_constellation", "add_star", "draw_line", "supersede_star", "sever_line"],
+      "observer_capabilities": ["observe", "read_constellation", "trace_conduction", "orient_by_pole_star"],
+      "rule": "A star shines only when its support is present and MEASURED; an atom below threshold is dim and an unmeasured one is Fog (dark), never a fabricated bright star. Authoring or altering a constellation is an attributable act through the authoring port; a mere observer looking up never mutates the sky.",
       "sealed_default": "read_only_from_the_ground"
     }
   },
@@ -31,7 +36,7 @@
       "node_type": "narrative",
       "subtype": "objective",
       "content": {
-        "success_condition": "For every city, its constitution is legible as a constellation from any point in the city: each ratified article is a Star whose brightness is its measured ratification, each constitutional relation is a Constellation line, and the founding article is the Pole Star aligned above the civic origin. No citizen gesture ever adds, alters or removes a star or line; an unratified article is Fog (dark), never a fabricated bright star; and the sky's structure always matches the committed constitution graph."
+        "success_condition": "For any authored atom program, the Sky toolkit renders it as a constellation and runs it faithfully: every star's brightness is its MEASURED support, every line is a real AtomBond, conduction happens once per bond, energy is conserved, and the field reaches quiescence. An atom below threshold is dim and an unmeasured one is Fog — never a fabricated bright star. The rendered-and-run constellation always matches the committed atom circuit, and no observer gesture mutates it."
       }
     },
     {
@@ -39,8 +44,8 @@
       "node_type": "narrative",
       "subtype": "pattern",
       "content": {
-        "pattern": "A bounded Sky dome vaults over the city and carries no energy of its own. Constitutional articles physicalize as Stars — atoms of roleAxis narrative (attractors that hold light); the founding article is the Pole Star, an actor-roleAxis source that is ratified first and lights the constellation. Constitutional relations physicalize as Constellation lines — support bonds that carry luminosity from one star to the next. A star's brightness is a faithful render of its MEASURED ratification support; below threshold it is dim, unratified it is Fog. Access is split into two strictly separate surfaces: anyone on the ground may READ the sky (observe, trace lineage, orient by the Pole Star); only a constitutional authority may AMEND it (ratify, add a star, draw or sever a line).",
-        "epistemic_honesty": "A bright star is a ratified article, not a wished-for one. A drawn line is a committed constitutional relation, not a visual convenience. A dim or dark region is Fog — an unratified or unknown article — never rendered as confident law. Looking up is not amending; the sky is unreachable from the ground."
+        "pattern": "A bounded Sky dome vaults over the city and carries no energy of its own. The author supplies an atom circuit; each atom physicalizes as a Star (roleAxis follows the atom's role: actor = a seeded source/Pole Star, narrative = an attractor that holds light, thing = a router). Each AtomBond physicalizes as a Constellation line that conducts luminosity once when its source star first fires. A star's brightness is a faithful render of its MEASURED support; below threshold it is dim, unmeasured it is Fog. The whole program is not just drawn but RUN: run_until_quiescent lights the reachable stars and settles the field. Access is split: anyone on the ground may READ and trace the constellation; authoring or altering it is an attributable act through the authoring port.",
+        "epistemic_honesty": "A bright star is a measured-supported atom, not a wished-for one. A drawn line is a committed bond, not decoration. A dark region is Fog — an unmeasured or sub-threshold atom — never confident light. Looking up is not authoring; the sky is unreachable from the ground."
       }
     },
     {
@@ -50,15 +55,16 @@
       "content": {
         "terms": {
           "SkyDome": "The bounded Space that vaults over one city; roleAxis space, carries no energy, bounds the constellation.",
-          "Star": "One constitutional article physicalized as a luminous point. Its brightness is a render of its measured ratification support; it shines only when that support meets the ratification threshold.",
-          "PoleStar": "The founding article — the End Game the city was planted to preserve. The brightest star and the orientation anchor; positioned directly above the civic-origin beacon so sky and ground share one zero.",
-          "ConstellationLine": "One constitutional relation (depends-on, derives-from, amends) between two articles, physicalized as a support bond drawn as a line of light. It exists only where a committed constitutional relation exists.",
-          "Luminosity": "The rendered brightness of a star = its measured ratification energy. Never invented; unmeasured ratification renders as Fog.",
-          "Ratification": "The measured support that lights an article. An article with insufficient or unknown ratification does not shine.",
-          "Constitution": "The connected graph of a city's articles and their relations — the constellation as a whole.",
-          "Fog": "An unratified, unknown or not_measured article; rendered as dark sky, never as a bright star.",
-          "AmendmentPort": "The single mutation surface of the sky. Resolves to a required constitutional-authority capability; a citizen holds none. Fails closed for the unauthorized.",
-          "ConstitutionalAuthority": "The capability required to ratify, add, alter, sever or supersede a constitutional article. Held by a constitutional convention / Genesis authority, not by ordinary citizens."
+          "Star": "One atom of the authored program, physicalized as a luminous point. Brightness = measured support energy; it shines only at or above its threshold.",
+          "ConstellationLine": "One AtomBond, physicalized as a line of light; polarity colours it (support warm, inhibit cold, neutral dark/zero). Exists iff the bond exists.",
+          "Constellation": "A whole authored atom circuit, rendered AND run as a settling field of light — a program made of stars.",
+          "PoleStar": "A convention, not a requirement: a seeded actor-roleAxis star an author may seat above the civic-origin beacon as an orientation anchor (e.g. a constitution's founding article).",
+          "Luminosity": "The rendered brightness of a star = its measured support energy. Never invented; unmeasured support renders as Fog.",
+          "Program": "The authored atom circuit (AtomSpecs + AtomBonds) that a constellation physicalizes and runs.",
+          "Fire": "A star's first transition when its support meets threshold, its required supports are all received, and it is not inhibited; it then conducts once along its outgoing lines.",
+          "Fog": "An unmeasured, unknown or sub-threshold atom; rendered as dark sky, never as a bright star.",
+          "AuthoringPort": "The mutation surface of the sky: authoring or altering a constellation. Attributable; a mere observer holds none of its capabilities.",
+          "Constitution": "ONE example program — articles as stars, constitutional relations as lines — not the toolkit's definition."
         }
       }
     },
@@ -67,25 +73,27 @@
       "node_type": "narrative",
       "subtype": "behavior",
       "content": {
-        "given": "A city's committed constitution (articles + relations), measured ratification per article, the civic-origin beacon pose, a visual catalog, and the acting actor's capability set.",
-        "when": "The runtime renders the sky, a citizen looks up to read the constitution, or any actor issues an amendment (ratify / add star / draw or sever line / supersede article).",
+        "given": "An authored atom circuit (AtomSpecs + AtomBonds), measured support/seed energies, an optional Pole-Star seat on the civic-origin axis, a visual catalog, and the acting actor's capability set.",
+        "when": "The runtime renders and runs the constellation, an observer looks up to read or trace it, or an author mutates it (add/supersede a star, draw/sever a line).",
         "then": [
-          "Physicalize the constitution as a constellation: one Star per article, one Constellation line per committed relation, the founding article as the Pole Star above the civic origin.",
-          "Render each star's brightness as a faithful projection of its MEASURED ratification; below threshold dim, unratified Fog (dark).",
-          "Serve every read request as observe-only: the citizen sees stars, lines, brightness and lineage, and is offered no amendment affordance.",
-          "Resolve every amendment against the required constitutional-authority capability; admit it only for an actor that holds it.",
-          "Fail an unauthorized amendment closed, leave the sky exactly as it was, and emit a rejection receipt."
+          "Physicalize the atom circuit as a constellation: one Star per atom, one Constellation line per bond.",
+          "Run it: run_until_quiescent — light each star whose measured support meets threshold, conduct luminosity once along each line, settle at quiescence.",
+          "Render each star's brightness as a faithful projection of its MEASURED support; below threshold dim, unmeasured Fog.",
+          "Serve every read as observe-only: the observer sees stars, lines, brightness and conduction, and is offered no authoring affordance.",
+          "Resolve every mutation against the required authoring capability; admit only for an actor that holds it.",
+          "Fail an unauthorized mutation closed, leave the sky exactly as it was, and emit a rejection receipt."
         ],
         "forbidden": [
           "reading predicate names inside the native AtomDynamics law",
-          "rendering an unratified, unknown or not_measured article as a bright star (fabricated luminosity)",
-          "drawing a Constellation line where no committed constitutional relation exists",
-          "offering, to an actor without the constitutional-authority capability, any affordance that adds, alters, removes a star or draws/severs a line",
-          "letting the act of looking up widen an actor's capability",
+          "rendering a sub-threshold, unknown or not_measured atom as a bright star (fabricated luminosity)",
+          "drawing a Constellation line where no AtomBond exists",
+          "conducting a line more than once",
           "streaming authored, derived, unknown or not_measured luminosity",
-          "moving the Pole Star off the civic-origin axis so sky and ground disagree on zero",
-          "presenting a renderer twinkle as a committed ratification",
-          "silently dropping an unauthorized amendment instead of failing it closed with a receipt",
+          "offering authoring affordances to an actor without the authoring capability",
+          "letting the act of looking up widen an actor's capability",
+          "moving a seated Pole Star off the civic-origin axis so sky and ground disagree on zero",
+          "presenting a renderer twinkle as a committed firing",
+          "silently dropping an unauthorized mutation instead of failing it closed with a receipt",
           "pre-creating validation_run or health_assessment"
         ]
       }
@@ -96,21 +104,22 @@
       "subtype": "algorithm",
       "content": {
         "steps": [
-          "read the city's committed constitution graph (articles + relations) and per-article measured ratification",
-          "validate exact u64 AtomSpec/AtomBond invariants for the star circuit",
-          "admit only measured ratification energy through the membrane",
-          "seat the Pole Star (founding article) on the civic-origin axis, ratified first",
-          "light each star whose measured ratification meets its threshold; hold the rest as Fog",
-          "conduct luminosity along each Constellation line once, from ratified article to dependent article",
-          "repeat until the constellation settles (quiescence)",
+          "read the authored atom circuit (AtomSpecs + AtomBonds) and per-atom measured support",
+          "validate exact u64 AtomSpec/AtomBond invariants",
+          "admit only measured support/seed energy through the membrane",
+          "optionally seat the Pole Star (a seeded actor atom) on the civic-origin axis",
+          "run_until_quiescent: fire each star meeting threshold + required supports + not inhibited",
+          "conduct luminosity once along each outgoing line (support adds light, inhibit severs, neutral zero)",
+          "hold sub-threshold and unmeasured atoms as Fog",
+          "repeat waves until the constellation settles (quiescence)",
           "verify admitted integer luminosity is conserved",
           "for a read: resolve the observe-only affordance set and render brightness without inventing luminosity",
-          "for an amendment: resolve the required constitutional-authority capability, admit only if held, else fail closed and leave the sky unchanged",
+          "for a mutation: resolve the required authoring capability, admit only if held, else fail closed and leave the sky unchanged",
           "emit the commit or rejection receipt",
           "run the independent observer and the structured evaluation AST",
           "derive health from fresh validation evidence"
         ],
-        "capability_resolution": "read -> observe-only-set; amendment_port -> require(constitutional_authority_capability). No affordance escalates capability; an absent capability fails closed, never a silent amendment.",
+        "capability_resolution": "read -> observe-only-set; authoring_port -> require(authoring_capability). No affordance escalates capability; an absent capability fails closed, never a silent mutation.",
         "scheduler_projection": "deterministic-wave-ticks/1; exact same-tick tie semantics must be reconciled with the canonical Rust crate when integrated.",
         "python_escape_hatch": "forbidden_by_default"
       }
@@ -123,37 +132,35 @@
         "authority": "Graph-native CodeDefinition projection for the portable Sky toolkit; this JSON file is a materialized projection, not independent semantic authority.",
         "language": "mind-ir+atom-fixture",
         "entrypoints": [
-          "read_constitution_graph",
+          "load_atom_program",
           "seat_pole_star",
-          "light_ratified_stars",
-          "draw_constellation_lines",
-          "resolve_amendment_capability",
-          "commit_or_reject_amendment",
+          "run_until_quiescent",
+          "render_constellation",
+          "resolve_authoring_capability",
+          "commit_or_reject_mutation",
           "observe_sky",
           "evaluate_sky_ast"
         ],
-        "amendment_gate": {
-          "port_id": "port:l2:mind-universe:sky:amendment-v0",
-          "observe_capabilities": ["observe", "read_constitution", "trace_lineage", "orient_by_pole_star"],
-          "required_mutate_capability": "authority:constitutional-convention",
+        "authoring_gate": {
+          "port_id": "port:l2:mind-universe:sky:authoring-v0",
+          "observe_capabilities": ["observe", "read_constellation", "trace_conduction", "orient_by_pole_star"],
+          "required_mutate_capability": "authority:sky-authoring",
           "default_state": "read_only_from_the_ground",
           "on_unauthorized": ["fail_closed", "leave_sky_unchanged", "emit_rejection_receipt"],
-          "rule": "An amendment is admitted only when the acting capability set contains authority:constitutional-convention. Looking up grants none of it."
+          "rule": "A mutation (add/supersede star, draw/sever line) is admitted only when the acting capability set contains authority:sky-authoring. Looking up grants none of it."
         },
-        "star_circuit": {
-          "note": "Illustrative shape: the founding article is the seeded Pole Star; ratification supports light each article; constellation lines conduct luminosity to dependents. Concrete per-city articles are supplied by the city's constitution graph at render time, not hard-coded here.",
+        "atom_program": {
+          "note": "GENERIC: the atoms/bonds below are an illustrative program (a two-star support chain seeded by a Pole Star). A real constellation supplies ANY atom circuit at author time; the toolkit hard-codes no particular program — the star_circuit shape is the whole expressive surface.",
           "atoms": [
             { "key": "pole_star", "roleAxis": "actor", "threshold": 1, "seed_energy": 300 },
-            { "key": "article_ratified", "roleAxis": "narrative", "threshold": 100, "seed_energy": 0 },
-            { "key": "star_lit", "roleAxis": "narrative", "threshold": 100, "seed_energy": 0 }
+            { "key": "star_a", "roleAxis": "narrative", "threshold": 100, "seed_energy": 0 },
+            { "key": "star_b", "roleAxis": "narrative", "threshold": 100, "seed_energy": 0, "required_supports": ["a_to_b"] }
           ],
           "bonds": [
-            { "key": "pole_to_article", "source": "pole_star", "target": "article_ratified", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
-            { "key": "ratified_to_lit", "source": "article_ratified", "target": "star_lit", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" }
+            { "key": "pole_to_a", "source": "pole_star", "target": "star_a", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "a_to_b", "source": "star_a", "target": "star_b", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" }
           ],
-          "external_measured_injections": {
-            "article_ratified": 100
-          }
+          "external_measured_injections": {}
         }
       }
     },
@@ -168,7 +175,7 @@
         "wiring_status": "not_wired",
         "runtime_status": "not_running",
         "verification_status": "not_measured",
-        "honesty": "The portable Sky toolkit is materialized and structurally shaped as a construct. This field is written BEFORE injection; after an injector commits it, the on-disk graph carries the construct while this embedded field reads stale (WRITTEN but not wired, executed, or proven healthy). No constellation is rendered and no ratification is measured yet."
+        "honesty": "The portable Sky toolkit is materialized and structurally shaped as a construct. This field is written BEFORE injection; after an injector commits it, the on-disk graph carries the construct while this embedded field reads stale (WRITTEN but not wired, executed, or proven healthy). No constellation is rendered and no program is run yet."
       }
     },
     {
@@ -177,19 +184,19 @@
       "subtype": "justification",
       "content": {
         "why": [
-          "A constitution that lives only in a document is easy to forget and hard to orient by; raised into the sky as a constellation it is visible from everywhere and becomes the shared reference every citizen can point at.",
-          "Making brightness the render of MEASURED ratification means the sky cannot flatter the constitution: an un-ratified article stays dark, so the difference between aspiration and law is legible at a glance.",
-          "Encoding relations as constellation lines makes the constitution's structure — what derives from what, what amends what — readable as a shape, not just a list.",
-          "Aligning the Pole Star above the civic-origin beacon ties the constitution (sky) to the founding act (ground) so the city has one zero, above and below.",
-          "Gating amendment behind a constitutional-authority capability, enforced at admission, keeps the constitution amendable by the right body and unreachable to a private gesture — the same capability discipline as the Underground, mirrored above."
+          "The sky is the one surface visible from everywhere in a city, so a program raised into it becomes a shared, orient-able reference — whatever the program is.",
+          "Driving the sky from the general AtomDynamics law (thresholds, AND-gates, inhibition, conduction) keeps it a genuine programming surface: any behaviour in that law is authorable, so the toolkit is not a fixed picture of one thing (a constitution) but an open medium.",
+          "Making brightness the render of MEASURED support means the sky cannot flatter a program: an unsupported atom stays dark, so aspiration and fact stay distinguishable at a glance.",
+          "Rendering AND running (not just drawing) means the constellation shows real dynamics — what lights what, what a guard inhibits — instead of a static diagram.",
+          "Keeping authoring attributable through a port, while reads stay open to all, mirrors the Underground's capability discipline above the city instead of below it."
         ],
         "rejected": [
-          "a constitution stored only as text, because it is invisible from the world and cannot be oriented by",
-          "brightness from authored or wished-for status, because that would let the sky show law that was never ratified",
-          "decorative constellation lines, because a line that means nothing turns the sky into ornament",
-          "letting citizens edit the sky, because the constitution would then be a private canvas, not a shared law",
+          "hard-coding the constitution as the sky's meaning, because the toolkit must program anything the atom law can express, not one application",
+          "brightness from authored or wished-for status, because that would let the sky show light an atom never measured",
+          "decorative constellation lines with no bond, because a line that means nothing turns the sky into ornament",
+          "letting any observer edit the sky, because authoring must stay attributable",
           "floating-point luminosity, because the canonical law counts conserved integer energy",
-          "health inferred from a twinkling renderer, because animation is not ratification"
+          "health inferred from a twinkling renderer, because animation is not a firing"
         ]
       }
     },
@@ -200,39 +207,41 @@
       "content": {
         "evaluation_kind": "structured_expression_ast",
         "scenarios": [
-          "constitution_renders_as_constellation",
-          "ratified_article_shines",
-          "unratified_article_is_fog_not_bright",
-          "constellation_line_matches_committed_relation",
-          "no_line_without_a_relation",
-          "pole_star_sits_above_civic_origin",
-          "citizen_read_offers_observe_only",
-          "citizen_amendment_fails_closed",
-          "authority_amendment_admitted",
-          "looking_up_does_not_widen_capability",
-          "unauthorized_amendment_leaves_sky_unchanged",
-          "luminosity_conducts_once_along_a_line",
-          "unmeasured_ratification_rejected",
-          "rejected_amendment_emits_receipt"
+          "arbitrary_program_renders_as_constellation",
+          "supported_star_shines_at_threshold",
+          "sub_threshold_star_is_dim",
+          "unmeasured_atom_is_fog_not_bright",
+          "constellation_line_matches_committed_bond",
+          "no_line_without_a_bond",
+          "and_gate_star_waits_for_all_required_supports",
+          "inhibition_line_keeps_a_star_dark",
+          "luminosity_conducts_once_per_line",
+          "field_reaches_quiescence",
+          "pole_star_seated_above_civic_origin",
+          "observer_read_offers_observe_only",
+          "unauthorized_mutation_fails_closed",
+          "authority_mutation_admitted",
+          "unmeasured_injection_rejected"
         ],
         "negative_invariants": [
           "threshold zero rejected",
           "inhibition threshold zero rejected",
           "duplicate required supports rejected",
           "neutral bond with nonzero energy rejected",
-          "unmeasured ratification injection rejected",
-          "amend affordance offered to non-authority rejected"
+          "unmeasured support injection rejected",
+          "authoring affordance offered to non-author rejected"
         ],
         "invariants": [
-          "every amend affordance resolves to a required constitutional-authority capability",
-          "a read grants exactly the observe-only set",
-          "looking up never changes the acting capability set",
-          "an unauthorized amendment fails closed and leaves the sky exactly as it was",
-          "a star shines only with measured ratification at or above threshold",
-          "a Constellation line exists iff a committed constitutional relation exists",
-          "the Pole Star is aligned above the civic origin",
+          "any valid atom circuit renders and runs as a constellation",
+          "a star shines only with measured support at or above threshold",
+          "a Constellation line exists iff its AtomBond exists",
+          "an AND-gate star fires only when every required support conducted",
           "admitted integer luminosity is conserved",
-          "not_measured ratification renders as Fog, never as brightness"
+          "every line conducts at most once",
+          "not_measured support renders as Fog, never as brightness",
+          "every authoring affordance resolves to the authoring capability",
+          "looking up never changes the acting capability set",
+          "an unauthorized mutation fails closed and leaves the sky unchanged"
         ]
       }
     },
@@ -243,17 +252,18 @@
       "content": {
         "target": "observability_algorithm:l2:mind-universe:sky-toolkit-v0",
         "tests": [
-          "detect a bright star whose article is not ratified (fabricated luminosity)",
-          "detect a Constellation line with no committed constitutional relation",
-          "detect an amend affordance offered to an actor without the authority capability",
+          "detect a bright star whose atom has no measured support (fabricated luminosity)",
+          "detect a Constellation line with no committed AtomBond",
+          "detect a star that fired without all required supports",
+          "detect an inhibition line that failed to keep its star dark",
+          "detect an authoring affordance offered to an actor without the capability",
           "detect a read that widened capability",
-          "detect an unauthorized amendment that changed the sky",
-          "detect an unauthorized amendment dropped without a rejection receipt",
-          "detect a Pole Star off the civic-origin axis",
-          "detect forged final luminosity",
-          "detect duplicate luminosity conduction",
+          "detect an unauthorized mutation that changed the sky",
+          "detect an unauthorized mutation dropped without a rejection receipt",
+          "detect forged final luminosity or non-conserved energy",
+          "detect duplicate line conduction",
           "detect a missing or invalid receipt",
-          "never convert an unratified article into a bright star"
+          "never convert an unmeasured atom into a bright star"
         ]
       }
     },
@@ -262,21 +272,22 @@
       "node_type": "narrative",
       "subtype": "observability_algorithm",
       "content": {
-        "independence": "Reads the city's committed constitution graph, per-article measured ratification, the physicalized star event trace, final star states, the civic-origin beacon pose, the acting capability set, each resolved affordance, the commit/rejection receipt and the catalog. It does not trust a runtime-declared health field, a renderer twinkle, or an implementation self-report of ratification.",
+        "independence": "Reads the authored atom circuit, per-atom measured support, the physicalized star event trace, final star states, the civic-origin beacon pose (for a seated Pole Star), the acting capability set, each resolved affordance, the commit/rejection receipt and the catalog. It does not trust a runtime-declared health field, a renderer twinkle, or an implementation self-report of firing.",
         "checks": [
-          "every star's brightness matches its measured ratification (no fabricated luminosity)",
-          "every Constellation line corresponds to a committed constitutional relation",
-          "no committed relation is missing its line",
-          "the Pole Star aligns with the civic-origin beacon",
-          "every amend affordance requires the constitutional-authority capability",
+          "every star's brightness matches its measured support (no fabricated luminosity)",
+          "every Constellation line corresponds to a committed AtomBond",
+          "no committed bond is missing its line",
+          "AND-gate fire preconditions (all required supports conducted)",
+          "inhibition correctly keeps a star dark",
+          "a seated Pole Star aligns with the civic-origin beacon",
+          "every authoring affordance requires the authoring capability",
           "read affordance sets contain observe-only capabilities",
           "looking up leaves the acting capability set unchanged",
-          "unauthorized amendment failed closed and left the sky unchanged",
-          "rejected amendment produced a rejection receipt and no sky delta",
+          "unauthorized mutation failed closed and left the sky unchanged",
           "integer luminosity conservation",
-          "single conduction per Constellation line",
+          "single conduction per line",
           "measured-only membrane admission",
-          "Fog honesty (unratified renders dark)",
+          "Fog honesty (unmeasured / sub-threshold renders dark)",
           "quiescence",
           "receipt integrity"
         ]
@@ -288,16 +299,18 @@
       "subtype": "metric",
       "content": {
         "dimensions": [
-          "star_brightness_ratification_fidelity",
+          "star_brightness_support_fidelity",
           "fabricated_luminosity_rate",
-          "constellation_line_relation_match_rate",
+          "constellation_line_bond_match_rate",
           "missing_line_count",
+          "and_gate_fire_accuracy",
+          "inhibition_accuracy",
           "pole_star_origin_alignment_error_mm",
-          "amend_affordance_authority_gated_rate",
+          "authoring_affordance_capability_gated_rate",
           "read_observe_only_accuracy",
           "capability_non_escalation_rate",
-          "unauthorized_amendment_fail_closed_rate",
-          "rejected_amendment_sky_delta_count",
+          "unauthorized_mutation_fail_closed_rate",
+          "rejected_mutation_sky_delta_count",
           "luminosity_conservation_error_u64",
           "single_conduction_accuracy",
           "measured_stream_only_rate",
@@ -316,7 +329,7 @@
       "content": {
         "states": ["healthy", "degraded", "stale", "unknown", "not_measured", "measurement_failed"],
         "derivation": {
-          "healthy": "All required fresh validation scenarios pass: every star's brightness matched its measured ratification, every Constellation line matched a committed relation, the Pole Star aligned with the civic origin, every amendment was authority-gated, every unauthorized amendment failed closed leaving the sky unchanged, and no unratified article was rendered bright.",
+          "healthy": "All required fresh validation scenarios pass: any authored program rendered and ran faithfully, every star's brightness matched its measured support, every line matched a committed bond, AND-gates and inhibition behaved, luminosity was conserved and conducted once per line, a seated Pole Star aligned with the civic origin, authoring was capability-gated, and no unmeasured atom was rendered bright.",
           "degraded": "Fresh evidence exists but at least one non-catastrophic dimension violates its bound.",
           "stale": "The latest otherwise valid evidence exceeds the configured freshness window.",
           "unknown": "Required evidence cannot be resolved to a known state.",
@@ -327,30 +340,30 @@
           "retry",
           "inspect_star_event_ledger",
           "inspect_capability_resolution",
-          "recompute_ratification",
+          "recompute_support",
           "realign_pole_star",
           "redraw_constellation_lines",
           "recalibrate_visual_bounds",
           "rematerialize_catalog",
-          "reissue_authority_capability",
+          "reissue_authoring_capability",
           "reconcile_rust_scheduler",
           "ask_human"
         ]
       }
     },
     {
-      "id": "port:l2:mind-universe:sky:amendment-v0",
+      "id": "port:l2:mind-universe:sky:authoring-v0",
       "node_type": "thing",
       "subtype": "capability_port",
       "content": {
-        "name": "Constitutional amendment port (sky mutation)",
+        "name": "Sky authoring port (constellation mutation)",
         "state": "read_only_from_the_ground",
-        "observe_capabilities": ["observe", "read_constitution", "trace_lineage", "orient_by_pole_star"],
-        "required_mutate_capability": "authority:constitutional-convention",
-        "shape_contract": "observe_set_disjoint_from_amend_set",
-        "reader_predicate": "actor_holds(authority:constitutional-convention)",
+        "observe_capabilities": ["observe", "read_constellation", "trace_conduction", "orient_by_pole_star"],
+        "required_mutate_capability": "authority:sky-authoring",
+        "shape_contract": "observe_set_disjoint_from_authoring_set",
+        "reader_predicate": "actor_holds(authority:sky-authoring)",
         "effect_when_unauthorized": "fail_closed_and_leave_sky_unchanged",
-        "note": "Reading the sky (from anywhere on the ground) is a separate observe-only surface; this port is the ONLY amendment surface and it requires the constitutional-authority capability."
+        "note": "Reading the sky (from anywhere on the ground) is a separate observe-only surface; this port is the ONLY authoring surface and it requires the sky-authoring capability."
       }
     }
   ],
