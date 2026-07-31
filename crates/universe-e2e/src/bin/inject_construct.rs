@@ -50,6 +50,12 @@ fn canonical_predicate(authored: &str) -> Option<(&'static str, bool)> {
         "PRODUCES" => ("PRODUCES", false),
         "FEEDS" => ("FEEDS", false),
         "SUPPORTS" => ("MOTIVATES", false),
+        // Guard edge: an underground mechanism points at the sealed hatch that
+        // guards its mutation. GUARDED_BY has no canonical symbol; it remaps to
+        // the nearest canonical predicate SAFEGUARDS ("protège", canonical
+        // direction garde-fou -> élément protégé) with the direction SWAPPED, so
+        // the stored edge reads hatch SAFEGUARDS mechanism. Interns 0 new symbols.
+        "GUARDED_BY" => ("SAFEGUARDS", true),
         _ => return None,
     })
 }
