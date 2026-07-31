@@ -2,19 +2,25 @@
 //! AND a `route` from the SAME modular mechanism, aggregate each into ONE atomic
 //! `UniverseWriteSet` through the GENERIC translator, commit to a fresh SCRATCH
 //! store seeded with the canonical ontology, and prove each construction by
-//! INDEPENDENT readback from a fresh reopen.
+//! INDEPENDENT readback of its placement RELATIONS from a fresh reopen.
 //!
-//! What this proves (Construction toolkit v0, reconciled model):
+//! What this proves (Construction toolkit v0, where-is-a-projection model):
 //!   * one construction = ONE atomic set of one-verb MutationBonds
-//!     (put_entity structure -> put_relation PART_OF -> put_entity Moment ->
-//!      put_relation PRODUCES -> put_entity justification -> put_relation GROUNDS)
-//!   * placement is a `built_position` FIELD (x,y,z, provenance "built") folded
-//!     INTO the structure entity's content — NO separate node, NO HAS_POSITION
-//!     edge — reconciled to mutation-bond-authority.json's field-schema model
-//!   * only CANONICAL predicates are emitted (PART_OF, PRODUCES, GROUNDS); the
-//!     ad-hoc HAS_POSITION / CONSTRUCTED_BY / JUSTIFIED_BY are gone; 0 new symbols
-//!   * `structure_kind` and its region predicate are READ FROM THE GRAPH (the
-//!     construction-toolkit fixture's `kind_profiles`), not dispatched in code
+//!     (put_entity structure -> put_relation PART_OF region -> [route only]
+//!      put_relation COMMUNICATES from-anchor -> put_relation COMMUNICATES
+//!      to-anchor -> put_entity Moment -> put_relation PRODUCES -> put_entity
+//!      justification -> put_relation GROUNDS)
+//!   * placement is RELATIONAL — NO coordinate is ever written: no built_position
+//!     field, no x/y/z, no path polyline, no boundary polygon. WHERE a structure
+//!     is lives entirely in its relations (PART_OF its region; for a route,
+//!     CONNECTS its two anchor NODES), and the readback asserts those relations
+//!     and asserts the structure content carries NO position field.
+//!   * only CANONICAL predicates are emitted (PART_OF, COMMUNICATES, PRODUCES,
+//!     GROUNDS); the ad-hoc HAS_POSITION / CONNECTS / CONSTRUCTED_BY / JUSTIFIED_BY
+//!     are gone; 0 new symbols
+//!   * `structure_kind`, its region predicate AND its connection predicate are
+//!     READ FROM THE GRAPH (the construction-toolkit fixture's `kind_profiles`),
+//!     not dispatched in code
 //!   * all-or-nothing: a deliberately-bad step (PART_OF onto a non-existent
 //!     region) makes `prepare` reject the whole set — nothing is committed
 //!
@@ -28,15 +34,24 @@ use universe_e2e::mutation_translate::{translate_mutation_proposal, MutationPlan
 use universe_store::{load_seed, UniverseSnapshot, UniverseStore};
 use universe_transactions::{UniverseCommand, UniverseTransaction, UniverseWriteSet};
 
-// Region anchors: pre-existing canonical seed nodes that a structure is PART_OF.
-// (The protocol manifest and a canonical `terme` stand in for a building / a
-// district — the proof is about the construction mechanism, not region semantics.)
-const REGION_BUILDING: u128 = 0x1000; // protocol manifest (seed)
-const REGION_DISTRICT: u128 = 0x1100; // a canonical `terme` (seed)
+// Region + anchor nodes: pre-existing canonical seed nodes a structure is
+// PART_OF / CONNECTS. (The protocol manifest and a canonical `terme` stand in
+// for a building / a district — the proof is about the construction mechanism
+// and its relational placement, not region semantics.)
+const REGION_BUILDING: u128 = 0x1000; // protocol manifest (seed) — building / route from-anchor
+const REGION_DISTRICT: u128 = 0x1100; // a canonical `terme` (seed) — district / route to-anchor
 const NONEXISTENT_REGION: u128 = 0x0000_0000_0000_0000_0000_0000_0000_dead;
 
+/// A route endpoint: a relation key plus the OTHER NODE it CONNECTS. Placement is
+/// carried by these relations — there is no coordinate anywhere.
+struct Anchor {
+    rel_key: u128,
+    node: u128,
+}
+
 /// Disjoint key block for one construction (structure, Moment, justification and
-/// their three relations), far above the seed's 0x1000-0x2xxx range.
+/// their relations), far above the seed's 0x1000-0x2xxx range. `connections` is
+/// empty for a room and holds the two anchor edges for a route.
 struct Keys {
     structure: u128,
     moment: u128,
@@ -44,6 +59,7 @@ struct Keys {
     rel_part_of: u128,
     rel_produces: u128,
     rel_grounds: u128,
+    connections: Vec<Anchor>,
 }
 
 fn main() {
@@ -79,19 +95,27 @@ fn run() -> Result<(), Box<dyn Error>> {
     );
 
     // The construction toolkit fixture is the GRAPH DATA that furnishes the shape:
-    // structure_kind -> region_predicate is read from here, never dispatched.
+    // structure_kind -> region_predicate / connection_predicate are read from
+    // here, never dispatched in code.
     let toolkit: Value = serde_json::from_slice(&std::fs::read(&toolkit_path)?)?;
-    let region_predicate = |kind: &str| -> Result<String, Box<dyn Error>> {
+    let profile_str = |kind: &str, field: &str| -> Option<String> {
         toolkit
             .pointer(&format!(
-                "/content/modularity/kind_profiles/{kind}/region_predicate"
+                "/content/modularity/kind_profiles/{kind}/{field}"
             ))
             .and_then(Value::as_str)
             .map(str::to_owned)
+    };
+    let region_predicate = |kind: &str| -> Result<String, Box<dyn Error>> {
+        profile_str(kind, "region_predicate")
             .ok_or_else(|| format!("kind `{kind}` has no region_predicate in the toolkit fixture").into())
     };
+    // Optional: `null` connection_predicate means the kind has no CONNECTS edges.
+    let connection_predicate = |kind: &str| -> Option<String> { profile_str(kind, "connection_predicate") };
 
     // ---- Construction 1: a ROOM (infrastructure), PART_OF a building. --------
+    // Geometry is SCALAR SIZE only (width/height/depth) — a dimension, never a
+    // coordinate. Placement is the PART_OF region edge, nothing else.
     let room_keys = Keys {
         structure: 0xA000,
         moment: 0xA001,
@@ -99,16 +123,15 @@ fn run() -> Result<(), Box<dyn Error>> {
         rel_part_of: 0xA100,
         rel_produces: 0xA101,
         rel_grounds: 0xA102,
+        connections: Vec::new(),
     };
     let room_structure = json!({
         "kind": "built_structure",
         "structure_kind": "room",
         "provenance": "built",
-        // geometry fields (data, per the fixture kind_profile)
-        "extent_x": 6.0, "extent_y": 3.0, "extent_z": 5.0,
-        "membrane": "closed", "door_ports": 1,
-        // built_position FIELD folded into the structure content (x,y,z required)
-        "x": 12.0, "y": 0.0, "z": -4.0
+        // scalar SIZE fields (data, per the fixture kind_profile) — not a position
+        "width": 6.0, "height": 3.0, "depth": 5.0,
+        "membrane": "closed", "door_ports": 1
     });
     construct(
         &store,
@@ -117,12 +140,17 @@ fn run() -> Result<(), Box<dyn Error>> {
         &room_keys,
         REGION_BUILDING,
         &region_predicate("room")?,
+        connection_predicate("room").as_deref(),
         &room_structure,
-        "Placed here so this room is Built (authored + provenance), abutting the building's public membrane.",
+        "Placed by belonging: this room is PART_OF the building's public wing, which is where it is — no coordinate is authored.",
         &store_dir,
     )?;
 
-    // ---- Construction 2: a ROUTE (civic), PART_OF a district. ----------------
+    // ---- Construction 2: a ROUTE (civic), PART_OF a district, CONNECTS anchors.
+    // The route's whole place is its district plus its two anchor NODES, bound by
+    // CONNECTS (canonical COMMUNICATES). No path polyline, no coordinate.
+    let route_connection_predicate =
+        connection_predicate("route").ok_or("route kind_profile has no connection_predicate")?;
     let route_keys = Keys {
         structure: 0xB000,
         moment: 0xB001,
@@ -130,16 +158,17 @@ fn run() -> Result<(), Box<dyn Error>> {
         rel_part_of: 0xB100,
         rel_produces: 0xB101,
         rel_grounds: 0xB102,
+        connections: vec![
+            Anchor { rel_key: 0xB200, node: REGION_BUILDING }, // from-anchor
+            Anchor { rel_key: 0xB201, node: REGION_DISTRICT }, // to-anchor
+        ],
     };
     let route_structure = json!({
         "kind": "built_structure",
         "structure_kind": "route",
         "provenance": "built",
-        // geometry fields (data, per the fixture kind_profile)
-        "from": format!("{REGION_BUILDING:#x}"), "to": format!("{REGION_DISTRICT:#x}"),
-        "path": [[12.0, 0.0, -4.0], [30.0, 0.0, 8.0]],
-        // built_position FIELD: the route anchor
-        "x": 30.0, "y": 0.0, "z": 8.0
+        "surface": "paved", "lanes": 2
+        // NO coordinate: no path, no x/y/z. The endpoints are CONNECTS relations.
     });
     construct(
         &store,
@@ -148,8 +177,9 @@ fn run() -> Result<(), Box<dyn Error>> {
         &route_keys,
         REGION_DISTRICT,
         &region_predicate("route")?,
+        Some(route_connection_predicate.as_str()),
         &route_structure,
-        "Laid between the building and the civic district so its anchor is Built, not layout-derived.",
+        "Laid by connection: this route CONNECTS the building and the civic district and is PART_OF that district — its place is those relations, not a polyline.",
         &store_dir,
     )?;
 
@@ -165,11 +195,11 @@ fn run() -> Result<(), Box<dyn Error>> {
         rel_part_of: 0xC100,
         rel_produces: 0xC101,
         rel_grounds: 0xC102,
+        connections: Vec::new(),
     };
     let bad_structure = json!({
         "kind": "built_structure", "structure_kind": "room", "provenance": "built",
-        "extent_x": 1.0, "extent_y": 1.0, "extent_z": 1.0, "membrane": "closed", "door_ports": 0,
-        "x": 99.0, "y": 0.0, "z": 99.0
+        "width": 1.0, "height": 1.0, "depth": 1.0, "membrane": "closed", "door_ports": 0
     });
     let base_revision = snapshot.revision;
     let commands = furnish_construction_set(
@@ -178,6 +208,7 @@ fn run() -> Result<(), Box<dyn Error>> {
         &bad_keys,
         NONEXISTENT_REGION, // <- dangling PART_OF endpoint
         "PART_OF",
+        None,
         &bad_structure,
         "This construction must never commit — its region does not exist.",
         base_revision,
@@ -232,8 +263,9 @@ fn run() -> Result<(), Box<dyn Error>> {
     );
     println!(
         "RESULT: the SAME Construction toolkit built a Built room AND a Built route as one atomic set each, \
-         over a fresh canonical store, position folded as a built_position field, only canonical predicates \
-         (PART_OF/PRODUCES/GROUNDS), proven by independent readback; a bad set committed nothing."
+         over a fresh canonical store, placement carried ENTIRELY by relations (PART_OF region; the route \
+         CONNECTS two anchor nodes via COMMUNICATES), NO coordinate written, only canonical predicates \
+         (PART_OF/COMMUNICATES/PRODUCES/GROUNDS), proven by independent readback; a bad set committed nothing."
     );
     Ok(())
 }
@@ -275,7 +307,9 @@ fn translate_step(
 }
 
 /// Furnish the ordered one-verb step set for one construction and translate each
-/// through the generic translator into the aggregated command vector.
+/// through the generic translator into the aggregated command vector. Placement
+/// is RELATIONS only: PART_OF the region, plus (for a route) one CONNECTS edge
+/// per anchor node — never a coordinate.
 #[allow(clippy::too_many_arguments)]
 fn furnish_construction_set(
     store: &UniverseStore,
@@ -283,14 +317,26 @@ fn furnish_construction_set(
     keys: &Keys,
     region: u128,
     region_predicate: &str,
+    connection_predicate: Option<&str>,
     structure_content: &Value,
     justification_statement: &str,
     base_revision: universe_core::Revision,
 ) -> Result<Vec<UniverseCommand>, Box<dyn Error>> {
     // Only canonical predicates are allowed to reach the store.
-    for predicate in [region_predicate, "PRODUCES", "GROUNDS"] {
-        if !["PART_OF", "PRODUCES", "GROUNDS"].contains(&predicate) {
+    let canonical = ["PART_OF", "COMMUNICATES", "PRODUCES", "GROUNDS"];
+    let mut used = vec![region_predicate, "PRODUCES", "GROUNDS"];
+    if let Some(conn) = connection_predicate {
+        used.push(conn);
+    }
+    for predicate in used {
+        if !canonical.contains(&predicate) {
             return Err(format!("non-canonical predicate `{predicate}` refused").into());
+        }
+    }
+    // A structure must never carry a stored coordinate: WHERE is a projection.
+    for coord in ["x", "y", "z", "built_position", "path", "boundary"] {
+        if structure_content.get(coord).is_some() {
+            return Err(format!("structure carries a forbidden position field `{coord}` — placement is relational").into());
         }
     }
 
@@ -306,7 +352,7 @@ fn furnish_construction_set(
         "authored_by": "a.inchauspe@digitalkin.ai",
         "structure_kind": structure_content.get("structure_kind").cloned().unwrap_or(Value::Null),
         "base_revision": base_revision.0,
-        "note": "construction gesture wielded via the Construction toolkit (generic translator, atomic set)"
+        "note": "construction gesture wielded via the Construction toolkit (generic translator, atomic set, relational placement)"
     });
     let justification_content = json!({
         "kind": "justification",
@@ -314,7 +360,7 @@ fn furnish_construction_set(
     });
 
     let mut commands = Vec::new();
-    // 1. put_entity structure (position folded in as built_position fields)
+    // 1. put_entity structure (scalar geometry only; NO position field)
     translate_step(
         store,
         base_revision,
@@ -327,7 +373,7 @@ fn furnish_construction_set(
         &json!({ "content": structure_content }),
         &mut commands,
     )?;
-    // 2. put_relation structure PART_OF region
+    // 2. put_relation structure PART_OF region (primary placement statement)
     translate_step(
         store,
         base_revision,
@@ -342,6 +388,29 @@ fn furnish_construction_set(
         &json!({}),
         &mut commands,
     )?;
+    // 2b. (route only) put_relation structure CONNECTS anchor, one per endpoint.
+    //     The endpoints are OTHER NODES, referenced by relation, never coordinates.
+    if let Some(conn) = connection_predicate {
+        let pred_connect = resolve(snapshot, conn)?;
+        for anchor in &keys.connections {
+            translate_step(
+                store,
+                base_revision,
+                &MutationPlan::PutRelation {
+                    key: RelationKey(anchor.rel_key),
+                    generation: 0,
+                    source: EntityKey(keys.structure),
+                    target: EntityKey(anchor.node),
+                    predicate: pred_connect,
+                    content_field: None,
+                },
+                &json!({}),
+                &mut commands,
+            )?;
+        }
+    } else if !keys.connections.is_empty() {
+        return Err("connections furnished but the kind has no connection_predicate".into());
+    }
     // 3. put_entity construction Moment
     translate_step(
         store,
@@ -410,6 +479,7 @@ fn construct(
     keys: &Keys,
     region: u128,
     region_predicate: &str,
+    connection_predicate: Option<&str>,
     structure_content: &Value,
     justification_statement: &str,
     store_dir: &Path,
@@ -421,6 +491,7 @@ fn construct(
         keys,
         region,
         region_predicate,
+        connection_predicate,
         structure_content,
         justification_statement,
         base_revision,
@@ -489,25 +560,39 @@ fn construct(
     if stored_kind != kind {
         return Err(format!("{kind}: structure_kind is `{stored_kind}`, expected `{kind}`").into());
     }
-    // built_position FIELD present (x,y,z) — the reconciled position model
-    for axis in ["x", "y", "z"] {
-        if !content.get(axis).map(|v| v.is_number()).unwrap_or(false) {
-            return Err(format!("{kind}: built_position field `{axis}` missing/non-numeric on the structure").into());
+    // NO coordinate field on the structure — WHERE is a projection, not a datum.
+    for coord in ["x", "y", "z", "built_position", "path", "boundary"] {
+        if content.get(coord).is_some() {
+            return Err(format!("{kind}: structure carries a forbidden position field `{coord}` — placement must be relational").into());
         }
     }
-    // structure carries NO separate position node / HAS_POSITION edge
-    let has_position_symbol_leaked = after.symbols.iter().any(|s| s == "HAS_POSITION");
-    if has_position_symbol_leaked {
-        return Err(format!("{kind}: HAS_POSITION symbol leaked — position must be a field, not an edge").into());
+    // and the HAS_POSITION predicate symbol never leaked into the store.
+    if after.symbols.iter().any(|s| s == "HAS_POSITION") {
+        return Err(format!("{kind}: HAS_POSITION symbol leaked — position must be relations, not an edge").into());
     }
 
-    // PART_OF region edge
+    // PART_OF region edge (primary placement)
     let part_of = after.relations.iter().any(|r| {
         r.key == RelationKey(keys.rel_part_of)
             && r.source == EntityKey(keys.structure)
             && r.target == EntityKey(region)
             && after.symbols.get(r.predicate as usize).map(String::as_str) == Some("PART_OF")
     });
+    // For a route: each anchor is CONNECTS-ed via the canonical connection predicate.
+    let mut connections_ok = true;
+    let mut connections_report = String::new();
+    if let Some(conn) = connection_predicate {
+        for anchor in &keys.connections {
+            let present = after.relations.iter().any(|r| {
+                r.key == RelationKey(anchor.rel_key)
+                    && r.source == EntityKey(keys.structure)
+                    && r.target == EntityKey(anchor.node)
+                    && after.symbols.get(r.predicate as usize).map(String::as_str) == Some(conn)
+            });
+            connections_ok &= present;
+            connections_report.push_str(&format!(" {}->{:#x}={present}", conn, anchor.node));
+        }
+    }
     // Moment PRODUCES structure
     let produces = after.relations.iter().any(|r| {
         r.key == RelationKey(keys.rel_produces)
@@ -527,10 +612,9 @@ fn construct(
     let moment_present = after.entities.iter().any(|e| e.key == EntityKey(keys.moment));
 
     println!(
-        "[{kind}] readback rev {} -> {} | provenance={provenance} kind={stored_kind} pos=({},{},{}) | PART_OF={part_of} PRODUCES={produces} GROUNDS={grounds} moment={moment_present}",
+        "[{kind}] readback rev {} -> {} | provenance={provenance} kind={stored_kind} (no coordinate stored) | PART_OF={part_of}{connections_report} PRODUCES={produces} GROUNDS={grounds} moment={moment_present}",
         base_revision.0,
         after.revision.0,
-        content["x"], content["y"], content["z"],
     );
 
     // Forgery check: provenance 'built' with no construction Moment producing it
@@ -538,8 +622,8 @@ fn construct(
     if provenance == "built" && !(produces && moment_present) {
         return Err(format!("{kind}: FORGERY — provenance=built with no construction Moment PRODUCES edge").into());
     }
-    if !(part_of && produces && grounds && moment_present) {
-        return Err(format!("{kind}: readback is missing a required construction edge").into());
+    if !(part_of && produces && grounds && moment_present && connections_ok) {
+        return Err(format!("{kind}: readback is missing a required construction/placement edge").into());
     }
     Ok(())
 }

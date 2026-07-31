@@ -238,7 +238,7 @@ Native bootstrap code may implement:
 - stable identifiers and generational handles;
 - dense entity, relation, construction, and receipt storage;
 - content segments, snapshots, event logs, and recovery;
-- transactions, revisions, clocks, and deterministic ordering;
+- transactions, revisions, clocks, and commit ordering;
 - identity, authentication, capability checks, and authorization;
 - the Causal IR validator, compiler, virtual machine, and compatibility layers;
 - scheduling, fuel, cancellation, and bounded execution;
@@ -376,10 +376,12 @@ Use three explicit layers:
 
 ```text
 Persistent construction
-→ canonical topology, anchors, placement, ownership, and history
+→ canonical topology (relations, containment, connection), ownership,
+  provenance, and history — never coordinates
 
-Reconstructible simulation
-→ cable curvature, contact settling, minor pose drift, oscillations, caches
+Derived projection
+→ every position and pose, cable curvature, contact settling, drift, caches:
+  a live projection of the topology, non-authoritative, never stored
 
 Procedural decoration
 → vegetation, particles, lighting, dust, LOD, and non-semantic detail
@@ -387,6 +389,15 @@ Procedural decoration
 
 The renderer may decorate. A Genesis authority or authorised Actor must
 construct.
+
+**Where is a projection, not a datum.** No file — fixture, seed, or source —
+carries a hardcoded position or coordinate. Where a thing is lives entirely in
+its relations (PART_OF, adjacency, connection); the coordinate is a live
+projection derived from those relations by the single layout authority, read the
+same way by every observer. Position is never stored, never authored, never a
+literal. The city is alive — positions may drift, and we do not force them to be
+deterministic; the meaning lives in the topology, which is stable because it is
+authored.
 
 ### Stable identity
 

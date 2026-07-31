@@ -1,11 +1,23 @@
 import { describe, expect, it } from "vitest";
 import citizenFrames from "../../../fixtures/desktop-world-snapshot/citizen/world-snapshot-frames.json";
-import undergroundBinding from "../../../fixtures/assets/underground-visual-binding-v0.json";
+import undergroundToolkit from "../../../fixtures/ontology/underground-toolkit-v0.json";
 import resolutionPolicy from "../../../fixtures/assets/visual-resolution-policy-v1.json";
 import type { MaterializedEntity, UniverseEvent } from "./contracts";
 import { universeEventFromServerFrame } from "./protocol-adapter";
 import { renderSceneSvg } from "./scene-svg";
 import { applyUniverseEvent, emptyUniverseView } from "./universe-state";
+
+// Appearance lives IN the toolkit: the underground binding is carried AS a member
+// of the construct (subtype physicalization_binding), reached via the construct's
+// `space PROJECTS_AS visual_binding` edge, not a standalone file. We read that
+// member's content the way the projector would resolve it through provenance.
+const undergroundMember = (
+  undergroundToolkit.members as Array<{ id: string; content: Record<string, unknown> }>
+).find((m) => m.id === "visual_binding:l2:mind-universe:underground-toolkit-v0")!;
+const undergroundBinding = {
+  id: undergroundMember.id,
+  ...undergroundMember.content
+} as { id: string; palette: { core: string }; [key: string]: unknown };
 
 // Appearance is PROVENANCE-BASED and TOOLKIT-SCOPED: a node resolves its visual
 // form through its producing toolkit's visual binding, keyed by role_axis /
@@ -114,7 +126,7 @@ describe("role-keyed toolkit binding (underground) resolves through provenance",
       },
       // The projector would inline the producing toolkit's binding as the mapping.
       embodiment: {
-        source_mapping_id: undergroundBinding.authority_id,
+        source_mapping_id: undergroundBinding.id,
         mapping: undergroundBinding as never,
         motion_profile: {} as never,
         residency: residency as never,

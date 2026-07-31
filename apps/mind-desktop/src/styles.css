@@ -285,3 +285,119 @@ main {
   text-transform: uppercase;
   color: rgb(201 220 255 / 52%);
 }
+
+/* Minimap: a draggable / resizable / zoomable bird's-eye overview, drawn in SVG
+   so it renders without the WebGL loop. The current observer position glows. */
+.minimap {
+  position: absolute;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: rgb(4 8 16 / 82%);
+  border: 1px solid #22406e;
+  border-radius: 10px;
+  box-shadow: 0 8px 26px rgb(0 0 0 / 45%);
+  backdrop-filter: blur(4px);
+  user-select: none;
+}
+
+.minimap__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 22px;
+  padding: 0 6px 0 10px;
+  cursor: move;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(201 220 255 / 62%);
+  border-bottom: 1px solid rgb(34 64 110 / 60%);
+  touch-action: none;
+}
+
+.minimap__zoom {
+  display: flex;
+  gap: 3px;
+}
+
+.minimap__zoom button {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  font-size: 0.8rem;
+  color: #c9dcff;
+  background: rgb(34 64 110 / 45%);
+  border: 1px solid #22406e;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.minimap__zoom button:hover {
+  background: rgb(58 96 150 / 55%);
+}
+
+.minimap__body {
+  display: block;
+  flex: 1;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.minimap__axis {
+  stroke: rgb(201 220 255 / 35%);
+  stroke-width: 1;
+}
+
+.minimap__needle {
+  stroke: #ffd36e;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* The current position: a bright core with a soft glow, wrapped by a pulsing halo. */
+.minimap__you {
+  fill: #ffe4a3;
+  filter: drop-shadow(0 0 4px #ffd36e) drop-shadow(0 0 8px #ffb347);
+}
+
+.minimap__halo {
+  fill: #ffd36e;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: minimap-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes minimap-pulse {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.15);
+  }
+}
+
+.minimap__resize {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+  touch-action: none;
+  background: linear-gradient(
+    135deg,
+    transparent 0 45%,
+    rgb(201 220 255 / 45%) 45% 55%,
+    transparent 55% 70%,
+    rgb(201 220 255 / 45%) 70% 80%,
+    transparent 80%
+  );
+}

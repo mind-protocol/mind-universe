@@ -2531,8 +2531,12 @@ mod tests {
             .join("../../fixtures/genesis/minimal-genesis.json");
         let snapshot = load_genesis(path).unwrap();
         assert_eq!(snapshot.universe, UniverseId(1));
-        assert_eq!(snapshot.entities.len(), 18);
-        assert_eq!(snapshot.relations.len(), 16);
+        // Position is a projection, not a datum: the seed carries no coordinate
+        // carriers. Three `position_mm:*` entities and their two
+        // `physical_profile` relations were purged (18->15 entities, 16->14
+        // relations); every other entity and relation is unchanged.
+        assert_eq!(snapshot.entities.len(), 15);
+        assert_eq!(snapshot.relations.len(), 14);
         assert_eq!(
             snapshot.symbols[snapshot.entities[0].symbol as usize],
             "Actor"

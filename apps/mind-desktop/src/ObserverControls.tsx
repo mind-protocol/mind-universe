@@ -33,7 +33,8 @@ export function ObserverControls({
   initialCamera,
   initialTarget,
   groundHeight = FLAT_GROUND,
-  eyeHeight = DEFAULT_EYE_HEIGHT
+  eyeHeight = DEFAULT_EYE_HEIGHT,
+  onPose
 }: {
   // When the avatar is being piloted, keyboard translation is handed to
   // ActorControls so ZQSD moves the body, not the camera. Mouse look and the R
@@ -49,10 +50,16 @@ export function ObserverControls({
   // rather than floating at whatever y the opening framing happened to use.
   readonly groundHeight?: (x: number, z: number) => number;
   readonly eyeHeight?: number;
+  // Reports the observer's top-down pose (ground x/z + yaw) whenever it changes, so
+  // an overlay (the minimap) can track the viewpoint. Called from the frame loop;
+  // consumers should absorb it into a ref, not React state, to avoid re-rendering
+  // the scene each frame.
+  readonly onPose?: (pose: { x: number; z: number; yaw: number }) => void;
 } = {}) {
   const { camera, gl } = useThree();
   const pressed = useRef(new Set<string>());
   const look = useRef<LookOrientation>({ yaw: 0, pitch: 0 });
+  const lastPose = useRef<{ x: number; z: number; yaw: number } | null>(null);
 
   const homeCamera = useMemo(() => initialCamera ?? DEFAULT_CAMERA, [initialCamera]);
   const homeTarget = useMemo(() => initialTarget ?? DEFAULT_TARGET, [initialTarget]);
@@ -177,6 +184,25 @@ export function ObserverControls({
   }, [gl, applyOrientation]);
 
   useFrame((_, delta) => {
+    // Report the pose first, every frame, independent of movement — a look-drag
+    // changes yaw without moving, and the minimap needle must follow it. The diff
+    // guard means a still, unturning observer emits nothing.
+    if (onPose) {
+      const x = camera.position.x;
+      const z = camera.position.z;
+      const yaw = look.current.yaw;
+      const last = lastPose.current;
+      if (
+        !last ||
+        Math.abs(last.x - x) > 0.03 ||
+        Math.abs(last.z - z) > 0.03 ||
+        Math.abs(last.yaw - yaw) > 0.005
+      ) {
+        lastPose.current = { x, z, yaw };
+        onPose({ x, z, yaw });
+      }
+    }
+
     if (!movementEnabled) return;
 
     // Walk in the facing direction, on the ground plane only (pitch ignored, so

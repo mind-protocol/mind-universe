@@ -7,8 +7,11 @@
 // The frame shape and geometry reducer are identical to the native Tauri path —
 // only the transport (EventSource over Vite's dev server) differs.
 //
-// Updates are coalesced to one per animation frame: a full store batch is ~1000
-// frames, and folding each into React state individually would thrash the scene.
+// Updates are coalesced with a short timer: a full store batch is ~1000 frames,
+// and folding each into React state individually would thrash the scene. A timer
+// (not requestAnimationFrame) is used deliberately — rAF is suspended while the
+// document is hidden/not compositing, which would stall the stream entirely in a
+// headless or backgrounded window.
 
 import {
   ingestFrame,
@@ -31,10 +34,10 @@ export interface LiveStore {
   readonly relationPresentation: ReadonlyMap<string, RelationPresentation>;
 }
 
-const scheduleFrame = (callback: () => void): void => {
-  if (typeof requestAnimationFrame !== "undefined") requestAnimationFrame(callback);
-  else setTimeout(callback, 16);
-};
+// Coalesce a burst of frames into one flush ~one frame later. setTimeout fires
+// even when the page is hidden (unlike requestAnimationFrame), so the stream keeps
+// syncing off-screen.
+const COALESCE_MS = 16;
 
 /**
  * Opens the SSE stream at `url` and folds incoming frames, reporting each new
@@ -62,7 +65,7 @@ export function startSseStream(
   const schedule = () => {
     if (scheduled || closed) return;
     scheduled = true;
-    scheduleFrame(flush);
+    setTimeout(flush, COALESCE_MS);
   };
 
   const source = new EventSource(url);

@@ -31,6 +31,8 @@ import { Embodiment } from "./EnergyEmbodiment";
 import { validateEmbodimentMapping } from "./embodiment";
 import { EnergyTransferEffect } from "./EnergyTransfer";
 import { ObserverControls } from "./ObserverControls";
+import { orientationFromLookAt } from "./first-person-look";
+import { Minimap, type MinimapPose } from "./Minimap";
 import type {
   EntityPresentation,
   RelationPresentation
@@ -148,7 +150,7 @@ function Atom({
   );
 }
 
-function GenericAtom({
+export function GenericAtom({
   entity,
   selected,
   onSelect,
@@ -506,6 +508,16 @@ export function World({
   const fogFar = wideCity ? cityRadius * 2.8 : 80;
   const starRadius = wideCity ? cityRadius * 2.1 : 70;
 
+  // The observer's live top-down pose, shared with the minimap through a ref so a
+  // camera move updates only the minimap marker, never the whole scene. Seeded from
+  // the opening framing so the marker is placed correctly before the first frame
+  // (which matters where the render loop is suspended, e.g. a hidden preview).
+  const poseRef = useRef<MinimapPose>({
+    x: cameraPosition[0],
+    z: cameraPosition[2],
+    yaw: orientationFromLookAt(cameraPosition, focus?.target ?? [0, 0, 0]).yaw
+  });
+
   // Bounded-neighborhood filter (ontology3d query-budget spirit): keep only the
   // buildings within a radius of the plaza centre, culling the most distant first.
   // `null` means the whole city. The control appears only for large graphs.
@@ -622,6 +634,9 @@ export function World({
         initialCamera={cameraPosition}
         initialTarget={focus?.target}
         groundHeight={terrainHeight}
+        onPose={(pose) => {
+          poseRef.current = pose;
+        }}
       />
       {actorControl && (
         <ActorControls
@@ -631,12 +646,19 @@ export function World({
         />
       )}
     </Canvas>
+    {totalNodes > 12 && (
+      <Minimap
+        entities={universe.entities}
+        poseRef={poseRef}
+        cityRadius={cityRadius}
+      />
+    )}
     {showFilter && (
       <div
         className="node-filter"
         style={{
           position: "absolute",
-          left: 16,
+          right: 16,
           bottom: 16,
           zIndex: 30,
           display: "flex",

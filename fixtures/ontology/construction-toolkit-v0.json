@@ -6,14 +6,15 @@
     "contractKind": "construct",
     "name": "Construction toolkit v0 (modulable — le même mécanisme bâtit une room, une route ou une parcelle)",
     "dominant_scale": "infrastructure",
-    "lineage": "Composes the proven MutationBond write-path (crates/universe-e2e/src/mutation_translate.rs — project_mutation_bond -> translate_mutation_proposal / translate_mutation_receipt, four closed kernel verbs, content-contract enforced) into a SET aggregator. The earlier hand-built placement bin (place_built_position) has been DELETED; the proven path is now the generic translator plus the mcp act path (mcp/ sense+act adapter) that compiles a gesture into the same four verbs. Downstream of the layout-built-not-generated pivot: placing/building a node IS a physicalized construction action. Sibling in form to the Underground toolkit v0 (same 12-role self-verifying anatomy), but a WRITE toolkit rather than a read-only substrate. PROVEN by crates/universe-e2e/src/bin/wield_construction.rs (furnishes a room AND a route as one atomic set each, over a scratch canonical-ontology store, with independent readback).",
+    "lineage": "Composes the proven MutationBond write-path (crates/universe-e2e/src/mutation_translate.rs — project_mutation_bond -> translate_mutation_proposal / translate_mutation_receipt, four closed kernel verbs, content-contract enforced) into a SET aggregator. The earlier hand-built placement bin (place_built_position) has been DELETED; the proven path is now the generic translator plus the mcp act path (mcp/ sense+act adapter) that compiles a gesture into the same four verbs. Downstream of the layout-built-not-generated pivot AND the where-is-a-projection doctrine: placing/building a node IS a physicalized construction action, but WHERE it lands is never authored as a coordinate — it lives entirely in the authored RELATIONS (PART_OF its region; for a route, CONNECTS its two anchor nodes) and the coordinate is a live projection the single layout authority derives from that topology, read the same way by every observer. Sibling in form to the Underground toolkit v0 (same 12-role self-verifying anatomy), but a WRITE toolkit rather than a read-only substrate. PROVEN by crates/universe-e2e/src/bin/wield_construction.rs (furnishes a room AND a route as one atomic set each, over a scratch canonical-ontology store, with independent readback of the RELATIONS — no coordinate is ever written or read).",
     "canonical_predicate_remap": {
-      "why": "The step template originally emitted HAS_POSITION, CONSTRUCTED_BY and JUSTIFIED_BY, none of which are in the canonical seed predicate vocabulary (fixtures/ontology/canonical-ontology.json). Constructing with them would mint non-canonical symbols, violating the ZERO-new-symbols invariant. Each is remapped to the nearest ACTIVE-VOICE canonical predicate (documented like the orientation-beacon / energy-pen fixtures); the wield_construction bin asserts 0 symbols interned.",
+      "why": "The step template originally named HAS_POSITION, CONSTRUCTED_BY, JUSTIFIED_BY and CONNECTS, none of which are in the canonical seed predicate vocabulary (fixtures/ontology/canonical-ontology.json). Constructing with them would mint non-canonical symbols, violating the ZERO-new-symbols invariant. Each surviving one is remapped to the nearest ACTIVE-VOICE canonical predicate (documented like the orientation-beacon / energy-pen fixtures); the wield_construction bin asserts 0 symbols interned.",
       "remaps": {
-        "PART_OF": {"canonical": "PART_OF", "swap": false, "note": "canonical already; region containment: structure PART_OF region"},
+        "PART_OF": {"canonical": "PART_OF", "swap": false, "note": "canonical already; region containment: structure PART_OF region. This is the primary placement relation — the region a structure belongs to is WHERE it is."},
+        "CONNECTS": {"canonical": "COMMUNICATES", "swap": false, "note": "route CONNECTS its from-anchor and to-anchor becomes route COMMUNICATES from-anchor and route COMMUNICATES to-anchor. The endpoints are OTHER NODES referenced by relation, NEVER coordinates. Remapped to the canonical COMMUNICATES (a civic route communicates/connects two places — 'voie de communication'); active-voice, source is the route; 0 new symbols. The route's place is fully carried by these two connection edges plus its PART_OF district."},
         "CONSTRUCTED_BY": {"canonical": "PRODUCES", "swap": true, "note": "structure CONSTRUCTED_BY Moment becomes Moment PRODUCES structure — the construction Moment is the producer, the Built structure is its product. This is the SAME remap that canonicalizes mutation-bond-authority.json's own non-canonical CONSTRUCTED_BY overlay predicate; that authority fixture is owned by the write-path piece, so this toolkit conforms by emitting the canonical PRODUCES rather than editing it."},
         "JUSTIFIED_BY": {"canonical": "GROUNDS", "swap": true, "note": "structure JUSTIFIED_BY justification becomes justification GROUNDS structure — the justification is the grounds for the structure; the narrative WHERE encodes WHY."},
-        "HAS_POSITION": {"canonical": null, "swap": null, "note": "REMOVED, not remapped. Position is reconciled to the mutation-bond-authority model: a built_position FIELD-SCHEMA (required x,y,z) written INTO the structure entity's content, NOT a separate position entity joined by a HAS_POSITION edge. No HAS_POSITION predicate is invented."}
+        "HAS_POSITION": {"canonical": null, "swap": null, "note": "GONE and moot. Position is never stored, never authored, never a literal — no built_position field, no position entity, no HAS_POSITION edge. Where a structure is lives entirely in its relations (PART_OF region; CONNECTS anchors for a route); the coordinate is a live projection derived from that topology by the single layout authority. There is nothing to remap because there is no position write."}
       }
     },
     "parent_scope": {
@@ -24,31 +25,35 @@
       "parameter": "structure_kind",
       "kinds": ["room", "route", "parcel"],
       "rule": "structure_kind selects the target scale, the geometry field-schema and the region kind. It is GRAPH DATA read from the ConstructionBond, never a term in native dispatch. The same generic mechanism is total over every declared kind; adding a kind is authoring data, not changing code.",
-      "position_model": "Placement is a built_position FIELD written INTO the structure entity's content (required fields x, y, z, plus provenance 'built'), reconciled to mutation-bond-authority.json's field-schema model. There is NO separate position entity and NO HAS_POSITION edge. The geometry of each kind is likewise a set of content fields on the structure entity, not extra nodes.",
+      "placement_model": "Placement is RELATIONAL, never a coordinate. Every structure is bound PART_OF its region (that containment IS where it is). A route additionally CONNECTS (canonical COMMUNICATES) its from-anchor and to-anchor — two OTHER NODES referenced by relation, so a route's whole place is its district plus its two endpoints. No structure carries a built_position field, an x/y/z, a path polyline or a boundary polygon; nothing stores a coordinate. The coordinate a renderer needs is a live projection the single layout authority derives from these relations, read the same way by every observer, and it may drift — the meaning is the stable authored topology, not any position value.",
+      "geometry_model": "A structure's SIZE is a scalar property (a dimension, not a position): a room carries width/height/depth. Its PLACE is never a size and never a coordinate — it is the relations above. An unmeasured extent stays Fog (absent), never a zero-size default.",
       "kind_profiles": {
         "room": {
           "scale": "infrastructure",
-          "geometry": "content fields: extent (a bounded box: extent_x/y/z) + membrane + door_ports, alongside the built_position x/y/z",
+          "geometry": "scalar size fields (width, height, depth) + membrane + door_ports. No coordinate literal.",
           "region_kind": "building_or_parcel",
-          "region_predicate": "PART_OF"
+          "region_predicate": "PART_OF",
+          "connection_predicate": null
         },
         "route": {
           "scale": "civic",
-          "geometry": "content fields: endpoints (from, to) + path polyline, alongside the built_position x/y/z of the route anchor",
+          "geometry": "no coordinate path; the route's shape is carried by its two anchor relations, not a polyline",
           "region_kind": "district",
-          "region_predicate": "PART_OF"
+          "region_predicate": "PART_OF",
+          "connection_predicate": "COMMUNICATES"
         },
         "parcel": {
           "scale": "civic",
-          "geometry": "content fields: boundary polygon, alongside the built_position x/y/z of the parcel anchor",
+          "geometry": "no boundary polygon; a parcel's extent is expressed by CONNECTS (COMMUNICATES) edges to its corner-anchor nodes, never coordinate literals",
           "region_kind": "territory",
-          "region_predicate": "PART_OF"
+          "region_predicate": "PART_OF",
+          "connection_predicate": "COMMUNICATES"
         }
       }
     },
     "runtime_moment_subtypes": ["validation_run", "health_assessment"],
-    "native_law_boundary": "The native floor knows only the four closed kernel write verbs (intern_symbols, put_entity, put_relation, tombstone_relation) and how to aggregate them into one atomic UniverseWriteSet. Construction is a physicalization grammar over that floor: structure_kind, geometry, the ordered step template and the region metaphor are all Universe data. The floor adds no construction-specific predicate meaning.",
-    "purpose": "Make CONSTRUCTION a wieldable graph gesture: turn 'build a room here' or 'lay a route between these anchors' into one atomic set of one-verb MutationBonds that puts a Built structure carrying its provenance AND its built_position field (x,y,z), binds it PART_OF its region, and attaches a construction Moment that PRODUCES it and a justification that GROUNDS it. The city is then the accumulated fold of attributable construction gestures, not a regenerated layout. One modular mechanism serves every structure_kind, and only canonical predicates (PART_OF, PRODUCES, GROUNDS) are emitted — zero new symbols."
+    "native_law_boundary": "The native floor knows only the four closed kernel write verbs (intern_symbols, put_entity, put_relation, tombstone_relation) and how to aggregate them into one atomic UniverseWriteSet. Construction is a physicalization grammar over that floor: structure_kind, geometry, the ordered step template and the region/connection metaphor are all Universe data. The floor adds no construction-specific predicate meaning, and it never stores a position — a coordinate is only ever a projection computed by the layout authority downstream of the relations.",
+    "purpose": "Make CONSTRUCTION a wieldable graph gesture: turn 'build a room here' or 'lay a route between these anchors' into one atomic set of one-verb MutationBonds that puts a Built structure carrying its provenance, binds it PART_OF its region (and, for a route, CONNECTS its two anchor nodes), and attaches a construction Moment that PRODUCES it and a justification that GROUNDS it. WHERE the structure is lives entirely in those relations — no coordinate is ever written. The city is then the accumulated fold of attributable construction gestures over a stable authored topology, not a regenerated layout and not a bag of stored positions. One modular mechanism serves every structure_kind, and only canonical predicates (PART_OF, COMMUNICATES, PRODUCES, GROUNDS) are emitted — zero new symbols."
   },
   "members": [
     {
@@ -56,7 +61,7 @@
       "node_type": "narrative",
       "subtype": "objective",
       "content": {
-        "success_condition": "For any declared structure_kind (room, route, parcel, ...), the SAME toolkit composes a single atomic UniverseWriteSet of one-verb MutationBonds that: puts a Built structure carrying provenance 'built', its geometry AND its built_position field (x,y,z) in one entity content; binds it PART_OF its region; attaches a construction Moment that PRODUCES the structure; and binds a justification that GROUNDS the structure. structure_kind and its geometry are read from the graph, never dispatched in native code. A construction that cannot furnish its full set commits nothing (all-or-nothing). A Derived (force-directed) position never overwrites a Built one. Only the four closed kernel verbs are ever emitted, and only canonical predicates (PART_OF, PRODUCES, GROUNDS) — zero new symbols interned."
+        "success_condition": "For any declared structure_kind (room, route, parcel, ...), the SAME toolkit composes a single atomic UniverseWriteSet of one-verb MutationBonds that: puts a Built structure carrying provenance 'built' and its scalar geometry (a size, never a coordinate); binds it PART_OF its region; for a route additionally CONNECTS (canonical COMMUNICATES) its from-anchor and to-anchor OTHER NODES; attaches a construction Moment that PRODUCES the structure; and binds a justification that GROUNDS the structure. structure_kind and its geometry are read from the graph, never dispatched in native code. WHERE the structure is is fully carried by its relations — NO built_position, x/y/z, path or boundary literal is ever written. A construction that cannot furnish its full set commits nothing (all-or-nothing). Only the four closed kernel verbs are ever emitted, and only canonical predicates (PART_OF, COMMUNICATES, PRODUCES, GROUNDS) — zero new symbols interned."
       }
     },
     {
@@ -64,8 +69,8 @@
       "node_type": "narrative",
       "subtype": "pattern",
       "content": {
-        "pattern": "A construction is not one write but a SET. The toolkit reifies a construction gesture as a ConstructionBond: an ordered set of one-verb MutationBonds (put_entity / put_relation / intern_symbols / tombstone_relation) that the generic mutation translator aggregates into exactly ONE UniverseWriteSet and commits at a tick boundary. The SET is the atomicity and identity unit ('lié au set'). The shape of the set is furnished by the graph: the ConstructionBond carries a structure_kind and USES_FIELD_SCHEMA a construction field-schema, so the same mechanism builds a room (infrastructure: a bounded Space with a membrane and door ports, PART_OF a building) or a route (civic: an anchor with endpoints and a path, PART_OF a district) purely by varying that data. Placement is a built_position FIELD (x,y,z, provenance 'built') on the structure entity itself — not a separate node — reconciled to the mutation-bond-authority field-schema; the force-directed layout engine is demoted from authority to a scaffold for the un-built frontier only.",
-        "epistemic_honesty": "A preview is not a built structure. A Derived position is not a Built one and never overwrites it. A partially-furnished set commits nothing rather than a half-built structure. An unmeasured extent is Fog, not a zero-size room. structure_kind is data; no structure_kind is privileged in native dispatch."
+        "pattern": "A construction is not one write but a SET. The toolkit reifies a construction gesture as a ConstructionBond: an ordered set of one-verb MutationBonds (put_entity / put_relation / intern_symbols / tombstone_relation) that the generic mutation translator aggregates into exactly ONE UniverseWriteSet and commits at a tick boundary. The SET is the atomicity and identity unit ('lié au set'). The shape of the set is furnished by the graph: the ConstructionBond carries a structure_kind, so the same mechanism builds a room (infrastructure: a bounded Space with a size, a membrane and door ports, PART_OF a building) or a route (civic: an anchor CONNECTS-ing its two endpoint nodes, PART_OF a district) purely by varying that data. Placement is RELATIONAL: PART_OF the region for every kind, plus COMMUNICATES edges to the anchor nodes for a route. No coordinate is stored — a node's position is a live projection the single layout authority derives from these relations, read the same way by every observer; it may drift, and that is fine, because the authored topology is what is stable.",
+        "epistemic_honesty": "A preview is not a built structure. WHERE is a projection, not a datum: no structure carries a coordinate, and a rendered position is derived, never authoritative. A partially-furnished set commits nothing rather than a half-built structure. An unmeasured extent is Fog, not a zero-size room. structure_kind is data; no structure_kind is privileged in native dispatch."
       }
     },
     {
@@ -76,13 +81,13 @@
         "terms": {
           "ConstructionBond": "The reified construction gesture: an ordered set of one-verb MutationBonds aggregated into ONE atomic UniverseWriteSet. The write-side aggregator that mirrors, at set granularity, what a single MutationBond does at verb granularity.",
           "StructureKind": "The modular parameter (room | route | parcel | ...) selecting the target scale, the geometry field-schema and the region kind. Graph data, never native dispatch.",
-          "BuiltStructure": "The entity the set puts, carrying provenance 'built', its structure_kind, its geometry AND its built_position field (x,y,z). The durable, attributable result of the construction; position is folded into this one entity, not a joined node.",
+          "BuiltStructure": "The entity the set puts, carrying provenance 'built', its structure_kind and its scalar geometry (a size, never a coordinate). The durable, attributable result of the construction; its PLACE is not on this entity at all — it is carried by the entity's relations.",
           "ConstructionSet": "The atomic all-or-nothing UniverseWriteSet a ConstructionBond commits. The SET is the identity and atomicity boundary; either every step commits or none does.",
-          "BuiltPosition": "NOT a separate entity: the built_position {x, y, z} FIELD (provenance 'built') written into the BuiltStructure's content, per the MutationBond built_position field-schema (required x,y,z). No HAS_POSITION edge exists. A Built position wins over any Derived one.",
-          "Region": "The containing Space the structure is PART_OF: a building or parcel for a room, a district for a route, a territory for a parcel.",
+          "Placement": "WHERE a structure is, carried ENTIRELY by relations: PART_OF its region for every kind, plus CONNECTS (canonical COMMUNICATES) edges to its anchor nodes for a route. Never a stored coordinate; the renderable position is a live projection the layout authority derives from these relations.",
+          "Region": "The containing Space the structure is PART_OF: a building or parcel for a room, a district for a route, a territory for a parcel. The PART_OF region edge is the primary statement of where the structure belongs.",
+          "Anchor": "An OTHER NODE a route CONNECTS (COMMUNICATES) as one of its endpoints. A route references its from-anchor and to-anchor by relation, never by coordinate; the two anchors plus the district are the route's whole place.",
           "ConstructionMoment": "The construction Moment that PRODUCES the structure (canonical PRODUCES, remapped from the ad-hoc CONSTRUCTED_BY) — the evidence that makes the construction gesture attributable and non-anonymous.",
-          "Justification": "The narrative that GROUNDS the structure (canonical GROUNDS, remapped from the ad-hoc JUSTIFIED_BY) — the reason the structure exists where it does; the WHERE encodes WHY.",
-          "Scaffold": "The force-directed layout, demoted from authority to a suggestion for un-built nodes only.",
+          "Justification": "The narrative that GROUNDS the structure (canonical GROUNDS, remapped from the ad-hoc JUSTIFIED_BY) — the reason the structure exists among its relations; the WHERE (topology) encodes WHY.",
           "MutationBond": "The proven write-side primitive (one closed kernel verb per bond, content-contract enforced) this toolkit COMPOSES. Defined by mutation-bond-authority.json, not redefined here."
         }
       }
@@ -92,25 +97,25 @@
       "node_type": "narrative",
       "subtype": "behavior",
       "content": {
-        "given": "A declared structure_kind, its geometry (extent for a room, endpoints+path for a route, boundary for a parcel), a target region Space, the acting actor's build capability, an attributable plan, and the MutationBond primitive vocabulary.",
+        "given": "A declared structure_kind, its scalar geometry (a size for a room; for a route, its two anchor nodes), a target region Space, the acting actor's build capability, an attributable plan, and the MutationBond primitive vocabulary.",
         "when": "An actor issues a build/place construction gesture on a proven, buildable region (the affordance-catalog `build` verb) whose ConstructionBond is resolvable in the graph.",
         "then": [
-          "Resolve the ConstructionBond: read its structure_kind and follow USES_FIELD_SCHEMA to the construction field-schema.",
+          "Resolve the ConstructionBond: read its structure_kind and its region/connection predicates from the toolkit kind_profiles.",
           "Furnish the ordered set of one-verb MutationBonds for that kind; run each step's content gesture on the mutation-free VM.",
-          "Validate every content field against its field-schema; a missing or null required field is a Validation failure, never a default.",
+          "Validate every content field against its field-schema; a missing or null required field is a Validation failure, never a default. Placement carries no fields to validate — it is relations, not content.",
           "Translate each step through the generic mutation translator into exactly one UniverseCommand, and aggregate them into ONE UniverseWriteSet fronted by a single InternSymbols for any new canonical symbol.",
-          "Prepare and commit the set atomically at a tick boundary: put the BuiltStructure (provenance 'built', with its built_position x/y/z field folded into its content), its PART_OF region edge, its construction Moment with a Moment-PRODUCES-structure edge, and its justification with a justification-GROUNDS-structure edge.",
-          "Read the whole structure back from a fresh reopen and overlay the Built position (the structure's built_position field) so it wins over the derived scaffold.",
+          "Prepare and commit the set atomically at a tick boundary: put the BuiltStructure (provenance 'built', scalar geometry only), its PART_OF region edge, for a route its CONNECTS (COMMUNICATES) anchor edges, its construction Moment with a Moment-PRODUCES-structure edge, and its justification with a justification-GROUNDS-structure edge.",
+          "Read the whole structure back from a fresh reopen and assert the placement RELATIONS — never a coordinate.",
           "Produce runtime validation_run / health_assessment moments from actual execution."
         ],
         "forbidden": [
           "committing a partial set (a half-built structure)",
+          "writing a coordinate in any form — a built_position field, an x/y/z, a path polyline or a boundary polygon (WHERE is a projection, not a datum)",
           "hardcoding a structure_kind, metaphor or geometry in native dispatch instead of reading it from the graph",
-          "overwriting a Built position with a Derived (force-directed) one",
           "emitting a fifth write verb (only the four closed kernel verbs are representable)",
           "writing a structure without a construction Moment that PRODUCES it (anonymous construction)",
-          "minting a non-canonical predicate (HAS_POSITION, CONSTRUCTED_BY, JUSTIFIED_BY) instead of the canonical PART_OF / PRODUCES / GROUNDS",
-          "writing position as a separate entity + HAS_POSITION edge instead of a built_position field on the structure",
+          "minting a non-canonical predicate (HAS_POSITION, CONNECTS, CONSTRUCTED_BY, JUSTIFIED_BY) instead of the canonical PART_OF / COMMUNICATES / PRODUCES / GROUNDS",
+          "referencing a route's endpoints as coordinates instead of CONNECTS relations to OTHER NODES",
           "defaulting a missing geometry field instead of failing closed",
           "rendering a preview as a committed structure",
           "regenerating an authored arrangement on a new observation",
@@ -124,20 +129,19 @@
       "subtype": "algorithm",
       "content": {
         "steps": [
-          "resolve the ConstructionBond: read structure_kind and follow USES_FIELD_SCHEMA to the construction field-schema",
-          "select the ordered one-verb step template for that structure_kind (position folded into the structure content, canonical predicates only): put_entity structure {provenance 'built', geometry, built_position x/y/z} -> put_relation structure PART_OF region -> put_entity construction Moment -> put_relation Moment PRODUCES structure -> put_entity justification -> put_relation justification GROUNDS structure",
+          "resolve the ConstructionBond: read structure_kind and its region/connection predicates from the toolkit kind_profiles",
+          "select the ordered one-verb step template for that structure_kind (placement is RELATIONS, canonical predicates only): put_entity structure {provenance 'built', scalar geometry} -> put_relation structure PART_OF region -> (route only) put_relation structure COMMUNICATES from-anchor -> put_relation structure COMMUNICATES to-anchor -> put_entity construction Moment -> put_relation Moment PRODUCES structure -> put_entity justification -> put_relation justification GROUNDS structure",
           "run each step's content gesture (an IR program producing the content record) on the fuel-bounded, mutation-free VM",
-          "validate each content record against its field-schema; a missing or null required built_position field (x, y, z) is a Validation error",
+          "validate each content record against its field-schema; a missing or null required geometry field is a Validation error (there is no position field to validate — placement is relations)",
           "translate each step through the generic mutation translator (translate_mutation_proposal / translate_mutation_receipt) into exactly one UniverseCommand",
           "aggregate the commands into ONE UniverseWriteSet, fronted by a single InternSymbols for any new canonical symbol",
           "prepare + commit the write-set atomically at the boundary tick",
-          "read the whole structure back from a fresh reopen; assert provenance 'built', all edges, and the Moment",
-          "overlay the Built position onto the layout so it wins over the derived scaffold",
+          "read the whole structure back from a fresh reopen; assert provenance 'built', all placement edges (PART_OF; COMMUNICATES anchors for a route) and the Moment — and that NO coordinate field exists on the structure",
           "emit the construction receipt and run the independent observer and the structured evaluation AST"
         ],
-        "composition_is_data": "The ordered step template per structure_kind lives in the graph (the ConstructionBond + its field-schema), not in native code. Adding a new structure_kind is authoring data; the runtime hardcodes no kind, metaphor or geometry.",
+        "composition_is_data": "The ordered step template per structure_kind lives in the graph (the ConstructionBond + its field-schema + the kind_profiles), not in native code. Adding a new structure_kind is authoring data; the runtime hardcodes no kind, metaphor, geometry or placement rule.",
         "set_atomicity": "The UniverseWriteSet is the atomicity and identity unit. UniverseTransaction::prepare validates the whole set before any command is published; a single invalid step publishes no valid prefix.",
-        "scheduler_projection": "deterministic-tick/1; one construction = one write-set committed at one tick boundary.",
+        "scheduler_projection": "tick-boundary/1; one construction = one write-set committed at one tick boundary. Determinism is NOT required — only the committed relations are authoritative.",
         "python_escape_hatch": "forbidden_by_default"
       }
     },
@@ -156,8 +160,7 @@
           "translate_step_to_command",
           "aggregate_into_one_write_set",
           "commit_construction_set",
-          "readback_built_structure",
-          "overlay_built_position"
+          "readback_placement_relations"
         ],
         "composes_primitive": {
           "primitive": "mutation_bond",
@@ -166,7 +169,7 @@
           "kernel_verbs": ["intern_symbols", "put_entity", "put_relation", "tombstone_relation"],
           "set_model": "the UniverseWriteSet is the atomic + identity unit — 'lié au set'; a placement/construction = a set of one-verb bonds that commit together",
           "no_fifth_write_verb": true,
-          "content_contract": "each written content record is validated against its field-schema; a missing required field fails closed"
+          "content_contract": "each written content record is validated against its field-schema; a missing required field fails closed. Placement carries no content — it is relations."
         }
       }
     },
@@ -182,7 +185,7 @@
         "runtime_status": "executed_on_scratch_store",
         "verification_status": "measured",
         "proven_by": "crates/universe-e2e/src/bin/wield_construction.rs",
-        "honesty": "The Construction toolkit is materialized and shaped as a 12-role self-verifying construct whose central mechanism composes the ALREADY-PROVEN MutationBond primitive (mutation_translate.rs, green end-to-end) into an atomic SET. The step template and position model have been RECONCILED: canonical predicates only (PART_OF kept; CONSTRUCTED_BY -> PRODUCES; JUSTIFIED_BY -> GROUNDS; HAS_POSITION removed), and placement is a built_position field (x,y,z) folded into the structure entity per mutation-bond-authority.json's field-schema — no separate position node, no HAS_POSITION edge. The mechanism is now WIELDED and MEASURED: wield_construction.rs furnishes the ordered one-verb set for structure_kind=room AND structure_kind=route (region_predicate read from this fixture's kind_profiles), aggregates each through the generic translator (translate_mutation_proposal) into ONE atomic UniverseWriteSet, commits to a FRESH scratch store seeded with canonical-ontology, and proves each by independent readback. Measured run: room committed rev 0->1 and route rev 1->2, each as ONE 6-command atomic set; every structure carried provenance 'built' with its built_position field, a PART_OF region edge, a construction Moment with a Moment-PRODUCES-structure edge and a justification with a justification-GROUNDS-structure edge; a deliberately-bad step (PART_OF onto a non-existent region) was rejected by prepare with 'missing relation endpoint' and committed nothing (structure absent, revision unchanged); ZERO new symbols were interned (symbol table stayed at 134). STILL not done: the toolkit Space itself is not yet written into any canonical store (graph_status not_written), not wired to a live L2 affordance, and not exercised through the embodied/mcp act path — only the write-side mechanism it composes is proven on a scratch store."
+        "honesty": "The Construction toolkit is materialized and shaped as a 12-role self-verifying construct whose central mechanism composes the ALREADY-PROVEN MutationBond primitive (mutation_translate.rs, green end-to-end) into an atomic SET. Placement is now fully RELATIONAL, per the where-is-a-projection doctrine: NO coordinate is written in any form — no built_position field, no x/y/z, no path, no boundary. WHERE a structure is lives in its relations (PART_OF region for every kind; CONNECTS -> canonical COMMUNICATES to the two anchor nodes for a route). Only canonical predicates are emitted (PART_OF kept; CONNECTS -> COMMUNICATES; CONSTRUCTED_BY -> PRODUCES; JUSTIFIED_BY -> GROUNDS; HAS_POSITION gone and moot). The mechanism is WIELDED and MEASURED: wield_construction.rs furnishes the ordered one-verb set for structure_kind=room AND structure_kind=route (region/connection predicates read from this fixture's kind_profiles), aggregates each through the generic translator (translate_mutation_proposal) into ONE atomic UniverseWriteSet, commits to a FRESH scratch store seeded with canonical-ontology, and proves each by independent readback of the RELATIONS. The bad-set case (a dangling PART_OF endpoint) is rejected by prepare and commits nothing (structure absent, revision unchanged); ZERO new symbols are interned. STILL not done: the toolkit Space itself is not yet written into any canonical store (graph_status not_written), not wired to a live L2 affordance, and not exercised through the embodied/mcp act path — only the write-side mechanism it composes is proven on a scratch store. See wield_construction.rs run output for the measured revisions."
       }
     },
     {
@@ -191,18 +194,19 @@
       "subtype": "justification",
       "content": {
         "why": [
-          "The city must be BUILT, not generated: a force-directed layout owns and rearranges space on every observation, destroying spatial memory; an authored construction carries provenance and persists, so WHERE a thing is encodes WHY it is there.",
-          "A construction is inherently a SET, not one write: a room is its structure AND its containment AND its position AND its attributable Moment; committing them atomically is the only way a half-built structure can never exist.",
+          "The city must be BUILT, not generated, AND WHERE a thing is must be a projection, not a datum: a stored coordinate freezes a position that the layout authority should derive live from the topology; an authored RELATION (PART_OF region; CONNECTS anchors) carries provenance, persists, and means the same thing to every observer, so the meaning survives even as the projected position drifts.",
+          "A construction is inherently a SET, not one write: a room is its structure AND its containment AND its attributable Moment; committing them atomically is the only way a half-built structure can never exist.",
           "Making structure_kind DATA rather than native dispatch keeps ONE generic mechanism total over room, route and parcel — a new kind is authored, not coded — honoring the native-floor / Universe-data boundary.",
           "Composing the proven MutationBond primitive (four closed kernel verbs, content-contract enforced) means the toolkit inherits the write-path's guarantees for free instead of opening a second, hidden write path.",
-          "Attributing every structure to a CONSTRUCTED_BY Moment makes construction inspectable and non-anonymous, as the constructed-world-authority invariant requires."
+          "Attributing every structure to a construction Moment (PRODUCES) makes construction inspectable and non-anonymous, as the constructed-world-authority invariant requires."
         ],
         "rejected": [
+          "storing a coordinate (built_position, x/y/z, path, boundary) as placement, because WHERE is a live projection of the topology, never an authored literal",
           "a generated layout as authority, because the algorithm would own the citizen's space and erase spatial memory each tick",
           "one write per construction, because a structure is a set and a partial commit is a half-built structure",
           "a separate builder per structure_kind (HouseBuilder, RoadBuilder, ...) with native dispatch, because the kind is data and one modular toolkit is total over all kinds",
           "a second bespoke write path, because the MutationBond primitive already commits the four closed kernel verbs with a content contract",
-          "letting a Derived position overwrite a Built one, because measured/authored must never be replaced by suggested",
+          "referencing a route's endpoints as coordinates, because endpoints are OTHER NODES joined by CONNECTS (COMMUNICATES) relations",
           "defaulting a missing geometry field, because an unmeasured extent is Fog, not a zero-size structure"
         ]
       }
@@ -221,11 +225,10 @@
           "partial_set_commits_nothing",
           "built_structure_carries_provenance_built",
           "structure_part_of_its_region",
-          "built_position_field_on_structure_content",
+          "route_connects_its_two_anchor_nodes",
+          "no_coordinate_field_on_structure",
           "construction_moment_produces_the_structure",
           "justification_grounds_the_structure",
-          "built_position_wins_over_derived",
-          "missing_built_position_field_fails_closed",
           "no_fifth_write_verb",
           "zero_new_symbols_interned",
           "only_canonical_predicates_emitted",
@@ -234,11 +237,11 @@
         "negative_invariants": [
           "unknown structure_kind with no field-schema rejected",
           "fifth write verb rejected",
-          "missing required built_position field (x/y/z) rejected",
+          "any coordinate field (built_position / x/y/z / path / boundary) on a structure rejected",
           "structure without a construction Moment that PRODUCES it rejected",
-          "non-canonical predicate (HAS_POSITION / CONSTRUCTED_BY / JUSTIFIED_BY) rejected",
+          "non-canonical predicate (HAS_POSITION / CONNECTS / CONSTRUCTED_BY / JUSTIFIED_BY) rejected",
+          "route endpoint expressed as a coordinate instead of a CONNECTS relation rejected",
           "dangling PART_OF endpoint (non-existent region) rejects the whole set",
-          "Derived position overwriting Built rejected",
           "preview rendered as commit rejected"
         ],
         "invariants": [
@@ -246,8 +249,9 @@
           "the set is all-or-nothing (no valid prefix on a bad step)",
           "every BuiltStructure carries provenance 'built' and a construction Moment that PRODUCES it",
           "structure_kind and geometry are read from the graph",
-          "a Built position (built_position field) is never overwritten by a Derived one",
-          "only the four closed kernel verbs are emitted, and only canonical predicates (PART_OF, PRODUCES, GROUNDS) — zero new symbols"
+          "placement is relations only — no coordinate is ever written or read",
+          "a route CONNECTS (COMMUNICATES) its two anchor nodes",
+          "only the four closed kernel verbs are emitted, and only canonical predicates (PART_OF, COMMUNICATES, PRODUCES, GROUNDS) — zero new symbols"
         ]
       }
     },
@@ -256,20 +260,20 @@
       "node_type": "narrative",
       "subtype": "observability_algorithm",
       "content": {
-        "independence": "Reads the source ConstructionBond fixture, the emitted UniverseWriteSet, the committed BuiltStructure and its edges from a FRESH reopen, the field-schema, the acting capability, and the commit receipt. It does not trust a runtime-declared success flag, a renderer preview, or the implementation's self-report of graph_status.",
+        "independence": "Reads the source ConstructionBond fixture, the emitted UniverseWriteSet, the committed BuiltStructure and its edges from a FRESH reopen, the field-schema, the acting capability, and the commit receipt. It does not trust a runtime-declared success flag, a renderer preview, a derived coordinate, or the implementation's self-report of graph_status.",
         "checks": [
           "exactly one write-set per construction",
           "atomic all-or-nothing commit (no valid prefix on a bad step)",
           "provenance 'built' on the committed structure",
           "PART_OF region edge present",
-          "built_position (x/y/z) present as a field on the structure content (no HAS_POSITION edge)",
+          "for a route: two COMMUNICATES edges to the from-anchor and to-anchor nodes present",
+          "NO coordinate field (built_position / x / y / z / path / boundary) on the structure content — WHERE is a projection, not a datum",
           "construction Moment present with a Moment PRODUCES structure edge",
           "justification present with a justification GROUNDS structure edge",
           "zero new symbols interned; only canonical predicates emitted",
           "structure_kind and geometry sourced from the graph, not dispatched",
-          "Built position beats Derived at the layout overlay",
           "only closed kernel verbs emitted",
-          "content fields validated against the field-schema",
+          "content fields (size only) validated against the field-schema",
           "receipt integrity and independent readback match"
         ]
       }
@@ -285,11 +289,11 @@
           "partial_set_rejection_rate",
           "provenance_built_rate",
           "part_of_region_accuracy",
-          "built_position_bound_accuracy",
+          "route_connects_anchors_accuracy",
+          "no_coordinate_field_rate",
           "constructed_by_moment_rate",
           "justified_by_rate",
           "structure_kind_from_graph_rate",
-          "built_wins_over_derived_rate",
           "closed_verb_compliance",
           "field_schema_validation_accuracy",
           "missing_field_fail_closed_rate",
@@ -306,11 +310,11 @@
       "content": {
         "states": ["healthy", "degraded", "stale", "unknown", "not_measured", "measurement_failed"],
         "derivation": {
-          "healthy": "All required fresh scenarios pass: the SAME toolkit built both a room and a route from graph data, each as one atomic set, every structure carried provenance 'built' with a CONSTRUCTED_BY Moment and a PART_OF region edge, Built beat Derived, no fifth verb was emitted, and independent readback matched.",
+          "healthy": "All required fresh scenarios pass: the SAME toolkit built both a room and a route from graph data, each as one atomic set, every structure carried provenance 'built' with a construction Moment (PRODUCES) and a PART_OF region edge, the route CONNECTS its two anchor nodes, no coordinate field appeared on any structure, no fifth verb was emitted, and independent readback matched.",
           "degraded": "Fresh evidence exists but at least one non-catastrophic dimension violates its bound.",
           "stale": "The latest otherwise valid evidence exceeds the configured freshness window.",
           "unknown": "Required evidence cannot be resolved to a known state.",
-          "not_measured": "No fresh construction run has measured the required dimensions. This is the current state: the toolkit is WRITTEN but the wield_construction bin has not yet run a construction.",
+          "not_measured": "No fresh construction run has measured the required dimensions.",
           "measurement_failed": "The observer or evaluator failed to produce a trustworthy measurement."
         },
         "maintenance": [
@@ -318,7 +322,6 @@
           "inspect_write_set",
           "inspect_field_schema",
           "rerun_step_content_gesture",
-          "reconcile_built_vs_derived",
           "reissue_build_capability",
           "register_structure_kind",
           "ask_human"

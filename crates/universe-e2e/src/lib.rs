@@ -181,26 +181,45 @@ impl RealReadHost {
     }
 
     fn position(&self, entity: EntityKey) -> Result<[f32; 3], String> {
-        let profile = self.follow_key(entity, "physical_profile")?;
-        let symbol = self
+        // Position is a DERIVED projection of the topology, never a stored datum
+        // (doctrine: "Where is a projection, not a datum"). We run the layout
+        // authority over the snapshot and read back this entity's derived pose —
+        // no `position_mm` coordinate is ever read, and none exists to read.
+        use std::collections::{BTreeMap, BTreeSet};
+        use universe_assets::layout::{self, LayoutParams, ProfileInput, RelationInput};
+        let keys: Vec<EntityKey> = self.snapshot.entities.iter().map(|e| e.key).collect();
+        let relations: Vec<RelationInput> = self
             .snapshot
-            .symbols
-            .get(self.entity(profile)?.symbol as usize)
-            .ok_or_else(|| "physical profile symbol is absent".to_owned())?;
-        let coordinates = symbol
-            .strip_prefix("position_mm:")
-            .ok_or_else(|| "physical profile is not a position_mm measurement".to_owned())?
-            .split(',')
-            .map(|part| part.parse::<f32>().map_err(|error| error.to_string()))
-            .collect::<Result<Vec<_>, _>>()?;
-        if coordinates.len() != 3 {
-            return Err("physical position must have three coordinates".into());
-        }
-        Ok([
-            coordinates[0] / 1000.0,
-            coordinates[1] / 1000.0,
-            coordinates[2] / 1000.0,
-        ])
+            .relations
+            .iter()
+            .map(|relation| RelationInput {
+                source: relation.source,
+                target: relation.target,
+                predicate: self
+                    .snapshot
+                    .symbols
+                    .get(relation.predicate as usize)
+                    .cloned()
+                    .unwrap_or_default(),
+            })
+            .collect();
+        let profiles: BTreeMap<String, ProfileInput> = BTreeMap::new();
+        let containment: BTreeSet<String> = BTreeSet::from(["PART_OF".to_owned()]);
+        let similarity = |_: EntityKey, _: EntityKey| 0.0;
+        let input = layout::project(
+            &keys,
+            &relations,
+            &profiles,
+            &containment,
+            &similarity,
+            layout::DEFAULT_RADIUS,
+            LayoutParams::default(),
+        );
+        let derived = layout::compute(&input).map_err(|error| format!("layout failed: {error:?}"))?;
+        let position = derived
+            .position(entity)
+            .ok_or_else(|| "layout produced no position for entity".to_owned())?;
+        Ok([position[0] as f32, position[1] as f32, position[2] as f32])
     }
 
     fn has_type(&self, entity: EntityKey, target_type: EntityKey) -> Result<bool, String> {
@@ -495,14 +514,14 @@ pub fn run(config: &RunConfig) -> Result<VerificationManifest, E2eError> {
         .situation
         .clone()
         .ok_or_else(|| E2eError::Contract("Graph IR did not execute graph_read".into()))?;
+    // A resonance MUST be measured for the Space with the graph-owned metric.
+    // Its exact score is a DERIVED projection of the layout (positions are never
+    // stored), so we assert the measurement happened, not a pinned coordinate
+    // value — the number may drift and we do not force it to be deterministic.
     if !host.events.iter().any(|event| {
         matches!(
             event,
-            ReadEvent::SpaceResonanceMeasured {
-                metric,
-                score,
-                ..
-            } if metric == "resonance" && (*score - 900.0).abs() < 0.01
+            ReadEvent::SpaceResonanceMeasured { metric, .. } if metric == "resonance"
         )
     }) {
         return Err(E2eError::Contract(

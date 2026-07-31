@@ -376,7 +376,12 @@
           ]
         },
         "kind": "field_schema_instance",
-        "status": "active_fixture"
+        "status": "deprecated",
+        "deprecation": {
+          "retired": true,
+          "since": "where-is-a-projection-doctrine",
+          "note": "The built_position (x,y,z) field-schema is RETIRED: positions are never stored. Under the where-is-a-projection doctrine a thing's place lives entirely in its relations (PART_OF, CONNECTS) and the coordinate is a live projection, so no MutationBond should write a built_position content record. This field-schema is kept ONLY to preserve the demo MutationBond instance's exactly_one USES_FIELD_SCHEMA binding (relation 00000000000000000000000000007102) — that bond is inert (not_measured) and writes nothing. The construction toolkit (fixtures/ontology/construction-toolkit-v0.json, wield_construction.rs) no longer uses this schema; it authors placement as relations. FOLLOWUP: replace this demo bond's field-schema with a coordinate-free content_kind (e.g. a scalar-size or claim schema) so no retired position schema remains wired, then this entity can be dropped."
+        }
       }
     },
     {
