@@ -9,6 +9,7 @@ pub mod canonical;
 pub mod canonical_ride;
 pub mod canonical_seed_energy;
 pub mod cluster;
+pub mod construct_registry;
 pub mod construct_resolver;
 pub mod conversation_ride;
 pub mod conversation_seed_energy;
@@ -20,6 +21,7 @@ pub mod magic_object;
 pub mod measured_ride;
 pub mod mutation_translate;
 pub mod neighborhood_arc;
+pub mod wave_selector;
 
 use serde::{Deserialize, Serialize};
 use std::{

@@ -250,17 +250,27 @@ fn construct_pattern_sensor_deposit_threshold_effect_is_encoded() {
     );
     assert_eq!(trigger["seed_energy"].as_i64(), Some(0), "trigger starts cold");
 
-    // EFFECT: the fire drives an emitter that produces a 'notify' EffectIntent
-    // and an EffectReceipt. Trigger -> emitter -> receipt chain present.
+    // EFFECT: the fire drives a TERMINAL emitter bound to a 'notify' EffectIntent.
+    // Trigger -> emitter conducts; the emitter then surfaces exactly one notify
+    // CANDIDATE via the authored effect_bindings. It is terminal (conducts no
+    // energy onward): the genuine EffectReceipt is produced by the authorized
+    // capability transport, and the crossing Moment by the commit path — neither
+    // is a shadow atom the emitter feeds (that fan-out violated energy
+    // conservation and starved the emitter).
     assert!(
         bonds.values().any(|b| b["source"].as_str() == Some(trigger_key)
             && b["target"].as_str() == Some("notify_emitter")),
         "Effect: trigger fire drives the notify emitter"
     );
+    let effect_bindings = circuit["effect_bindings"]
+        .as_array()
+        .expect("circuit authors its effect_bindings");
     assert!(
-        bonds.values().any(|b| b["source"].as_str() == Some("notify_emitter")
-            && b["target"].as_str() == Some("effect_receipt")),
-        "Effect: the emitter produces an EffectReceipt"
+        effect_bindings.iter().any(|binding| {
+            binding["emitter_atom"].as_str() == Some("notify_emitter")
+                && binding["capability"].as_str().is_some_and(|c| !c.is_empty())
+        }),
+        "Effect: the terminal emitter is bound to a notify EffectIntent candidate"
     );
 
     // The effect is specifically a 'notify' EffectIntent.
