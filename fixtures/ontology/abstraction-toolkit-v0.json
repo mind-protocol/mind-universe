@@ -1,0 +1,424 @@
+{
+  "id": "space:l2:mind-universe:abstraction-toolkit-v0",
+  "node_type": "space",
+  "subtype": "abstraction_toolkit",
+  "content": {
+    "contractKind": "construct",
+    "name": "Abstraction toolkit v0 (create, store, prove and show abstractions)",
+    "dominant_scale": "sensemaking",
+    "lineage": "Shares the Micro-energy circuit AtomDynamics law (the 'micro-electric' kit) at the SENSEMAKING scale, and inherits the seal-gate discipline of the Energy Pen (a claim is established only when measured support meets threshold). Where the Sky/Mechanical/Telecom/Underground toolkits program and act on THINGS, this one operates on ABSTRACTIONS — values, patterns, designs, claims, justifications. It is meta: it produces the very patterns, designs and justifications the other toolkits carry in their own justification and validation faces. See [[space:l2:lumina-prime:energy-pen-v0]].",
+    "parent_scope": {
+      "classification": "standalone",
+      "justification": "Portable bootstrap toolkit awaiting installation under the canonical sensemaking/physicalization registry Space. Exactly one scope classification; no PART_OF edge is written to an unbuilt parent."
+    },
+    "runtime_moment_subtypes": ["validation_run", "health_assessment"],
+    "native_law_boundary": "AtomDynamics knows only AtomSpec, AtomBond and support/inhibit/neutral. This toolkit is a reasoning grammar over that law: an abstraction is an atom (a proposition), a piece of evidence/justification is a support bond, a contradiction/counterexample is an inhibition bond, the required arguments are required_supports (an AND gate), the proof burden is the threshold, and 'proven' is a fire. Which abstraction MEANS what — a value, a pattern, a design — is payload data, never a term in the atom law.",
+    "purpose": "Create, store, prove and show abstractions. CREATE: an author composes an abstraction — a Value, a Pattern, a Design, a Claim or a Justification — as a proposition (atom) with its intended content. STORE: it is committed to the graph with provenance and a signature over exact atoms and revisions, so it persists and can be cited. PROVE: it is established only by conducting MEASURED evidence/justification to its proof threshold with no standing contradiction — a proof is conducted evidence, never an assertion; a counterexample inhibits it. SHOW: it is physicalized with an HONEST proof state — proven is solid, supported-but-unproven is partial, unproven is Fog, refuted is struck through. An unproven abstraction is never shown as established, and a proof that a claim's evidence cannot bear is refused.",
+    "abstraction_contract": {
+      "abstraction": "a created reasoning artifact (Value | Pattern | Design | Claim | Justification | Question), physicalized as an atom whose fire = 'established/proven'",
+      "evidence": "a support bond from a supporting abstraction/observation to the one it argues for; carries measured weight toward the proof threshold",
+      "contradiction": "a counterexample/refutation, physicalized as an inhibition bond that blocks 'proven' without erasing the support already gathered",
+      "required_arguments": "the arguments an abstraction MUST have to be provable, physicalized as required_supports (an AND gate) — e.g. a Design requires a justification AND its rejected alternatives",
+      "proof_burden": "the threshold of measured support an abstraction must reach to count as proven",
+      "abstraction_of": "generalization: a higher Pattern whose required_supports are its instances — it fires (the pattern holds) only when enough instances support it",
+      "proof_states": ["proposed", "supported", "proven", "contradicted", "refuted", "unknown", "not_measured"],
+      "verbs": ["create", "store", "prove", "show"],
+      "author_capabilities": ["create_abstraction", "add_evidence", "raise_contradiction", "store_abstraction", "supersede_abstraction"],
+      "observer_capabilities": ["observe", "read_abstraction", "trace_proof", "inspect_evidence"],
+      "rule": "An abstraction is shown as PROVEN only when its measured support meets its proof burden AND no contradiction inhibits it; otherwise it is proposed/supported/contradicted/Fog. Evidence energy must be measured — an authored or unknown weight is refused. A signature covers exact atoms and revisions; mutating a proven abstraction invalidates its signature and re-opens its proof. Creating, evidencing or contradicting is an attributable act; a mere observer reads but does not alter the reasoning.",
+      "sealed_default": "unproven_until_evidence_conducts"
+    }
+  },
+  "members": [
+    {
+      "id": "objective:l2:mind-universe:abstraction-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "For any created abstraction, its shown proof state is a faithful projection of MEASURED evidence: proven only when support meets the proof burden and no contradiction stands; supported, contradicted, or Fog otherwise. Every abstraction is stored with provenance and a signature over exact atoms and revisions; mutating a proven abstraction invalidates its signature and re-opens its proof. A Pattern abstracted from instances holds only when enough instances support it. No unproven abstraction is ever shown as established, and no proof is admitted from unmeasured or contradicted evidence."
+      }
+    },
+    {
+      "id": "pattern:l2:mind-universe:abstraction-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "A bounded reasoning Space holds abstractions and carries no energy of its own. Each abstraction physicalizes as an atom (roleAxis narrative — an attractor that holds a proposition); its required arguments are its required_supports (an AND gate). A piece of evidence/justification is a support bond that conducts measured weight toward the proof burden; a contradiction is an inhibition bond that blocks 'proven' without erasing gathered support. To PROVE, run_until_quiescent conducts the evidence: an abstraction fires (becomes proven) only when its measured support meets threshold, its required arguments all conducted, and no contradiction inhibits it. To SHOW, the abstraction is rendered with a proof state that mirrors its atom state — proven solid, supported partial, contradicted blocked, unproven Fog. To STORE is to commit it with provenance and a signature; to CREATE is to author it. A Pattern generalized from instances is a higher atom whose required_supports are those instances.",
+        "epistemic_honesty": "A proven abstraction is one whose evidence actually conducted, not one asserted. A drawn evidence line is a committed support bond, not a hope. A contradicted claim is blocked, not quietly proven. An unproven abstraction is Fog — proposed or unknown — never confident knowledge. Reading the reasoning is not altering it."
+      }
+    },
+    {
+      "id": "vocabulary:l2:mind-universe:abstraction-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "ReasoningSpace": "The bounded Space that holds one web of abstractions; roleAxis space, carries no energy, bounds the reasoning.",
+          "Abstraction": "A created reasoning artifact (Value, Pattern, Design, Claim, Justification, Question) physicalized as an atom whose fire = proven/established.",
+          "Value": "A held commitment or criterion an abstraction can be judged against.",
+          "Pattern": "A generalization abstracted from instances; a higher atom whose required_supports are its instances — it holds only when enough instances support it.",
+          "Design": "A proposed structure carrying its justification and its rejected alternatives; provable only when both are present and uncontradicted.",
+          "Claim": "A single proposition that may be supported, proven, contradicted or refuted.",
+          "Evidence": "A support bond conducting measured weight toward an abstraction's proof burden.",
+          "Contradiction": "A counterexample/refutation; an inhibition bond that blocks 'proven' without erasing gathered support.",
+          "Proof": "The conducted, measured support sub-graph that fires an abstraction at its proof burden with no standing contradiction — never a bare assertion.",
+          "ProofBurden": "The support threshold an abstraction must reach to count as proven.",
+          "Signature": "A validity claim over exact atoms and revisions; mutating a proven abstraction invalidates it and re-opens the proof.",
+          "Fog": "A proposed, unknown or not_measured abstraction; shown dark/translucent, never as established knowledge."
+        }
+      }
+    },
+    {
+      "id": "behavior:l2:mind-universe:abstraction-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "An authored abstraction (its kind, content and required arguments), pieces of measured evidence/justification, any contradictions, and the acting actor's capability set.",
+        "when": "An author creates an abstraction, stores it, adds evidence, raises a contradiction, requests a proof, or an observer reads the reasoning.",
+        "then": [
+          "CREATE: admit the abstraction as a proposition (atom) with its required arguments as required_supports; it starts unproven (Fog).",
+          "STORE: commit it to the graph with provenance and a signature over exact atoms and revisions.",
+          "PROVE: run the evidence circuit — the abstraction fires (proven) only when its measured support meets its proof burden, all required arguments conducted, and no contradiction inhibits it.",
+          "Hold a contradicted or under-supported abstraction unproven; never fabricate a proof it cannot bear.",
+          "SHOW: physicalize each abstraction with a proof state faithful to its atom state (proven / supported / contradicted / Fog).",
+          "Serve reads as observe-only; resolve create/evidence/contradict/store against the authoring capability, failing an unauthorized one closed with a receipt."
+        ],
+        "forbidden": [
+          "reading an abstraction's kind or meaning inside the native AtomDynamics law",
+          "showing an unproven or contradicted abstraction as established",
+          "admitting a proof from authored, derived, unknown or not_measured evidence",
+          "firing 'proven' while a contradiction inhibits the abstraction",
+          "firing a Design/Pattern without all its required arguments conducted",
+          "drawing an evidence line where no support bond exists",
+          "conducting an evidence or contradiction bond more than once",
+          "holding a signature valid after its proven abstraction mutated",
+          "erasing gathered support when a contradiction arrives",
+          "presenting a rendered proof animation as an actual proof",
+          "pre-creating validation_run or health_assessment"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l2:mind-universe:abstraction-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "CREATE: read the authored abstraction (kind, content, required arguments); map it to an atom whose required_supports are its required arguments",
+          "STORE: commit the abstraction with provenance; compute a signature over its exact atoms and revisions",
+          "map each evidence/justification to a support bond, each contradiction to an inhibition bond",
+          "validate exact u64 AtomSpec/AtomBond invariants",
+          "admit only measured evidence weight through the membrane",
+          "PROVE: run_until_quiescent — fire an abstraction iff support >= proof burden, all required arguments received, and not inhibited by a contradiction",
+          "hold under-supported or contradicted abstractions unproven (Fog)",
+          "verify admitted integer evidence weight is conserved",
+          "assign each abstraction a proof state: proposed / supported / proven / contradicted / refuted / unknown / not_measured",
+          "SHOW: render each abstraction faithful to its proof state, without inventing certainty",
+          "for a mutation of a proven abstraction: invalidate its prior signature and re-open its proof",
+          "for a read: resolve the observe-only set; for authoring: require the authoring capability, else fail closed",
+          "emit the commit or rejection receipt; run the independent observer and structured evaluation AST; derive health from fresh evidence"
+        ],
+        "proof_rule": "proven(a) iff measured_support(a) >= proof_burden(a) AND all required_arguments(a) conducted AND not contradicted(a); otherwise proposed/supported/contradicted/Fog.",
+        "capability_resolution": "read -> observe-only-set; authoring_port -> require(authoring_capability). No affordance escalates capability; an absent capability fails closed.",
+        "scheduler_projection": "deterministic-wave-ticks/1; exact same-tick tie semantics must be reconciled with the canonical Rust crate when integrated.",
+        "python_escape_hatch": "forbidden_by_default"
+      }
+    },
+    {
+      "id": "code:l2:mind-universe:abstraction-toolkit-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "authority": "Graph-native CodeDefinition projection for the portable Abstraction toolkit; this JSON file is a materialized projection, not independent semantic authority.",
+        "language": "mind-ir+atom-fixture",
+        "entrypoints": [
+          "create_abstraction",
+          "store_abstraction",
+          "add_evidence",
+          "raise_contradiction",
+          "prove",
+          "assign_proof_state",
+          "show_abstraction",
+          "observe_reasoning",
+          "evaluate_reasoning_ast"
+        ],
+        "authoring_gate": {
+          "port_id": "port:l2:mind-universe:abstraction:authoring-v0",
+          "observe_capabilities": ["observe", "read_abstraction", "trace_proof", "inspect_evidence"],
+          "required_mutate_capability": "authority:abstraction-authoring",
+          "default_state": "unproven_until_evidence_conducts",
+          "on_unauthorized": ["fail_closed", "leave_reasoning_unchanged", "emit_rejection_receipt"],
+          "rule": "Creating, evidencing, contradicting or storing an abstraction is admitted only from an actor holding authority:abstraction-authoring. Reading grants none of it. A proof is admitted only from measured evidence."
+        },
+        "proof_circuit": {
+          "note": "GENERIC illustrative reasoning: a Design abstraction is proven only when BOTH its justification and its rejected-alternatives argument conduct (an AND gate at proof_burden 200); a counterexample can inhibit it. A real reasoning web supplies ANY abstractions + evidence + contradictions; the toolkit hard-codes no particular claim.",
+          "atoms": [
+            { "key": "justification_present", "roleAxis": "narrative", "threshold": 100, "seed_energy": 100 },
+            { "key": "alternatives_rejected", "roleAxis": "narrative", "threshold": 100, "seed_energy": 100 },
+            { "key": "design", "roleAxis": "narrative", "threshold": 200, "seed_energy": 0, "required_supports": ["justif_to_design", "alts_to_design"], "inhibition_threshold": 1, "note": "proof_burden 200 = both required arguments; a single unit of contradiction blocks 'proven'" },
+            { "key": "counterexample", "roleAxis": "narrative", "threshold": 1, "seed_energy": 0 }
+          ],
+          "bonds": [
+            { "key": "justif_to_design", "source": "justification_present", "target": "design", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0", "note": "the justification argues for the design" },
+            { "key": "alts_to_design", "source": "alternatives_rejected", "target": "design", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0", "note": "rejected-alternatives argument" },
+            { "key": "counter_to_design", "source": "counterexample", "target": "design", "polarity": "inhibit", "energy": 1, "energy_status": "measured:semantic_v0", "note": "a counterexample; if it charges, the design is contradicted, not proven — support is not erased" }
+          ],
+          "proof_note": "With both supports conducting (200 >= 200) and no counterexample charged, the design fires = PROVEN. Inject 1 into counterexample and the design stays unproven (contradicted) while keeping its 200 support — honest, re-openable.",
+          "external_measured_injections": {}
+        }
+      }
+    },
+    {
+      "id": "implementation:l2:mind-universe:abstraction-toolkit-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "status": "materialized",
+        "artifact": "abstraction-toolkit-v0.json",
+        "graph_status": "not_written",
+        "wiring_status": "not_wired",
+        "runtime_status": "not_running",
+        "verification_status": "not_measured",
+        "honesty": "The portable Abstraction toolkit is materialized and structurally shaped as a construct. This field is written BEFORE injection; after an injector commits it, the on-disk graph carries the construct while this embedded field reads stale (WRITTEN but not wired, executed, or proven healthy). No abstraction is proved or shown yet."
+      }
+    },
+    {
+      "id": "justification:l2:mind-universe:abstraction-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": [
+          "Reasoning artifacts — values, patterns, designs, justifications — need a first-class home; without one they live as prose the system cannot check, cite or re-open.",
+          "Making 'proven' a FIRE gated by measured support means a claim cannot be established by assertion: an under-supported or contradicted abstraction simply does not fire, so the difference between opinion and proof is measurable.",
+          "Modelling contradiction as inhibition (blocking without erasing support) gives honest refutation: a counterexample re-opens a proof instead of silently deleting the case for it.",
+          "Modelling generalization as an AND gate over instances makes a Pattern hold only when enough instances actually support it, so abstraction is earned, not declared.",
+          "Signing over exact atoms and revisions makes tampering detectable: mutate a proven abstraction and its signature falls and the proof re-opens.",
+          "Being the meta-toolkit — the place other toolkits' patterns, designs and justifications are created and proved — keeps reasoning uniform across the whole system."
+        ],
+        "rejected": [
+          "treating an asserted claim as proven, because assertion is not conducted evidence",
+          "proof from unmeasured weight, because energy is conserved gating, not persuasion",
+          "a contradiction that erases support, because refutation should re-open a case, not delete it",
+          "declaring a Pattern from a single instance, because generalization must be supported by enough instances",
+          "holding a signature valid after its claim mutated, because that hides tampering",
+          "a rendered proof animation as a proof, because a picture is not conducted evidence"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:mind-universe:abstraction-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "structured_expression_ast",
+        "scenarios": [
+          "abstraction_created_starts_unproven",
+          "abstraction_stored_with_provenance_and_signature",
+          "design_proven_only_with_all_required_arguments",
+          "under_supported_abstraction_stays_unproven",
+          "contradiction_blocks_proof_without_erasing_support",
+          "pattern_holds_only_with_enough_instances",
+          "unmeasured_evidence_rejected",
+          "proof_state_shown_faithfully",
+          "unproven_never_shown_as_established",
+          "mutation_invalidates_signature_and_reopens_proof",
+          "evidence_conducts_once",
+          "reasoning_reaches_quiescence",
+          "authoring_requires_capability",
+          "unauthorized_authoring_fails_closed"
+        ],
+        "negative_invariants": [
+          "threshold zero rejected",
+          "inhibition threshold zero rejected",
+          "duplicate required supports rejected",
+          "neutral bond with nonzero energy rejected",
+          "unmeasured evidence injection rejected",
+          "proof asserted without conducted evidence rejected"
+        ],
+        "invariants": [
+          "an abstraction is proven only with measured support at or above its proof burden and no standing contradiction",
+          "all required arguments conducted before a Design/Pattern fires",
+          "a contradiction blocks proof without erasing gathered support",
+          "a Pattern holds only when enough instances support it",
+          "every stored abstraction carries provenance and a signature over exact atoms and revisions",
+          "mutating a proven abstraction invalidates its signature and re-opens its proof",
+          "admitted integer evidence weight is conserved",
+          "every evidence and contradiction bond conducts at most once",
+          "an unproven or contradicted abstraction is never shown as established",
+          "every authoring affordance resolves to the authoring capability"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:mind-universe:abstraction-observer-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "target": "observability_algorithm:l2:mind-universe:abstraction-toolkit-v0",
+        "tests": [
+          "detect an abstraction shown as proven whose evidence did not conduct to threshold",
+          "detect a proof admitted from unmeasured evidence",
+          "detect a 'proven' fire while a contradiction inhibits the abstraction",
+          "detect a Design/Pattern fired without all required arguments",
+          "detect a Pattern declared from too few instances",
+          "detect a signature still valid after its proven abstraction mutated",
+          "detect an evidence or contradiction bond conducted twice",
+          "detect a contradiction that erased gathered support",
+          "detect an authoring affordance offered to an actor without the capability",
+          "detect a rendered proof animation presented as a proof",
+          "never convert an unproven abstraction into an established one"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l2:mind-universe:abstraction-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Reads each abstraction and its kind/content, its required arguments, the evidence and contradiction bonds, the physicalized proof trace, final atom states, the signatures, the provenance, the acting capability set and the catalog. It does not trust a runtime-declared proof state, a renderer animation, or an author's self-report of certainty.",
+        "checks": [
+          "every 'proven' abstraction reached its proof burden with measured support",
+          "no proof was admitted from unmeasured evidence",
+          "no abstraction fired while contradicted",
+          "all required arguments conducted before a Design/Pattern fired",
+          "a Pattern held only with enough instances",
+          "contradictions blocked proof without erasing support",
+          "every stored abstraction has provenance and a signature over exact atoms and revisions",
+          "signatures invalidate on mutation and proofs re-open",
+          "integer evidence weight conservation",
+          "single conduction per evidence and contradiction bond",
+          "measured-only membrane admission",
+          "proof state shown faithfully (Fog for unproven)",
+          "every authoring affordance requires the authoring capability",
+          "quiescence",
+          "receipt integrity"
+        ]
+      }
+    },
+    {
+      "id": "metric:l2:mind-universe:abstraction-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "dimensions": [
+          "proof_support_fidelity",
+          "fabricated_proof_rate",
+          "unmeasured_evidence_rejection_rate",
+          "contradiction_block_accuracy",
+          "support_preserved_under_contradiction_rate",
+          "required_argument_completeness_accuracy",
+          "pattern_instance_sufficiency_accuracy",
+          "signature_binding_integrity",
+          "signature_invalidation_on_mutation_rate",
+          "proof_state_show_fidelity",
+          "unproven_shown_as_established_rate",
+          "evidence_conservation_error_u64",
+          "single_conduction_accuracy",
+          "measured_stream_only_rate",
+          "authoring_capability_gated_rate",
+          "quiescence_reached",
+          "receipt_integrity",
+          "observer_fault_detection_rate",
+          "evidence_freshness_ms"
+        ]
+      }
+    },
+    {
+      "id": "health:l2:mind-universe:abstraction-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "states": ["healthy", "degraded", "stale", "unknown", "not_measured", "measurement_failed"],
+        "derivation": {
+          "healthy": "All required fresh validation scenarios pass: every proven abstraction reached its proof burden with measured support and no standing contradiction, required arguments conducted before firing, patterns held only with enough instances, contradictions blocked without erasing support, signatures bound exact atoms and re-opened on mutation, proof states were shown faithfully, and authoring was capability-gated.",
+          "degraded": "Fresh evidence exists but at least one non-catastrophic dimension violates its bound.",
+          "stale": "The latest otherwise valid evidence exceeds the configured freshness window.",
+          "unknown": "Required evidence cannot be resolved to a known state.",
+          "not_measured": "No fresh validation run has measured the required dimensions.",
+          "measurement_failed": "The observer or evaluator failed to produce a trustworthy measurement."
+        },
+        "maintenance": [
+          "retry",
+          "inspect_proof_ledger",
+          "inspect_evidence",
+          "re_evaluate_contradiction",
+          "gather_more_instances",
+          "revalidate_signatures",
+          "recompute_proof_state",
+          "recalibrate_visual_bounds",
+          "rematerialize_catalog",
+          "reissue_authoring_capability",
+          "reconcile_rust_scheduler",
+          "ask_human"
+        ]
+      }
+    },
+    {
+      "id": "port:l2:mind-universe:abstraction:authoring-v0",
+      "node_type": "thing",
+      "subtype": "capability_port",
+      "content": {
+        "name": "Abstraction authoring port (create / evidence / contradict / store)",
+        "state": "unproven_until_evidence_conducts",
+        "observe_capabilities": ["observe", "read_abstraction", "trace_proof", "inspect_evidence"],
+        "required_mutate_capability": "authority:abstraction-authoring",
+        "shape_contract": "observe_set_disjoint_from_authoring_set",
+        "reader_predicate": "actor_holds(authority:abstraction-authoring)",
+        "effect_when_unauthorized": "fail_closed_and_leave_reasoning_unchanged",
+        "note": "Reading and tracing the reasoning is a separate observe-only surface; this port is the ONLY authoring surface. A proof, additionally, is admitted only from measured evidence — capability lets you argue, it does not let you assert a proof."
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "space:l2:mind-universe:abstraction-toolkit-v0",
+      "predicate": "IMPLEMENTED_IN",
+      "target": "implementation:l2:mind-universe:abstraction-toolkit-v0"
+    },
+    {
+      "source": "space:l2:mind-universe:abstraction-toolkit-v0",
+      "predicate": "DEFINED_BY_CODE",
+      "target": "code:l2:mind-universe:abstraction-toolkit-v0"
+    },
+    {
+      "source": "code:l2:mind-universe:abstraction-toolkit-v0",
+      "predicate": "IMPLEMENTED_BY",
+      "target": "implementation:l2:mind-universe:abstraction-toolkit-v0"
+    },
+    {
+      "source": "pattern:l2:mind-universe:abstraction-toolkit-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l2:mind-universe:abstraction-toolkit-v0"
+    },
+    {
+      "source": "behavior:l2:mind-universe:abstraction-toolkit-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:mind-universe:abstraction-toolkit-v0"
+    },
+    {
+      "source": "implementation:l2:mind-universe:abstraction-toolkit-v0",
+      "predicate": "OBSERVED_BY",
+      "target": "observability_algorithm:l2:mind-universe:abstraction-toolkit-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:mind-universe:abstraction-toolkit-v0",
+      "predicate": "PRODUCES",
+      "target": "metric:l2:mind-universe:abstraction-toolkit-v0"
+    },
+    {
+      "source": "metric:l2:mind-universe:abstraction-toolkit-v0",
+      "predicate": "FEEDS",
+      "target": "health:l2:mind-universe:abstraction-toolkit-v0"
+    },
+    {
+      "source": "objective:l2:mind-universe:abstraction-toolkit-v0",
+      "predicate": "SUPPORTS",
+      "target": "space:l2:mind-universe:abstraction-toolkit-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:mind-universe:abstraction-toolkit-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:mind-universe:abstraction-observer-v0"
+    }
+  ]
+}
