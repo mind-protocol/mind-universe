@@ -1,0 +1,420 @@
+{
+  "id": "space:l2:mind-universe:telecom-toolkit-v0",
+  "node_type": "space",
+  "subtype": "telecom_toolkit",
+  "content": {
+    "contractKind": "construct",
+    "name": "Telecom toolkit v0 (wire mechanical effects onto distant things)",
+    "dominant_scale": "telecom",
+    "lineage": "Extends the Mechanical toolkit across SPACE. A Mechanical effector acts on a thing within reach; the Telecom toolkit carries that same EffectIntent to a DISTANT thing over a link — emitters, antennas, trackers and beacons for addressing and transmission — and proves arrival with an acknowledgement. Shares the Micro-energy circuit AtomDynamics law (transmission = a support bond whose energy attenuates with distance; range = attenuated energy vs the receiver's threshold). See [[space:l2:mind-universe:mechanical-toolkit-v0]] and the broadcast port of [[space:l2:lumina-prime:energy-pen-v0]].",
+    "parent_scope": {
+      "classification": "standalone",
+      "justification": "Portable bootstrap toolkit awaiting installation under the canonical civic/telecom physicalization registry Space. Exactly one scope classification; no PART_OF edge is written to an unbuilt parent."
+    },
+    "runtime_moment_subtypes": ["validation_run", "health_assessment"],
+    "native_law_boundary": "AtomDynamics knows only AtomSpec, AtomBond and support/inhibit/neutral. Telecom is a physicalization + addressing grammar over that law: an emitter/antenna/receiver/effector is an atom, a transmission is a support bond whose energy attenuates with distance, and a remote effector fires only if the received signal meets its threshold (in range). Addresses, channels, gains and effect meaning are payload data on nodes and bonds, never terms in the atom law. 'telecom' is an authored scale label, not a native enum.",
+    "purpose": "Wire a mechanical effect onto a very distant thing. A Mechanical effector, instead of acting locally, hands its EffectIntent to an Emitter; the emitter resolves the distant target's Address (via a Tracker that follows a moving target and Beacons that advertise identity/position), points an Antenna, and transmits over a Link. The signal attenuates with distance; the remote Receiver's Effector actuates the thing only if the received signal is in range and authorized, then returns an Acknowledgement that is reinjected as a Moment. Distance makes three states strictly distinct: SENT (emitter fired), DELIVERED (ACK returned), EFFECTED (remote EffectReceipt returned). None may be assumed from another; out of range means not delivered, never a silent success.",
+    "telecom_contract": {
+      "emitter": "a module that takes an EffectIntent and transmits it over a link toward a resolved address; physicalized as an atom that conducts an attenuating signal bond",
+      "antenna": "the transmit/receive element: gain, direction and range; shapes how far and where a transmission reaches",
+      "beacon": "a stationary emitter advertising identity/position for addressing and discovery (cf. the orientation beacon at civic origin)",
+      "tracker": "follows a moving target's address/position so the link stays pointed at it; without a resolved address, nothing can be actuated",
+      "receiver": "the distant antenna that receives a transmission in range and hands the EffectIntent to a local (remote) effector",
+      "link": "the medium; its signal ATTENUATES with distance, so a remote effector fires only when the received energy meets its threshold (in range)",
+      "address": "how a distant thing is named/reached; resolved by trackers and beacons — you can only actuate a thing you can address",
+      "acknowledgement": "the return signal proving DELIVERY; the remote EffectReceipt proves the EFFECT. Sent is not delivered; delivered is not effected.",
+      "author_capabilities": ["deploy_beacon", "aim_antenna", "register_address", "open_link", "authorize_transmission"],
+      "observer_capabilities": ["observe", "read_network", "trace_transmission", "measure_signal"],
+      "rule": "A transmission is admitted only to an authorized address within range and validity window; the remote effector fires only if the attenuated signal meets its threshold. A firing emitter has SENT, not delivered; only a returned acknowledgement proves delivery and only a returned remote EffectReceipt proves the effect. Out of range, unaddressed, or unauthorized transmissions fail closed and are reported.",
+      "sealed_default": "no_transmission_without_authorization"
+    }
+  },
+  "members": [
+    {
+      "id": "objective:l2:mind-universe:telecom-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "For any distant, addressable target, a mechanical EffectIntent can be transmitted and actuated remotely: the emitter transmits only to an authorized address within range and validity, the signal attenuates honestly with distance, the remote effector fires only in range, and SENT / DELIVERED (acknowledgement) / EFFECTED (remote EffectReceipt) remain distinct — none assumed from another. An out-of-range, unaddressed or unauthorized transmission fails closed and is reported; no distant effect is ever claimed without a returned receipt."
+      }
+    },
+    {
+      "id": "pattern:l2:mind-universe:telecom-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "A bounded network Space holds emitters, antennas, beacons, trackers and receivers, and carries no energy of its own. An emitter physicalizes as an atom of roleAxis thing that, on receiving an EffectIntent, conducts a transmission bond toward the target's receiver. The transmission bond's energy ATTENUATES with distance (a far receiver gets less), so the remote effector — an atom whose threshold encodes its sensitivity/range — fires only when the received signal meets that threshold. Trackers and beacons (actor-roleAxis sources) seed and maintain the addressing so the link resolves a target. A returned acknowledgement bond proves delivery; a returned remote EffectReceipt proves the effect. Authorization (measured origin, authorized addresses, cooldown, validity window) gates transmission the way the energy-pen's broadcast port gates a broadcast.",
+        "epistemic_honesty": "A transmitted signal is not a delivered one; a delivered one is not an effected one. Out of range is Fog, not a quiet success. A tracker with no resolved address cannot actuate anything. A renderer beam is not an acknowledgement."
+      }
+    },
+    {
+      "id": "vocabulary:l2:mind-universe:telecom-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "NetworkSpace": "The bounded Space that holds one telecom network; roleAxis space, carries no energy, bounds the reach.",
+          "Emitter": "A module that takes an EffectIntent and transmits it over a link toward a resolved address; physicalized as an atom conducting an attenuating signal bond.",
+          "Antenna": "The transmit/receive element — gain, direction, range — shaping how far and where a transmission reaches.",
+          "Beacon": "A stationary emitter advertising identity/position for addressing and discovery.",
+          "Tracker": "A follower of a moving target's address/position, keeping the link pointed at it.",
+          "Receiver": "The distant antenna that receives a transmission in range and hands the EffectIntent to a remote effector.",
+          "Link": "The medium; its signal attenuates with distance, so range = attenuated energy vs the receiver's threshold.",
+          "Address": "How a distant thing is named/reached; resolved by trackers and beacons.",
+          "Acknowledgement": "The return signal proving DELIVERY (the transmission arrived).",
+          "RemoteEffectReceipt": "The receipt proving the EFFECT happened at the distant end; travels back and is reinjected as a Moment.",
+          "OutOfRange": "A target whose received signal is below the receiver threshold; not delivered, rendered as Fog, never a success.",
+          "TransmissionAuthorization": "Measured origin, authorized addresses, delivery mode, cooldown and validity window that gate a transmission (cf. the energy-pen broadcast port)."
+        }
+      }
+    },
+    {
+      "id": "behavior:l2:mind-universe:telecom-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "A mechanical EffectIntent to actuate a distant thing, the target's address (resolved by trackers/beacons), antenna gain/direction, the link's attenuation, a transmission authorization, and the acting actor's capability set.",
+        "when": "An emitter transmits, a receiver receives, a remote effector actuates, or an observer measures the network.",
+        "then": [
+          "Resolve the target address via trackers and beacons; refuse to transmit to an unresolved or unauthorized address.",
+          "Admit the transmission only within the authorization's range, authorized-address set and validity window.",
+          "Conduct the transmission as an attenuating signal bond; the received energy falls with distance.",
+          "Fire the remote effector only if the received signal meets its threshold (in range); hold an out-of-range receiver as Fog.",
+          "On remote actuation, produce the real effect through authorized transport and return a RemoteEffectReceipt reinjected as a Moment.",
+          "Return an Acknowledgement proving delivery; keep SENT, DELIVERED and EFFECTED distinct and separately receipted."
+        ],
+        "forbidden": [
+          "reading addresses or effect meaning inside the native AtomDynamics law",
+          "assuming delivery from a transmission (SENT is not DELIVERED)",
+          "assuming the effect from an acknowledgement (DELIVERED is not EFFECTED)",
+          "actuating a remote effector whose received signal is below its threshold (out of range)",
+          "transmitting to an unresolved, unauthorized, or out-of-validity address",
+          "streaming authored, derived, unknown or not_measured signal energy",
+          "rendering an out-of-range target as delivered (fabricated reach)",
+          "claiming a distant effect without a returned RemoteEffectReceipt",
+          "presenting a renderer beam or animation as an acknowledgement",
+          "conducting a transmission or acknowledgement bond more than once",
+          "pre-creating validation_run or health_assessment"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l2:mind-universe:telecom-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "receive a mechanical EffectIntent naming a distant target",
+          "resolve the target's address via trackers and beacons; abort if unresolved",
+          "check the transmission authorization: range, authorized-address set, cooldown, validity window",
+          "validate exact u64 AtomSpec/AtomBond invariants for the network circuit",
+          "map emitter/antenna/receiver/effector to atoms; the transmission to a support bond whose energy is attenuated by distance",
+          "admit only measured signal energy through the membrane",
+          "run_until_quiescent: conduct the attenuating transmission; fire the remote effector only if received energy >= its threshold",
+          "hold out-of-range receivers as Fog (no fire, no delivery)",
+          "on remote fire, emit the real effect through authorized transport and return a RemoteEffectReceipt",
+          "conduct the acknowledgement bond back to the origin (delivery proof)",
+          "verify admitted integer signal energy is conserved (attenuation is loss to the medium, accounted, not vanished)",
+          "record SENT, DELIVERED and EFFECTED as three distinct receipts",
+          "for observation: resolve the observe-only set; for network mutation: require the network capability, else fail closed",
+          "run the independent observer and structured evaluation AST; derive health from fresh evidence"
+        ],
+        "range_rule": "delivered(target) iff attenuated_signal(distance) >= receiver.threshold AND address authorized AND within validity; otherwise OutOfRange/Fog, no delivery.",
+        "capability_resolution": "observe -> observe-only-set; network_port -> require(network_capability). No affordance escalates capability; an absent capability fails closed.",
+        "scheduler_projection": "deterministic-wave-ticks/1; exact same-tick tie semantics must be reconciled with the canonical Rust crate when integrated.",
+        "python_escape_hatch": "forbidden_by_default"
+      }
+    },
+    {
+      "id": "code:l2:mind-universe:telecom-toolkit-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "authority": "Graph-native CodeDefinition projection for the portable Telecom toolkit; this JSON file is a materialized projection, not independent semantic authority.",
+        "language": "mind-ir+atom-fixture",
+        "entrypoints": [
+          "receive_effect_intent",
+          "resolve_address",
+          "check_transmission_authorization",
+          "transmit",
+          "run_until_quiescent",
+          "actuate_remote_effector",
+          "acknowledge",
+          "observe_network",
+          "evaluate_network_ast"
+        ],
+        "transmission_gate": {
+          "port_id": "port:l2:mind-universe:telecom:transmission-v0",
+          "observe_capabilities": ["observe", "read_network", "trace_transmission", "measure_signal"],
+          "required_mutate_capability": "authority:telecom-network",
+          "configuration": ["measured origin", "authorized addresses", "antenna gain/direction", "delivery mode", "cooldown", "valid_from and valid_until"],
+          "default_state": "no_transmission_without_authorization",
+          "on_unauthorized": ["fail_closed", "no_transmission", "emit_rejection_receipt"],
+          "rule": "A transmission is admitted only from an actor holding authority:telecom-network, to an authorized address, within range and validity. Delivery is proven by acknowledgement, effect by a returned RemoteEffectReceipt."
+        },
+        "network_circuit": {
+          "note": "GENERIC illustrative link: an emitter (fed by an upstream mechanical EffectIntent) transmits to a remote receiver over an attenuating bond; the remote effector fires only in range and actuates the distant thing, then an acknowledgement conducts back. A real network supplies ANY emitters/antennas/receivers/addresses at deploy time; attenuation energy is set from the measured distance.",
+          "atoms": [
+            { "key": "emitter", "roleAxis": "thing", "threshold": 100, "seed_energy": 0, "required_supports": ["effect_intent_in"], "ports": { "in": ["effect_intent"], "out": ["signal"] } },
+            { "key": "tracker", "roleAxis": "actor", "threshold": 1, "seed_energy": 100, "resolves": "target_address" },
+            { "key": "remote_effector", "roleAxis": "thing", "threshold": 60, "seed_energy": 0, "required_supports": ["transmit"], "note": "threshold 60 = receiver sensitivity; the attenuated signal (60) is exactly in range", "emits_effect_intent": { "effect": "move_body", "target": "<distant, resolved at deploy>", "required_capability": "authority:effect-transport" } }
+          ],
+          "bonds": [
+            { "key": "effect_intent_in", "source": "tracker", "target": "emitter", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0", "note": "the mechanical EffectIntent + resolved address enter the emitter" },
+            { "key": "transmit", "source": "emitter", "target": "remote_effector", "polarity": "support", "energy": 60, "energy_status": "measured:semantic_v0", "note": "attenuated: emitted 100, received 60 after distance loss; >= remote threshold 60 so IN RANGE" },
+            { "key": "acknowledge", "source": "remote_effector", "target": "emitter", "polarity": "support", "energy": 40, "energy_status": "measured:semantic_v0", "note": "delivery acknowledgement conducts back to origin" }
+          ],
+          "attenuation_note": "If the received energy fell below 60 (farther target), remote_effector would not fire: OutOfRange, no delivery, no ACK — honestly Fog.",
+          "external_measured_injections": {}
+        }
+      }
+    },
+    {
+      "id": "implementation:l2:mind-universe:telecom-toolkit-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "status": "materialized",
+        "artifact": "telecom-toolkit-v0.json",
+        "graph_status": "not_written",
+        "wiring_status": "not_wired",
+        "runtime_status": "not_running",
+        "verification_status": "not_measured",
+        "honesty": "The portable Telecom toolkit is materialized and structurally shaped as a construct. This field is written BEFORE injection; after an injector commits it, the on-disk graph carries the construct while this embedded field reads stale (WRITTEN but not wired, executed, or proven healthy). No transmission is sent and no distant effect is actuated yet."
+      }
+    },
+    {
+      "id": "justification:l2:mind-universe:telecom-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": [
+          "A machine that can only act within reach is confined; carrying its EffectIntent over a link lets it actuate distant things, which is what a telecom layer is for.",
+          "Modelling transmission as an ATTENUATING bond makes range a physical fact, not a claim: a far receiver simply gets too little energy to fire, so out-of-range is honest instead of a silent failure.",
+          "Keeping SENT / DELIVERED / EFFECTED as three separate receipts prevents the classic remote-actuation lie — treating a sent command as a completed effect — exactly the discipline of 'a committed intent is not a completed external effect'.",
+          "Requiring an address resolved by trackers and beacons means you can only actuate a thing you can actually name and reach, and a moving target stays addressable.",
+          "Gating transmission with a broadcast-style authorization (origin, authorized addresses, cooldown, validity) reuses the energy-pen's proven broadcast contract instead of inventing a second one."
+        ],
+        "rejected": [
+          "assuming delivery on transmit, because distance and interference make sent != delivered",
+          "assuming the effect on acknowledgement, because delivered != effected until the remote receipt returns",
+          "unbounded range, because a real link attenuates and an unbounded reach fabricates delivery",
+          "transmitting to any address, because an unaddressed or unauthorized transmission is spam or attack",
+          "floating-point signal energy, because the canonical law counts conserved integer energy (attenuation is accounted loss, not vanishing)",
+          "a renderer beam as proof of delivery, because animation is not an acknowledgement"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:mind-universe:telecom-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "structured_expression_ast",
+        "scenarios": [
+          "in_range_target_is_delivered_and_acknowledged",
+          "out_of_range_target_is_not_delivered",
+          "unresolved_address_refuses_transmission",
+          "unauthorized_address_fails_closed",
+          "expired_validity_window_refuses_transmission",
+          "sent_is_not_delivered",
+          "delivered_is_not_effected",
+          "remote_effect_returns_a_receipt",
+          "attenuation_conserves_accounted_energy",
+          "tracker_keeps_a_moving_target_addressable",
+          "signal_conducts_once_per_link",
+          "acknowledgement_conducts_once",
+          "network_reaches_quiescence",
+          "unmeasured_signal_rejected"
+        ],
+        "negative_invariants": [
+          "threshold zero rejected",
+          "inhibition threshold zero rejected",
+          "duplicate required supports rejected",
+          "neutral bond with nonzero energy rejected",
+          "unmeasured signal injection rejected",
+          "transmission to unauthorized address rejected"
+        ],
+        "invariants": [
+          "a remote effector fires only when the attenuated signal meets its threshold (in range)",
+          "an out-of-range target is not delivered and is rendered as Fog",
+          "SENT, DELIVERED and EFFECTED are distinct and separately receipted",
+          "delivery is proven only by a returned acknowledgement",
+          "a distant effect is proven only by a returned RemoteEffectReceipt",
+          "transmission is admitted only to an authorized address within validity",
+          "admitted integer signal energy is conserved (attenuation accounted as loss)",
+          "every transmission and acknowledgement bond conducts at most once",
+          "every network mutation resolves to the network capability"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:mind-universe:telecom-observer-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "target": "observability_algorithm:l2:mind-universe:telecom-toolkit-v0",
+        "tests": [
+          "detect a delivery claimed from a transmission with no acknowledgement",
+          "detect a distant effect claimed with no RemoteEffectReceipt",
+          "detect an out-of-range target rendered as delivered",
+          "detect a transmission to an unresolved or unauthorized address",
+          "detect a transmission outside its validity window",
+          "detect duplicate transmission or acknowledgement conduction",
+          "detect non-conserved signal energy (unaccounted attenuation)",
+          "detect a renderer beam presented as an acknowledgement",
+          "detect a network mutation offered to an actor without the capability",
+          "never convert an out-of-range target into a delivered one"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l2:mind-universe:telecom-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Reads the emitters/antennas/trackers/beacons/receivers and their addresses, the transmission authorization, the attenuation model, the physicalized transmission trace, final receiver states, the acknowledgement and RemoteEffectReceipt, the acting capability set and the catalog. It does not trust a runtime-declared delivery flag, a renderer beam, or a network's self-report of reach.",
+        "checks": [
+          "every remote effector fired only with an in-range attenuated signal",
+          "every out-of-range target was held as Fog, not delivered",
+          "SENT / DELIVERED / EFFECTED are three distinct measured receipts",
+          "delivery is backed by a returned acknowledgement",
+          "a distant effect is backed by a returned RemoteEffectReceipt",
+          "every transmission went to an authorized, resolved address within validity",
+          "integer signal energy conservation (attenuation accounted)",
+          "single conduction per transmission and acknowledgement bond",
+          "measured-only membrane admission",
+          "address resolution via trackers/beacons",
+          "every network mutation requires the network capability",
+          "observing leaves the acting capability set unchanged",
+          "quiescence",
+          "receipt integrity"
+        ]
+      }
+    },
+    {
+      "id": "metric:l2:mind-universe:telecom-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "dimensions": [
+          "in_range_delivery_accuracy",
+          "out_of_range_fog_honesty_rate",
+          "sent_delivered_effected_distinctness_rate",
+          "acknowledgement_backed_delivery_rate",
+          "remote_effect_receipt_backed_rate",
+          "fabricated_reach_rate",
+          "address_resolution_accuracy",
+          "authorized_transmission_rate",
+          "expired_transmission_rate",
+          "signal_conservation_error_u64",
+          "single_conduction_accuracy",
+          "measured_stream_only_rate",
+          "network_mutation_capability_gated_rate",
+          "quiescence_reached",
+          "receipt_integrity",
+          "observer_fault_detection_rate",
+          "evidence_freshness_ms"
+        ]
+      }
+    },
+    {
+      "id": "health:l2:mind-universe:telecom-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "states": ["healthy", "degraded", "stale", "unknown", "not_measured", "measurement_failed"],
+        "derivation": {
+          "healthy": "All required fresh validation scenarios pass: in-range targets were delivered and acknowledged, out-of-range targets stayed Fog, SENT/DELIVERED/EFFECTED were distinct and receipted, addresses resolved and were authorized within validity, signal energy was conserved with attenuation accounted, and network mutation was capability-gated.",
+          "degraded": "Fresh evidence exists but at least one non-catastrophic dimension violates its bound.",
+          "stale": "The latest otherwise valid evidence exceeds the configured freshness window.",
+          "unknown": "Required evidence cannot be resolved to a known state.",
+          "not_measured": "No fresh validation run has measured the required dimensions.",
+          "measurement_failed": "The observer or evaluator failed to produce a trustworthy measurement."
+        },
+        "maintenance": [
+          "retry",
+          "inspect_transmission_ledger",
+          "resolve_address",
+          "reaim_antenna",
+          "redeploy_beacon",
+          "recompute_attenuation",
+          "await_acknowledgement",
+          "recalibrate_visual_bounds",
+          "rematerialize_catalog",
+          "reissue_transmission_authorization",
+          "reconcile_rust_scheduler",
+          "ask_human"
+        ]
+      }
+    },
+    {
+      "id": "port:l2:mind-universe:telecom:transmission-v0",
+      "node_type": "thing",
+      "subtype": "capability_port",
+      "content": {
+        "name": "Transmission authorization port (emit to a distant address)",
+        "state": "no_transmission_without_authorization",
+        "observe_capabilities": ["observe", "read_network", "trace_transmission", "measure_signal"],
+        "required_mutate_capability": "authority:telecom-network",
+        "configuration": ["measured origin", "authorized addresses", "antenna gain/direction", "delivery mode", "cooldown", "valid_from and valid_until"],
+        "shape_contract": "observe_set_disjoint_from_network_set",
+        "reader_predicate": "actor_holds(authority:telecom-network) AND address_authorized AND in_range AND within_validity",
+        "effect_when_unauthorized": "fail_closed_no_transmission",
+        "note": "Reading/measuring the network is a separate observe-only surface; this port is the ONLY transmission surface. It reuses the energy-pen broadcast contract shape: measured origin, authorized addresses, cooldown, validity window. Delivery is proven by acknowledgement, effect by a returned RemoteEffectReceipt."
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "space:l2:mind-universe:telecom-toolkit-v0",
+      "predicate": "IMPLEMENTED_IN",
+      "target": "implementation:l2:mind-universe:telecom-toolkit-v0"
+    },
+    {
+      "source": "space:l2:mind-universe:telecom-toolkit-v0",
+      "predicate": "DEFINED_BY_CODE",
+      "target": "code:l2:mind-universe:telecom-toolkit-v0"
+    },
+    {
+      "source": "code:l2:mind-universe:telecom-toolkit-v0",
+      "predicate": "IMPLEMENTED_BY",
+      "target": "implementation:l2:mind-universe:telecom-toolkit-v0"
+    },
+    {
+      "source": "pattern:l2:mind-universe:telecom-toolkit-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l2:mind-universe:telecom-toolkit-v0"
+    },
+    {
+      "source": "behavior:l2:mind-universe:telecom-toolkit-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:mind-universe:telecom-toolkit-v0"
+    },
+    {
+      "source": "implementation:l2:mind-universe:telecom-toolkit-v0",
+      "predicate": "OBSERVED_BY",
+      "target": "observability_algorithm:l2:mind-universe:telecom-toolkit-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:mind-universe:telecom-toolkit-v0",
+      "predicate": "PRODUCES",
+      "target": "metric:l2:mind-universe:telecom-toolkit-v0"
+    },
+    {
+      "source": "metric:l2:mind-universe:telecom-toolkit-v0",
+      "predicate": "FEEDS",
+      "target": "health:l2:mind-universe:telecom-toolkit-v0"
+    },
+    {
+      "source": "objective:l2:mind-universe:telecom-toolkit-v0",
+      "predicate": "SUPPORTS",
+      "target": "space:l2:mind-universe:telecom-toolkit-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:mind-universe:telecom-toolkit-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:mind-universe:telecom-observer-v0"
+    }
+  ]
+}
