@@ -14,8 +14,11 @@
 //! external effect is a filesystem write:
 //!
 //!   EffectIntent{change_ground}
-//!     -> sealed-hatch capability gate (required capability read from the live
-//!        construct's capability_port)
+//!     -> sealed-hatch capability gate: the ACTING capability set is READ from
+//!        the actor's graph-held grant (USED) edges (universe-query
+//!        `read_actor_capability_set`), then adjudicated by the live construct's
+//!        SealedCapabilityPort (universe-capabilities). Authority is a graph
+//!        fact, never a self-declared request field.
 //!     -> validate precondition (file exists, exact old-string match)
 //!     -> authorized transport (write the file)
 //!     -> read back (re-hash, confirm new present / old absent)
@@ -24,28 +27,42 @@
 //!
 //! An unauthorized caller fails CLOSED: the file is NOT written, and a REJECTION
 //! receipt Moment is committed (the contract's `emit_rejection_receipt`) so the
-//! refused attempt is audited, never silently dropped.
+//! refused attempt is audited, never silently dropped. The refusal records the
+//! actor's actually-held capability set and the port's required capability, so a
+//! reader can see exactly why admission was denied.
 //!
 //! Usage: `underground_change_ground <request.json> [store-dir]`
 //!   request.json = {
 //!     "path": "relative/or/abs/file",
 //!     "old":  "exact substring to replace (must occur exactly once)",
 //!     "new":  "replacement",
-//!     "actor": "who",
-//!     "capability": "authority:underground-maintenance",
+//!     "actor": "actor:l2:mind-universe:... (a canonical_id; authority is read
+//!               from THIS actor's graph-held USED edges)",
+//!     "capability": "(optional, vestigial) what the caller claims to hold;
+//!                    recorded for audit but NEVER used for the decision",
 //!     "justification": "why"
 //!   }
 
-use std::{env, error::Error, path::PathBuf};
+use std::{collections::BTreeSet, env, error::Error, path::PathBuf};
 
 use sha2::{Digest, Sha256};
+use universe_capabilities::{MutateAdmission, SealedCapabilityPort};
 use universe_core::{EntityKey, RelationKey, Tick};
-use universe_store::{EntityRecord, RelationRecord, UniverseSnapshot, UniverseStore};
+use universe_query::read_actor_capability_set;
+use universe_store::{
+    EntityRecord, IndexedUniverseSnapshot, RelationRecord, UniverseSnapshot, UniverseStore,
+};
 use universe_transactions::{CommitReceipt, UniverseCommand, UniverseTransaction, UniverseWriteSet};
 
 const UNDERGROUND_SPACE_ID: &str = "space:l2:mind-universe:underground-toolkit-v0";
 const UNDERGROUND_PORT_PREFIX: &str = "port:l2:mind-universe:underground";
-const DEFAULT_REQUIRED_CAPABILITY: &str = "authority:underground-maintenance";
+/// The canonical predicate an actor's held capability set is read from (the
+/// grant's authored HOLDS_CAPABILITY remaps to USED; see the grant fixture).
+const GRANT_PREDICATE: &str = "USED";
+/// The capability-entity content field naming the capability it confers.
+const CAPABILITY_FIELD: &str = "capability";
+/// Bounded relation budget for the actor's capability read (never a full scan).
+const CAPABILITY_READ_BUDGET: usize = 64;
 
 // Receipt key block, disjoint from every injected construct block.
 const RECEIPT_ENTITY_BASE: u128 = 0x00E0_0000;
@@ -138,17 +155,26 @@ fn run() -> Result<(), Box<dyn Error>> {
     let old = field("old")?;
     let new = field("new")?;
     let actor = field("actor")?;
-    let capability = field("capability")?;
+    // Vestigial: recorded for audit only. The decision derives authority from the
+    // actor's graph-held capability set, never from this self-declared string.
+    let offered_capability = req
+        .get("capability")
+        .and_then(|v| v.as_str())
+        .unwrap_or("(none declared)")
+        .to_string();
     let justification = field("justification")?;
     println!("change_ground request: path={} actor={actor}", path.display());
 
-    // 1. Open the store; read the Underground construct + its sealed-hatch port.
-    //    The port's `required_mutate_capability` governs this operation.
+    // 1. Open the store; read the Underground construct, materialize its sealed
+    //    hatch (the SealedCapabilityPort from the code member's `capability_gate`
+    //    — DATA, not native policy), and resolve the request's actor canonical_id
+    //    to its EntityKey. One bounded scan over the entity column.
     let store = UniverseStore::open(&store_dir)?;
     let mut snapshot = store.replay(store.load_snapshot()?)?;
 
-    let mut required_capability: Option<String> = None;
     let mut underground_key: Option<EntityKey> = None;
+    let mut gate_value: Option<serde_json::Value> = None;
+    let mut actor_key: Option<EntityKey> = None;
     for entity in &snapshot.entities {
         let Some(ptr) = entity.content.as_ref() else { continue };
         let content = store.read_content(ptr)?;
@@ -156,22 +182,72 @@ fn run() -> Result<(), Box<dyn Error>> {
         if cid == UNDERGROUND_SPACE_ID {
             underground_key = Some(entity.key);
         }
-        if cid.starts_with(UNDERGROUND_PORT_PREFIX) {
-            if let Some(cap) = content
-                .pointer("/content/required_mutate_capability")
+        if cid == actor {
+            actor_key = Some(entity.key);
+        }
+        // The sole mutation surface: the construct's declared capability_gate,
+        // whose port_id lives under the underground port namespace.
+        if let Some(gate) = content.pointer("/content/capability_gate") {
+            if gate
+                .get("port_id")
                 .and_then(|v| v.as_str())
+                .is_some_and(|id| id.starts_with(UNDERGROUND_PORT_PREFIX))
             {
-                required_capability = Some(cap.to_string());
+                gate_value = Some(gate.clone());
             }
         }
     }
     let underground_key = underground_key
         .ok_or("Underground toolkit construct is not in the store; inject it before changing ground")?;
-    let required_capability =
-        required_capability.unwrap_or_else(|| DEFAULT_REQUIRED_CAPABILITY.to_string());
+    let gate_value = gate_value.ok_or(
+        "Underground construct carries no capability_gate in the store; the sealed hatch is not materializable",
+    )?;
+    let port: SealedCapabilityPort = serde_json::from_value(gate_value)?;
+    let required_capability = port.required_mutate_capability.clone();
+    println!(
+        "sealed hatch: port {} requires mutate capability '{required_capability}' (read from the live construct)",
+        port.port_id
+    );
 
-    // 2. Sealed-hatch capability gate — FAIL CLOSED, but audit the refusal.
-    if capability != required_capability {
+    // 2. Read the ACTING capability set from the actor's graph-held grant (USED)
+    //    edges, then adjudicate with the sealed port. Authority is a graph fact,
+    //    never the self-declared request field.
+    let grant_predicate = snapshot
+        .symbol_id(GRANT_PREDICATE)
+        .ok_or("canonical grant predicate 'USED' is not interned in this store")?;
+    // The index is built from a clone so the mutable snapshot stays free for the
+    // receipt commit. Admission precedes any transaction, so this reads pre-state.
+    let indexed = IndexedUniverseSnapshot::new(snapshot.clone())?;
+    let (held, actor_resolved, read_status) = match actor_key {
+        Some(key) => {
+            let set = read_actor_capability_set(
+                &indexed,
+                &store,
+                key,
+                grant_predicate,
+                CAPABILITY_FIELD,
+                CAPABILITY_READ_BUDGET,
+            )?;
+            (set.capabilities, true, format!("{:?}", set.status))
+        }
+        // Unknown actor: no graph identity, hence an empty acting set. This is a
+        // real fail-closed decision (an empty set never holds the authority cap).
+        None => (BTreeSet::new(), false, "actor_not_in_graph".to_string()),
+    };
+    let held_list: Vec<String> = held.iter().cloned().collect();
+    println!(
+        "acting set for {actor} (resolved={actor_resolved}, read={read_status}): {held_list:?}"
+    );
+
+    // Sealed-hatch capability gate — FAIL CLOSED, but audit the refusal with the
+    // actual held set and the port's required capability.
+    let admission = port.resolve_mutate(&held);
+    if let MutateAdmission::Rejected {
+        port_id,
+        required_capability,
+        reason,
+    } = &admission
+    {
         let rejection = serde_json::json!({
             "canonical_id": format!("moment:l2:mind-universe:underground:change-ground-rejected:{}", snapshot.tick.0),
             "node_type": "moment",
@@ -180,13 +256,18 @@ fn run() -> Result<(), Box<dyn Error>> {
                 "kind": "ground_change_rejection",
                 "effect": "change_ground",
                 "outcome": "rejected",
-                "reason": "capability does not hold the sealed-hatch requirement",
+                "reason": reason,
                 "toolkit": UNDERGROUND_SPACE_ID,
+                "port_id": port_id,
                 "path": path.display().to_string(),
                 "actor": actor,
-                "offered_capability": capability,
+                "actor_resolved": actor_resolved,
+                "capability_read_status": read_status,
+                "held_capabilities": held_list,
+                "offered_capability": offered_capability,
                 "required_capability": required_capability,
                 "justification": justification,
+                "authority_source": "actor graph-held USED edges (not the request field)",
                 "state_delta": "none (fail closed, ground unchanged)",
             }
         });
@@ -194,12 +275,18 @@ fn run() -> Result<(), Box<dyn Error>> {
         let (rkey, rcpt) = commit_moment(&store, &mut snapshot, underground_key, &rejection, idempo)?;
         println!("sealed hatch: REFUSED — rejection receipt committed ({:#x}) {rcpt:?}", rkey.0);
         return Err(format!(
-            "capability '{capability}' does not hold '{required_capability}' — \
-             fail closed, ground NOT changed (a manhole grants observe only)"
+            "actor '{actor}' does not hold '{required_capability}' in the graph \
+             (held {held_list:?}) — fail closed, ground NOT changed (a manhole grants observe only)"
         )
         .into());
     }
-    println!("sealed hatch: capability '{required_capability}' verified against the live construct");
+    let admitted_capability = match &admission {
+        MutateAdmission::Admitted { capability, .. } => capability.clone(),
+        MutateAdmission::Rejected { .. } => unreachable!("rejection returned above"),
+    };
+    println!(
+        "sealed hatch: ADMITTED — actor '{actor}' holds '{admitted_capability}' via a graph grant edge"
+    );
 
     // 3. Validate precondition and apply the ground change (authorized transport).
     let before = std::fs::read(&path)?;
@@ -241,9 +328,13 @@ fn run() -> Result<(), Box<dyn Error>> {
             "effect": "change_ground",
             "outcome": "committed",
             "toolkit": UNDERGROUND_SPACE_ID,
+            "port_id": port.port_id,
             "path": path.display().to_string(),
             "actor": actor,
-            "capability": capability,
+            "admitted_capability": admitted_capability,
+            "held_capabilities": held_list,
+            "offered_capability": offered_capability,
+            "authority_source": "actor graph-held USED edges (not the request field)",
             "justification": justification,
             "sha_before": sha_before,
             "sha_after": sha_after,

@@ -163,11 +163,7 @@
       "content": {
         "status": "materialized",
         "artifact": "underground-toolkit-v0.json",
-        "graph_status": "written",
-        "wiring_status": "not_wired",
-        "runtime_status": "not_running",
-        "verification_status": "not_measured",
-        "honesty": "The portable Underground toolkit is materialized and structurally shaped as a self-verifying loop. This field is written BEFORE injection; after an injector commits it, the on-disk graph carries the loop while this embedded field reads stale (WRITTEN but not wired, executed, or proven healthy). The capability seal is declared, not yet enforced by a running resolver."
+        "graph_status": "written"
       }
     },
     {
