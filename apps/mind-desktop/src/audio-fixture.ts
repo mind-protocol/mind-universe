@@ -1,4 +1,5 @@
 import type { MaterializedEntity } from "./contracts";
+import { NEUTRAL_DYNAMICS } from "./entity-dynamics";
 import type { UniverseView } from "./universe-state";
 
 // Demo fixture for the audio-loop feature: two `thing`s that point to audio
@@ -36,6 +37,7 @@ function audioThing(
         scale: 1
       }
     },
+    dynamics: NEUTRAL_DYNAMICS,
     audio: { src, loop: true, gain }
   };
 }
@@ -56,6 +58,7 @@ export function audioFixtureUniverse(): UniverseView {
     ]),
     relations: new Map(),
     transfers: new Map(),
-    control: { kind: "observer" }
+    control: { kind: "observer" },
+    available_actions: []
   };
 }

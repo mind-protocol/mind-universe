@@ -1,0 +1,19 @@
+{
+  "authority_id": "graph-native-spatial-layout-v1",
+  "policy_id": "universe-spatial-layout-v1",
+  "schema_version": "spatial-layout/1",
+  "containment_predicates": ["PART_OF"],
+  "layer_rule": "cluster_id_prefix_l1_l4",
+  "membrane_cluster_convention": "membrane",
+  "params": {
+    "scale_per_descent": 0.1,
+    "iterations": 240,
+    "packing_passes": 64,
+    "repulsion": 1.0,
+    "attraction": 0.35,
+    "damping": 0.85,
+    "hierarchy_lift": 1.5,
+    "layer_gap": 2.0,
+    "route_attraction": 0.05
+  }
+}

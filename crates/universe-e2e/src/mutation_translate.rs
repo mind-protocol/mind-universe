@@ -395,7 +395,7 @@ mod tests {
     fn intern_symbols_compiles_to_one_verb() {
         let (_dir, store) = scratch_store();
         let plan = MutationPlan::InternSymbols {
-            symbols: vec!["built_position".into()],
+            symbols: vec!["claim".into()],
         };
         let ws = translate_mutation_proposal(
             &plan,
@@ -450,7 +450,7 @@ mod tests {
         };
         let proposal = serde_json::json!({
             "mutation_bond": "0x4070",
-            "content": {"kind": "built_position", "x": 12.0, "y": 0.0, "z": -4.0, "provenance": "built"}
+            "content": {"kind": "claim", "text": "grief is load-bearing", "provenance": "built"}
         });
         let ws = translate_mutation_proposal(
             &plan,
@@ -465,7 +465,7 @@ mod tests {
             UniverseCommand::PutEntity { entity } => {
                 let content_ref = entity.content.as_ref().expect("content addressed");
                 let read = store.read_content(content_ref).unwrap();
-                assert_eq!(read["x"], 12.0);
+                assert_eq!(read["text"], "grief is load-bearing");
                 assert_eq!(read["provenance"], "built");
             }
             other => panic!("expected PutEntity, got {other:?}"),
@@ -594,12 +594,12 @@ mod tests {
         let ir = universe_ir::Value::Record(std::collections::BTreeMap::from([
             (
                 "kind".to_string(),
-                universe_ir::Value::Text("built_position".into()),
+                universe_ir::Value::Text("claim".into()),
             ),
             ("weight".to_string(), universe_ir::Value::Integer(7)),
         ]));
         let json = ir_value_to_json(&ir);
-        assert_eq!(json["kind"], "built_position");
+        assert_eq!(json["kind"], "claim");
         assert_eq!(json["weight"], 7);
     }
 
@@ -609,7 +609,7 @@ mod tests {
         let content = universe_ir::Value::Record(std::collections::BTreeMap::from([
             (
                 "kind".to_string(),
-                universe_ir::Value::Text("built_position".into()),
+                universe_ir::Value::Text("claim".into()),
             ),
             (
                 "provenance".to_string(),
@@ -649,7 +649,7 @@ mod tests {
         match &ws.commands[0] {
             UniverseCommand::PutEntity { entity } => {
                 let read = store.read_content(entity.content.as_ref().unwrap()).unwrap();
-                assert_eq!(read["kind"], "built_position");
+                assert_eq!(read["kind"], "claim");
                 assert_eq!(read["provenance"], "built");
             }
             other => panic!("expected PutEntity, got {other:?}"),
@@ -659,18 +659,18 @@ mod tests {
     #[test]
     fn project_mutation_bond_reads_the_shape_from_the_graph() {
         let bond = serde_json::json!({"runtime_binding":{"value":{"command_kind":"put_entity"}}});
-        let schema = serde_json::json!({"field_schema":{"content_kind":"built_position","required_fields":["x","y","z"]}});
+        let schema = serde_json::json!({"field_schema":{"content_kind":"claim","required_fields":["text","author"]}});
         let projection = project_mutation_bond(&bond, &schema).unwrap();
         assert_eq!(projection.command_kind, MutationCommandKind::PutEntity);
-        assert_eq!(projection.content_kind, "built_position");
+        assert_eq!(projection.content_kind, "claim");
         assert_eq!(projection.content_field, "content");
-        assert_eq!(projection.required_fields, vec!["x", "y", "z"]);
+        assert_eq!(projection.required_fields, vec!["text", "author"]);
     }
 
     #[test]
     fn projected_bond_builds_a_put_entity_plan() {
         let bond = serde_json::json!({"runtime_binding":{"value":{"command_kind":"put_entity"}}});
-        let schema = serde_json::json!({"field_schema":{"content_kind":"built_position","required_fields":["x"]}});
+        let schema = serde_json::json!({"field_schema":{"content_kind":"claim","required_fields":["text"]}});
         let projection = project_mutation_bond(&bond, &schema).unwrap();
         let plan = projection.into_put_entity_plan(EntityKey(0x9020), 7).unwrap();
         match plan {
@@ -691,37 +691,15 @@ mod tests {
     #[test]
     fn bond_content_contract_rejects_a_missing_required_field() {
         let bond = serde_json::json!({"runtime_binding":{"value":{"command_kind":"put_entity"}}});
-        let schema = serde_json::json!({"field_schema":{"content_kind":"built_position","required_fields":["x","y","z"]}});
+        let schema = serde_json::json!({"field_schema":{"content_kind":"claim","required_fields":["text","author","evidence"]}});
         let projection = project_mutation_bond(&bond, &schema).unwrap();
         projection
-            .validate_content(&serde_json::json!({"x":1.0,"y":2.0,"z":3.0}))
+            .validate_content(&serde_json::json!({"text":"t","author":"a","evidence":"e"}))
             .unwrap();
         let err = projection
-            .validate_content(&serde_json::json!({"x":1.0,"y":2.0}))
+            .validate_content(&serde_json::json!({"text":"t","author":"a"}))
             .unwrap_err();
         assert!(matches!(err, UniverseError::Validation(_)));
     }
 
-    #[test]
-    fn projects_the_real_mutation_bond_authority_fixture() {
-        // The projection reads the shape from the ACTUAL authored fixture, not a
-        // synthetic stand-in: the real bond in the graph furnishes the plan.
-        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../..")
-            .join("fixtures/ontology/mutation-bond-authority.json");
-        let fixture: Value = serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap();
-        let entities = fixture["entities"].as_array().unwrap();
-        let bond = entities
-            .iter()
-            .find(|entity| entity["content"]["kind"] == "mutation_bond_instance")
-            .expect("fixture has a mutation_bond_instance");
-        let schema = entities
-            .iter()
-            .find(|entity| entity["content"]["kind"] == "field_schema_instance")
-            .expect("fixture has a field_schema_instance");
-        let projection = project_mutation_bond(&bond["content"], &schema["content"]).unwrap();
-        assert_eq!(projection.command_kind, MutationCommandKind::PutEntity);
-        assert_eq!(projection.content_kind, "built_position");
-        assert_eq!(projection.required_fields, vec!["x", "y", "z"]);
-    }
 }

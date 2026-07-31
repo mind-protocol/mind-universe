@@ -1,0 +1,61 @@
+{
+  "universe": "0000000000000000000000000000b100",
+  "symbols": ["OBSERVES", "actor"],
+  "entities": [
+    {
+      "key": "0000000000000000000000000000b101",
+      "generation": 0,
+      "symbol": "actor",
+      "content": {
+        "kind": "citizen",
+        "semantic_type": "actor",
+        "name": "Ember",
+        "residency": "hot",
+        "epistemic_state": "measured",
+        "energy": 20,
+        "weight": 15,
+        "embedding": { "model": "demo", "model_revision": "0", "input_sha256": "a", "dimensions": 3, "scale": 1000, "values": [900, 100, -200] }
+      }
+    },
+    {
+      "key": "0000000000000000000000000000b102",
+      "generation": 0,
+      "symbol": "actor",
+      "content": {
+        "kind": "citizen",
+        "semantic_type": "actor",
+        "name": "Vega",
+        "residency": "hot",
+        "epistemic_state": "measured",
+        "energy": 155,
+        "weight": 95,
+        "embedding": { "model": "demo", "model_revision": "0", "input_sha256": "b", "dimensions": 3, "scale": 1000, "values": [-400, 800, 300] }
+      }
+    },
+    {
+      "key": "0000000000000000000000000000b103",
+      "generation": 0,
+      "symbol": "actor",
+      "content": {
+        "kind": "citizen",
+        "semantic_type": "actor",
+        "name": "Nyx",
+        "residency": "hot",
+        "epistemic_state": "unknown",
+        "energy": 150,
+        "weight": 60,
+        "embedding": { "model": "demo", "model_revision": "0", "input_sha256": "c", "dimensions": 3, "scale": 1000, "values": [600, 600, 100] }
+      }
+    }
+  ],
+  "relations": [
+    {
+      "key": "0000000000000000000000000000b200",
+      "generation": 0,
+      "source": "0000000000000000000000000000b101",
+      "target": "0000000000000000000000000000b102",
+      "predicate": "OBSERVES",
+      "content": null
+    }
+  ]
+}

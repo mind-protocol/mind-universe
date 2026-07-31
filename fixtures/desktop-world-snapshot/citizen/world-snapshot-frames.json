@@ -347,6 +347,10 @@
           -4168176,
           4000000
         ],
+        "provenance": {
+          "role_axis": "actor",
+          "semantic_type": "actor"
+        },
         "residency": "hot",
         "symbol": "actor",
         "visual": {
@@ -706,6 +710,10 @@
           2654826,
           0
         ],
+        "provenance": {
+          "role_axis": "actor",
+          "semantic_type": "actor"
+        },
         "residency": "dormant",
         "symbol": "actor",
         "visual": {
@@ -729,335 +737,6 @@
     "payload": {
       "entity": {
         "content_kind": "artifact",
-        "embodiment": {
-          "confident": true,
-          "mapping": {
-            "fallback_form": "energy_orb",
-            "form_family": "energy_semi_humanoid",
-            "forms": {
-              "energy_orb": [
-                [
-                  "icosphere",
-                  "core",
-                  "core",
-                  [
-                    0,
-                    0,
-                    0
-                  ],
-                  [
-                    0,
-                    0,
-                    0
-                  ],
-                  [
-                    0.56,
-                    0.7,
-                    0.56
-                  ],
-                  0,
-                  0
-                ],
-                [
-                  "fresnel_shell",
-                  "aura",
-                  "shell",
-                  [
-                    0,
-                    0,
-                    0
-                  ],
-                  [
-                    0,
-                    0,
-                    0
-                  ],
-                  [
-                    0.72,
-                    0.86,
-                    0.72
-                  ],
-                  0,
-                  0
-                ],
-                [
-                  "points",
-                  "internal_energy",
-                  "particles",
-                  [
-                    0,
-                    0,
-                    0
-                  ],
-                  [
-                    0,
-                    0,
-                    0
-                  ],
-                  [
-                    1,
-                    1,
-                    1
-                  ],
-                  64,
-                  0.62
-                ]
-              ],
-              "semi_humanoid": [
-                [
-                  "sphere",
-                  "head",
-                  "core",
-                  [
-                    0,
-                    1.22,
-                    0
-                  ],
-                  [
-                    0,
-                    0,
-                    0
-                  ],
-                  [
-                    0.36,
-                    0.4,
-                    0.36
-                  ],
-                  0,
-                  0
-                ],
-                [
-                  "capsule",
-                  "torso",
-                  "core",
-                  [
-                    0,
-                    0.43,
-                    0
-                  ],
-                  [
-                    0,
-                    0,
-                    0
-                  ],
-                  [
-                    0.58,
-                    0.7,
-                    0.34
-                  ],
-                  0,
-                  0
-                ],
-                [
-                  "capsule",
-                  "left_arm",
-                  "shell",
-                  [
-                    -0.63,
-                    0.42,
-                    0
-                  ],
-                  [
-                    0,
-                    0,
-                    -0.16
-                  ],
-                  [
-                    0.16,
-                    0.62,
-                    0.16
-                  ],
-                  0,
-                  0
-                ],
-                [
-                  "capsule",
-                  "right_arm",
-                  "shell",
-                  [
-                    0.63,
-                    0.42,
-                    0
-                  ],
-                  [
-                    0,
-                    0,
-                    0.16
-                  ],
-                  [
-                    0.16,
-                    0.62,
-                    0.16
-                  ],
-                  0,
-                  0
-                ],
-                [
-                  "capsule",
-                  "left_leg",
-                  "shell",
-                  [
-                    -0.26,
-                    -0.68,
-                    0
-                  ],
-                  [
-                    0,
-                    0,
-                    0
-                  ],
-                  [
-                    0.2,
-                    0.72,
-                    0.2
-                  ],
-                  0,
-                  0
-                ],
-                [
-                  "capsule",
-                  "right_leg",
-                  "shell",
-                  [
-                    0.26,
-                    -0.68,
-                    0
-                  ],
-                  [
-                    0,
-                    0,
-                    0
-                  ],
-                  [
-                    0.2,
-                    0.72,
-                    0.2
-                  ],
-                  0,
-                  0
-                ],
-                [
-                  "fresnel_shell",
-                  "aura",
-                  "shell",
-                  [
-                    0,
-                    0.28,
-                    0
-                  ],
-                  [
-                    0,
-                    0,
-                    0
-                  ],
-                  [
-                    0.92,
-                    1.65,
-                    0.72
-                  ],
-                  0,
-                  0
-                ],
-                [
-                  "points",
-                  "internal_energy",
-                  "particles",
-                  [
-                    0,
-                    0.25,
-                    0
-                  ],
-                  [
-                    0,
-                    0,
-                    0
-                  ],
-                  [
-                    1,
-                    1.45,
-                    0.8
-                  ],
-                  96,
-                  0.78
-                ]
-              ]
-            },
-            "lod_states": {
-              "aggregated": "energy_orb",
-              "dormant": "energy_orb",
-              "hot": "semi_humanoid",
-              "sleeping": "energy_orb"
-            },
-            "mapping_id": "citizen-energy-semi-humanoid-v1",
-            "material": {
-              "core_emissive_intensity": 2.4,
-              "core_opacity": 0.82,
-              "fresnel_power": 2.2,
-              "shell_emissive_intensity": 1.7,
-              "shell_opacity": 0.28
-            },
-            "palette": {
-              "core": "#77d9ff",
-              "emissive": "#1b9fff",
-              "particle": "#d8f7ff",
-              "shell": "#a5eaff"
-            },
-            "particle_budget": 96,
-            "primitive_budget": 10,
-            "reduced_motion": {
-              "noise": false,
-              "retain_state_readability": true,
-              "trail": false
-            },
-            "schema_version": "visual-embodiment/1"
-          },
-          "motion_profile": {
-            "bindings": {
-              "idle_breath": {
-                "amplitude": 0.035,
-                "frequency_hz": 0.24
-              },
-              "speed_to_stretch": [
-                0,
-                4,
-                1,
-                1.28
-              ],
-              "speed_to_stride_hz": [
-                0,
-                4,
-                0,
-                7
-              ],
-              "speed_to_trail_opacity": [
-                0,
-                3,
-                0,
-                0.62
-              ],
-              "turn_to_bank": {
-                "max_degrees": 12
-              }
-            },
-            "interpolation": {
-              "correction_mode": "visible_reformation",
-              "correction_threshold": 2.5,
-              "max_visual_lag_seconds": 0.35,
-              "model": "critically_damped_spring",
-              "settle_seconds": 0.22
-            },
-            "profile_id": "fluid-energy-locomotion-v0",
-            "trail": {
-              "lifetime_seconds": 0.55,
-              "max_samples": 24,
-              "sample_interval_seconds": 0.04
-            }
-          },
-          "residency": "sleeping",
-          "resolved_form": "energy_orb",
-          "sampled_at_ms": 0,
-          "source_mapping_id": "visual-mapping:l2:mind-desktop:citizen-energy-semi-humanoid-v1"
-        },
         "generation": 0,
         "id": "0000000000000000000000000000b003",
         "position_micro": [
@@ -1065,6 +744,10 @@
           1249979,
           -4000000
         ],
+        "provenance": {
+          "role_axis": "thing",
+          "semantic_type": "thing"
+        },
         "residency": "sleeping",
         "symbol": "thing",
         "visual": {

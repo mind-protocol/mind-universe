@@ -3,7 +3,7 @@
   "node_type": "space",
   "subtype": "orientation_beacon",
   "content": {
-    "contractKind": "self_verifying_loop",
+    "contractKind": "construct",
     "name": "Lumina Prime Orientation Beacon v0",
     "parent_scope": {
       "classification": "contained",
@@ -41,7 +41,7 @@
       }
     },
     {
-      "id": "pattern:l2:lumina-prime:self-verifying-gps-beacon-v0",
+      "id": "pattern:l2:lumina-prime:construct-gps-beacon-v0",
       "node_type": "narrative",
       "subtype": "pattern",
       "content": {
@@ -91,7 +91,7 @@
             "sector_change"
           ],
           "SituatedOrientation": "Typed local stimulus carrying a machine-readable SpatialFix and a concise human-readable orientation message.",
-          "EmergencyBroadcastAuthorization": "A separately linked self-verifying authority node defining issuer, severity, message, affected zones, validity window, repetition and acknowledgement policy.",
+          "EmergencyBroadcastAuthorization": "A separately linked construct authority node defining issuer, severity, message, affected zones, validity window, repetition and acknowledgement policy.",
           "Fog": "Unknown, not_measured or rejected position/energy evidence. Never rendered as a precise fix.",
           "EntryToken": "Unique token preventing more than one normal emission for the same trigger event."
         }
@@ -776,7 +776,7 @@
       "target": "implementation:l2:lumina-prime:orientation-beacon-v0"
     },
     {
-      "source": "pattern:l2:lumina-prime:self-verifying-gps-beacon-v0",
+      "source": "pattern:l2:lumina-prime:construct-gps-beacon-v0",
       "predicate": "JUSTIFIED_BY",
       "target": "justification:l2:lumina-prime:orientation-beacon-v0"
     },

@@ -1,0 +1,478 @@
+{
+  "id": "space:l2:lumina-prime:house-alarm-v0",
+  "node_type": "space",
+  "subtype": "house_alarm",
+  "content": {
+    "contractKind": "construct",
+    "name": "Lumina Prime House Alarm v0",
+    "dominant_scale": "infrastructure",
+    "authoring_status": "AUTHORED_NOT_RUNNABLE",
+    "authoring_note": "This construct is AUTHORED as a portable graph projection and is structurally self-consistent, but it is NOT YET runnable end-to-end. The single load-bearing seam it needs -- physics-event -> energy deposit onto a construct trigger atom (the same bridge that injects an L3 stimulus into an L1 field) -- is UNBUILT. Until that bridge exists, the DepositBond below cannot be fired by a real Rapier intersection; the citizen_body_intersects atom can only be seeded by a hand-built cluster injection, never by the running physics step. Do NOT claim this alarm notifies on a real entry.",
+    "parent_scope": {
+      "classification": "contained",
+      "parent_space": "space:l2:lumina-prime:city-v0",
+      "justification": "The alarm is a per-house infrastructure construct structurally contained by Lumina Prime; it is sited on the entry membrane of a house and wakes only on a physics event, never by polling."
+    },
+    "native_law_boundary": "AtomDynamics remains ontology-blind and knows only AtomSpec, AtomBond and support/inhibit/neutral. The entry membrane, the sensor collider, the notion of 'a citizen body crossed', the recipient of the notification and the notify message are typed payload data transformed by Things. Energy only gates whether the one crossing support is present and measured; it never encodes who crossed, when, or the meaning of the notification.",
+    "runtime_moment_subtypes": [
+      "validation_run",
+      "health_assessment"
+    ],
+    "construct_pattern": {
+      "sensor": "An armed sensor collider placed on the house entry membrane (entry_sensor_armed). A physical condition placed in the field; it costs nothing until a body meets it.",
+      "deposit_bond": "A Support BehaviorBond (deposit_to_trigger) that deposits +100 (one support) onto the trigger atom WHEN a citizen body intersects the sensor. This is the event -> +energy edge; the intersection is a PhysicsEvent that NEVER mutates the store directly.",
+      "threshold": "The trigger atom (alarm_trigger) fires at support >= 1 -- a single crossing. threshold = 100 (one measured support).",
+      "effect": "The fire emits a 'notify' EffectIntent. External notification occurs only through the linked notify port; the crossing Moment is always committed."
+    },
+    "notify_port": {
+      "port_id": "port:l2:lumina-prime:house-alarm:notify-recipient-v0",
+      "accepted_target_subtype": "notify_authorization",
+      "accepted_relations": [
+        "USES",
+        "DEPENDS_ON"
+      ],
+      "default_state": "unlinked",
+      "configuration": [
+        "authorized recipient",
+        "delivery mode",
+        "cooldown",
+        "valid_from and valid_until"
+      ],
+      "rule": "An unlinked port cannot send an external notification. When linked, a fired trigger emits one notify EffectIntent to the measured authorized recipient, subject to cooldown. When unlinked, the fire still commits a crossing Moment but sends nothing outward."
+    }
+  },
+  "members": [
+    {
+      "id": "objective:l2:lumina-prime:house-alarm-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "For each measured crossing of the armed entry sensor by a citizen body, the trigger atom fires exactly once and produces exactly one crossing Moment; if and only if the notify port is linked to a valid authorization, one notify EffectIntent is emitted to the exact authorized recipient with an EffectReceipt. A crossing whose intersection evidence is unknown, not_measured or stale never fires. No notification is claimed delivered from a renderer animation or an emitter process that merely runs."
+      }
+    },
+    {
+      "id": "pattern:l2:lumina-prime:construct-house-alarm-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "A dormant infrastructure construct wired into the physics field: an armed sensor collider on the house entry membrane; a Support DepositBond that adds one measured support to a trigger atom when a citizen body intersects the sensor; a threshold that fires at one crossing; a notify EffectIntent gated by an optional linked recipient authorization. Nothing polls -- the construct wakes only when the physics step deposits energy onto its trigger atom. An independent observer replays the atom ledger, re-checks single conduction and energy conservation, confirms one fire per crossing and one receipt per external notification, and derives a health vector from fresh evidence.",
+        "chain": "intersection (PhysicsEvent, never mutates) -> ActionIntent -> validate -> EffectIntent{notify} -> EffectReceipt -> Moment",
+        "epistemic_honesty": "A collision is not a semantic mutation; an armed sensor is not a crossing; a configured notify port is not a delivered notification; a fired trigger without an EffectReceipt is not a sent notification."
+      }
+    },
+    {
+      "id": "vocabulary:l2:lumina-prime:house-alarm-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "EntryMembrane": "The bounded physical boundary of the house entry through which a citizen body may pass. The sensor collider is sited on it.",
+          "EntrySensor": "An armed collider placed on the entry membrane. A physical condition in the field, not a mutation. Costs nothing until intersected.",
+          "CitizenBodyIntersection": "A measured PhysicsEvent: a citizen body collider intersected the armed entry sensor. It is admitted through the membrane as measured evidence and NEVER mutates the store directly.",
+          "DepositBond": "A Support BehaviorBond that deposits +100 (one support) onto the trigger atom when a citizen body intersects the sensor. The load-bearing event -> energy edge.",
+          "AlarmTrigger": "The trigger atom that fires at support >= 1 (one crossing). Its fire emits the alarm effect.",
+          "NotifyEffectIntent": "The typed EffectIntent emitted on a fire: a request to notify the authorized recipient. It is not a delivery; delivery requires an authorized transport and an EffectReceipt.",
+          "NotifyAuthorization": "A separately linked construct authority node configuring the authorized recipient, delivery mode, cooldown and validity window for the external notification.",
+          "CrossingMoment": "The committed causal Moment recording that one measured crossing fired the trigger. Always produced on a fire, independent of external notification.",
+          "Fog": "Unknown, not_measured or rejected intersection/energy evidence. Never rendered as a crossing; a missing intersection is not a crossing."
+        }
+      }
+    },
+    {
+      "id": "behavior:l2:lumina-prime:house-alarm-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "An armed entry sensor on the house entry membrane, a measured citizen-body intersection PhysicsEvent admitted through the membrane, a trigger atom threshold of one support, an optional linked notify authorization, and measured atom energy on the deposit support.",
+        "when": "A citizen body intersects the armed entry sensor (a physics intersection event), or a linked notify authorization becomes active.",
+        "then": [
+          "Admit the intersection through the membrane only as measured evidence.",
+          "Deposit exactly one support onto the trigger atom via the DepositBond.",
+          "Fire the trigger exactly once per measured crossing when support >= 1.",
+          "Commit exactly one crossing Moment for the fire.",
+          "Emit one notify EffectIntent to the exact authorized recipient only when the notify port is linked to a valid authorization.",
+          "Produce an EffectReceipt for an emitted notification.",
+          "Run the independent observer and structured evaluation AST.",
+          "Produce fresh validation_run and health_assessment moments."
+        ],
+        "forbidden": [
+          "letting a PhysicsEvent (the intersection) mutate the store directly",
+          "firing when intersection evidence is unknown, not_measured, stale or measurement_failed",
+          "firing more than once for one measured crossing",
+          "polling the field for entries instead of waking on the deposit",
+          "streaming authored, derived, unknown or not_measured bond energy",
+          "encoding who crossed, when, or the notification message as atom energy",
+          "sending an external notification without an exact valid linked notify authorization",
+          "claiming delivery from a renderer animation or an emitter process that merely runs",
+          "treating an armed sensor as a crossing",
+          "pre-creating validation_run or health_assessment",
+          "converting stale, unknown, not_measured or measurement_failed evidence into a fire"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l2:lumina-prime:house-alarm-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "resolve the unique parent city Space and the house entry membrane the sensor is sited on",
+          "confirm the entry sensor collider is armed and placed on the membrane",
+          "admit a measured citizen-body intersection PhysicsEvent through the membrane, preserving unknown/not_measured/stale/measurement_failed without substitution",
+          "deposit exactly one measured support onto the trigger atom via the DepositBond",
+          "run the alarm atom circuit until quiescence",
+          "fire the trigger if and only if support >= 1 (one crossing)",
+          "commit exactly one crossing Moment for the fire",
+          "when the notify port is linked, independently validate the target authorization (recipient, freshness, cooldown, validity window)",
+          "emit one notify EffectIntent and persist its EffectReceipt only when authorization is measured valid",
+          "run an independent observer over the sensor state, intersection evidence, atom event ledger, crossing Moment and any EffectReceipt",
+          "evaluate the canonical structured AST",
+          "derive health from fresh measured dimensions"
+        ],
+        "trigger_rules": {
+          "support_per_crossing": 100,
+          "trigger_threshold": 100,
+          "fires_at_support": 1,
+          "one_fire_per_measured_crossing": true
+        },
+        "epistemic_precedence": [
+          "Observed",
+          "Measured",
+          "Known_absent",
+          "Unknown",
+          "Not_measured"
+        ],
+        "evaluation": "structured_expression_ast",
+        "python_escape_hatch": "forbidden_by_default"
+      }
+    },
+    {
+      "id": "code:l2:lumina-prime:house-alarm-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "authority": "Graph-native CodeDefinition for the house-alarm loop. This JSON file is a portable materialized projection, not independent semantic authority.",
+        "language": "mind-ir+atom-fixture",
+        "runnable": false,
+        "runnable_blocked_on": "physics-event -> atom-deposit bridge (universe-physics): a real Rapier intersection cannot yet deposit energy onto the alarm_trigger atom. Until this seam is built, citizen_body_intersects can only be seeded by a hand-built cluster injection, never by the running physics step.",
+        "entrypoints": [
+          "arm_entry_sensor",
+          "admit_intersection",
+          "run_alarm_atoms",
+          "emit_notify_intent",
+          "observe_house_alarm",
+          "evaluate_house_alarm_ast"
+        ],
+        "effect_intent_schema": {
+          "subtype": "notify",
+          "required": [
+            "house_id",
+            "entry_membrane_id",
+            "crossing_id",
+            "recipient",
+            "message",
+            "emitted_at"
+          ],
+          "human_message_template": "Entree detectee : un corps a franchi le seuil de {house_id}. Notifie {recipient}."
+        },
+        "alarm_atom_circuit": {
+          "atoms": [
+            { "key": "entry_sensor_armed", "roleAxis": "thing", "threshold": 100, "seed_energy": 0 },
+            { "key": "physics_intersection_event", "roleAxis": "moment", "threshold": 100, "seed_energy": 0 },
+            {
+              "key": "citizen_body_intersects",
+              "roleAxis": "moment",
+              "threshold": 200,
+              "seed_energy": 0,
+              "required_supports": [
+                "sensor_to_intersection",
+                "physics_event_to_intersection"
+              ]
+            },
+            {
+              "key": "alarm_trigger",
+              "roleAxis": "thing",
+              "threshold": 100,
+              "seed_energy": 0,
+              "required_supports": [
+                "deposit_to_trigger"
+              ]
+            },
+            { "key": "notify_emitter", "roleAxis": "thing", "threshold": 100, "seed_energy": 0 },
+            { "key": "effect_receipt", "roleAxis": "moment", "threshold": 100, "seed_energy": 0 },
+            { "key": "crossing_ledger", "roleAxis": "moment", "threshold": 100, "seed_energy": 0 }
+          ],
+          "bonds": [
+            { "key": "sensor_to_intersection", "source": "entry_sensor_armed", "target": "citizen_body_intersects", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "physics_event_to_intersection", "source": "physics_intersection_event", "target": "citizen_body_intersects", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "deposit_to_trigger", "source": "citizen_body_intersects", "target": "alarm_trigger", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "trigger_to_emitter", "source": "alarm_trigger", "target": "notify_emitter", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "emitter_to_receipt", "source": "notify_emitter", "target": "effect_receipt", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "emitter_to_ledger", "source": "notify_emitter", "target": "crossing_ledger", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" }
+          ],
+          "deposit_bond": "deposit_to_trigger",
+          "trigger_atom": "alarm_trigger",
+          "external_measured_injections": {
+            "entry_sensor_armed": 100,
+            "physics_intersection_event": 100
+          },
+          "runtime_injection_honesty": "physics_intersection_event is listed as an external measured injection ONLY to make the authored circuit self-consistent for local structural checks. On a running world it MUST arrive from the physics step via the unbuilt physics-event -> atom-deposit bridge, not from a hand seed. Seeding it by hand proves the circuit shape, NOT a real entry."
+        }
+      }
+    },
+    {
+      "id": "implementation:l2:lumina-prime:house-alarm-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "status": "materialized",
+        "artifact": "lumina-prime-house-alarm-v0.json",
+        "graph_status": "not_written",
+        "wiring_status": "not_wired",
+        "runtime_status": "not_running",
+        "verification_status": "not_measured",
+        "honesty": "The portable house-alarm loop is materialized and structurally checked locally only. It has NOT been upserted into the canonical Mind graph, and it CANNOT yet run end-to-end: the physics-event -> atom-deposit bridge that would let a real citizen-body intersection deposit energy onto the trigger atom is unbuilt. This construct is AUTHORED, not runnable."
+      }
+    },
+    {
+      "id": "justification:l2:lumina-prime:house-alarm-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": [
+          "A house alarm is useful only when a crossing, its single fire, and any notification are independently provable rather than asserted from an animation.",
+          "Waking on a physics-deposited support rather than polling keeps a dormant alarm free until a body actually crosses.",
+          "Keeping the intersection a PhysicsEvent that cannot mutate the store preserves the boundary between physical contact and semantic truth.",
+          "A trigger that fires at exactly one support makes 'one crossing = one fire' measurable instead of asserted.",
+          "Gating the external notification behind a separately linked authorization keeps who-gets-told explicit, revocable and auditable, and keeps an unlinked alarm silent outward while still recording the crossing."
+        ],
+        "rejected": [
+          "letting the collision itself write the alarm state, because a physics event is not an authorised semantic mutation",
+          "polling every tick for bodies near the door, because that spends energy on a dormant construct and violates the wake-on-event rule",
+          "encoding the crossing time or the recipient as bond energy, because energy is conserved gating, not payload",
+          "always-on outward notification, because it makes every door a silent sovereign broadcaster",
+          "claiming a notification was delivered from a glowing renderer effect or an emitter that merely ran",
+          "health inferred from process liveness rather than fresh measured fires and receipts"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:lumina-prime:house-alarm-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "structured_expression_ast",
+        "scenarios": [
+          "single_crossing_fires_once",
+          "no_crossing_no_fire",
+          "armed_sensor_without_intersection_does_not_fire",
+          "duplicate_intersection_fires_once",
+          "unmeasured_intersection_rejected",
+          "stale_intersection_rejected",
+          "missing_intersection_evidence_no_fire",
+          "physics_event_does_not_mutate_store",
+          "fire_commits_one_crossing_moment",
+          "notify_port_unlinked_no_external_notification",
+          "notify_link_valid_emits_one_effect_intent",
+          "notify_link_invalid_authority_no_notification",
+          "notify_expired_validity_window_no_notification",
+          "notify_within_cooldown_suppressed",
+          "unmeasured_energy_rejected"
+        ],
+        "invariants": [
+          "one trigger fire per measured crossing",
+          "an armed sensor with no measured intersection never fires",
+          "the intersection PhysicsEvent never mutates the store directly",
+          "each fire commits exactly one crossing Moment",
+          "no external notification without an exact valid linked notify authorization",
+          "one EffectReceipt per emitted notify EffectIntent",
+          "all streamed bond energy is measured",
+          "every conducted bond conducts once",
+          "atom energy is conserved"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:lumina-prime:house-alarm-observer-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "target": "observability_algorithm:l2:lumina-prime:house-alarm-v0",
+        "tests": [
+          "detect a trigger fired with no measured intersection support",
+          "detect two fires for one measured crossing",
+          "detect an intersection that mutated the store directly",
+          "detect a fire that produced no crossing Moment",
+          "detect an external notification with no linked authorization",
+          "detect a notification under an expired validity window or active cooldown",
+          "detect a false EffectReceipt not backed by an authorized transport",
+          "detect duplicate bond conduction",
+          "detect non-conserved energy",
+          "never convert absent intersection evidence into a fire",
+          "return measurement_failed when observer execution fails"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l2:lumina-prime:house-alarm-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Reads the canonical parent Space, the entry membrane and sensor state, the raw citizen-body intersection evidence, the atom event ledger, the crossing Moment and any notify EffectReceipt and linked authorization. It does not trust runtime-declared fire, crossing, notification, coverage or health.",
+        "checks": [
+          "unique valid parent Space and sited entry membrane",
+          "entry sensor armed and placed on the membrane",
+          "intersection freshness and information status",
+          "PhysicsEvent did not mutate the store",
+          "one measured support deposited per crossing",
+          "trigger fire preconditions (support >= 1)",
+          "one fire per measured crossing",
+          "one crossing Moment per fire",
+          "single bond conduction",
+          "integer energy conservation",
+          "measured-only membrane admission",
+          "quiescence",
+          "notify authorization resolution, recipient, freshness, cooldown and validity window",
+          "one EffectReceipt per emitted notify EffectIntent",
+          "absence preserved as unknown/not_measured",
+          "evidence freshness"
+        ]
+      }
+    },
+    {
+      "id": "metric:l2:lumina-prime:house-alarm-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "dimensions": [
+          "crossing_detection_accuracy",
+          "single_fire_per_crossing_rate",
+          "false_fire_rate",
+          "armed_no_intersection_no_fire_rate",
+          "physics_event_non_mutation_rate",
+          "crossing_moment_per_fire_rate",
+          "notify_authorization_accuracy",
+          "unauthorized_notification_rate",
+          "expired_notification_rate",
+          "cooldown_suppression_accuracy",
+          "effect_receipt_integrity",
+          "measured_stream_only_rate",
+          "energy_conservation_error_u64",
+          "single_conduction_accuracy",
+          "quiescence_reached",
+          "not_measured_honesty_rate",
+          "observer_fault_detection_rate",
+          "evidence_freshness_ms"
+        ]
+      }
+    },
+    {
+      "id": "health:l2:lumina-prime:house-alarm-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "states": [
+          "healthy",
+          "degraded",
+          "stale",
+          "unknown",
+          "not_measured",
+          "measurement_failed"
+        ],
+        "derivation": {
+          "healthy": "All required fresh validation scenarios pass; every measured crossing produced exactly one fire and one crossing Moment; the intersection never mutated the store; every external notification had a valid linked authorization and one EffectReceipt; energy is conserved.",
+          "degraded": "Fresh evidence exists but at least one non-catastrophic dimension violates its bound.",
+          "stale": "The latest otherwise valid evidence exceeds the configured freshness window.",
+          "unknown": "Required evidence cannot be resolved to a known state.",
+          "not_measured": "No fresh validation run has measured the required dimensions (current authored state: the physics-event -> atom-deposit bridge is unbuilt, so no real fire has ever been measured).",
+          "measurement_failed": "The observer or evaluator failed to produce a trustworthy measurement."
+        },
+        "maintenance": [
+          "retry",
+          "inspect_atom_event_ledger",
+          "inspect_intersection_evidence",
+          "suspend_notification",
+          "relink_notify_authorization",
+          "rearm_entry_sensor",
+          "rematerialize_code_projection",
+          "build_physics_event_to_atom_deposit_bridge",
+          "reconcile_universe_physics_runtime",
+          "ask_human"
+        ]
+      }
+    },
+    {
+      "id": "port:l2:lumina-prime:house-alarm:notify-recipient-v0",
+      "node_type": "thing",
+      "subtype": "capability_port",
+      "content": {
+        "name": "Notify recipient link port",
+        "state": "unlinked",
+        "accepted_target_subtype": "notify_authorization",
+        "accepted_relations": [
+          "USES",
+          "DEPENDS_ON"
+        ],
+        "shape_contract": "exact_recipient_mode_cooldown_validity",
+        "effect_when_unlinked": "none"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "space:l2:lumina-prime:house-alarm-v0",
+      "predicate": "PART_OF",
+      "target": "space:l2:lumina-prime:city-v0"
+    },
+    {
+      "source": "space:l2:lumina-prime:house-alarm-v0",
+      "predicate": "IMPLEMENTED_IN",
+      "target": "implementation:l2:lumina-prime:house-alarm-v0"
+    },
+    {
+      "source": "space:l2:lumina-prime:house-alarm-v0",
+      "predicate": "DEFINED_BY_CODE",
+      "target": "code:l2:lumina-prime:house-alarm-v0"
+    },
+    {
+      "source": "code:l2:lumina-prime:house-alarm-v0",
+      "predicate": "IMPLEMENTED_BY",
+      "target": "implementation:l2:lumina-prime:house-alarm-v0"
+    },
+    {
+      "source": "pattern:l2:lumina-prime:construct-house-alarm-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l2:lumina-prime:house-alarm-v0"
+    },
+    {
+      "source": "behavior:l2:lumina-prime:house-alarm-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:lumina-prime:house-alarm-v0"
+    },
+    {
+      "source": "implementation:l2:lumina-prime:house-alarm-v0",
+      "predicate": "OBSERVED_BY",
+      "target": "observability_algorithm:l2:lumina-prime:house-alarm-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:lumina-prime:house-alarm-v0",
+      "predicate": "PRODUCES",
+      "target": "metric:l2:lumina-prime:house-alarm-v0"
+    },
+    {
+      "source": "metric:l2:lumina-prime:house-alarm-v0",
+      "predicate": "FEEDS",
+      "target": "health:l2:lumina-prime:house-alarm-v0"
+    },
+    {
+      "source": "objective:l2:lumina-prime:house-alarm-v0",
+      "predicate": "SUPPORTS",
+      "target": "space:l2:lumina-prime:house-alarm-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:lumina-prime:house-alarm-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:lumina-prime:house-alarm-observer-v0"
+    }
+  ]
+}

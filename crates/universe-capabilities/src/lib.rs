@@ -1,7 +1,7 @@
 //! Generic effect authorization and measured transport receipts.
 
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use universe_core::{Tick, UniverseError};
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -244,6 +244,102 @@ fn limit_denial(declaration: &CapabilityDeclaration, intent: &EffectIntent) -> O
     None
 }
 
+/// A graph-owned sealed capability port. It is pure graph data — materialized
+/// from a construct's `capability_gate` (see the underground toolkit's
+/// `code:...` member / `port:...` member) — and carries no native policy: the
+/// host only enforces what the declaration states.
+///
+/// The observe capability set and the required mutate capability are DISJOINT by
+/// contract. A mutate is admitted only when the acting capability set holds
+/// `required_mutate_capability`; holding any or all `observe_capabilities`
+/// (opening a manhole) never widens the acting set toward mutation. This is the
+/// "opening a manhole never widens capability" invariant enforced at admission,
+/// not merely drawn by a renderer.
+///
+/// Extra declared fields (`default_state`, `on_unauthorized`, `rule`, ...) are
+/// ignored here on purpose: this type models only the admission decision. The
+/// unauthorized effect (`fail_closed`, `restore_prior_state`,
+/// `emit_rejection_receipt`) is realized structurally — a `Rejected` verdict
+/// authorizes no mutation, and because admission precedes any store transaction,
+/// prior state is intact by construction (nothing ran to restore).
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct SealedCapabilityPort {
+    pub port_id: String,
+    pub required_mutate_capability: String,
+    #[serde(default)]
+    pub observe_capabilities: BTreeSet<String>,
+}
+
+/// The admission verdict for a sealed-port mutate intent. `Admitted` and
+/// `Rejected` are distinct variants so an unauthorized intent is never silently
+/// dropped: it fails closed WITH an attributable rejection reason a caller must
+/// surface as a receipt.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "admission", rename_all = "snake_case")]
+pub enum MutateAdmission {
+    /// The acting set holds the required mutate capability; the caller may plan
+    /// and commit the underground mutation through the normal write path.
+    Admitted {
+        port_id: String,
+        capability: String,
+    },
+    /// Fail closed: the acting set lacks the required capability. No mutation is
+    /// authorized. Because admission precedes any transaction, prior state is
+    /// intact by construction.
+    Rejected {
+        port_id: String,
+        required_capability: String,
+        reason: String,
+    },
+}
+
+impl MutateAdmission {
+    pub fn is_admitted(&self) -> bool {
+        matches!(self, MutateAdmission::Admitted { .. })
+    }
+}
+
+impl SealedCapabilityPort {
+    /// Resolve a sealed-port mutate intent against the acting capability set.
+    ///
+    /// Admits ONLY if the set contains `required_mutate_capability`. The observe
+    /// set is intentionally not consulted: no observe capability can ever tip the
+    /// decision toward admission, so opening a manhole cannot widen capability.
+    pub fn resolve_mutate(&self, acting_capabilities: &BTreeSet<String>) -> MutateAdmission {
+        if acting_capabilities.contains(&self.required_mutate_capability) {
+            MutateAdmission::Admitted {
+                port_id: self.port_id.clone(),
+                capability: self.required_mutate_capability.clone(),
+            }
+        } else {
+            MutateAdmission::Rejected {
+                port_id: self.port_id.clone(),
+                required_capability: self.required_mutate_capability.clone(),
+                reason: format!(
+                    "acting capability set does not contain required mutate capability {}",
+                    self.required_mutate_capability
+                ),
+            }
+        }
+    }
+
+    /// Convenience: resolve a mutate intent and translate a `Rejected` verdict
+    /// into a hard `CapabilityDenied` error for callers that want fail-closed to
+    /// short-circuit the write path. The returned verdict is still surfaced on
+    /// the `Ok` side so an admitted intent carries its attributable port.
+    pub fn admit_mutate_or_deny(
+        &self,
+        acting_capabilities: &BTreeSet<String>,
+    ) -> Result<MutateAdmission, UniverseError> {
+        match self.resolve_mutate(acting_capabilities) {
+            admitted @ MutateAdmission::Admitted { .. } => Ok(admitted),
+            MutateAdmission::Rejected { reason, .. } => {
+                Err(UniverseError::CapabilityDenied(reason))
+            }
+        }
+    }
+}
+
 /// Replaces a sensitive capability's transport response or failure reason with
 /// the redaction marker, keeping the secret out of the persisted receipt.
 fn redact_outcome(outcome: EffectReceipt) -> EffectReceipt {
@@ -434,6 +530,96 @@ mod tests {
         };
         let receipt = host.execute_measured(Tick(1), &ok).unwrap();
         assert!(receipt.transport_attempted);
+    }
+
+    fn caps(items: &[&str]) -> BTreeSet<String> {
+        items.iter().map(|s| s.to_string()).collect()
+    }
+
+    /// The sealed hatch is materialized from the construct's graph-declared
+    /// `capability_gate`, not from native policy. Parsing that exact shape proves
+    /// the resolver is data-driven; the observe/mutate split proves manhole
+    /// observation can never widen toward mutation.
+    fn sealed_hatch() -> SealedCapabilityPort {
+        // This mirrors the underground toolkit's
+        // code:l2:mind-universe:underground-toolkit-v0 `capability_gate` member.
+        // Extra declared fields (default_state, on_unauthorized, rule) are
+        // present on purpose to prove they are ignored by admission.
+        let gate = serde_json::json!({
+            "port_id": "port:l2:mind-universe:underground:sealed-hatch-v0",
+            "observe_capabilities": ["observe", "inspect_through_manhole", "trace_flow", "read_receipts"],
+            "required_mutate_capability": "authority:underground-maintenance",
+            "default_state": "sealed_read_only",
+            "on_unauthorized": ["fail_closed", "restore_prior_state", "emit_rejection_receipt"],
+            "rule": "A mutate intent is admitted only when the acting capability set contains authority:underground-maintenance."
+        });
+        let port: SealedCapabilityPort = serde_json::from_value(gate).expect("gate parses");
+        assert_eq!(
+            port.required_mutate_capability,
+            "authority:underground-maintenance"
+        );
+        assert!(port
+            .observe_capabilities
+            .contains("inspect_through_manhole"));
+        port
+    }
+
+    #[test]
+    fn authority_capability_admits_underground_mutate() {
+        let port = sealed_hatch();
+        let acting = caps(&["authority:underground-maintenance", "observe"]);
+        let admission = port.resolve_mutate(&acting);
+        assert!(admission.is_admitted());
+        assert_eq!(
+            admission,
+            MutateAdmission::Admitted {
+                port_id: "port:l2:mind-universe:underground:sealed-hatch-v0".into(),
+                capability: "authority:underground-maintenance".into(),
+            }
+        );
+        assert!(port.admit_mutate_or_deny(&acting).is_ok());
+    }
+
+    #[test]
+    fn manhole_observation_never_widens_toward_mutation() {
+        let port = sealed_hatch();
+        // A citizen who holds EVERY observe capability but not the authority
+        // capability must still fail closed: opening manholes cannot widen.
+        let citizen = caps(&[
+            "observe",
+            "inspect_through_manhole",
+            "trace_flow",
+            "read_receipts",
+        ]);
+        let admission = port.resolve_mutate(&citizen);
+        assert!(!admission.is_admitted());
+        match &admission {
+            MutateAdmission::Rejected {
+                port_id,
+                required_capability,
+                reason,
+            } => {
+                assert_eq!(port_id, "port:l2:mind-universe:underground:sealed-hatch-v0");
+                assert_eq!(required_capability, "authority:underground-maintenance");
+                // The rejection is explicit and attributable — never a silent drop.
+                assert!(reason.contains("authority:underground-maintenance"));
+            }
+            MutateAdmission::Admitted { .. } => panic!("citizen must fail closed"),
+        }
+        // The hard-deny convenience surfaces the same fail-closed decision.
+        assert!(matches!(
+            port.admit_mutate_or_deny(&citizen),
+            Err(UniverseError::CapabilityDenied(message))
+                if message.contains("authority:underground-maintenance")
+        ));
+    }
+
+    #[test]
+    fn empty_capability_set_fails_closed() {
+        let port = sealed_hatch();
+        let admission = port.resolve_mutate(&BTreeSet::new());
+        assert!(!admission.is_admitted());
+        assert!(matches!(admission, MutateAdmission::Rejected { .. }));
     }
 
     #[test]

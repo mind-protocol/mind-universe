@@ -1221,6 +1221,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7df058c713841ad818f1dc5d3fd88063241cc61f49f5fbea4b951e8cf5a8d71d"
 
 [[package]]
+name = "universe-affordance"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tempfile",
+ "universe-core",
+ "universe-store",
+]
+
+[[package]]
 name = "universe-assets"
 version = "0.1.0"
 dependencies = [
@@ -1237,6 +1248,7 @@ name = "universe-capabilities"
 version = "0.1.0"
 dependencies = [
  "serde",
+ "serde_json",
  "universe-core",
 ]
 
@@ -1272,6 +1284,7 @@ dependencies = [
  "sha2 0.10.9",
  "tempfile",
  "universe-assets",
+ "universe-capabilities",
  "universe-compiler",
  "universe-core",
  "universe-embeddings",
@@ -1367,7 +1380,9 @@ name = "universe-query"
 version = "0.1.0"
 dependencies = [
  "serde",
+ "serde_json",
  "tempfile",
+ "universe-capabilities",
  "universe-core",
  "universe-physics",
  "universe-store",

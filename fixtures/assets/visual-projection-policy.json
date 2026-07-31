@@ -1,6 +1,6 @@
 {
-  "policy_id": "visual-projection-policy-v0",
-  "default_authority": "visual-mapping:l2:mind-desktop:citizen-energy-semi-humanoid-v1",
+  "policy_id": "visual-projection-policy-v1",
+  "note": "v1 removes default_authority: there is NO universal default that dresses every node the same. A semantic_type resolves ONLY through its explicit per-toolkit binding; an unbound type resolves to nothing and the renderer draws the honest fallback (see visual-resolution-policy-v1.json). Bindings are per-toolkit because a semantic_type is unique to its producing toolkit — so this table IS provenance-based resolution.",
   "bindings": [
     {
       "semantic_type": "actor",

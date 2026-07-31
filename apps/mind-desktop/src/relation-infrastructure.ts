@@ -135,3 +135,50 @@ export function drapedRoute(
   }
   return points;
 }
+
+// ---------------------------------------------------------------------------
+// Canonical projection (ALIGN.md §2 — the single table).
+//
+// A bond is NOT styled by an invented family taxonomy. Each canonical attribute
+// of the predicate's physical_profile drives one orthogonal perceptual channel.
+// This is the debt-free path; `infrastructureStyle` above remains only as the
+// fallback for sources that do not yet carry a profile.
+
+// The canonical physical_profile of a predicate (subset the renderer consumes).
+export interface PhysicalProfile {
+  readonly family: string;
+  readonly polarity: readonly [number, number]; // [p_ab, p_ba] in [-1,1]
+  readonly hierarchy: number; // [-1,1] : +1 source below target, -1 above
+  readonly permanence: number; // [0,1] : wire → cable → beam → arch
+  readonly mode: string;
+  readonly calibrated: boolean;
+}
+
+// Orthogonal channels the bond renderer sweeps into geometry/material.
+export interface BondChannels {
+  readonly family: string;
+  readonly lightColor: string; // polarity sign → excitation / inhibition
+  readonly slope: number; // hierarchy → conduit pitch (do not flatten)
+  readonly radius: number; // permanence → material thickness
+  readonly oneWay: boolean; // polarity asymmetry → direction
+  readonly calibrated: boolean; // uncalibrated ⇒ honest fog downstream
+}
+
+// polarity mean sign → light colour: + excitation (cyan), − inhibition (red),
+// ~0 neutral (slate). This is the canonical §2 rule, not a per-family palette.
+export function projectPhysicalProfile(profile: PhysicalProfile): BondChannels {
+  const mean = (profile.polarity[0] + profile.polarity[1]) / 2;
+  const lightColor =
+    mean >= 0.08 ? "#57c8ff" : mean <= -0.08 ? "#e0655f" : "#9aa6c0";
+  const asymmetry = Math.abs(
+    Math.abs(profile.polarity[0]) - Math.abs(profile.polarity[1])
+  );
+  return {
+    family: profile.family,
+    lightColor,
+    slope: Math.max(-1, Math.min(1, profile.hierarchy)),
+    radius: 0.022 + Math.max(0, Math.min(1, profile.permanence)) * 0.05,
+    oneWay: asymmetry >= 0.2,
+    calibrated: profile.calibrated
+  };
+}

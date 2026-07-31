@@ -2,10 +2,10 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
-use universe_core::{EntityKey, RelationKey};
+use universe_core::{EntityKey, RelationKey, UniverseError};
 use universe_store::{
     AdjacentRelations, IndexedUniverseSnapshot, OverlayAdjacentRelations,
-    OverlayIndexedUniverseSnapshot,
+    OverlayIndexedUniverseSnapshot, UniverseStore,
 };
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -291,6 +291,115 @@ impl LocalGraph for OverlayIndexedUniverseSnapshot {
     }
 }
 
+/// The capability set one actor holds, materialized from the graph by a bounded
+/// local read. It is exactly the set the actor's outgoing grant edges name — no
+/// more. This structure carries no admission decision: whether any capability
+/// admits a mutate is decided by the caller (e.g. a sealed capability port)
+/// against `capabilities`, never here.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct HeldCapabilitySet {
+    pub actor: EntityKey,
+    pub capabilities: BTreeSet<String>,
+    /// The grant relation keys that contributed a capability, for attribution.
+    pub grant_relations: Vec<RelationKey>,
+    pub status: QueryStatus,
+    pub inspected_relations: usize,
+}
+
+/// Materialize an actor's held capability set from the graph with a bounded,
+/// local read — never a whole-store scan.
+///
+/// Only relations OUTGOING from `actor` whose predicate is `grant_predicate` are
+/// followed; each target entity's content `capability_field` string is the held
+/// capability. Work is bounded by the actor's own incident-relation count and by
+/// `max_relations`; each capability entity is resolved by a binary search over
+/// the key-sorted entity column (no linear scan). Reaching the relation budget
+/// before the actor's adjacency is exhausted is reported as `BudgetExhausted`,
+/// never silently truncated.
+///
+/// Epistemic honesty: the returned set is read verbatim. Holding an observe
+/// capability never implies holding an authority/mutate capability; this reader
+/// interprets no predicate meaning beyond "is this the grant predicate", and
+/// makes no admission decision.
+pub fn read_actor_capability_set(
+    indexed: &IndexedUniverseSnapshot,
+    store: &UniverseStore,
+    actor: EntityKey,
+    grant_predicate: u32,
+    capability_field: &str,
+    max_relations: usize,
+) -> Result<HeldCapabilitySet, UniverseError> {
+    if !indexed.adjacency().contains(actor) {
+        return Ok(HeldCapabilitySet {
+            actor,
+            capabilities: BTreeSet::new(),
+            grant_relations: Vec::new(),
+            status: QueryStatus::UnknownOrigin,
+            inspected_relations: 0,
+        });
+    }
+    let entities = &indexed.snapshot().entities;
+    let mut capabilities = BTreeSet::new();
+    let mut grant_relations = Vec::new();
+    let mut inspected = 0usize;
+    let mut budget_hit = false;
+    for relation in indexed.adjacent_relations(actor) {
+        if inspected >= max_relations {
+            budget_hit = true;
+            break;
+        }
+        inspected += 1;
+        // Held-by is directional: only edges the actor is the SOURCE of grant a
+        // capability to it. An incoming grant predicate (someone else's grant)
+        // never widens this actor's set.
+        if relation.predicate != grant_predicate || relation.source != actor {
+            continue;
+        }
+        // Bounded key lookup: the entity column is key-sorted, so this is a
+        // binary search, not a whole-store scan.
+        let target = entities
+            .binary_search_by_key(&relation.target, |entity| entity.key)
+            .ok()
+            .map(|index| &entities[index])
+            .ok_or_else(|| {
+                UniverseError::Validation(format!(
+                    "capability grant target {} is not an entity in this snapshot",
+                    relation.target
+                ))
+            })?;
+        let content_ref = target.content.as_ref().ok_or_else(|| {
+            UniverseError::Validation(format!(
+                "capability entity {} has no content to resolve",
+                relation.target
+            ))
+        })?;
+        let content = store.read_content(content_ref)?;
+        let capability = content
+            .get(capability_field)
+            .and_then(serde_json::Value::as_str)
+            .ok_or_else(|| {
+                UniverseError::Validation(format!(
+                    "capability entity {} has no string field '{capability_field}'",
+                    relation.target
+                ))
+            })?;
+        capabilities.insert(capability.to_string());
+        grant_relations.push(relation.key);
+    }
+    let status = if budget_hit {
+        QueryStatus::BudgetExhausted
+    } else {
+        QueryStatus::Complete
+    };
+    Ok(HeldCapabilitySet {
+        actor,
+        capabilities,
+        grant_relations,
+        status,
+        inspected_relations: inspected,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -474,6 +583,95 @@ mod tests {
         // with no frontier — the dedup did not hide any remaining work.
         assert_eq!(subgraph.situation.status, QueryStatus::Complete);
         assert!(subgraph.frontier_entities.is_empty());
+    }
+
+    /// End-to-end underground enforcement on REAL read data, short of the
+    /// write-path call-site: an authority-grant fixture is installed into a real
+    /// store; each actor's held capability set is materialized by the bounded
+    /// read; and both sets are adjudicated by the graph-authored sealed hatch.
+    /// The maintenance authority is Admitted; the plain citizen fails closed.
+    #[test]
+    fn held_capability_set_drives_sealed_hatch_admission_end_to_end() {
+        use std::path::Path;
+        use universe_capabilities::{MutateAdmission, SealedCapabilityPort};
+        use universe_store::IndexedUniverseSnapshot;
+
+        let repo = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let temp = tempfile::tempdir().unwrap();
+
+        // Install the grant fixture into a real store (canonical seed + grant).
+        universe_testkit::install_authority_fixture(
+            repo.join("fixtures/ontology/underground-maintenance-grant.json"),
+            temp.path(),
+        )
+        .unwrap();
+
+        // INDEPENDENT reopen from disk, then index for bounded adjacency.
+        let store = universe_store::UniverseStore::open(temp.path()).unwrap();
+        let snapshot = store.replay(store.load_snapshot().unwrap()).unwrap();
+        let grant_predicate = snapshot
+            .symbol_id("USED")
+            .expect("grant predicate symbol is interned");
+        let indexed = IndexedUniverseSnapshot::new(snapshot).unwrap();
+
+        let maintenance = EntityKey(0x5a20);
+        let citizen = EntityKey(0x5a21);
+
+        let maintenance_set =
+            read_actor_capability_set(&indexed, &store, maintenance, grant_predicate, "capability", 32)
+                .unwrap();
+        let citizen_set =
+            read_actor_capability_set(&indexed, &store, citizen, grant_predicate, "capability", 32)
+                .unwrap();
+
+        // The read is bounded, complete, and materializes exactly the held set.
+        assert_eq!(maintenance_set.status, QueryStatus::Complete);
+        assert_eq!(citizen_set.status, QueryStatus::Complete);
+        assert!(maintenance_set
+            .capabilities
+            .contains("authority:underground-maintenance"));
+        assert_eq!(maintenance_set.grant_relations.len(), 1);
+        // The citizen holds a non-empty set (observe) but NOT the authority cap:
+        // fail-closed will be a real decision, not an empty-set artifact.
+        assert!(citizen_set.capabilities.contains("observe"));
+        assert!(!citizen_set
+            .capabilities
+            .contains("authority:underground-maintenance"));
+
+        // The sealed hatch is materialized from the Underground construct's
+        // graph-declared capability_gate — data, not native policy.
+        let underground: serde_json::Value = serde_json::from_slice(
+            &std::fs::read(repo.join("fixtures/ontology/underground-toolkit-v0.json")).unwrap(),
+        )
+        .unwrap();
+        let gate = underground
+            .get("members")
+            .and_then(|m| m.as_array())
+            .unwrap()
+            .iter()
+            .find(|member| member.get("subtype").and_then(|s| s.as_str()) == Some("code"))
+            .and_then(|code| code.pointer("/content/capability_gate"))
+            .cloned()
+            .expect("underground code member carries a capability_gate");
+        let port: SealedCapabilityPort = serde_json::from_value(gate).unwrap();
+        assert_eq!(
+            port.required_mutate_capability,
+            "authority:underground-maintenance"
+        );
+
+        // The resolver + real read data, end-to-end (still short of the write
+        // path): authority is Admitted; the citizen fails closed, attributably.
+        let maintenance_admission = port.admit_mutate_or_deny(&maintenance_set.capabilities);
+        assert!(matches!(
+            maintenance_admission,
+            Ok(MutateAdmission::Admitted { .. })
+        ));
+        let citizen_admission = port.admit_mutate_or_deny(&citizen_set.capabilities);
+        assert!(matches!(
+            citizen_admission,
+            Err(UniverseError::CapabilityDenied(message))
+                if message.contains("authority:underground-maintenance")
+        ));
     }
 
     #[test]

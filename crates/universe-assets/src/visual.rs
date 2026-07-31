@@ -107,8 +107,6 @@ pub struct Modulation {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct VisualPolicy {
     pub policy_id: String,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub default_authority: Option<String>,
     pub bindings: Vec<VisualBinding>,
     pub epistemic_modulation: BTreeMap<String, Modulation>,
 }
@@ -120,14 +118,15 @@ impl VisualPolicy {
             .map_err(|error| UniverseError::CorruptContent(error.to_string()))
     }
 
-    /// The visual mapping authority a semantic type resolves to: an explicit
-    /// binding, else the declared fallback. Never an invented default.
+    /// The visual mapping authority a semantic type resolves to: its explicit
+    /// per-toolkit binding, or `None`. There is NO universal default — an
+    /// unbound type resolves to nothing (the caller renders the honest
+    /// fallback/fog), never a default form dressing every node the same.
     pub fn authority_for(&self, semantic_type: &str) -> Option<&str> {
         self.bindings
             .iter()
             .find(|binding| binding.semantic_type == semantic_type)
             .map(|binding| binding.authority_id.as_str())
-            .or(self.default_authority.as_deref())
     }
 }
 
@@ -216,6 +215,74 @@ pub fn validate_catalog(catalog: &VisualCatalog) -> Result<(), UniverseError> {
             )));
         }
     }
+    if let Some(dynamics) = mapping.get("dynamics") {
+        validate_dynamics(dynamics)?;
+    }
+    Ok(())
+}
+
+/// Validates the optional per-node `dynamics` block: the graph-declared bounds
+/// the renderer uses to modulate a base form by a node's live signals — energy
+/// (emission), weight/poids (scale), and embedding (orientation + micro-variation).
+/// The block is authority for HOW those signals project; keeping the bounds sane
+/// here means the renderer only ever derives within a validated envelope.
+fn validate_dynamics(dynamics: &Value) -> Result<(), UniverseError> {
+    let block = dynamics
+        .as_object()
+        .ok_or_else(|| validation("dynamics must be an object"))?;
+    // Each mapBounded tuple is [inMin, inMax, outMin, outMax]: the input span must
+    // be non-degenerate and the output (a multiplier) non-negative and finite.
+    // A channel ABSENT from the block is not a structural fault: WHICH channels a
+    // kit must declare for its radius is a coverage/totality question that
+    // `compute_coverage` owns (it names the missing config). Here we validate only
+    // the shape of a channel that IS present — so removing a channel surfaces as a
+    // named coverage hole, not a generic structural error that pre-empts it.
+    for key in ["energy_to_emissive", "weight_to_scale"] {
+        let Some(value) = block.get(key) else {
+            continue;
+        };
+        let tuple = value
+            .as_array()
+            .ok_or_else(|| validation(format!("dynamics.{key} must be a 4-tuple")))?;
+        if tuple.len() != 4 {
+            return Err(validation(format!("dynamics.{key} arity is not 4")));
+        }
+        let values: Vec<f64> = tuple
+            .iter()
+            .map(|v| v.as_f64().filter(|n| n.is_finite()))
+            .collect::<Option<_>>()
+            .ok_or_else(|| validation(format!("dynamics.{key} has a non-finite component")))?;
+        if !(values[1] > values[0]) {
+            return Err(validation(format!(
+                "dynamics.{key} input span must be non-degenerate"
+            )));
+        }
+        if values[2] < 0.0 || values[3] < 0.0 {
+            return Err(validation(format!(
+                "dynamics.{key} output multiplier must be non-negative"
+            )));
+        }
+    }
+    if let Some(value) = block.get("embedding_orientation_max_rad") {
+        value
+            .as_f64()
+            .filter(|n| n.is_finite() && *n >= 0.0)
+            .ok_or_else(|| {
+                validation(
+                    "dynamics.embedding_orientation_max_rad must be a finite, non-negative number",
+                )
+            })?;
+    }
+    if let Some(value) = block.get("embedding_microvariation") {
+        let microvariation = value
+            .as_f64()
+            .ok_or_else(|| validation("dynamics.embedding_microvariation must be a number"))?;
+        if !microvariation.is_finite() || !(0.0..=1.0).contains(&microvariation) {
+            return Err(validation(
+                "dynamics.embedding_microvariation must be a fraction in [0, 1]",
+            ));
+        }
+    }
     Ok(())
 }
 
@@ -241,10 +308,8 @@ pub fn validate_policy(policy: &VisualPolicy) -> Result<(), UniverseError> {
             }
         }
     }
-    if policy.bindings.is_empty() && policy.default_authority.is_none() {
-        return Err(validation(
-            "visual policy binds nothing and declares no fallback",
-        ));
+    if policy.bindings.is_empty() {
+        return Err(validation("visual policy binds nothing"));
     }
     for binding in &policy.bindings {
         if binding.authority_id.trim().is_empty() || binding.justification.trim().is_empty() {
@@ -373,6 +438,295 @@ pub fn derive(
         material: modulated,
         confident: modulation.confident,
     }))
+}
+
+// ---------------------------------------------------------------------------
+// Totality / coverage — the kit as a total function on its declared radius.
+// ---------------------------------------------------------------------------
+//
+// STRUCTURE (`validate_catalog`) proves the kit is well-formed. TOTALITY proves
+// the central missing property: for EVERY configuration in its declared domain,
+// the kit emits exactly one defined render instruction — zero holes. A config in
+// the radius that produces nothing is a hole and is as faulty as a fabricated
+// value. A kit MUST declare its radius; without it, "all configs" is undefined,
+// so the observer rejects the kit rather than converting a missing check into
+// success ("fog stays fog").
+
+/// The closed 5-role axis from ALIGN.md §5b — what a node does with energy. A
+/// node's form derives from its role, not its content_kind. The role name is the
+/// `semantic_type` the render mapping is keyed by.
+const ROLE_AXIS: [&str; 5] = ["space", "actor", "narrative", "moment", "thing"];
+/// The live per-node signals a node kit may read (catalog `dynamics`).
+const SIGNALS: [&str; 3] = ["energy", "weight", "embedding"];
+/// The tri-state each signal takes across the coverage radius. `measured`
+/// displays the channel; `absent`/`not_measured` MUST stay at identity/fog —
+/// emitting the honest instruction of the unknown case is required (totality),
+/// but rendering it as a confident value is fabrication (equally a failure).
+const SIGNAL_STATES: [&str; 3] = ["measured", "absent", "not_measured"];
+/// The `dynamics` mapBounded key each signal channel is displayed through when
+/// `measured`. A `measured` signal with no such binding cannot be rendered.
+const SIGNAL_DYNAMICS: [(&str, &str); 3] = [
+    ("energy", "energy_to_emissive"),
+    ("weight", "weight_to_scale"),
+    ("embedding", "embedding_orientation_max_rad"),
+];
+
+/// A kit's declared coverage domain. Configs outside it are explicit
+/// out-of-scope, never silently dropped.
+#[derive(Clone, Debug, PartialEq)]
+struct RadiusDecl {
+    role_axis: Vec<String>,
+    signals: Vec<String>,
+}
+
+/// One configuration in the radius for which the kit failed to emit exactly one
+/// honest render instruction — named exactly so the fault is inspectable.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct CoverageHole {
+    pub role: String,
+    pub lod: String,
+    pub signal: String,
+    pub signal_state: String,
+    pub reason: String,
+}
+
+impl CoverageHole {
+    /// The exact config tuple, e.g. `{role: narrative, lod: hot, signal: energy, state: not_measured}`.
+    pub fn config(&self) -> String {
+        format!(
+            "{{role: {}, lod: {}, signal: {}, state: {}}}",
+            self.role, self.lod, self.signal, self.signal_state
+        )
+    }
+}
+
+/// The measured coverage of a kit over its declared radius.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct CoverageReport {
+    /// `|radius|` = |role_axis| × 4 lod × |signals| × 3 signal-states.
+    pub radius_size: usize,
+    pub defined: usize,
+    /// `defined / |radius|`.
+    pub coverage: f64,
+    /// The named list of holes — empty iff the kit is total on its radius.
+    pub holes: Vec<CoverageHole>,
+    /// Roles of the closed axis the kit does NOT cover — honest out-of-scope,
+    /// reported rather than dropped.
+    pub out_of_radius_roles: Vec<String>,
+    pub role_axis: Vec<String>,
+    pub signals: Vec<String>,
+}
+
+impl CoverageReport {
+    pub fn is_total(&self) -> bool {
+        self.holes.is_empty()
+    }
+}
+
+fn parse_str_set(
+    value: Option<&Value>,
+    allowed: &[&str],
+    field: &str,
+) -> Result<Vec<String>, UniverseError> {
+    let array = value
+        .and_then(Value::as_array)
+        .ok_or_else(|| validation(format!("radius {field} must be an array of strings")))?;
+    let mut out: Vec<String> = Vec::new();
+    for item in array {
+        let entry = item
+            .as_str()
+            .ok_or_else(|| validation(format!("radius {field} entries must be strings")))?;
+        if !allowed.contains(&entry) {
+            return Err(validation(format!(
+                "radius {field} value '{entry}' is outside the closed axis {allowed:?}"
+            )));
+        }
+        if out.iter().any(|existing| existing == entry) {
+            return Err(validation(format!(
+                "radius {field} lists '{entry}' more than once"
+            )));
+        }
+        out.push(entry.to_owned());
+    }
+    Ok(out)
+}
+
+/// Reads the kit's declared radius. A kit that omits `radius` is rejected — the
+/// observer never treats "all configs" as an implicit, undefined domain.
+fn parse_radius(mapping: &Value) -> Result<RadiusDecl, UniverseError> {
+    let radius = mapping.get("radius").and_then(Value::as_object).ok_or_else(|| {
+        validation(
+            "kit declares no radius; totality over 'all configs' is undefined \u{2014} a kit without a declared radius is rejected, not passed",
+        )
+    })?;
+    let role_axis = parse_str_set(radius.get("role_axis"), &ROLE_AXIS, "role_axis")?;
+    if role_axis.is_empty() {
+        return Err(validation(
+            "radius role_axis is empty; a kit must declare at least one role it covers",
+        ));
+    }
+    let signals = parse_str_set(radius.get("signals"), &SIGNALS, "signals")?;
+    if signals.is_empty() {
+        return Err(validation(
+            "radius declares no signals; the v0 node-kit radius reads at least one of energy/weight/embedding",
+        ));
+    }
+    Ok(RadiusDecl { role_axis, signals })
+}
+
+/// The epistemic state a signal tri-state folds into on the derive/honesty path.
+fn epistemic_for_signal_state(signal_state: &str) -> &'static str {
+    match signal_state {
+        "measured" => "measured",
+        "absent" => "known_absent",
+        // `not_measured` and any other non-confident case: identity / fog.
+        _ => "not_measured",
+    }
+}
+
+fn dynamics_key_for(signal: &str) -> Option<&'static str> {
+    SIGNAL_DYNAMICS
+        .iter()
+        .find(|(name, _)| *name == signal)
+        .map(|(_, key)| *key)
+}
+
+fn has_dynamics_binding(mapping: &Value, signal: &str) -> bool {
+    dynamics_key_for(signal)
+        .and_then(|key| mapping.get("dynamics").and_then(|dynamics| dynamics.get(key)))
+        .is_some()
+}
+
+fn emissive_intensity(resolution: &ResolvedEmbodiment) -> Option<f64> {
+    resolution
+        .material
+        .get("emissiveIntensity")
+        .and_then(Value::as_f64)
+}
+
+/// Enumerates the cartesian product of the declared radius, runs the kit's
+/// render mapping on each point, and requires exactly one defined honest
+/// instruction per point. Errors only when the radius itself is undefined; a kit
+/// that is structurally valid but leaves holes returns `Ok` with the named holes
+/// so the caller can measure `coverage` — `validate_coverage` turns any hole into
+/// a rejection.
+pub fn compute_coverage(
+    policy: &VisualPolicy,
+    catalog: &VisualCatalog,
+) -> Result<CoverageReport, UniverseError> {
+    let radius = parse_radius(&catalog.mapping)?;
+    let mut holes = Vec::new();
+    let mut radius_size = 0usize;
+
+    for role in &radius.role_axis {
+        // ALIGN §5b: form derives from the role; the role name is the semantic
+        // type the policy binding keys the render authority by.
+        for lod in RESIDENCIES {
+            for signal in &radius.signals {
+                for signal_state in SIGNAL_STATES {
+                    radius_size += 1;
+                    let epistemic = epistemic_for_signal_state(signal_state);
+                    let instruction = derive(policy, catalog, role, lod, epistemic)?;
+                    match instruction {
+                        None => holes.push(CoverageHole {
+                            role: role.clone(),
+                            lod: lod.to_owned(),
+                            signal: signal.clone(),
+                            signal_state: signal_state.to_owned(),
+                            reason: format!(
+                                "role '{role}' has no render mapping (unbound in policy and no fallback) \u{2014} the kit emits nothing for this config"
+                            ),
+                        }),
+                        Some(resolution) => {
+                            if signal_state == "measured" {
+                                // The signal channel is displayed only through a
+                                // dynamics binding; without it the kit cannot
+                                // render this measured signal.
+                                if !has_dynamics_binding(&catalog.mapping, signal) {
+                                    let key = dynamics_key_for(signal).unwrap_or("<unknown>");
+                                    holes.push(CoverageHole {
+                                        role: role.clone(),
+                                        lod: lod.to_owned(),
+                                        signal: signal.clone(),
+                                        signal_state: signal_state.to_owned(),
+                                        reason: format!(
+                                            "signal '{signal}' is measured but the kit declares no dynamics binding ('{key}') to render it"
+                                        ),
+                                    });
+                                }
+                            } else {
+                                // absent / not_measured MUST be identity/fog: no
+                                // emission, not confident. Rendering it as a
+                                // measured value is fabrication.
+                                let emits = emissive_intensity(&resolution) != Some(0.0);
+                                if resolution.confident || emits {
+                                    holes.push(CoverageHole {
+                                        role: role.clone(),
+                                        lod: lod.to_owned(),
+                                        signal: signal.clone(),
+                                        signal_state: signal_state.to_owned(),
+                                        reason: format!(
+                                            "signal '{signal}' is {signal_state} but the kit renders it as a confident measured value (fabrication) instead of identity/fog"
+                                        ),
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    let defined = radius_size - holes.len();
+    let coverage = if radius_size == 0 {
+        0.0
+    } else {
+        defined as f64 / radius_size as f64
+    };
+    let out_of_radius_roles = ROLE_AXIS
+        .iter()
+        .filter(|role| !radius.role_axis.iter().any(|declared| declared == *role))
+        .map(|role| role.to_string())
+        .collect();
+
+    Ok(CoverageReport {
+        radius_size,
+        defined,
+        coverage,
+        holes,
+        out_of_radius_roles,
+        role_axis: radius.role_axis,
+        signals: radius.signals,
+    })
+}
+
+/// The toolkit validator loop's observer: STRUCTURE first (a kit that is not
+/// well-formed cannot be a total function), then TOTALITY. Any structural fault
+/// or any coverage hole is a rejection that names the exact failing config; the
+/// observer never converts a missing radius or a hole into success.
+pub fn validate_coverage(
+    policy: &VisualPolicy,
+    catalog: &VisualCatalog,
+) -> Result<CoverageReport, UniverseError> {
+    validate_catalog(catalog)?;
+    validate_policy(policy)?;
+    let report = compute_coverage(policy, catalog)?;
+    if !report.holes.is_empty() {
+        let named = report
+            .holes
+            .iter()
+            .map(|hole| format!("{} \u{2014} {}", hole.config(), hole.reason))
+            .collect::<Vec<_>>()
+            .join("; ");
+        return Err(validation(format!(
+            "kit is not total on its declared radius: {}/{} configs covered, {} hole(s): {named}",
+            report.defined,
+            report.radius_size,
+            report.holes.len()
+        )));
+    }
+    Ok(report)
 }
 
 // ---------------------------------------------------------------------------
@@ -804,8 +1158,8 @@ mod tests {
     #[test]
     fn unbound_type_without_binding_resolves_to_unknown_not_a_default() {
         let catalog = catalog();
-        let mut policy = policy();
-        policy.default_authority = None; // remove the fallback
+        // No universal default exists any more: an unbound type resolves to None.
+        let policy = policy();
         assert!(derive(
             &policy,
             &catalog,
@@ -830,12 +1184,187 @@ mod tests {
     }
 
     #[test]
+    fn dynamics_block_validates_and_is_present_in_the_authority() {
+        let catalog = catalog();
+        // The shipped authority declares the per-node modulation envelope.
+        assert!(catalog.mapping.get("dynamics").is_some());
+        validate_catalog(&catalog).unwrap();
+    }
+
+    #[test]
+    fn degenerate_dynamics_span_is_rejected() {
+        let mut catalog = catalog();
+        // inMax must exceed inMin, else the projection has no envelope to derive in.
+        catalog.mapping["dynamics"]["weight_to_scale"] = json!([100, 100, 0.85, 1.7]);
+        assert!(matches!(
+            validate_catalog(&catalog),
+            Err(UniverseError::Validation(message))
+                if message.contains("input span must be non-degenerate")
+        ));
+    }
+
+    #[test]
+    fn microvariation_out_of_unit_range_is_rejected() {
+        let mut catalog = catalog();
+        catalog.mapping["dynamics"]["embedding_microvariation"] = json!(1.5);
+        assert!(matches!(
+            validate_catalog(&catalog),
+            Err(UniverseError::Validation(message))
+                if message.contains("must be a fraction in [0, 1]")
+        ));
+    }
+
+    #[test]
     fn budget_violation_is_rejected() {
         let mut catalog = catalog();
         catalog.mapping["primitive_budget"] = json!(99);
         assert!(matches!(
             validate_catalog(&catalog),
             Err(UniverseError::Validation(message)) if message.contains("primitive_budget out of renderer range")
+        ));
+    }
+
+    // -----------------------------------------------------------------------
+    // Totality / coverage (T-K1).
+    // -----------------------------------------------------------------------
+
+    /// (c) The real fixture, once it declares a valid radius, is a total function
+    /// on that radius: every one of its 36 configs emits an honest instruction.
+    #[test]
+    fn real_catalog_is_total_on_its_declared_radius() {
+        let report = validate_coverage(&policy(), &catalog()).unwrap();
+        assert!(report.is_total());
+        assert!(report.holes.is_empty());
+        // 1 role (actor) × 4 lod × 3 signals × 3 signal-states.
+        assert_eq!(report.radius_size, 36);
+        assert_eq!(report.defined, 36);
+        assert_eq!(report.coverage, 1.0);
+        assert_eq!(report.role_axis, vec!["actor".to_owned()]);
+        // The four uncovered roles are reported as honest out-of-scope, not holes.
+        assert_eq!(
+            report.out_of_radius_roles,
+            vec![
+                "space".to_owned(),
+                "narrative".to_owned(),
+                "moment".to_owned(),
+                "thing".to_owned()
+            ]
+        );
+    }
+
+    /// (d) A kit that declares no radius is rejected — "all configs" is undefined,
+    /// and the observer never converts a missing check into success.
+    #[test]
+    fn kit_without_a_declared_radius_is_rejected() {
+        let mut catalog = catalog();
+        catalog.mapping.as_object_mut().unwrap().remove("radius");
+        assert!(matches!(
+            validate_coverage(&policy(), &catalog),
+            Err(UniverseError::Validation(message)) if message.contains("declares no radius")
+        ));
+    }
+
+    /// (b), form 1 — a declared role with no render mapping is a named hole.
+    #[test]
+    fn coverage_hole_from_unbound_role_names_the_missing_config() {
+        let mut catalog = catalog();
+        // Declare a role the policy cannot resolve...
+        catalog.mapping["radius"]["role_axis"] = json!(["actor", "narrative"]);
+        // `narrative` has no binding, and there is no universal default, so it
+        // resolves to nothing — a named hole.
+        let policy = policy();
+
+        let report = compute_coverage(&policy, &catalog).unwrap();
+        assert!(!report.is_total());
+        // narrative × 4 lod × 3 signals × 3 states = 36 holes; actor stays total.
+        assert_eq!(report.holes.len(), 36);
+        assert_eq!(report.defined, 36);
+        assert_eq!(report.radius_size, 72);
+        assert!(report.holes.iter().all(|hole| hole.role == "narrative"));
+        assert!(report
+            .holes
+            .iter()
+            .any(|hole| hole.config().contains("role: narrative")
+                && hole.reason.contains("no render mapping")));
+
+        // The observer turns that into a rejection naming the config.
+        let error = validate_coverage(&policy, &catalog).unwrap_err();
+        let UniverseError::Validation(message) = error else {
+            panic!("expected a validation error");
+        };
+        assert!(message.contains("not total on its declared radius"));
+        assert!(message.contains("role: narrative"));
+    }
+
+    /// (b), form 2 — a measured signal the kit cannot render (no dynamics
+    /// binding) is a named hole, and only for the `measured` tri-state.
+    #[test]
+    fn coverage_hole_from_unrenderable_measured_signal() {
+        let mut catalog = catalog();
+        // Remove the channel that displays a measured `energy` signal.
+        catalog.mapping["dynamics"]
+            .as_object_mut()
+            .unwrap()
+            .remove("energy_to_emissive");
+
+        let report = compute_coverage(&policy(), &catalog).unwrap();
+        assert!(!report.is_total());
+        // Only energy × measured × 4 lod = 4 holes (weight/embedding unaffected;
+        // absent/not_measured energy stay at identity/fog, no channel needed).
+        assert_eq!(report.holes.len(), 4);
+        assert!(report.holes.iter().all(|hole| hole.signal == "energy"
+            && hole.signal_state == "measured"
+            && hole.reason.contains("no dynamics binding")));
+
+        assert!(matches!(
+            validate_coverage(&policy(), &catalog),
+            Err(UniverseError::Validation(message)) if message.contains("signal: energy") && message.contains("state: measured")
+        ));
+    }
+
+    /// (a) The coverage observer composes with the structural rules: five
+    /// structurally invalid catalogs are each rejected, one per rule, before
+    /// totality is even measured.
+    #[test]
+    fn coverage_composes_with_five_structural_rejections() {
+        // Rule 1: primitive kind out of the allowed set.
+        let mut c1 = catalog();
+        c1.mapping["forms"]["energy_orb"][0][0] = json!("torus");
+        assert!(matches!(
+            validate_coverage(&policy(), &c1),
+            Err(UniverseError::Validation(m)) if m.contains("is not allowed")
+        ));
+
+        // Rule 2: primitive tuple not arity-8.
+        let mut c2 = catalog();
+        c2.mapping["forms"]["energy_orb"][0] = json!(["icosphere", "core", "core"]);
+        assert!(matches!(
+            validate_coverage(&policy(), &c2),
+            Err(UniverseError::Validation(m)) if m.contains("tuple arity is not 8")
+        ));
+
+        // Rule 3: primitive_budget exceeds the renderer range.
+        let mut c3 = catalog();
+        c3.mapping["primitive_budget"] = json!(99);
+        assert!(matches!(
+            validate_coverage(&policy(), &c3),
+            Err(UniverseError::Validation(m)) if m.contains("primitive_budget out of renderer range")
+        ));
+
+        // Rule 4: a LOD state points at an undefined form.
+        let mut c4 = catalog();
+        c4.mapping["lod_states"]["hot"] = json!("no_such_form");
+        assert!(matches!(
+            validate_coverage(&policy(), &c4),
+            Err(UniverseError::Validation(m)) if m.contains("points at an undefined form")
+        ));
+
+        // Rule 5: a degenerate dynamics span (inMin >= inMax).
+        let mut c5 = catalog();
+        c5.mapping["dynamics"]["energy_to_emissive"] = json!([5, 5, 1.0, 2.2]);
+        assert!(matches!(
+            validate_coverage(&policy(), &c5),
+            Err(UniverseError::Validation(m)) if m.contains("degenerate")
         ));
     }
 }

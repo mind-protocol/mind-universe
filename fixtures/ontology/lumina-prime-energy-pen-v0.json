@@ -1,0 +1,585 @@
+{
+  "id": "space:l2:lumina-prime:energy-pen-v0",
+  "node_type": "space",
+  "subtype": "energy_pen",
+  "content": {
+    "contractKind": "construct",
+    "name": "Lumina Prime Energy Pen v0 (Stylo énergétique)",
+    "dominant_scale": "sensemaking",
+    "parent_scope": {
+      "classification": "contained",
+      "parent_space": "space:l2:lumina-prime:city-v0",
+      "justification": "The Pen is a civic sensemaking instrument structurally contained by Lumina Prime; it authors living Inscriptions that are later sited elsewhere in the city."
+    },
+    "native_law_boundary": "AtomDynamics remains ontology-blind and knows only AtomSpec, AtomBond and support/inhibit/neutral. Claim decomposition, epistemic status, authorship, targeting, surface, reader-rules and signature validity are typed payload data transformed by Things. Energy only gates whether the twelve seal supports are present and measured; it never encodes the meaning, status or truth of any claim.",
+    "writes": "An Inscription, never a raw string. The original gesture is preserved with an exact fragment-to-claim correspondence.",
+    "unsealed_ink": {
+      "state": "translucent_non_conductive",
+      "may": [
+        "be inspected",
+        "be completed (missing slots stay visible: source, target, context, signature, surface, ...)"
+      ],
+      "may_not": [
+        "be published as canonical",
+        "emit a stimulus",
+        "broadcast",
+        "claim to have been delivered"
+      ]
+    },
+    "seal_gate": {
+      "port_id": "port:l2:lumina-prime:energy-pen:seal-gate-v0",
+      "required_supports_count": 12,
+      "required_supports": [
+        "gesture_observed",
+        "claims_decomposed",
+        "epistemic_status_linked",
+        "sources_linked",
+        "justifications_linked",
+        "context_linked",
+        "authors_linked",
+        "targets_linked",
+        "surface_linked",
+        "broadcast_linked",
+        "reader_rules_linked",
+        "signatures_valid"
+      ],
+      "on_seal": [
+        "materialization",
+        "inscription_receipt",
+        "physicalization_projections",
+        "broadcast_registry_entry"
+      ],
+      "rule": "The gate fires only when all twelve supports are present and measured. A signature covers exact atoms and revisions; mutating any claim invalidates its prior signature and re-opens the seal."
+    },
+    "broadcast_port": {
+      "port_id": "port:l2:lumina-prime:energy-pen:local-broadcast-v0",
+      "accepted_target_subtype": "broadcast_authorization",
+      "accepted_relations": [
+        "USES",
+        "DEPENDS_ON"
+      ],
+      "default_state": "unlinked",
+      "configuration": [
+        "measured origin",
+        "integer radius in millimetres",
+        "authorized targets",
+        "delivery mode",
+        "cooldown",
+        "valid_from and valid_until"
+      ],
+      "rule": "A reader receives an inscription only when BOTH inside the geometric radius AND inside the semantic target set. An unlinked port cannot broadcast."
+    }
+  },
+  "members": [
+    {
+      "id": "objective:l2:lumina-prime:energy-pen-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "For each writing gesture, the Pen constructs one living Inscription decomposed into atomic claims, each carrying epistemic status, sources, justifications, context, authors, targets, surface, spatial reach, reader rules and signatures, with the original statement preserved and mapped fragment-by-fragment to its claims. Until the twelve seal supports are measured the content exists only as non-conductive unsealed ink. A sealed Inscription materializes exactly one receipt, its receipted physicalizations and one broadcast-registry entry. Mutating any claim invalidates its signature and re-opens the seal. No projection ever alters a claim's meaning, epistemic status, source, author or access rights."
+      }
+    },
+    {
+      "id": "pattern:l2:lumina-prime:construct-inscription-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "A persistent sensemaking instrument decomposes a writing gesture into atomic claims and holds them as translucent, non-conductive unsealed ink. A bounded atom circuit gates sealing: exactly twelve support atoms (gesture, claims, epistemic status, sources, justifications, context, authors, targets, surface, broadcast, reader-rules, signatures) must be present and measured before the seal gate fires. Sealing materializes a receipt, receipted physicalizations and a broadcast-registry entry. An independent observer re-decomposes the gesture, re-checks every slot, re-validates each signature against exact atoms and revisions, and derives a health vector from fresh evidence.",
+        "epistemic_honesty": "Unsealed ink is not a published claim; a physicalization is not a second truth; a signature is not valid once its claim mutates; a configured broadcast is not a delivery."
+      }
+    },
+    {
+      "id": "vocabulary:l2:lumina-prime:energy-pen-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "Inscription": "The canonical, living record produced by a writing gesture. Not a string: a sealed graph of claims, statuses, sources, justifications, context, authors, targets, surface, reader-rules and signatures.",
+          "OriginalGesture": "The verbatim authored statement, conserved with an exact fragment-to-claim correspondence.",
+          "AtomicClaim": "A single decomposed proposition carrying its own epistemic status, sources and justifications.",
+          "EpistemicStatus": [
+            "observed",
+            "measured",
+            "known_absent",
+            "unknown",
+            "not_measured",
+            "measurement_failed"
+          ],
+          "UnsealedInk": "Content that exists in the one reality but is translucent and non-conductive: inspectable and completable, but not publishable, not emitting, not broadcasting, not delivered. Missing slots remain visible.",
+          "SealGate": "The port that awaits exactly twelve measured supports before a sealed Inscription may materialize.",
+          "Signature": "A validity claim over exact atoms and revisions. Mutating a signed claim invalidates the prior signature.",
+          "Physicalization": "One receipted embodiment of a single canonical Inscription: paper sheet, page or book, wall tag, engraving, panel, floating text, object label, private note, or a stimulus with no visible support. Several physicalizations, one truth.",
+          "BroadcastAuthorization": "A separately linked construct authority node configuring measured origin, integer radius, authorized targets, delivery mode, cooldown and validity window.",
+          "ReaderProjection": "A per-reader adaptation of surface (language, detail level, accessibility, authorized redaction, situated address, measured distance/direction, reader context) that may never change the claim's meaning, epistemic status, source, author or access rights.",
+          "Fog": "Unknown, not_measured or rejected evidence. Never rendered as a measured value; a missing slot is not a filled slot."
+        }
+      }
+    },
+    {
+      "id": "behavior:l2:lumina-prime:energy-pen-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "A writing gesture, a decomposition of that gesture into atomic claims, per-claim epistemic status, sources, justifications, context, authors, targets, a surface, reader rules, candidate signatures, and measured atom energy on each of the twelve seal supports.",
+        "when": "An author writes with the Pen, completes missing slots on unsealed ink, requests a seal, or a valid linked broadcast authorization becomes active.",
+        "then": [
+          "Preserve the original gesture and map each fragment to its decomposed claims.",
+          "Hold the content as translucent non-conductive unsealed ink with every missing slot visible.",
+          "Admit each of the twelve supports through the membrane only as measured evidence.",
+          "Fire the seal gate only when all twelve supports are present and measured.",
+          "Materialize exactly one Inscription receipt, its receipted physicalizations and one broadcast-registry entry.",
+          "Bind each signature to exact atoms and revisions.",
+          "Run the independent observer and structured evaluation AST.",
+          "Produce fresh validation_run and health_assessment moments."
+        ],
+        "forbidden": [
+          "publishing, emitting, broadcasting or claiming delivery of unsealed ink",
+          "firing the seal gate with fewer than twelve measured supports",
+          "streaming authored, derived, unknown or not_measured bond energy",
+          "encoding a claim's meaning, truth or epistemic status as atom energy",
+          "treating a completed slot as measured when its evidence is unknown or not_measured",
+          "holding a signature valid after its signed claim has mutated",
+          "materializing more than one canonical Inscription for one sealed gesture",
+          "letting a ReaderProjection alter a claim's meaning, epistemic status, source, author or access rights",
+          "broadcasting without an exact valid linked broadcast authorization",
+          "delivering to a reader outside the measured geometric radius or outside the semantic target set",
+          "claiming delivery from a renderer animation or an emitter process that merely runs",
+          "pre-creating validation_run or health_assessment",
+          "converting stale, unknown, not_measured or measurement_failed evidence into a seal"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l2:lumina-prime:energy-pen-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "capture the original gesture verbatim and record its fragment boundaries",
+          "decompose the gesture into atomic claims, keeping the fragment-to-claim map exact",
+          "attach per-claim epistemic status, preserving unknown/not_measured/measurement_failed without substitution",
+          "link sources, justifications and context for each claim",
+          "link authors, targets and the surface of the intended physicalization",
+          "link reader rules and any broadcast configuration",
+          "compute candidate signatures over exact atoms and revisions",
+          "materialize the twelve support atoms as measured membrane injections",
+          "run the seal atom circuit until quiescence",
+          "fire the seal gate if and only if all twelve supports conducted",
+          "materialize exactly one Inscription receipt, its physicalization projection ledger and one broadcast-registry entry",
+          "when the broadcast port is linked, independently validate the target authorization and the geometric-radius AND semantic-target predicate per reader",
+          "run an independent observer over gesture, claims, slots, signatures, atom ledgers and receipts",
+          "evaluate the canonical structured AST",
+          "derive health from fresh measured dimensions"
+        ],
+        "seal_rules": {
+          "supports_required": 12,
+          "support_energy_each": 100,
+          "seal_gate_threshold": 1200,
+          "signature_binding": "exact atoms and revisions; any claim mutation invalidates the prior signature and re-opens the seal",
+          "projection_invariants": [
+            "claim meaning",
+            "epistemic status",
+            "source",
+            "author",
+            "access rights"
+          ]
+        },
+        "epistemic_precedence": [
+          "Observed",
+          "Measured",
+          "Known_absent",
+          "Unknown",
+          "Not_measured"
+        ],
+        "evaluation": "structured_expression_ast",
+        "python_escape_hatch": "forbidden_by_default"
+      }
+    },
+    {
+      "id": "code:l2:lumina-prime:energy-pen-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "authority": "Graph-native CodeDefinition for the Pen loop. This JSON file is a portable materialized projection, not independent semantic authority.",
+        "language": "mind-ir+atom-fixture",
+        "entrypoints": [
+          "capture_gesture",
+          "decompose_claims",
+          "hold_unsealed_ink",
+          "run_seal_atoms",
+          "materialize_inscription",
+          "project_for_reader",
+          "observe_inscription",
+          "evaluate_inscription_ast"
+        ],
+        "inscription_schema": {
+          "subtype": "sealed_inscription",
+          "required": [
+            "original_gesture",
+            "fragment_to_claim_map",
+            "claims",
+            "epistemic_status_per_claim",
+            "sources",
+            "justifications",
+            "context",
+            "authors",
+            "targets",
+            "surface",
+            "reader_rules",
+            "signatures",
+            "sealed_at"
+          ],
+          "human_message_template": "Inscription scellée : {claim_count} claim(s), {source_count} source(s), auteur {author}. Statut : {seal_state}."
+        },
+        "seal_atom_circuit": {
+          "atoms": [
+            { "key": "gesture_observed", "roleAxis": "moment", "threshold": 100, "seed_energy": 0 },
+            { "key": "claims_decomposed", "roleAxis": "thing", "threshold": 100, "seed_energy": 0 },
+            { "key": "epistemic_status_linked", "roleAxis": "narrative", "threshold": 100, "seed_energy": 0 },
+            { "key": "sources_linked", "roleAxis": "narrative", "threshold": 100, "seed_energy": 0 },
+            { "key": "justifications_linked", "roleAxis": "narrative", "threshold": 100, "seed_energy": 0 },
+            { "key": "context_linked", "roleAxis": "narrative", "threshold": 100, "seed_energy": 0 },
+            { "key": "authors_linked", "roleAxis": "actor", "threshold": 100, "seed_energy": 0 },
+            { "key": "targets_linked", "roleAxis": "thing", "threshold": 100, "seed_energy": 0 },
+            { "key": "surface_linked", "roleAxis": "thing", "threshold": 100, "seed_energy": 0 },
+            { "key": "broadcast_linked", "roleAxis": "moment", "threshold": 100, "seed_energy": 0 },
+            { "key": "reader_rules_linked", "roleAxis": "narrative", "threshold": 100, "seed_energy": 0 },
+            { "key": "signatures_valid", "roleAxis": "moment", "threshold": 100, "seed_energy": 0 },
+            {
+              "key": "seal_gate",
+              "roleAxis": "thing",
+              "threshold": 1200,
+              "seed_energy": 0,
+              "required_supports": [
+                "gesture_to_seal",
+                "claims_to_seal",
+                "epistemic_to_seal",
+                "sources_to_seal",
+                "justifications_to_seal",
+                "context_to_seal",
+                "authors_to_seal",
+                "targets_to_seal",
+                "surface_to_seal",
+                "broadcast_to_seal",
+                "reader_rules_to_seal",
+                "signatures_to_seal"
+              ]
+            },
+            { "key": "materialization_emitter", "roleAxis": "thing", "threshold": 1000, "seed_energy": 0 },
+            { "key": "inscription_receipt", "roleAxis": "moment", "threshold": 400, "seed_energy": 0 },
+            { "key": "physicalization_projection_ledger", "roleAxis": "moment", "threshold": 100, "seed_energy": 0 },
+            { "key": "broadcast_registry", "roleAxis": "moment", "threshold": 100, "seed_energy": 0 }
+          ],
+          "bonds": [
+            { "key": "gesture_to_seal", "source": "gesture_observed", "target": "seal_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "claims_to_seal", "source": "claims_decomposed", "target": "seal_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "epistemic_to_seal", "source": "epistemic_status_linked", "target": "seal_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "sources_to_seal", "source": "sources_linked", "target": "seal_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "justifications_to_seal", "source": "justifications_linked", "target": "seal_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "context_to_seal", "source": "context_linked", "target": "seal_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "authors_to_seal", "source": "authors_linked", "target": "seal_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "targets_to_seal", "source": "targets_linked", "target": "seal_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "surface_to_seal", "source": "surface_linked", "target": "seal_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "broadcast_to_seal", "source": "broadcast_linked", "target": "seal_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "reader_rules_to_seal", "source": "reader_rules_linked", "target": "seal_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "signatures_to_seal", "source": "signatures_valid", "target": "seal_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "seal_to_emitter", "source": "seal_gate", "target": "materialization_emitter", "polarity": "support", "energy": 1000, "energy_status": "measured:semantic_v0" },
+            { "key": "emitter_to_receipt", "source": "materialization_emitter", "target": "inscription_receipt", "polarity": "support", "energy": 400, "energy_status": "measured:semantic_v0" },
+            { "key": "emitter_to_projections", "source": "materialization_emitter", "target": "physicalization_projection_ledger", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "emitter_to_broadcast", "source": "materialization_emitter", "target": "broadcast_registry", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" }
+          ],
+          "external_measured_injections": {
+            "gesture_observed": 100,
+            "claims_decomposed": 100,
+            "epistemic_status_linked": 100,
+            "sources_linked": 100,
+            "justifications_linked": 100,
+            "context_linked": 100,
+            "authors_linked": 100,
+            "targets_linked": 100,
+            "surface_linked": 100,
+            "broadcast_linked": 100,
+            "reader_rules_linked": 100,
+            "signatures_valid": 100
+          }
+        }
+      }
+    },
+    {
+      "id": "implementation:l2:lumina-prime:energy-pen-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "status": "materialized",
+        "artifact": "lumina-prime-energy-pen-v0.json",
+        "graph_status": "not_written",
+        "wiring_status": "not_wired",
+        "runtime_status": "not_running",
+        "verification_status": "not_measured",
+        "honesty": "The portable Pen loop is materialized and structurally checked locally. This field is written BEFORE injection; after the injector commits it, the on-disk graph carries the loop while this embedded field reads stale (the loop is WRITTEN but not wired, executed or proven healthy)."
+      }
+    },
+    {
+      "id": "justification:l2:lumina-prime:energy-pen-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": [
+          "Writing that can be published, broadcast or claimed-delivered without provenance is indistinguishable from forgery; unsealed ink keeps unfinished speech visibly unfinished.",
+          "Decomposing a gesture into atomic claims lets each proposition carry its own epistemic status, source and justification rather than a single opaque assertion.",
+          "Twelve explicit seal supports make the difference between a draft and a canonical Inscription measurable instead of asserted.",
+          "Binding signatures to exact atoms and revisions makes tampering detectable: mutate a claim and its signature falls.",
+          "Multiple receipted physicalizations of one Inscription keep truth single while allowing paper, wall, panel or silent stimulus.",
+          "Reader projection adapts surface without touching meaning, so accessibility and localization never become quiet edits."
+        ],
+        "rejected": [
+          "treating the written string as the record, because the string loses claim structure, status and provenance",
+          "sealing on slot presence alone, because a filled slot with unknown evidence is not measured support",
+          "encoding claim truth or status as bond energy, because energy is conserved gating, not epistemics",
+          "one permanent visual form per Inscription, because that would make a physicalization a rival truth",
+          "always-on broadcast, because it makes every pen a silent sovereign speaker",
+          "letting localization or redaction rewrite the claim, because projection must never change meaning, source, author or rights",
+          "health inferred from process liveness or a glowing nib"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:lumina-prime:energy-pen-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "structured_expression_ast",
+        "scenarios": [
+          "single_claim_full_slots_seals",
+          "multi_claim_gesture_decomposes_exactly",
+          "unsealed_ink_cannot_publish",
+          "unsealed_ink_cannot_emit",
+          "unsealed_ink_cannot_broadcast",
+          "unsealed_ink_cannot_claim_delivery",
+          "eleven_of_twelve_supports_does_not_seal",
+          "twelve_measured_supports_seals",
+          "filled_but_unmeasured_slot_does_not_seal",
+          "claim_mutation_invalidates_signature",
+          "reseal_after_mutation",
+          "one_receipt_per_sealed_gesture",
+          "physicalization_paper_projection",
+          "physicalization_wall_tag_projection",
+          "physicalization_silent_stimulus_projection",
+          "projection_preserves_meaning",
+          "projection_preserves_status_source_author_rights",
+          "reader_inside_radius_and_target_receives",
+          "reader_inside_radius_outside_target_receives_nothing",
+          "reader_outside_radius_inside_target_receives_nothing",
+          "broadcast_port_unlinked_no_broadcast",
+          "broadcast_link_valid",
+          "broadcast_link_invalid_authority",
+          "broadcast_expired_validity_window",
+          "unmeasured_energy_rejected"
+        ],
+        "invariants": [
+          "exactly twelve measured supports gate the seal",
+          "unsealed ink is non-conductive: no publish, emit, broadcast or delivery",
+          "one canonical Inscription and one receipt per sealed gesture",
+          "each signature binds exact atoms and revisions",
+          "any claim mutation invalidates its prior signature",
+          "every physicalization is a receipted projection of the one Inscription",
+          "no projection alters meaning, epistemic status, source, author or access rights",
+          "a reader is served only inside the geometric radius AND the semantic target set",
+          "all streamed bond energy is measured",
+          "every conducted bond conducts once",
+          "atom energy is conserved"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:lumina-prime:energy-pen-observer-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "target": "observability_algorithm:l2:lumina-prime:energy-pen-v0",
+        "tests": [
+          "detect a seal fired with only eleven conducted supports",
+          "detect a filled slot whose evidence is unknown or not_measured",
+          "detect a signature still held valid after its claim mutated",
+          "detect two receipts materialized for one sealed gesture",
+          "detect a physicalization that changed a claim's meaning",
+          "detect a projection that altered epistemic status, source, author or rights",
+          "detect delivery to a reader outside the radius or the target set",
+          "detect broadcast with no linked authorization",
+          "detect broadcast under an expired validity window",
+          "detect duplicate bond conduction",
+          "detect non-conserved energy",
+          "never convert an empty slot into a seal",
+          "return measurement_failed when observer execution fails"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l2:lumina-prime:energy-pen-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Reads the original gesture, the fragment-to-claim map, each claim and its slots, candidate signatures, atom event ledgers, the Inscription receipt, physicalization projections and any broadcast authorization. It does not trust runtime-declared seal state, signature validity, delivery, coverage or health.",
+        "checks": [
+          "gesture preserved and fragment-to-claim map exact",
+          "claim decomposition complete and non-overlapping",
+          "every slot resolvable to a known epistemic status",
+          "all twelve supports present and measured before seal",
+          "seal gate fire preconditions",
+          "single bond conduction",
+          "integer energy conservation",
+          "measured-only membrane admission",
+          "quiescence",
+          "signature binds exact atoms and revisions",
+          "signature invalidation on claim mutation",
+          "one canonical Inscription and one receipt per sealed gesture",
+          "each physicalization a faithful projection of the one Inscription",
+          "projection invariance of meaning, status, source, author and rights",
+          "reader served only inside radius AND target",
+          "broadcast authorization resolution, authority, freshness and validity window",
+          "absence preserved as unknown/not_measured",
+          "evidence freshness"
+        ]
+      }
+    },
+    {
+      "id": "metric:l2:lumina-prime:energy-pen-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "dimensions": [
+          "gesture_preservation_accuracy",
+          "claim_decomposition_completeness",
+          "slot_measured_only_rate",
+          "seal_support_count_accuracy",
+          "false_seal_rate",
+          "signature_binding_integrity",
+          "signature_invalidation_on_mutation_rate",
+          "single_inscription_per_gesture_rate",
+          "receipt_integrity",
+          "physicalization_projection_fidelity",
+          "projection_invariance_rate",
+          "reader_radius_and_target_accuracy",
+          "unauthorized_broadcast_rate",
+          "expired_broadcast_rate",
+          "measured_stream_only_rate",
+          "energy_conservation_error_u64",
+          "single_conduction_accuracy",
+          "quiescence_reached",
+          "not_measured_honesty_rate",
+          "observer_fault_detection_rate",
+          "evidence_freshness_ms"
+        ]
+      }
+    },
+    {
+      "id": "health:l2:lumina-prime:energy-pen-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "states": [
+          "healthy",
+          "degraded",
+          "stale",
+          "unknown",
+          "not_measured",
+          "measurement_failed"
+        ],
+        "derivation": {
+          "healthy": "All required fresh validation scenarios pass; every seal used twelve measured supports; every signature binds its exact atoms; one receipt per gesture; projections preserve meaning, status, source, author and rights; energy is conserved; no unauthorized, expired or duplicate broadcast exists.",
+          "degraded": "Fresh evidence exists but at least one non-catastrophic dimension violates its bound.",
+          "stale": "The latest otherwise valid evidence exceeds the configured freshness window.",
+          "unknown": "Required evidence cannot be resolved to a known state.",
+          "not_measured": "No fresh validation run has measured the required dimensions.",
+          "measurement_failed": "The observer or evaluator failed to produce a trustworthy measurement."
+        },
+        "maintenance": [
+          "retry",
+          "inspect_atom_event_ledger",
+          "inspect_unsealed_slots",
+          "suspend_seal",
+          "suspend_broadcast",
+          "revalidate_signatures",
+          "relink_broadcast_authorization",
+          "rematerialize_code_projection",
+          "reconcile_universe_physics_runtime",
+          "ask_human"
+        ]
+      }
+    },
+    {
+      "id": "port:l2:lumina-prime:energy-pen:local-broadcast-v0",
+      "node_type": "thing",
+      "subtype": "capability_port",
+      "content": {
+        "name": "Local broadcast link port",
+        "state": "unlinked",
+        "accepted_target_subtype": "broadcast_authorization",
+        "accepted_relations": [
+          "USES",
+          "DEPENDS_ON"
+        ],
+        "shape_contract": "exact_origin_radius_targets_mode_cooldown_validity",
+        "reader_predicate": "inside_geometric_radius AND inside_semantic_target_set",
+        "effect_when_unlinked": "none"
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "space:l2:lumina-prime:energy-pen-v0",
+      "predicate": "PART_OF",
+      "target": "space:l2:lumina-prime:city-v0"
+    },
+    {
+      "source": "space:l2:lumina-prime:energy-pen-v0",
+      "predicate": "IMPLEMENTED_IN",
+      "target": "implementation:l2:lumina-prime:energy-pen-v0"
+    },
+    {
+      "source": "space:l2:lumina-prime:energy-pen-v0",
+      "predicate": "DEFINED_BY_CODE",
+      "target": "code:l2:lumina-prime:energy-pen-v0"
+    },
+    {
+      "source": "code:l2:lumina-prime:energy-pen-v0",
+      "predicate": "IMPLEMENTED_BY",
+      "target": "implementation:l2:lumina-prime:energy-pen-v0"
+    },
+    {
+      "source": "pattern:l2:lumina-prime:construct-inscription-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l2:lumina-prime:energy-pen-v0"
+    },
+    {
+      "source": "behavior:l2:lumina-prime:energy-pen-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:lumina-prime:energy-pen-v0"
+    },
+    {
+      "source": "implementation:l2:lumina-prime:energy-pen-v0",
+      "predicate": "OBSERVED_BY",
+      "target": "observability_algorithm:l2:lumina-prime:energy-pen-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:lumina-prime:energy-pen-v0",
+      "predicate": "PRODUCES",
+      "target": "metric:l2:lumina-prime:energy-pen-v0"
+    },
+    {
+      "source": "metric:l2:lumina-prime:energy-pen-v0",
+      "predicate": "FEEDS",
+      "target": "health:l2:lumina-prime:energy-pen-v0"
+    },
+    {
+      "source": "objective:l2:lumina-prime:energy-pen-v0",
+      "predicate": "SUPPORTS",
+      "target": "space:l2:lumina-prime:energy-pen-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:lumina-prime:energy-pen-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:lumina-prime:energy-pen-observer-v0"
+    }
+  ]
+}

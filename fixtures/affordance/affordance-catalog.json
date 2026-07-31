@@ -1,0 +1,193 @@
+{
+  "authority_id": "affordance:l2:mind-desktop:construction-affordance-catalog-v1",
+  "catalog": {
+    "catalog_id": "construction-affordance-catalog-v1",
+    "schema_version": "affordance-catalog/1",
+    "radius": {
+      "note": "The config domain this catalog is a total function over: declared semanticTypes x the six canonical target-epistemic-states. Configs outside this product are explicit out-of-scope, never silently dropped.",
+      "semantic_types": ["thing", "port", "space", "machine", "parcel"],
+      "target_epistemic_states": [
+        "observed",
+        "measured",
+        "known_absent",
+        "unknown",
+        "not_measured",
+        "measurement_failed"
+      ]
+    },
+    "templates": [
+      {
+        "id": "inspect",
+        "kind": "inspect",
+        "applies_to": {
+          "semantic_types": ["thing", "port", "space", "machine", "parcel"],
+          "context": "a proven target within the observer's read boundary"
+        },
+        "preconditions": [
+          "target is observed or measured",
+          "observer holds a read boundary that contains the target"
+        ],
+        "expected_semantic_effect": {
+          "intent": "ObserveTarget",
+          "write_primitive": "none",
+          "reads": ["target.content", "target.local_manual"],
+          "writes": []
+        },
+        "capability": "observe.local",
+        "bounds": { "fuel": 32, "radius": 1 },
+        "justification": "Inspecting reveals the target's own already-committed content inside the observer's boundary; it reads and never mutates, so exposing it as a gesture is a legitimate, side-effect-free interpretation of observation."
+      },
+      {
+        "id": "place",
+        "kind": "place",
+        "applies_to": {
+          "semantic_types": ["port"],
+          "context": "a proven, empty port that accepts a module"
+        },
+        "preconditions": [
+          "target port is observed or measured",
+          "port is unoccupied",
+          "actor holds the module being placed"
+        ],
+        "expected_semantic_effect": {
+          "intent": "AttachModuleToPort",
+          "write_primitive": "PutRelation",
+          "reads": ["port.capacity", "module.identity"],
+          "writes": ["relation(module OCCUPIES port)"]
+        },
+        "capability": "construct.attach",
+        "bounds": { "fuel": 96, "radius": 1 },
+        "justification": "Physically seating a module in a port is the embodied form of committing one containment relation between the module and the port; the single PutRelation it compiles to is exactly the semantic effect the gesture claims."
+      },
+      {
+        "id": "connect",
+        "kind": "connect",
+        "applies_to": {
+          "semantic_types": ["port"],
+          "context": "two proven ports that admit a link"
+        },
+        "preconditions": [
+          "both endpoint ports are observed or measured",
+          "no conflicting link already exists",
+          "actor holds a connect capability over both endpoints"
+        ],
+        "expected_semantic_effect": {
+          "intent": "LinkPorts",
+          "write_primitive": "PutRelation",
+          "reads": ["source_port.identity", "target_port.identity"],
+          "writes": ["relation(source_port CONNECTS target_port)"]
+        },
+        "capability": "construct.connect",
+        "bounds": { "fuel": 96, "radius": 2 },
+        "justification": "Drawing a cable between two ports is the embodied form of committing one link relation; it adds a relation and moves no semantic thing, so the single PutRelation is a faithful reading of the gesture."
+      },
+      {
+        "id": "open",
+        "kind": "open",
+        "applies_to": {
+          "semantic_types": ["space"],
+          "context": "a proven space whose inner scale can be materialized"
+        },
+        "preconditions": [
+          "target space is observed or measured",
+          "observer is permitted to cross the space membrane"
+        ],
+        "expected_semantic_effect": {
+          "intent": "MaterializeInnerScale",
+          "write_primitive": "none",
+          "reads": ["space.inner_scale", "space.residency"],
+          "writes": []
+        },
+        "capability": "observe.descend",
+        "bounds": { "fuel": 64, "radius": 1 },
+        "justification": "Opening a space materializes its inner working set for observation and residency; it changes physical residency, not canonical construction, so it commits no semantic write and is honestly exposed as a read-scale gesture."
+      },
+      {
+        "id": "build",
+        "kind": "build",
+        "applies_to": {
+          "semantic_types": ["space", "parcel"],
+          "context": "a proven, buildable region with free extent"
+        },
+        "preconditions": [
+          "target region is observed or measured",
+          "region has unreserved extent",
+          "actor holds a build capability and an attributable plan"
+        ],
+        "expected_semantic_effect": {
+          "intent": "ConstructStructure",
+          "write_primitive": "PutEntity",
+          "reads": ["region.extent", "plan.geometry"],
+          "writes": ["entity(new structure)", "relation(structure PART_OF region)"]
+        },
+        "capability": "construct.build",
+        "bounds": { "fuel": 256, "radius": 3 },
+        "justification": "Raising a structure in a buildable region is the embodied form of committing a new construction entity attributable to a plan; the primary PutEntity plus its containment relation is precisely the construction the gesture depicts, never an anonymous generation."
+      },
+      {
+        "id": "test",
+        "kind": "test",
+        "applies_to": {
+          "semantic_types": ["machine"],
+          "context": "a proven machine with a runnable validation rig"
+        },
+        "preconditions": [
+          "target machine is observed or measured",
+          "machine exposes a test port",
+          "actor holds a test capability"
+        ],
+        "expected_semantic_effect": {
+          "intent": "RunValidation",
+          "write_primitive": "PutEntity",
+          "reads": ["machine.state", "machine.test_rig"],
+          "writes": ["entity(test-result Moment)"]
+        },
+        "capability": "validate.run",
+        "bounds": { "fuel": 128, "radius": 1 },
+        "justification": "Running a machine's test rig records a fresh evidence Moment about its behavior; the PutEntity it compiles to is the receipt of that measurement, so the gesture claims exactly the effect it produces."
+      }
+    ],
+    "coverage": {
+      "thing": {
+        "observed": { "disposition": "actionable", "actions": ["inspect"] },
+        "measured": { "disposition": "actionable", "actions": ["inspect"] },
+        "known_absent": { "disposition": "forbidden", "actions": [], "reason": "no thing exists at the target; acting on an absent target is forbidden" },
+        "unknown": { "disposition": "fogged", "actions": [], "reason": "target existence is unknown; no confident action offered" },
+        "not_measured": { "disposition": "fogged", "actions": [], "reason": "target was not measured; the honest instruction is fog, not a default action" },
+        "measurement_failed": { "disposition": "fogged", "actions": [], "reason": "measurement of the target failed; no confident action offered" }
+      },
+      "port": {
+        "observed": { "disposition": "actionable", "actions": ["inspect", "place", "connect"] },
+        "measured": { "disposition": "actionable", "actions": ["inspect", "place", "connect"] },
+        "known_absent": { "disposition": "forbidden", "actions": [], "reason": "no port exists at the target; attach and link are forbidden" },
+        "unknown": { "disposition": "fogged", "actions": [], "reason": "port existence is unknown; no confident action offered" },
+        "not_measured": { "disposition": "fogged", "actions": [], "reason": "port was not measured; the honest instruction is fog" },
+        "measurement_failed": { "disposition": "fogged", "actions": [], "reason": "measurement of the port failed; no confident action offered" }
+      },
+      "space": {
+        "observed": { "disposition": "actionable", "actions": ["inspect", "open", "build"] },
+        "measured": { "disposition": "actionable", "actions": ["inspect", "open", "build"] },
+        "known_absent": { "disposition": "forbidden", "actions": [], "reason": "no space exists at the target; open and build are forbidden" },
+        "unknown": { "disposition": "fogged", "actions": [], "reason": "space existence is unknown; no confident action offered" },
+        "not_measured": { "disposition": "fogged", "actions": [], "reason": "space was not measured; the honest instruction is fog" },
+        "measurement_failed": { "disposition": "fogged", "actions": [], "reason": "measurement of the space failed; no confident action offered" }
+      },
+      "machine": {
+        "observed": { "disposition": "actionable", "actions": ["inspect", "test"] },
+        "measured": { "disposition": "actionable", "actions": ["inspect", "test"] },
+        "known_absent": { "disposition": "forbidden", "actions": [], "reason": "no machine exists at the target; test is forbidden" },
+        "unknown": { "disposition": "fogged", "actions": [], "reason": "machine existence is unknown; no confident action offered" },
+        "not_measured": { "disposition": "fogged", "actions": [], "reason": "machine was not measured; the honest instruction is fog" },
+        "measurement_failed": { "disposition": "fogged", "actions": [], "reason": "measurement of the machine failed; no confident action offered" }
+      },
+      "parcel": {
+        "observed": { "disposition": "actionable", "actions": ["inspect", "build"] },
+        "measured": { "disposition": "actionable", "actions": ["inspect", "build"] },
+        "known_absent": { "disposition": "forbidden", "actions": [], "reason": "no parcel exists at the target; build is forbidden" },
+        "unknown": { "disposition": "fogged", "actions": [], "reason": "parcel existence is unknown; no confident action offered" },
+        "not_measured": { "disposition": "fogged", "actions": [], "reason": "parcel was not measured; the honest instruction is fog" },
+        "measurement_failed": { "disposition": "fogged", "actions": [], "reason": "measurement of the parcel failed; no confident action offered" }
+      }
+    }
+  }
+}

@@ -1,5 +1,24 @@
 export const DESKTOP_PROTOCOL_VERSION = 0 as const;
 
+// The affordance face (S3, perception half). Re-exported here so the desktop
+// contracts remain the single import surface for shared types; the derivation
+// and honesty gate live in `./affordance`.
+export type {
+  AffordanceKind,
+  AffordanceAvailability,
+  ExpectedSemanticEffect,
+  AffordanceBounds,
+  AffordanceInstance,
+  AffordanceTemplate,
+  AffordanceTarget
+} from "./affordance";
+export {
+  deriveAvailableActions,
+  isValidAffordanceInstance,
+  isConfidentEpistemic,
+  isFogEpistemic
+} from "./affordance";
+
 export type EntityId = string;
 export type RelationId = string;
 export type Vector3 = readonly [number, number, number];
@@ -41,6 +60,19 @@ export type EmbodimentPrimitiveTuple = readonly [
   radius: number
 ];
 
+// The graph-declared bounds the renderer modulates a base form within. Each
+// mapBounded tuple is [inputMin, inputMax, outputMin, outputMax].
+export interface EmbodimentDynamics {
+  /** measured energy → emissive-intensity multiplier (gated on epistemic confidence). */
+  readonly energy_to_emissive: readonly [number, number, number, number];
+  /** weight (poids, accumulated usage) → overall scale multiplier. */
+  readonly weight_to_scale: readonly [number, number, number, number];
+  /** max |yaw| in radians the embedding may orient the node by. */
+  readonly embedding_orientation_max_rad: number;
+  /** max fractional per-primitive offset/scale jitter from the embedding, in [0, 1]. */
+  readonly embedding_microvariation: number;
+}
+
 export interface VisualEmbodimentMapping {
   readonly mapping_id: string;
   readonly schema_version: "visual-embodiment/1";
@@ -63,6 +95,14 @@ export interface VisualEmbodimentMapping {
   };
   readonly forms: Readonly<Record<string, readonly EmbodimentPrimitiveTuple[]>>;
   readonly lod_states: Readonly<Record<PhysicalResidency, string>>;
+  /**
+   * Optional per-node modulation envelope (graph authority, see
+   * fixtures/assets/visual-embodiment-catalog.json → `dynamics`). Absent ⇒ the
+   * form is drawn at identity for every node. Present ⇒ the renderer derives a
+   * node's scale (weight/poids), emission (measured energy), and orientation +
+   * micro-variation (embedding) WITHIN these bounds — inventing nothing.
+   */
+  readonly dynamics?: EmbodimentDynamics;
   readonly reduced_motion: {
     readonly trail: boolean;
     readonly noise: boolean;
@@ -145,6 +185,36 @@ export interface EntityAudio {
   readonly gain: number;
 }
 
+// A node's live dynamic signals, surfaced by the projector. The `energy` and
+// `weight` channels are honest — absent unless the graph declares them, so the
+// renderer never invents a glow or a size. The `embedding` channel is MANDATORY
+// (see `MaterializedEntity.dynamics`): when the graph declares no real embedding
+// it is defaulted to a per-node procedural seed, so every asset still varies.
+export interface EntityDynamicSignals {
+  /** MEASURED transfer energy (≥0). Drives emission, only when the node is confident. */
+  readonly energy?: number;
+  /** Accumulated usage / weight (poids, ≥0). Drives overall scale. */
+  readonly weight?: number;
+  /** Embedding vector — declared, or a procedural per-node default. Drives orientation + micro-variation. */
+  readonly embedding: readonly number[];
+}
+
+// A node's provenance / semantic identity. Appearance is TOOLKIT-SCOPED: a node
+// resolves its visual form through its producing toolkit's visual binding, keyed
+// by its role_axis / semantic_type — there is NO universal default. A node whose
+// producing toolkit declares no binding for its config renders as the honest
+// bare-presence fallback (see visual-resolution-policy-v1.json), never a
+// defaulted citizen and never an invented form. All fields are optional: a node
+// may declare only its role/type, or nothing (then it is honestly unattributed).
+export interface EntityProvenance {
+  /** The closed 5-role axis (space/actor/thing/moment/narrative); the resolution key. */
+  readonly roleAxis?: string;
+  /** The semantic type the toolkit binding's archetype is declared for. */
+  readonly semanticType?: string;
+  /** The toolkit that produced this node; selects which visual binding dresses it. */
+  readonly producingToolkit?: string;
+}
+
 export interface MaterializedEntity {
   readonly id: EntityId;
   readonly generation: number;
@@ -152,6 +222,18 @@ export interface MaterializedEntity {
   readonly visual: EntityVisualDescriptor;
   readonly embodiment?: EntityEmbodiment;
   readonly audio?: EntityAudio;
+  /**
+   * Provenance-based resolution key. Absent ⇒ the node is unattributed and the
+   * renderer draws the bare-presence fallback. Never used to substitute a
+   * different toolkit's form for a node.
+   */
+  readonly provenance?: EntityProvenance;
+  /**
+   * Per-node dynamic modulation — ALWAYS present. Energy/weight are honest
+   * (absent unless declared); `embedding` is always populated (declared or a
+   * procedural per-node default), so no node is ever left un-individuated.
+   */
+  readonly dynamics: EntityDynamicSignals;
 }
 
 export interface RelationVisualDescriptor {
@@ -159,6 +241,19 @@ export interface RelationVisualDescriptor {
   readonly material: VisualMaterial;
   readonly width: number;
   readonly laneSeparation: number;
+  /**
+   * Signed containment/specialisation of the predicate, in [-1,1], from its
+   * `physical_profile` (ALIGN §2, the "pente" channel). Positive ⇒ source is the
+   * part, drawn rising toward the whole. Absent ⇒ not carried by the wire yet: the
+   * bond stays a neutral symmetric arc, never a faked slope.
+   */
+  readonly hierarchy?: number;
+  /**
+   * Predicate polarity `[p_ab, p_ba]`, each in [-1,1], from its `physical_profile`
+   * (ALIGN §2, the "couleur" channel). Sign of the mean codes excitation (+) vs
+   * inhibition (−). Absent ⇒ the bond keeps its neutral material colour.
+   */
+  readonly polarity?: readonly [number, number];
 }
 
 export interface MaterializedRelation {

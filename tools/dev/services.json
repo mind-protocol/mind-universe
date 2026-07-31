@@ -1,0 +1,52 @@
+{
+  "$comment": "Single source of truth for local dev services. Edit here, not in scattered configs. Launch with:  node tools/dev/dev.mjs",
+  "logsDir": "logs",
+
+  "ports": {
+    "server": 8787,
+    "desktop": 1420
+  },
+
+  "env": {
+    "$comment": "Dev-only defaults. Real secrets belong in .env (git-ignored) and override these.",
+    "UNIVERSE_STREAM_SECRET": "dev-only-loopback-secret-do-not-ship-40b"
+  },
+
+  "services": [
+    {
+      "name": "server",
+      "cwd": ".",
+      "$comment": "Build to completion, then run the compiled exe DIRECTLY (not via `cargo run`) so the long-lived process is the tracked child and tree-kill is exact.",
+      "build": {
+        "command": "cargo",
+        "args": ["build", "--quiet", "--manifest-path", "apps/universe-server/Cargo.toml"],
+        "shell": true
+      },
+      "command": "apps/universe-server/target/debug/universe-server${exe}",
+      "args": ["artifacts/server-store", "fixtures/genesis/minimal-genesis.json"],
+      "env": {
+        "UNIVERSE_STREAM_ADDR": "127.0.0.1:${port:server}",
+        "UNIVERSE_STREAM_SECRET": "${env:UNIVERSE_STREAM_SECRET}"
+      },
+      "port": "${port:server}",
+      "readyLog": "serving stream",
+      "restartOnChange": true,
+      "watch": ["crates", "apps/universe-server/src", "apps/universe-server/Cargo.toml"],
+      "watchExtensions": [".rs", ".toml"]
+    },
+    {
+      "name": "desktop",
+      "cwd": "apps/mind-desktop",
+      "command": "npm",
+      "args": ["run", "dev"],
+      "shell": true,
+      "env": {
+        "VITE_UNIVERSE_STREAM_ADDR": "127.0.0.1:${port:server}"
+      },
+      "port": "${port:desktop}",
+      "readyLog": "ready in",
+      "restartOnChange": false,
+      "watch": []
+    }
+  ]
+}

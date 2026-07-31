@@ -1,0 +1,1187 @@
+[
+  {
+    "payload": {
+      "message_type": "snapshot",
+      "revision": 0
+    },
+    "protocol_version": 0,
+    "sequence": 1
+  },
+  {
+    "payload": {
+      "entity": {
+        "content_kind": "citizen",
+        "dynamics": {
+          "embedding_micro": [
+            900000,
+            100000,
+            -200000
+          ],
+          "energy": 20,
+          "weight_micro": 15000000
+        },
+        "embodiment": {
+          "confident": true,
+          "mapping": {
+            "dynamics": {
+              "embedding_microvariation": 0.14,
+              "embedding_orientation_max_rad": 3.141592653589793,
+              "energy_to_emissive": [
+                0,
+                160,
+                1.0,
+                2.2
+              ],
+              "note": "Per-node modulation of the base form by the node's live signals. energy (MEASURED) brightens emission; weight (poids, accumulated usage) enlarges; embedding orients + micro-deforms so two same-role nodes are not identical. Each is a mapBounded [inMin,inMax,outMin,outMax] tuple, applied by the renderer at draw time — never persisted as an Asset (that would be one Asset per frame). The renderer DERIVES from these bounds and invents nothing: an absent signal leaves the form at identity, and energy is applied only when the node is epistemically confident (ALIGN §3).",
+              "weight_to_scale": [
+                0,
+                100,
+                0.85,
+                1.7
+              ]
+            },
+            "fallback_form": "energy_orb",
+            "form_family": "energy_semi_humanoid",
+            "forms": {
+              "energy_orb": [
+                [
+                  "icosphere",
+                  "core",
+                  "core",
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.56,
+                    0.7,
+                    0.56
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "fresnel_shell",
+                  "aura",
+                  "shell",
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.72,
+                    0.86,
+                    0.72
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "points",
+                  "internal_energy",
+                  "particles",
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    1,
+                    1,
+                    1
+                  ],
+                  64,
+                  0.62
+                ]
+              ],
+              "semi_humanoid": [
+                [
+                  "sphere",
+                  "head",
+                  "core",
+                  [
+                    0,
+                    1.22,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.36,
+                    0.4,
+                    0.36
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "capsule",
+                  "torso",
+                  "core",
+                  [
+                    0,
+                    0.43,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.58,
+                    0.7,
+                    0.34
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "capsule",
+                  "left_arm",
+                  "shell",
+                  [
+                    -0.63,
+                    0.42,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    -0.16
+                  ],
+                  [
+                    0.16,
+                    0.62,
+                    0.16
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "capsule",
+                  "right_arm",
+                  "shell",
+                  [
+                    0.63,
+                    0.42,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0.16
+                  ],
+                  [
+                    0.16,
+                    0.62,
+                    0.16
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "capsule",
+                  "left_leg",
+                  "shell",
+                  [
+                    -0.26,
+                    -0.68,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.2,
+                    0.72,
+                    0.2
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "capsule",
+                  "right_leg",
+                  "shell",
+                  [
+                    0.26,
+                    -0.68,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.2,
+                    0.72,
+                    0.2
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "fresnel_shell",
+                  "aura",
+                  "shell",
+                  [
+                    0,
+                    0.28,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.92,
+                    1.65,
+                    0.72
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "points",
+                  "internal_energy",
+                  "particles",
+                  [
+                    0,
+                    0.25,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    1,
+                    1.45,
+                    0.8
+                  ],
+                  96,
+                  0.78
+                ]
+              ]
+            },
+            "lod_states": {
+              "aggregated": "energy_orb",
+              "dormant": "energy_orb",
+              "hot": "semi_humanoid",
+              "sleeping": "energy_orb"
+            },
+            "mapping_id": "citizen-energy-semi-humanoid-v1",
+            "material": {
+              "core_emissive_intensity": 2.4,
+              "core_opacity": 0.82,
+              "fresnel_power": 2.2,
+              "shell_emissive_intensity": 1.7,
+              "shell_opacity": 0.28
+            },
+            "palette": {
+              "core": "#77d9ff",
+              "emissive": "#1b9fff",
+              "particle": "#d8f7ff",
+              "shell": "#a5eaff"
+            },
+            "particle_budget": 96,
+            "primitive_budget": 10,
+            "reduced_motion": {
+              "noise": false,
+              "retain_state_readability": true,
+              "trail": false
+            },
+            "schema_version": "visual-embodiment/1"
+          },
+          "motion_profile": {
+            "bindings": {
+              "idle_breath": {
+                "amplitude": 0.035,
+                "frequency_hz": 0.24
+              },
+              "speed_to_stretch": [
+                0,
+                4,
+                1,
+                1.28
+              ],
+              "speed_to_stride_hz": [
+                0,
+                4,
+                0,
+                7
+              ],
+              "speed_to_trail_opacity": [
+                0,
+                3,
+                0,
+                0.62
+              ],
+              "turn_to_bank": {
+                "max_degrees": 12
+              }
+            },
+            "interpolation": {
+              "correction_mode": "visible_reformation",
+              "correction_threshold": 2.5,
+              "max_visual_lag_seconds": 0.35,
+              "model": "critically_damped_spring",
+              "settle_seconds": 0.22
+            },
+            "profile_id": "fluid-energy-locomotion-v0",
+            "trail": {
+              "lifetime_seconds": 0.55,
+              "max_samples": 24,
+              "sample_interval_seconds": 0.04
+            }
+          },
+          "residency": "hot",
+          "resolved_form": "semi_humanoid",
+          "sampled_at_ms": 0,
+          "source_mapping_id": "visual-mapping:l2:mind-desktop:citizen-energy-semi-humanoid-v1"
+        },
+        "generation": 0,
+        "id": "0000000000000000000000000000b101",
+        "position_micro": [
+          -1904369,
+          -1857772,
+          3321737
+        ],
+        "residency": "hot",
+        "symbol": "actor",
+        "visual": {
+          "material": {
+            "color": "#77d9ff",
+            "emissive": "#1b9fff",
+            "emissive_intensity_micro": 2400000,
+            "opacity_micro": 820000,
+            "scale_micro": 1000000
+          },
+          "motion": "still",
+          "primitive": "unknown"
+        }
+      },
+      "message_type": "entity_materialized"
+    },
+    "protocol_version": 0,
+    "sequence": 2
+  },
+  {
+    "payload": {
+      "entity": {
+        "content_kind": "citizen",
+        "dynamics": {
+          "embedding_micro": [
+            -400000,
+            800000,
+            300000
+          ],
+          "energy": 155,
+          "weight_micro": 95000000
+        },
+        "embodiment": {
+          "confident": true,
+          "mapping": {
+            "dynamics": {
+              "embedding_microvariation": 0.14,
+              "embedding_orientation_max_rad": 3.141592653589793,
+              "energy_to_emissive": [
+                0,
+                160,
+                1.0,
+                2.2
+              ],
+              "note": "Per-node modulation of the base form by the node's live signals. energy (MEASURED) brightens emission; weight (poids, accumulated usage) enlarges; embedding orients + micro-deforms so two same-role nodes are not identical. Each is a mapBounded [inMin,inMax,outMin,outMax] tuple, applied by the renderer at draw time — never persisted as an Asset (that would be one Asset per frame). The renderer DERIVES from these bounds and invents nothing: an absent signal leaves the form at identity, and energy is applied only when the node is epistemically confident (ALIGN §3).",
+              "weight_to_scale": [
+                0,
+                100,
+                0.85,
+                1.7
+              ]
+            },
+            "fallback_form": "energy_orb",
+            "form_family": "energy_semi_humanoid",
+            "forms": {
+              "energy_orb": [
+                [
+                  "icosphere",
+                  "core",
+                  "core",
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.56,
+                    0.7,
+                    0.56
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "fresnel_shell",
+                  "aura",
+                  "shell",
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.72,
+                    0.86,
+                    0.72
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "points",
+                  "internal_energy",
+                  "particles",
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    1,
+                    1,
+                    1
+                  ],
+                  64,
+                  0.62
+                ]
+              ],
+              "semi_humanoid": [
+                [
+                  "sphere",
+                  "head",
+                  "core",
+                  [
+                    0,
+                    1.22,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.36,
+                    0.4,
+                    0.36
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "capsule",
+                  "torso",
+                  "core",
+                  [
+                    0,
+                    0.43,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.58,
+                    0.7,
+                    0.34
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "capsule",
+                  "left_arm",
+                  "shell",
+                  [
+                    -0.63,
+                    0.42,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    -0.16
+                  ],
+                  [
+                    0.16,
+                    0.62,
+                    0.16
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "capsule",
+                  "right_arm",
+                  "shell",
+                  [
+                    0.63,
+                    0.42,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0.16
+                  ],
+                  [
+                    0.16,
+                    0.62,
+                    0.16
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "capsule",
+                  "left_leg",
+                  "shell",
+                  [
+                    -0.26,
+                    -0.68,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.2,
+                    0.72,
+                    0.2
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "capsule",
+                  "right_leg",
+                  "shell",
+                  [
+                    0.26,
+                    -0.68,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.2,
+                    0.72,
+                    0.2
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "fresnel_shell",
+                  "aura",
+                  "shell",
+                  [
+                    0,
+                    0.28,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.92,
+                    1.65,
+                    0.72
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "points",
+                  "internal_energy",
+                  "particles",
+                  [
+                    0,
+                    0.25,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    1,
+                    1.45,
+                    0.8
+                  ],
+                  96,
+                  0.78
+                ]
+              ]
+            },
+            "lod_states": {
+              "aggregated": "energy_orb",
+              "dormant": "energy_orb",
+              "hot": "semi_humanoid",
+              "sleeping": "energy_orb"
+            },
+            "mapping_id": "citizen-energy-semi-humanoid-v1",
+            "material": {
+              "core_emissive_intensity": 2.4,
+              "core_opacity": 0.82,
+              "fresnel_power": 2.2,
+              "shell_emissive_intensity": 1.7,
+              "shell_opacity": 0.28
+            },
+            "palette": {
+              "core": "#77d9ff",
+              "emissive": "#1b9fff",
+              "particle": "#d8f7ff",
+              "shell": "#a5eaff"
+            },
+            "particle_budget": 96,
+            "primitive_budget": 10,
+            "reduced_motion": {
+              "noise": false,
+              "retain_state_readability": true,
+              "trail": false
+            },
+            "schema_version": "visual-embodiment/1"
+          },
+          "motion_profile": {
+            "bindings": {
+              "idle_breath": {
+                "amplitude": 0.035,
+                "frequency_hz": 0.24
+              },
+              "speed_to_stretch": [
+                0,
+                4,
+                1,
+                1.28
+              ],
+              "speed_to_stride_hz": [
+                0,
+                4,
+                0,
+                7
+              ],
+              "speed_to_trail_opacity": [
+                0,
+                3,
+                0,
+                0.62
+              ],
+              "turn_to_bank": {
+                "max_degrees": 12
+              }
+            },
+            "interpolation": {
+              "correction_mode": "visible_reformation",
+              "correction_threshold": 2.5,
+              "max_visual_lag_seconds": 0.35,
+              "model": "critically_damped_spring",
+              "settle_seconds": 0.22
+            },
+            "profile_id": "fluid-energy-locomotion-v0",
+            "trail": {
+              "lifetime_seconds": 0.55,
+              "max_samples": 24,
+              "sample_interval_seconds": 0.04
+            }
+          },
+          "residency": "hot",
+          "resolved_form": "semi_humanoid",
+          "sampled_at_ms": 0,
+          "source_mapping_id": "visual-mapping:l2:mind-desktop:citizen-energy-semi-humanoid-v1"
+        },
+        "generation": 0,
+        "id": "0000000000000000000000000000b102",
+        "position_micro": [
+          -3665845,
+          -52423,
+          2210004
+        ],
+        "residency": "hot",
+        "symbol": "actor",
+        "visual": {
+          "material": {
+            "color": "#77d9ff",
+            "emissive": "#1b9fff",
+            "emissive_intensity_micro": 2400000,
+            "opacity_micro": 820000,
+            "scale_micro": 1000000
+          },
+          "motion": "still",
+          "primitive": "unknown"
+        }
+      },
+      "message_type": "entity_materialized"
+    },
+    "protocol_version": 0,
+    "sequence": 3
+  },
+  {
+    "payload": {
+      "entity": {
+        "content_kind": "citizen",
+        "dynamics": {
+          "embedding_micro": [
+            600000,
+            600000,
+            100000
+          ],
+          "energy": 150,
+          "weight_micro": 60000000
+        },
+        "embodiment": {
+          "confident": false,
+          "mapping": {
+            "dynamics": {
+              "embedding_microvariation": 0.14,
+              "embedding_orientation_max_rad": 3.141592653589793,
+              "energy_to_emissive": [
+                0,
+                160,
+                1.0,
+                2.2
+              ],
+              "note": "Per-node modulation of the base form by the node's live signals. energy (MEASURED) brightens emission; weight (poids, accumulated usage) enlarges; embedding orients + micro-deforms so two same-role nodes are not identical. Each is a mapBounded [inMin,inMax,outMin,outMax] tuple, applied by the renderer at draw time — never persisted as an Asset (that would be one Asset per frame). The renderer DERIVES from these bounds and invents nothing: an absent signal leaves the form at identity, and energy is applied only when the node is epistemically confident (ALIGN §3).",
+              "weight_to_scale": [
+                0,
+                100,
+                0.85,
+                1.7
+              ]
+            },
+            "fallback_form": "energy_orb",
+            "form_family": "energy_semi_humanoid",
+            "forms": {
+              "energy_orb": [
+                [
+                  "icosphere",
+                  "core",
+                  "core",
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.56,
+                    0.7,
+                    0.56
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "fresnel_shell",
+                  "aura",
+                  "shell",
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.72,
+                    0.86,
+                    0.72
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "points",
+                  "internal_energy",
+                  "particles",
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    1,
+                    1,
+                    1
+                  ],
+                  64,
+                  0.62
+                ]
+              ],
+              "semi_humanoid": [
+                [
+                  "sphere",
+                  "head",
+                  "core",
+                  [
+                    0,
+                    1.22,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.36,
+                    0.4,
+                    0.36
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "capsule",
+                  "torso",
+                  "core",
+                  [
+                    0,
+                    0.43,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.58,
+                    0.7,
+                    0.34
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "capsule",
+                  "left_arm",
+                  "shell",
+                  [
+                    -0.63,
+                    0.42,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    -0.16
+                  ],
+                  [
+                    0.16,
+                    0.62,
+                    0.16
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "capsule",
+                  "right_arm",
+                  "shell",
+                  [
+                    0.63,
+                    0.42,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0.16
+                  ],
+                  [
+                    0.16,
+                    0.62,
+                    0.16
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "capsule",
+                  "left_leg",
+                  "shell",
+                  [
+                    -0.26,
+                    -0.68,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.2,
+                    0.72,
+                    0.2
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "capsule",
+                  "right_leg",
+                  "shell",
+                  [
+                    0.26,
+                    -0.68,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.2,
+                    0.72,
+                    0.2
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "fresnel_shell",
+                  "aura",
+                  "shell",
+                  [
+                    0,
+                    0.28,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    0.92,
+                    1.65,
+                    0.72
+                  ],
+                  0,
+                  0
+                ],
+                [
+                  "points",
+                  "internal_energy",
+                  "particles",
+                  [
+                    0,
+                    0.25,
+                    0
+                  ],
+                  [
+                    0,
+                    0,
+                    0
+                  ],
+                  [
+                    1,
+                    1.45,
+                    0.8
+                  ],
+                  96,
+                  0.78
+                ]
+              ]
+            },
+            "lod_states": {
+              "aggregated": "energy_orb",
+              "dormant": "energy_orb",
+              "hot": "semi_humanoid",
+              "sleeping": "energy_orb"
+            },
+            "mapping_id": "citizen-energy-semi-humanoid-v1",
+            "material": {
+              "core_emissive_intensity": 2.4,
+              "core_opacity": 0.82,
+              "fresnel_power": 2.2,
+              "shell_emissive_intensity": 1.7,
+              "shell_opacity": 0.28
+            },
+            "palette": {
+              "core": "#77d9ff",
+              "emissive": "#1b9fff",
+              "particle": "#d8f7ff",
+              "shell": "#a5eaff"
+            },
+            "particle_budget": 96,
+            "primitive_budget": 10,
+            "reduced_motion": {
+              "noise": false,
+              "retain_state_readability": true,
+              "trail": false
+            },
+            "schema_version": "visual-embodiment/1"
+          },
+          "motion_profile": {
+            "bindings": {
+              "idle_breath": {
+                "amplitude": 0.035,
+                "frequency_hz": 0.24
+              },
+              "speed_to_stretch": [
+                0,
+                4,
+                1,
+                1.28
+              ],
+              "speed_to_stride_hz": [
+                0,
+                4,
+                0,
+                7
+              ],
+              "speed_to_trail_opacity": [
+                0,
+                3,
+                0,
+                0.62
+              ],
+              "turn_to_bank": {
+                "max_degrees": 12
+              }
+            },
+            "interpolation": {
+              "correction_mode": "visible_reformation",
+              "correction_threshold": 2.5,
+              "max_visual_lag_seconds": 0.35,
+              "model": "critically_damped_spring",
+              "settle_seconds": 0.22
+            },
+            "profile_id": "fluid-energy-locomotion-v0",
+            "trail": {
+              "lifetime_seconds": 0.55,
+              "max_samples": 24,
+              "sample_interval_seconds": 0.04
+            }
+          },
+          "residency": "hot",
+          "resolved_form": "semi_humanoid",
+          "sampled_at_ms": 0,
+          "source_mapping_id": "visual-mapping:l2:mind-desktop:citizen-energy-semi-humanoid-v1"
+        },
+        "generation": 0,
+        "id": "0000000000000000000000000000b103",
+        "position_micro": [
+          5570214,
+          1910194,
+          -5531741
+        ],
+        "residency": "hot",
+        "symbol": "actor",
+        "visual": {
+          "material": {
+            "color": "#77d9ff",
+            "emissive": "#1b9fff",
+            "emissive_intensity_micro": 0,
+            "opacity_micro": 410000,
+            "scale_micro": 1000000
+          },
+          "motion": "still",
+          "primitive": "unknown"
+        }
+      },
+      "message_type": "entity_materialized"
+    },
+    "protocol_version": 0,
+    "sequence": 4
+  },
+  {
+    "payload": {
+      "message_type": "relation_materialized",
+      "relation": {
+        "id": "0000000000000000000000000000b200",
+        "predicate": "OBSERVES",
+        "source": "0000000000000000000000000000b101",
+        "target": "0000000000000000000000000000b102",
+        "visual": {
+          "color": "#5a6675",
+          "emissive": "#1f2731",
+          "emissive_intensity_micro": 0,
+          "lane_separation_micro": 0,
+          "opacity_micro": 500000,
+          "primitive": "unknown",
+          "width_micro": 20000
+        }
+      }
+    },
+    "protocol_version": 0,
+    "sequence": 5
+  }
+]

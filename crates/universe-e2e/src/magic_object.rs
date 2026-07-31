@@ -24,6 +24,14 @@ use universe_physics::{AtomBond, AtomDynamics, AtomSpec, BondPolarity};
 
 use crate::E2eError;
 
+/// The single documented default step ceiling for a magic object's bounded
+/// diffusion, applied **only** when the graph (the blueprint) declares no
+/// `quiescence_budget`. This is the one outermost boundary default; the
+/// mechanism ([`MagicObject::wield`]) must never carry a magic literal —
+/// exactly as `execute_runtime_bond_artifact` sources its ceiling from
+/// `plan.budgets` rather than a buried constant.
+const DEFAULT_QUIESCENCE_BUDGET: usize = 64;
+
 /// The physical roleAxis: the primary axis, orthogonal to the epistemic
 /// nodeType, defined by what a node does with energy.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
@@ -130,6 +138,11 @@ struct Blueprint {
     space: SpaceDecl,
     #[serde(default)]
     gradient_policy: GradientPolicy,
+    /// Graph-authored ceiling on physics steps for the bounded diffusion. When
+    /// absent, the object falls back to [`DEFAULT_QUIESCENCE_BUDGET`] — the sole
+    /// documented default. The space bounds the diffusion; this bounds its time.
+    #[serde(default)]
+    quiescence_budget: Option<usize>,
     contents: Vec<ContentDecl>,
     bonds: Vec<BondDecl>,
     #[serde(default)]
@@ -182,6 +195,10 @@ pub struct MagicObject {
     pub policy: GradientPolicy,
     /// The sphere that explains how to activate this object, if declared.
     pub activation: Option<ActivationSphere>,
+    /// The resolved step ceiling for the bounded diffusion, sourced from graph
+    /// authority (the blueprint) or the single documented default. `wield` reads
+    /// this instead of a buried literal.
+    quiescence_budget: usize,
     atoms: Vec<AtomSpec>,
     bonds: Vec<AtomBond>,
     roles: BTreeMap<EntityKey, Role>,
@@ -217,6 +234,9 @@ impl MagicObject {
                 name: space_name,
             },
             gradient_policy: policy,
+            // A derived (non-fixture) cluster carries no graph-declared budget,
+            // so it resolves to the single documented default in `decorate`.
+            quiescence_budget: None,
             contents: nodes
                 .into_iter()
                 .map(|node| ContentDecl {
@@ -343,12 +363,20 @@ impl MagicObject {
             }
         }
 
+        // Source the diffusion's step ceiling from graph authority (the
+        // blueprint); fall back to the one documented default only when the
+        // graph declares none. No magic literal lives in the mechanism.
+        let quiescence_budget = blueprint
+            .quiescence_budget
+            .unwrap_or(DEFAULT_QUIESCENCE_BUDGET);
+
         Ok(Self {
             name: blueprint.magic_object,
             space,
             space_name: blueprint.space.name,
             policy: blueprint.gradient_policy,
             activation: blueprint.activation,
+            quiescence_budget,
             atoms,
             bonds,
             roles,
@@ -367,7 +395,7 @@ impl MagicObject {
             })?;
             dynamics.inject(atom, gesture.energy, format!("wield:{}", gesture.binding))?;
         }
-        let run = dynamics.run_until_quiescent(64)?;
+        let run = dynamics.run_until_quiescent(self.quiescence_budget)?;
         let mut support = BTreeMap::new();
         let mut fired = Vec::new();
         for atom in &self.atoms {
@@ -450,5 +478,83 @@ mod tests {
         // A sphere is metadata, never a physics participant: the space it
         // explains is excluded from the diffusion cluster.
         assert!(object.role_of(object.space).is_none());
+    }
+
+    /// A 3-node linear support chain: node 1 seeds and fires, delivering energy
+    /// downstream one step at a time, so the diffusion needs several physics
+    /// steps to quiesce. The graph-declared `quiescence_budget` is the ceiling.
+    fn chain_blueprint(budget: Option<usize>) -> Blueprint {
+        let content = |key: u128, threshold: u64, seed: u64| ContentDecl {
+            key,
+            role: Role::Moment,
+            function: format!("n{key}"),
+            measurement_binding: None,
+            physics: PhysicsDecl {
+                threshold,
+                seed_energy: seed,
+                required_supports: Vec::new(),
+                inhibition_threshold: None,
+            },
+        };
+        let bond = |key: u128, source: u128, target: u128, energy: u64| BondDecl {
+            key,
+            source,
+            target,
+            polarity: BondPolarity::Support,
+            energy,
+        };
+        Blueprint {
+            magic_object: "budget-chain".into(),
+            space: SpaceDecl {
+                key: 0,
+                role: Role::Space,
+                name: None,
+            },
+            gradient_policy: GradientPolicy::default(),
+            quiescence_budget: budget,
+            contents: vec![
+                content(1, 1, 300),
+                content(2, 150, 0),
+                content(3, 100, 0),
+            ],
+            bonds: vec![bond(501, 1, 2, 200), bond(502, 2, 3, 100)],
+            activation: None,
+        }
+    }
+
+    #[test]
+    fn a_graph_declared_budget_is_the_diffusion_step_ceiling() {
+        // The chain needs four loop iterations to reach a terminal empty step.
+        // A budget below that must exhaust before quiescence; a budget above it
+        // must settle. Proves `wield` honours the graph value, not a literal.
+        let starved = MagicObject::decorate(chain_blueprint(Some(2)))
+            .unwrap()
+            .wield(&[])
+            .unwrap();
+        assert!(
+            !starved.quiescent,
+            "a budget of 2 steps must exhaust before the chain settles"
+        );
+
+        let settled = MagicObject::decorate(chain_blueprint(Some(16)))
+            .unwrap()
+            .wield(&[])
+            .unwrap();
+        assert!(
+            settled.quiescent,
+            "an ample graph-declared budget must let the chain settle"
+        );
+    }
+
+    #[test]
+    fn an_absent_budget_falls_back_to_the_single_documented_default() {
+        // No buried literal in the mechanism: when the graph declares nothing,
+        // the object resolves to exactly the one documented boundary default.
+        let object = MagicObject::decorate(chain_blueprint(None)).unwrap();
+        assert_eq!(object.quiescence_budget, DEFAULT_QUIESCENCE_BUDGET);
+
+        // The fixture path resolves the same way when it omits a budget.
+        let board = MagicObject::load(&board_fixture()).unwrap();
+        assert_eq!(board.quiescence_budget, DEFAULT_QUIESCENCE_BUDGET);
     }
 }

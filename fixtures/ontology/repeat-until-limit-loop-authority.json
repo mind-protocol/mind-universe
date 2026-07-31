@@ -37,7 +37,7 @@
         "base_manifest": "00000000000000000000000000001000",
         "base_schema_version": "1.17.0",
         "change_id": "repeat-until-limit-loop-authority-v1",
-        "objective": "Activate one graph-native, self-verifying loop that governs the bounded-loop opcode RepeatUntilWithLimit.",
+        "objective": "Activate one graph-native construct that governs the bounded-loop opcode RepeatUntilWithLimit.",
         "status": "approved_by_fixture_authority",
         "target_schema_version": "1.18.0-repeat-until-limit-loop.1"
       }

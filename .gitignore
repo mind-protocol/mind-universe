@@ -16,5 +16,8 @@ dist/
 # the recovery log. Remove this rule if evidence must be version-pinned.
 artifacts/
 
+# Dev orchestrator per-service logs (tools/dev/dev.mjs)
+logs/
+
 # Scratch
 New Text Document.txt

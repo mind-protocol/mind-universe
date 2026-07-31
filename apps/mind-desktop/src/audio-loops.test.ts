@@ -5,6 +5,7 @@ import {
   reconcileAudioLoops,
   type AudioReconciliation
 } from "./audio-loops";
+import { NEUTRAL_DYNAMICS } from "./entity-dynamics";
 
 function thing(id: string, audio?: EntityAudio): MaterializedEntity {
   return {
@@ -22,6 +23,7 @@ function thing(id: string, audio?: EntityAudio): MaterializedEntity {
         scale: 1
       }
     },
+    dynamics: NEUTRAL_DYNAMICS,
     ...(audio ? { audio } : {})
   };
 }
@@ -30,10 +32,7 @@ const CHIME: EntityAudio = { src: "asset://chime.wav", loop: true, gain: 0.8 };
 const DRONE: EntityAudio = { src: "asset://drone.wav", loop: true, gain: 0.5 };
 
 // Apply a reconciliation the way the React layer would, returning the active map.
-function apply(
-  active: ReadonlyMap<string, string>,
-  reconciliation: AudioReconciliation
-): Map<string, string> {
+function apply(reconciliation: AudioReconciliation): Map<string, string> {
   return new Map(reconciliation.active);
 }
 
@@ -110,14 +109,14 @@ describe("reconcileAudioLoops", () => {
   it("stops every loop when muted, and restores them when unmuted", () => {
     const view = [thing("a", CHIME), thing("b", DRONE)];
     // Reach steady state.
-    let active = apply(new Map(), reconcileAudioLoops(new Map(), view, false));
+    let active = apply(reconcileAudioLoops(new Map(), view, false));
     expect(active.size).toBe(2);
 
     // Mute: everything stops, nothing starts.
     const muted = reconcileAudioLoops(active, view, true);
-    expect(muted.stop.sort()).toEqual(["a", "b"]);
+    expect([...muted.stop].sort()).toEqual(["a", "b"]);
     expect(muted.start).toEqual([]);
-    active = apply(active, muted);
+    active = apply(muted);
     expect(active.size).toBe(0);
 
     // Unmute: everything starts again.
@@ -131,7 +130,7 @@ describe("reconcileAudioLoops", () => {
     let active = new Map<string, string>();
     for (let i = 0; i < 3; i += 1) {
       const r = reconcileAudioLoops(active, view, false);
-      active = apply(active, r);
+      active = apply(r);
       if (i > 0) {
         expect(r.start).toEqual([]);
         expect(r.stop).toEqual([]);

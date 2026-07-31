@@ -5,6 +5,7 @@
 pub mod behavior_ride;
 pub mod behavior_runtime;
 pub mod board;
+pub mod canonical;
 pub mod canonical_ride;
 pub mod canonical_seed_energy;
 pub mod cluster;

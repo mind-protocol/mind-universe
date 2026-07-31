@@ -43,10 +43,22 @@
       "sleeping": "energy_orb",
       "hot": "semi_humanoid"
     },
+    "dynamics": {
+      "note": "Per-node modulation of the base form by the node's live signals. energy (MEASURED) brightens emission; weight (poids, accumulated usage) enlarges; embedding orients + micro-deforms so two same-role nodes are not identical. Each is a mapBounded [inMin,inMax,outMin,outMax] tuple, applied by the renderer at draw time — never persisted as an Asset (that would be one Asset per frame). The renderer DERIVES from these bounds and invents nothing: an absent signal leaves the form at identity, and energy is applied only when the node is epistemically confident (ALIGN §3).",
+      "energy_to_emissive": [0, 160, 1.0, 2.2],
+      "weight_to_scale": [0, 100, 0.85, 1.7],
+      "embedding_orientation_max_rad": 3.141592653589793,
+      "embedding_microvariation": 0.14
+    },
     "reduced_motion": {
       "trail": false,
       "noise": false,
       "retain_state_readability": true
+    },
+    "radius": {
+      "note": "The declared domain this kit is a total function over (T-K1). roleAxis (ALIGN §5b, closed 5-role set) — this kit covers only 'actor'; space/narrative/moment/thing are explicitly out-of-radius, not silently dropped. signals — the live per-node channels it reads (each folds the {measured, absent, not_measured} tri-state into the honesty path: measured displays the channel, absent/not_measured stay at identity/fog). lod_states (dormant/aggregated/sleeping/hot) are always in the radius. |radius| = 1 role x 4 lod x 3 signals x 3 signal-states = 36.",
+      "role_axis": ["actor"],
+      "signals": ["energy", "weight", "embedding"]
     }
   },
   "motion_profile": {

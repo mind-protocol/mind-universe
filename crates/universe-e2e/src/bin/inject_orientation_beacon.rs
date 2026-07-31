@@ -1,9 +1,9 @@
 //! Injects the Lumina Prime Orientation Beacon loop (a portable graph
 //! projection) into the LIVE canonical store as ONE additive, atomic
-//! transaction, and places the beacon's `Built` pose at the civic
-//! coordinate-frame ORIGIN (0, 0, 0) — Balise Zéro.
+//! transaction. It authors NO coordinate: positions are inferred by the layout
+//! solver, never stored, so the beacon carries no `built_position` pose.
 //!
-//! This is the same LOWER write layer as `place_built_position`: a hand-built
+//! This is the same LOWER write layer as the other injectors: a hand-built
 //! write-set (intern symbols + N PutEntity + M PutRelation), committed at a tick
 //! boundary and INDEPENDENTLY read back from a fresh reopen. It is NOT the
 //! permanent semantic-intent path; it is the bootstrap injector the generic
@@ -15,8 +15,8 @@
 //!   * A relation whose source OR target is absent from the injected id-set is
 //!     SKIPPED and reported (this is how the missing parent-city `PART_OF` edge
 //!     is dropped instead of dangling — per the operator's decision).
-//!   * The beacon pose is `provenance:"built"` and MUST carry a `CONSTRUCTED_BY`
-//!     construction Moment; a built pose with no Moment is a forgery and aborts.
+//!   * No `HAS_POSITION` / `built_position` is written — a node's place is
+//!     emergent (solver output), not an authored coordinate.
 //!
 //! Usage: `inject_orientation_beacon [fixture.json] [store-dir]`
 //!   fixture.json defaults to fixtures/ontology/lumina-prime-orientation-beacon-v0.json
@@ -25,48 +25,19 @@
 use std::{collections::BTreeMap, env, error::Error, path::PathBuf};
 
 use universe_core::{EntityKey, RelationKey, Tick};
+use universe_e2e::canonical::{canonical_predicate, entity_symbol};
 use universe_store::{EntityRecord, RelationRecord, UniverseStore};
 use universe_transactions::{UniverseCommand, UniverseTransaction, UniverseWriteSet};
 
-/// Canonical predicate remap. The portable projection uses passive/ad-hoc edge
-/// names (`IMPLEMENTED_IN`, `VALIDATED_BY`, ...) that are NOT in the canonical
-/// ontology's predicate vocabulary (fixtures/ontology/canonical-ontology.json).
-/// Each authored predicate maps to an ACTIVE-VOICE canonical predicate and a
-/// `swap` flag (true = reverse source/target so the canonical direction holds,
-/// e.g. `space IMPLEMENTED_IN impl` becomes `impl IMPLEMENTS space`).
-/// An authored predicate absent from this table is a hard error — the injector
-/// never silently mints a non-canonical predicate into the canonical store.
-fn canonical_predicate(authored: &str) -> Option<(&'static str, bool)> {
-    Some(match authored {
-        "PART_OF" => ("PART_OF", false),
-        "IMPLEMENTED_IN" => ("IMPLEMENTS", true),
-        "DEFINED_BY_CODE" => ("DEFINES", true),
-        "IMPLEMENTED_BY" => ("COMPILES_TO", false),
-        "JUSTIFIED_BY" => ("GROUNDS", true),
-        "VALIDATED_BY" => ("TESTS", true),
-        "OBSERVED_BY" => ("OBSERVES", true),
-        "PRODUCES" => ("PRODUCES", false),
-        "FEEDS" => ("FEEDS", false),
-        "SUPPORTS" => ("MOTIVATES", false),
-        _ => return None,
-    })
-}
-
-/// Beacon member subtypes that are ALSO canonical node-type symbols. Such an
-/// entity carries the specific canonical type as its symbol instead of the
-/// generic `node_type` — strictly more ontology-conformant, and interns nothing
-/// new (both symbols already exist in the canonical seed).
-const CANONICAL_TYPE_SUBTYPES: &[&str] = &["metric", "validation"];
+// The authored -> canonical predicate remap and the subtype-promotion rule are
+// shared with the other injectors in `universe_e2e::canonical`, the single
+// source of truth. An authored predicate absent from that table is a hard error
+// here — the injector never silently mints a non-canonical predicate into the
+// canonical store.
 
 // Disjoint key blocks (live store currently tops out at 0x230f).
 const ENTITY_BASE: u128 = 0xB000; // beacon space + members, by ordered index
-const POS_POSITION: u128 = 0xB800;
-const POS_CONSTRUCTION: u128 = 0xB801;
-const POS_JUSTIFICATION: u128 = 0xB802;
 const REL_BASE: u128 = 0xBB00; // included intra-graph relations, by index
-const REL_HAS_POSITION: u128 = 0xBBF0;
-const REL_CONSTRUCTED_BY: u128 = 0xBBF1;
-const REL_JUSTIFIED_BY: u128 = 0xBBF2;
 
 fn main() {
     if let Err(error) = run() {
@@ -206,52 +177,19 @@ fn run() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    // 4. Placement content — the beacon's Built pose at the ORIGIN (Balise Zéro).
-    let position_content = serde_json::json!({
-        "kind": "built_position",
-        "canonical_id": "built_position:l2:lumina-prime:orientation-beacon-v0",
-        "coordinate_frame_id": "lumina-prime-civic",
-        "placed_node": root_id,
-        "east_mm": 0, "north_mm": 0, "elevation_mm": 0,
-        "x": 0.0, "y": 0.0, "z": 0.0,
-        "provenance": "built",
-        "note": "Balise Zéro — the civic coordinate-frame origin; the beacon defines (0,0)."
-    });
-    let construction_content = serde_json::json!({
-        "kind": "placement_construction",
-        "canonical_id": "construction:l2:lumina-prime:orientation-beacon-v0",
-        "authored_by": "a.inchauspe@digitalkin.ai",
-        "base_revision": base_revision.0,
-        "note": "Placed the orientation beacon at civic origin (0,0,0). Parent-city PART_OF edge dropped (city not yet built)."
-    });
-    let justification_content = serde_json::json!({
-        "kind": "placement_justification",
-        "canonical_id": "justification:l2:lumina-prime:orientation-beacon-placement-v0",
-        "statement": "Balise Zéro is the origin of the Lumina Prime coordinate frame, so the beacon's Built pose is authored at (0,0,0)."
-    });
+    // 4. (Removed) The beacon no longer authors a Built pose. Positions are not
+    // stored — a node's place is inferred by the layout solver, never written.
+    // No `built_position` / `HAS_POSITION` / construction / justification here.
 
-    // 5. Plan symbol interning: node_type symbols + placement symbols + predicates.
-    // A node whose subtype is a canonical node-type carries that specific type.
-    let entity_symbol = |node: &Node| -> String {
-        if CANONICAL_TYPE_SUBTYPES.contains(&node.subtype.as_str()) {
-            node.subtype.clone()
-        } else {
-            node.node_type.clone()
-        }
-    };
-
+    // 5. Plan symbol interning: node_type symbols + predicates.
+    // A node whose subtype is a canonical node-type carries that specific type
+    // (subtype-promotion rule shared via `universe_e2e::canonical::entity_symbol`).
     let mut requested: Vec<String> = Vec::new();
     for node in &nodes {
-        requested.push(entity_symbol(node));
-    }
-    for s in ["built_position", "placement_construction", "placement_justification"] {
-        requested.push(s.to_string());
+        requested.push(entity_symbol(&node.node_type, &node.subtype));
     }
     for r in &kept {
         requested.push(r.predicate.clone());
-    }
-    for p in ["HAS_POSITION", "CONSTRUCTED_BY", "JUSTIFIED_BY"] {
-        requested.push(p.to_string());
     }
     requested.sort();
     requested.dedup();
@@ -295,36 +233,12 @@ fn run() -> Result<(), Box<dyn Error>> {
             entity: EntityRecord {
                 key: id_to_key[&node.id],
                 generation: 0,
-                symbol: sym(&entity_symbol(node))?,
+                symbol: sym(&entity_symbol(&node.node_type, &node.subtype))?,
                 content: Some(store.append_content(&content)?),
             },
         });
     }
-    // 6b. Placement entities.
-    commands.push(UniverseCommand::PutEntity {
-        entity: EntityRecord {
-            key: EntityKey(POS_POSITION),
-            generation: 0,
-            symbol: sym("built_position")?,
-            content: Some(store.append_content(&position_content)?),
-        },
-    });
-    commands.push(UniverseCommand::PutEntity {
-        entity: EntityRecord {
-            key: EntityKey(POS_CONSTRUCTION),
-            generation: 0,
-            symbol: sym("placement_construction")?,
-            content: Some(store.append_content(&construction_content)?),
-        },
-    });
-    commands.push(UniverseCommand::PutEntity {
-        entity: EntityRecord {
-            key: EntityKey(POS_JUSTIFICATION),
-            generation: 0,
-            symbol: sym("placement_justification")?,
-            content: Some(store.append_content(&justification_content)?),
-        },
-    });
+    // 6b. (Removed) No placement entities — no Built pose is authored.
     // 6c. Intra-graph relations (endpoints proven present above).
     for (i, r) in kept.iter().enumerate() {
         commands.push(UniverseCommand::PutRelation {
@@ -338,37 +252,8 @@ fn run() -> Result<(), Box<dyn Error>> {
             },
         });
     }
-    // 6d. Placement relations: beacon HAS_POSITION pose; pose CONSTRUCTED_BY / JUSTIFIED_BY.
-    commands.push(UniverseCommand::PutRelation {
-        relation: RelationRecord {
-            key: RelationKey(REL_HAS_POSITION),
-            generation: 0,
-            source: beacon_key,
-            target: EntityKey(POS_POSITION),
-            predicate: sym("HAS_POSITION")?,
-            content: None,
-        },
-    });
-    commands.push(UniverseCommand::PutRelation {
-        relation: RelationRecord {
-            key: RelationKey(REL_CONSTRUCTED_BY),
-            generation: 0,
-            source: EntityKey(POS_POSITION),
-            target: EntityKey(POS_CONSTRUCTION),
-            predicate: sym("CONSTRUCTED_BY")?,
-            content: None,
-        },
-    });
-    commands.push(UniverseCommand::PutRelation {
-        relation: RelationRecord {
-            key: RelationKey(REL_JUSTIFIED_BY),
-            generation: 0,
-            source: EntityKey(POS_POSITION),
-            target: EntityKey(POS_JUSTIFICATION),
-            predicate: sym("JUSTIFIED_BY")?,
-            content: None,
-        },
-    });
+    // 6d. (Removed) No placement relations — no HAS_POSITION / CONSTRUCTED_BY /
+    // JUSTIFIED_BY. The beacon carries no authored coordinate.
 
     let command_count = commands.len();
     let write_set = UniverseWriteSet {
@@ -417,51 +302,17 @@ fn run() -> Result<(), Box<dyn Error>> {
     }
     println!("all {} injected nodes read back with matching canonical_id", nodes.len());
 
-    // 8b. Beacon pose at origin, with construction Moment (forgery check).
-    let pos = after
-        .entities
-        .iter()
-        .find(|e| e.key == EntityKey(POS_POSITION))
-        .ok_or("built_position not found on readback")?;
-    let pos_content = fresh.read_content(pos.content.as_ref().ok_or("built_position has no content")?)?;
-    println!("built_position {:#x}: {}", POS_POSITION, pos_content);
-
-    let has_position = after.relations.iter().any(|r| {
-        r.source == beacon_key && r.target == EntityKey(POS_POSITION) && r.key == RelationKey(REL_HAS_POSITION)
-    });
-    let constructed_by = after.relations.iter().any(|r| {
-        r.source == EntityKey(POS_POSITION) && r.target == EntityKey(POS_CONSTRUCTION)
-    });
-    let justified_by = after.relations.iter().any(|r| {
-        r.source == EntityKey(POS_POSITION) && r.target == EntityKey(POS_JUSTIFICATION)
-    });
-    println!(
-        "placement edges — HAS_POSITION: {has_position} | CONSTRUCTED_BY: {constructed_by} | JUSTIFIED_BY: {justified_by}"
-    );
-
-    let at_origin = ["x", "y", "z"]
-        .iter()
-        .all(|axis| pos_content.get(axis).and_then(|v| v.as_f64()) == Some(0.0));
-    let provenance = pos_content.get("provenance").and_then(|v| v.as_str()).unwrap_or("(none)");
-    if provenance == "built" && !constructed_by {
-        return Err("FORGERY: provenance=built with no CONSTRUCTED_BY construction Moment".into());
-    }
-    if !(has_position && constructed_by && justified_by) {
-        return Err("readback is missing one of the placement edges".into());
-    }
-    if !at_origin {
-        return Err("beacon pose is NOT at the civic origin (0,0,0)".into());
-    }
+    // 8b. (Removed) No pose to read back — the beacon authors no coordinate.
 
     println!(
-        "\nRESULT: injected the Lumina Prime orientation beacon ({} nodes, {} intra-graph relations) into the LIVE store,",
+        "\nRESULT: injected the Lumina Prime orientation beacon ({} nodes, {} intra-graph relations) into the LIVE store",
         nodes.len(),
         kept.len()
     );
     println!(
-        "        placed its Built pose at civic origin (0,0,0) with an authored construction Moment,"
+        "        with NO authored Built pose — positions are inferred by the layout solver, never stored."
     );
-    println!("        and read the whole subgraph back from a fresh reopen. graph_status: WRITTEN (wiring/runtime still not_wired).");
+    println!("        Read the whole subgraph back from a fresh reopen. graph_status: WRITTEN (wiring/runtime still not_wired).");
     Ok(())
 }
 

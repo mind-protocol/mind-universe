@@ -5,11 +5,13 @@
 //! content-addressed projections, and records independently observed evidence.
 
 pub mod actor_control;
+pub mod bond_channel;
 pub mod census;
 pub mod conversion;
 pub mod invalidation;
 pub mod inventory;
 pub mod layout;
+pub mod layout_authority;
 pub mod visual;
 
 use serde::{Deserialize, Serialize};

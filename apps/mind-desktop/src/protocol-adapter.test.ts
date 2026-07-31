@@ -103,3 +103,67 @@ describe("production protocol adapter", () => {
     expect(projected.transfers.size).toBe(0);
   });
 });
+
+function entityFrame(entity: Record<string, unknown>) {
+  return {
+    protocol_version: 0,
+    sequence: 2,
+    payload: { message_type: "entity_materialized", entity }
+  };
+}
+
+const baseEntity = {
+  id: "00000000000000000000000000009001",
+  generation: 0,
+  position_micro: [0, 0, 0],
+  visual: {
+    primitive: "unknown",
+    motion: "still",
+    material: {
+      color: "#fff",
+      emissive: "#000",
+      emissive_intensity_micro: 0,
+      opacity_micro: 700000
+    }
+  }
+};
+
+describe("entity audio facet", () => {
+  it("parses a graph-declared audio pointer into a loop with clamped gain", () => {
+    const event = universeEventFromServerFrame(
+      entityFrame({
+        ...baseEntity,
+        audio: { src: "asset://chime.wav", loop: true, gain_micro: 600000 }
+      })
+    );
+    expect(event?.kind).toBe("entity_materialized");
+    const audio =
+      event?.kind === "entity_materialized" ? event.entity.audio : undefined;
+    expect(audio).toEqual({ src: "asset://chime.wav", loop: true, gain: 0.6 });
+  });
+
+  it("defaults loop to true and gain to full when unspecified", () => {
+    const event = universeEventFromServerFrame(
+      entityFrame({ ...baseEntity, audio: { src: "asset://drone.wav" } })
+    );
+    const audio =
+      event?.kind === "entity_materialized" ? event.entity.audio : undefined;
+    expect(audio).toEqual({ src: "asset://drone.wav", loop: true, gain: 1 });
+  });
+
+  it("leaves an entity silent when no audio is declared", () => {
+    const event = universeEventFromServerFrame(entityFrame({ ...baseEntity }));
+    const entity =
+      event?.kind === "entity_materialized" ? event.entity : undefined;
+    expect(entity?.audio).toBeUndefined();
+  });
+
+  it("drops an audio facet whose source is empty rather than inventing one", () => {
+    const event = universeEventFromServerFrame(
+      entityFrame({ ...baseEntity, audio: { src: "", loop: true } })
+    );
+    const entity =
+      event?.kind === "entity_materialized" ? event.entity : undefined;
+    expect(entity?.audio).toBeUndefined();
+  });
+});

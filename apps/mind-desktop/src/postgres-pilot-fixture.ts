@@ -13,6 +13,8 @@ import {
   emptyUniverseView,
   type UniverseView
 } from "./universe-state";
+import type { PhysicalProfile } from "./relation-infrastructure";
+import { NEUTRAL_DYNAMICS } from "./entity-dynamics";
 
 export type ProjectionState = "complete" | "partial" | "stale";
 
@@ -31,6 +33,14 @@ export interface EntityPresentation {
 
 export interface RelationPresentation {
   readonly label: string | null;
+  // The exact graph predicate, preserved for provenance and for classifying the
+  // relation into an ontology3d infrastructure family — kept even when the label
+  // is hidden, so an unlabelled street still knows what kind of street it is.
+  readonly predicate: string;
+  // Canonical physical_profile of the predicate (ALIGN.md authority A), when the
+  // source can resolve it. Present ⇒ the bond derives from canonical channels;
+  // absent ⇒ the renderer falls back to the predicate family and stays honest.
+  readonly physics?: PhysicalProfile;
 }
 
 export interface OfflineProjectionAuthority {
@@ -122,13 +132,13 @@ function visualFor(key: string): EntityVisualDescriptor {
 
 function entityEvent(
   sequence: number,
-  entity: MaterializedEntity
+  entity: Omit<MaterializedEntity, "dynamics">
 ): UniverseEvent {
   return {
     version: 0,
     sequence,
     kind: "entity_materialized",
-    entity
+    entity: { ...entity, dynamics: NEUTRAL_DYNAMICS }
   };
 }
 
@@ -222,7 +232,8 @@ export function buildPostgresPilotProjection(): PostgresPilotProjection {
       })
     );
     relationPresentation.set(relation.id, {
-      label: relation.showLabel ? relation.predicate : null
+      label: relation.showLabel ? relation.predicate : null,
+      predicate: relation.predicate
     });
   };
 

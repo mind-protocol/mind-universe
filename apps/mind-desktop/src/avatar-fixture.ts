@@ -1,9 +1,11 @@
 import type {
   EmbodimentMotionProfile,
   MaterializedEntity,
+  Vector3,
   VisualEmbodimentMapping
 } from "./contracts";
 import type { UniverseView } from "./universe-state";
+import { NEUTRAL_DYNAMICS } from "./entity-dynamics";
 import visualCatalog from "../../../fixtures/assets/visual-embodiment-catalog.json";
 
 // Single source of truth: the graph-materialized visual embodiment authority
@@ -37,6 +39,7 @@ const avatar: MaterializedEntity = {
       scale: 1
     }
   },
+  dynamics: NEUTRAL_DYNAMICS,
   embodiment: {
     source_mapping_id: AVATAR_MAPPING_AUTHORITY,
     mapping: avatarMappingFixture,
@@ -55,5 +58,24 @@ export const avatarFixtureUniverse = (): UniverseView => ({
   entities: new Map([[avatar.id, avatar]]),
   relations: new Map(),
   transfers: new Map(),
-  control: { kind: "observer" }
+  control: { kind: "observer" },
+  available_actions: []
 });
+
+/** The bound avatar Actor, positioned at `at` — the entity the piloting loop moves. */
+export const avatarEntityAt = (at: Vector3): MaterializedEntity => ({
+  ...avatar,
+  position: at
+});
+
+/**
+ * Composes the controllable avatar into an existing (non-avatar) universe so the
+ * piloting loop can move it inside a populated scene — e.g. the default city
+ * projection. The base view is not mutated; the avatar is added as one more
+ * entity at `at`, leaving relations, transfers, and control untouched.
+ */
+export const withAvatar = (base: UniverseView, at: Vector3): UniverseView => {
+  const entities = new Map(base.entities);
+  entities.set(AVATAR_ENTITY_ID, avatarEntityAt(at));
+  return { ...base, entities };
+};

@@ -20,6 +20,18 @@
       "authority_only_capabilities": ["open_sealed_station", "retune_threshold", "reroute_conduit", "install_mechanism", "decommission_mechanism"],
       "rule": "Every mutate affordance resolves to a required authority capability. A manhole grants observe only; opening a manhole never widens capability. An unauthorized mutate intent fails closed, restores the prior state exactly, and is reported — it is never silently dropped nor rendered as a completed change.",
       "sealed_default": "sealed_read_only"
+    },
+    "guard_edge_binding": {
+      "purpose": "Make the capability seal legible as GRAPH DATA: every sealed underground mechanism member carries an explicit edge to the sole mutation surface (the sealed hatch port), so a bounded reader can discover, per mechanism, which hatch guards it and therefore which authority capability its mutation requires. Without this edge the seal lived only in prose and in the port's own content; with it the guard is a first-class, readable relation.",
+      "authored_predicate": "GUARDED_BY",
+      "authored_direction": "mechanism -> sealed-hatch port (the mechanism points at the surface that guards it)",
+      "canonical_remap": "GUARDED_BY has no canonical symbol. It REMAPS to the nearest canonical predicate SAFEGUARDS ('protège', family normative, canonical direction garde-fou -> élément protégé), with the direction SWAPPED so the stored edge reads hatch SAFEGUARDS mechanism (safeguard -> protected element). This interns 0 new symbols: SAFEGUARDS is already canonical. See the injector's canonical_predicate() remap table.",
+      "guarded_mechanisms": [
+        "mechanism:l2:mind-universe:underground:transformation-station-v0",
+        "mechanism:l2:mind-universe:underground:inhibition-valve-v0"
+      ],
+      "guarding_port": "port:l2:mind-universe:underground:sealed-hatch-v0",
+      "honesty": "The mechanism members are DECLARED sealed placeholders. No AtomDynamics energy is measured on them; the guard edge is what they exist to carry. Their live energetic state stays not_measured, never rendered as zero pressure."
     }
   },
   "members": [
@@ -335,6 +347,130 @@
       }
     },
     {
+      "id": "visual_binding:l2:mind-universe:underground-toolkit-v0",
+      "node_type": "thing",
+      "subtype": "physicalization_binding",
+      "content": {
+        "kind": "physicalization_binding",
+        "note": "The underground toolkit's OWN appearance, authored AS a member of the construct (appearance lives in the toolkit; folded in from the former standalone underground-visual-binding-v0.json). Role-keyed visual-embodiment/1 tuples translating the prose pattern+vocabulary into consumable forms. STEP 1 identity only; state modulation (gauge fill, valve, pressure collapse, fog, atomStateBand) declared as deferred sockets, never faked.",
+        "schema_version": "visual-embodiment/1-role-keyed",
+        "dominant_scale": "infrastructure",
+        "primitive_budget": 12,
+        "particle_budget": 160,
+        "palette": {"core": "#c9b98a", "emissive": "#f5a524", "shell": "#8a7f6b", "particle": "#e8d49a"},
+        "material": {"core_opacity": 0.9, "shell_opacity": 0.32, "core_emissive_intensity": 1.6, "shell_emissive_intensity": 0.8, "fresnel_power": 2.0},
+        "form_primitive_tuple": {
+          "arity": 8,
+          "fields": ["kind", "part_name", "palette_role", "offset(vec3)", "rotation(vec3)", "scale(vec3>0)", "particle_count", "particle_size"],
+          "allowed_primitives": ["icosphere", "sphere", "capsule", "points", "fresnel_shell"]
+        },
+        "archetypes": {
+          "vault": {
+            "role_axis": "space",
+            "declared_for": ["UndergroundVault"],
+            "justification": "A space bounds diffusion and carries no energy: a membrane shell with an empty interior.",
+            "inverse_mapping": "Visible membrane with nothing inside = a perimeter that does not transport energy.",
+            "forms": {
+              "hot": [["fresnel_shell", "membrane", "shell", [0, 0, 0], [0, 0, 0], [1.6, 1.4, 1.6], 0, 0]],
+              "sleeping": [["fresnel_shell", "membrane", "shell", [0, 0, 0], [0, 0, 0], [1.6, 1.4, 1.6], 0, 0]],
+              "aggregated": [["fresnel_shell", "membrane", "shell", [0, 0, 0], [0, 0, 0], [1.2, 1.05, 1.2], 0, 0]]
+            },
+            "fallback_form": "dormant_point",
+            "state_sockets": []
+          },
+          "well": {
+            "role_axis": "actor",
+            "declared_for": ["EnergyWell"],
+            "justification": "An actor injects energy (a pump): a vertical shaft topped by an emitting head, motes rising from the injection point.",
+            "inverse_mapping": "Rising motes = the injection point; amber head = the source.",
+            "forms": {
+              "hot": [["capsule", "shaft", "shell", [0, 0, 0], [0, 0, 0], [0.4, 1.1, 0.4], 0, 0], ["icosphere", "head", "emissive", [0, 0.95, 0], [0, 0, 0], [0.5, 0.5, 0.5], 0, 0], ["points", "injection", "particle", [0, 0.4, 0], [0, 0, 0], [0.5, 1.4, 0.5], 48, 0.6]],
+              "sleeping": [["capsule", "shaft", "shell", [0, 0, 0], [0, 0, 0], [0.4, 1.1, 0.4], 0, 0], ["icosphere", "head", "emissive", [0, 0.95, 0], [0, 0, 0], [0.5, 0.5, 0.5], 0, 0]],
+              "aggregated": [["capsule", "shaft", "shell", [0, 0, 0], [0, 0, 0], [0.4, 1.0, 0.4], 0, 0]]
+            },
+            "fallback_form": "dormant_point",
+            "state_sockets": [{"socket": "injection.emissive", "channel": "activation", "driven_by": "measured injected energy", "deferred_to": "step 3"}]
+          },
+          "station": {
+            "role_axis": "thing",
+            "declared_for": ["TransformationStation"],
+            "justification": "A thing routes energy through while transforming it: a sealed housing enclosing a transforming core.",
+            "inverse_mapping": "Visible brass core = the mutable interior; opaque housing = the seal.",
+            "forms": {
+              "hot": [["icosphere", "housing", "shell", [0, 0, 0], [0, 0, 0], [0.8, 0.8, 0.8], 0, 0], ["sphere", "core", "core", [0, 0, 0], [0, 0, 0], [0.44, 0.44, 0.44], 0, 0]],
+              "sleeping": [["icosphere", "housing", "shell", [0, 0, 0], [0, 0, 0], [0.8, 0.8, 0.8], 0, 0], ["sphere", "core", "core", [0, 0, 0], [0, 0, 0], [0.44, 0.44, 0.44], 0, 0]],
+              "aggregated": [["icosphere", "housing", "shell", [0, 0, 0], [0, 0, 0], [0.7, 0.7, 0.7], 0, 0]]
+            },
+            "fallback_form": "dormant_point",
+            "state_sockets": [{"socket": "gauge.fill", "channel": "activation", "driven_by": "support vs threshold (GaugeMark)", "deferred_to": "step 3"}, {"socket": "core.emissive", "channel": "activation", "driven_by": "atomStateBand (fired/starved)", "deferred_to": "step 3"}]
+          },
+          "junction": {
+            "role_axis": "moment",
+            "declared_for": ["Junction", "Manifold"],
+            "justification": "A moment is a passage that transmits and absorbs: a gate the energy crosses between two posts.",
+            "inverse_mapping": "Core between the two posts = the transit point.",
+            "forms": {
+              "hot": [["capsule", "post_l", "shell", [-0.34, 0, 0], [0, 0, 0], [0.1, 0.7, 0.1], 0, 0], ["capsule", "post_r", "shell", [0.34, 0, 0], [0, 0, 0], [0.1, 0.7, 0.1], 0, 0], ["sphere", "gate_core", "emissive", [0, 0, 0], [0, 0, 0], [0.28, 0.28, 0.28], 0, 0]],
+              "sleeping": [["capsule", "post_l", "shell", [-0.34, 0, 0], [0, 0, 0], [0.1, 0.7, 0.1], 0, 0], ["capsule", "post_r", "shell", [0.34, 0, 0], [0, 0, 0], [0.1, 0.7, 0.1], 0, 0]],
+              "aggregated": [["sphere", "gate_core", "shell", [0, 0, 0], [0, 0, 0], [0.3, 0.3, 0.3], 0, 0]]
+            },
+            "fallback_form": "dormant_point",
+            "state_sockets": [{"socket": "gate_core.emissive", "channel": "activation", "driven_by": "transit event (conduction)", "deferred_to": "step 3"}]
+          },
+          "reservoir": {
+            "role_axis": "narrative",
+            "declared_for": ["Reservoir"],
+            "justification": "A narrative attracts and retains: a concave basin that accumulates energy toward its low point.",
+            "inverse_mapping": "Low pooled mass = retained energy; concavity = the pull inward.",
+            "forms": {
+              "hot": [["fresnel_shell", "basin", "shell", [0, 0.1, 0], [0, 0, 0], [1.0, 0.55, 1.0], 0, 0], ["icosphere", "pooled", "core", [0, -0.05, 0], [0, 0, 0], [0.5, 0.32, 0.5], 0, 0]],
+              "sleeping": [["fresnel_shell", "basin", "shell", [0, 0.1, 0], [0, 0, 0], [1.0, 0.55, 1.0], 0, 0], ["icosphere", "pooled", "core", [0, -0.05, 0], [0, 0, 0], [0.5, 0.32, 0.5], 0, 0]],
+              "aggregated": [["fresnel_shell", "basin", "shell", [0, 0.1, 0], [0, 0, 0], [0.85, 0.5, 0.85], 0, 0]]
+            },
+            "fallback_form": "dormant_point",
+            "state_sockets": [{"socket": "pooled.scale", "channel": "activation", "driven_by": "retained energy level", "deferred_to": "step 3"}]
+          },
+          "manhole": {
+            "role_axis": "thing",
+            "declared_for": ["Manhole"],
+            "capability_disposition": "observe_only",
+            "justification": "An observe-only inspection port is an OPEN lid that lets you see the mechanism without touching it.",
+            "inverse_mapping": "Visible glimpse of an interior = reading is possible; no mechanism exposed = observe, not mutate.",
+            "forms": {
+              "hot": [["capsule", "rim", "shell", [0, 0, 0], [0, 0, 0], [0.6, 0.1, 0.6], 0, 0], ["icosphere", "glimpse", "core", [0, -0.1, 0], [0, 0, 0], [0.3, 0.15, 0.3], 0, 0]],
+              "sleeping": [["capsule", "rim", "shell", [0, 0, 0], [0, 0, 0], [0.6, 0.1, 0.6], 0, 0]],
+              "aggregated": [["capsule", "rim", "shell", [0, 0, 0], [0, 0, 0], [0.5, 0.1, 0.5], 0, 0]]
+            },
+            "fallback_form": "dormant_point",
+            "state_sockets": []
+          },
+          "sealed_hatch": {
+            "role_axis": "thing",
+            "declared_for": ["SealedHatch"],
+            "capability_disposition": "authority_only",
+            "justification": "A mutation surface gated behind an authority capability is a CLOSED lid, a bolt laid across it: sealed, no glimpse.",
+            "inverse_mapping": "Bolt lying across = sealed; opaque lid with no interior visible = mutation is gated.",
+            "forms": {
+              "hot": [["icosphere", "seal_lid", "shell", [0, 0, 0], [0, 0, 0], [0.5, 0.22, 0.5], 0, 0], ["capsule", "bolt", "core", [0, 0.05, 0], [0, 0, 1.57], [0.08, 0.5, 0.08], 0, 0]],
+              "sleeping": [["icosphere", "seal_lid", "shell", [0, 0, 0], [0, 0, 0], [0.5, 0.22, 0.5], 0, 0], ["capsule", "bolt", "core", [0, 0.05, 0], [0, 0, 1.57], [0.08, 0.5, 0.08], 0, 0]],
+              "aggregated": [["icosphere", "seal_lid", "shell", [0, 0, 0], [0, 0, 0], [0.45, 0.2, 0.45], 0, 0]]
+            },
+            "fallback_form": "dormant_point",
+            "state_sockets": []
+          }
+        },
+        "dormant_form": {"dormant_point": [["points", "presence", "particle", [0, 0, 0], [0, 0, 0], [1, 1, 1], 1, 0.5]]},
+        "relation_archetypes": {
+          "conduit_support": {"polarity": "support", "relation_families": ["flow", "enablement"], "justification": "A support conduit conducts energy toward its target: a pressurized amber tube, source -> target.", "wire": {"kind": "capsule_tube", "palette_role": "emissive", "directed": true, "thickness": 0.12}},
+          "conduit_inhibit": {"polarity": "inhibit", "relation_families": ["gating"], "justification": "An inhibit conduit blocks the downstream fire: a cold tube pinched at a valve.", "wire": {"kind": "capsule_tube", "palette_role": "shell", "directed": true, "thickness": 0.1, "valve": true}},
+          "conduit_neutral": {"polarity": "neutral", "relation_families": ["contextual"], "justification": "A neutral conduit transports zero energy: a thin, dry, matte tube.", "wire": {"kind": "capsule_tube", "palette_role": "shell", "directed": false, "thickness": 0.06}}
+        },
+        "lod_states": {"note": "Residency selects which form to draw; missing residency falls back to dormant_point, never invented.", "required_residencies": ["hot", "sleeping", "aggregated", "dormant"], "dormant_maps_to": "dormant_form.dormant_point"},
+        "radius": {"note": "Totality is per-toolkit over the roles/types this toolkit declares.", "role_axis": ["space", "actor", "thing", "moment", "narrative"], "declared_semantic_types": ["UndergroundVault", "EnergyWell", "TransformationStation", "Junction", "Manifold", "Reservoir", "Manhole", "SealedHatch"], "relation_families": ["flow", "enablement", "gating", "contextual"], "lod_states": ["hot", "sleeping", "aggregated", "dormant"]},
+        "deferred_to_state_step": {"note": "State modulations (step 3), not identity.", "gauge_mark_fill": "support vs threshold", "valve_close": "inhibition reaching inhibition_threshold", "pressure_collapse": "starvation (outgoing > support)", "settled_network": "quiescence", "fog": "not_measured / membrane-rejected energy", "atom_state_band": ["below_threshold", "at_threshold", "fired", "inhibited", "starved"]}
+      }
+    },
+    {
       "id": "port:l2:mind-universe:underground:sealed-hatch-v0",
       "node_type": "thing",
       "subtype": "capability_port",
@@ -347,6 +483,34 @@
         "reader_predicate": "actor_holds(authority:underground-maintenance)",
         "effect_when_unauthorized": "fail_closed_and_restore",
         "manhole_note": "Manholes are separate observe-only ports; this hatch is the ONLY mutation surface and it requires the authority capability."
+      }
+    },
+    {
+      "id": "mechanism:l2:mind-universe:underground:transformation-station-v0",
+      "node_type": "thing",
+      "subtype": "mechanism",
+      "content": {
+        "name": "Sealed transformation station (roleAxis thing)",
+        "role": "A router that transforms energy as it passes; its internals are mutable ONLY by an authority capability.",
+        "seal_state": "sealed_read_only",
+        "guarded_by": "port:l2:mind-universe:underground:sealed-hatch-v0",
+        "required_mutate_capability": "authority:underground-maintenance",
+        "energy": "not_measured",
+        "honesty": "Declared sealed mechanism placeholder. No AtomDynamics energy is measured here; the GUARDED_BY edge to the sealed hatch is what this member exists to carry. Its live energetic state is not_measured, never rendered as zero pressure."
+      }
+    },
+    {
+      "id": "mechanism:l2:mind-universe:underground:inhibition-valve-v0",
+      "node_type": "thing",
+      "subtype": "mechanism",
+      "content": {
+        "name": "Sealed inhibition valve (roleAxis thing)",
+        "role": "A gate that blocks a downstream fire when inhibition crosses threshold, WITHOUT erasing accumulated support; opening/retuning it is authority-only.",
+        "seal_state": "sealed_read_only",
+        "guarded_by": "port:l2:mind-universe:underground:sealed-hatch-v0",
+        "required_mutate_capability": "authority:underground-maintenance",
+        "energy": "not_measured",
+        "honesty": "Declared sealed mechanism placeholder. No AtomDynamics energy is measured here; the GUARDED_BY edge to the sealed hatch is what this member exists to carry. Its live energetic state is not_measured, never rendered as zero pressure."
       }
     }
   ],
@@ -400,6 +564,23 @@
       "source": "observability_algorithm:l2:mind-universe:underground-toolkit-v0",
       "predicate": "VALIDATED_BY",
       "target": "validation:l2:mind-universe:underground-observer-v0"
+    },
+    {
+      "source": "mechanism:l2:mind-universe:underground:transformation-station-v0",
+      "predicate": "GUARDED_BY",
+      "target": "port:l2:mind-universe:underground:sealed-hatch-v0",
+      "_remap_note": "GUARDED_BY remaps to canonical SAFEGUARDS with direction swapped; stored edge reads: sealed-hatch SAFEGUARDS transformation-station. 0 new symbols."
+    },
+    {
+      "source": "mechanism:l2:mind-universe:underground:inhibition-valve-v0",
+      "predicate": "GUARDED_BY",
+      "target": "port:l2:mind-universe:underground:sealed-hatch-v0",
+      "_remap_note": "GUARDED_BY remaps to canonical SAFEGUARDS with direction swapped; stored edge reads: sealed-hatch SAFEGUARDS inhibition-valve. 0 new symbols."
+    },
+    {
+      "source": "space:l2:mind-universe:underground-toolkit-v0",
+      "predicate": "PROJECTS_AS",
+      "target": "visual_binding:l2:mind-universe:underground-toolkit-v0"
     }
   ]
 }

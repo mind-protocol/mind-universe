@@ -352,6 +352,113 @@
       }
     },
     {
+      "id": "visual_binding:l2:mind-universe:sky-toolkit-v0",
+      "node_type": "thing",
+      "subtype": "physicalization_binding",
+      "content": {
+        "kind": "physicalization_binding",
+        "note": "The Sky toolkit's OWN appearance, authored AS a member of the construct (appearance lives in the toolkit). Role-keyed visual-embodiment/1 tuples. An atom of the authored program physicalizes as a Star; an AtomBond as a Constellation line. IDENTITY only here (a star, in its constellation). The three state channels of a construct — poids / activation / validité — are declared as sockets and driven at step 3, never faked: weight->size on the star, measured support->brightness on the star (unmeasured = Fog/dark, never a fabricated bright star), causal-chain validity->line continuity on the constellation_line (severed at the first failure front).",
+        "schema_version": "visual-embodiment/1-role-keyed",
+        "dominant_scale": "civic",
+        "primitive_budget": 12,
+        "particle_budget": 160,
+        "palette": {
+          "core": "#ffe9a8",
+          "emissive": "#ffcf5a",
+          "shell": "#3a4c6b",
+          "particle": "#fff4cf"
+        },
+        "material": {
+          "core_opacity": 0.95,
+          "shell_opacity": 0.18,
+          "core_emissive_intensity": 2.2,
+          "shell_emissive_intensity": 1.0,
+          "fresnel_power": 2.4
+        },
+        "form_primitive_tuple": {
+          "arity": 8,
+          "fields": ["kind", "part_name", "palette_role", "offset(vec3)", "rotation(vec3)", "scale(vec3>0)", "particle_count", "particle_size"],
+          "allowed_primitives": ["icosphere", "sphere", "capsule", "points", "fresnel_shell"]
+        },
+        "archetypes": {
+          "star": {
+            "role_axis": "*",
+            "declared_for": ["Star", "PoleStar"],
+            "justification": "An atom of the authored program is a luminous point: a bright core wrapped in a fresnel glow, with a few spark motes. roleAxis follows the atom (actor=seeded source / Pole Star, narrative=attractor, thing=router) but the star form is shared; the atom's role tints seat/anchor, not the silhouette.",
+            "inverse_mapping": "A visible core+glow = a star present in the constellation; its size reads its weight, its brightness reads its measured support. A dark point = Fog (unmeasured / sub-threshold), NOT a star that is off by choice.",
+            "forms": {
+              "hot": [
+                ["icosphere", "core", "core", [0, 0, 0], [0, 0, 0], [0.3, 0.3, 0.3], 0, 0],
+                ["fresnel_shell", "glow", "emissive", [0, 0, 0], [0, 0, 0], [0.62, 0.62, 0.62], 0, 0],
+                ["points", "spark", "particle", [0, 0, 0], [0, 0, 0], [1, 1, 1], 12, 0.5]
+              ],
+              "sleeping": [
+                ["icosphere", "core", "core", [0, 0, 0], [0, 0, 0], [0.3, 0.3, 0.3], 0, 0],
+                ["fresnel_shell", "glow", "emissive", [0, 0, 0], [0, 0, 0], [0.62, 0.62, 0.62], 0, 0]
+              ],
+              "aggregated": [
+                ["icosphere", "core", "core", [0, 0, 0], [0, 0, 0], [0.26, 0.26, 0.26], 0, 0]
+              ]
+            },
+            "fallback_form": "dormant_point",
+            "state_sockets": [
+              {"socket": "whole.scale", "channel": "poids", "driven_by": "incoming degree / accumulated usage (weight)", "honesty": "weight absent -> neutral scale 1, never invented", "deferred_to": "step 3"},
+              {"socket": "core.emissive + glow.opacity", "channel": "activation", "driven_by": "measured support energy (Sky run_until_quiescent)", "honesty": "unmeasured or sub-threshold -> Fog (dark), never a fabricated bright star", "deferred_to": "step 3"}
+            ]
+          }
+        },
+        "dormant_form": {
+          "dormant_point": [
+            ["points", "presence", "particle", [0, 0, 0], [0, 0, 0], [1, 1, 1], 1, 0.4]
+          ]
+        },
+        "relation_archetypes": {
+          "constellation_line_support": {
+            "polarity": "support",
+            "relation_families": ["flow", "enablement"],
+            "justification": "A support bond conducts luminosity toward its target: a warm line of light, directed source -> target.",
+            "wire": {"kind": "line_of_light", "palette_role": "emissive", "directed": true, "thickness": 0.1},
+            "state_sockets": [
+              {"socket": "line.continuity", "channel": "validité", "driven_by": "causal-chain health (health-chain judge)", "honesty": "healthy -> continuous; degraded/failed -> severed at the FIRST failure front; not_measured -> faint/dotted, never a confident continuous line", "deferred_to": "step 3"}
+            ]
+          },
+          "constellation_line_inhibit": {
+            "polarity": "inhibit",
+            "relation_families": ["gating"],
+            "justification": "An inhibit bond keeps its target dark: a cold, severing line.",
+            "wire": {"kind": "line_of_light", "palette_role": "shell", "directed": true, "thickness": 0.08, "severing": true},
+            "state_sockets": [
+              {"socket": "line.continuity", "channel": "validité", "driven_by": "causal-chain health", "deferred_to": "step 3"}
+            ]
+          },
+          "constellation_line_neutral": {
+            "polarity": "neutral",
+            "relation_families": ["contextual"],
+            "justification": "A neutral bond carries zero luminosity: a thin, dark, drawn-but-unlit line.",
+            "wire": {"kind": "line_of_light", "palette_role": "shell", "directed": false, "thickness": 0.05}
+          }
+        },
+        "lod_states": {
+          "note": "Residency selects which form of the star to draw; a missing residency falls back to dormant_point, never an invented form.",
+          "required_residencies": ["hot", "sleeping", "aggregated", "dormant"],
+          "dormant_maps_to": "dormant_form.dormant_point"
+        },
+        "radius": {
+          "note": "Totality is per-toolkit. The Sky is general: one shared star archetype covers every atom regardless of roleAxis (role tints seat, not silhouette), so the star is total over the whole role axis. declared_semantic_types is the toolkit-enumerable axis.",
+          "role_axis": ["space", "actor", "thing", "moment", "narrative"],
+          "declared_semantic_types": ["Star", "PoleStar"],
+          "relation_families": ["flow", "enablement", "gating", "contextual"],
+          "lod_states": ["hot", "sleeping", "aggregated", "dormant"]
+        },
+        "deferred_to_state_step": {
+          "note": "The three construct channels are declared as sockets above; step 3 drives them from three independent evidence streams. Identity (a star in its constellation) is complete now.",
+          "poids": "incoming degree / usage -> star size",
+          "activation": "measured support (Sky run) -> star brightness; unmeasured = Fog",
+          "validite": "causal-chain health (judge) -> constellation_line continuity; severed at first failure front"
+        }
+      }
+    },
+    {
       "id": "port:l2:mind-universe:sky:authoring-v0",
       "node_type": "thing",
       "subtype": "capability_port",
@@ -417,6 +524,11 @@
       "source": "observability_algorithm:l2:mind-universe:sky-toolkit-v0",
       "predicate": "VALIDATED_BY",
       "target": "validation:l2:mind-universe:sky-observer-v0"
+    },
+    {
+      "source": "space:l2:mind-universe:sky-toolkit-v0",
+      "predicate": "PROJECTS_AS",
+      "target": "visual_binding:l2:mind-universe:sky-toolkit-v0"
     }
   ]
 }

@@ -132,6 +132,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     if let Some(embodiment) = embodiment {
         vega["embodiment"] = embodiment;
     }
+    // Provenance so the renderer resolves Vega's appearance through her producing
+    // toolkit's visual binding (an actor → the citizen-energy archetype), never a
+    // universal default. Emitted verbatim from her graph content's semantic_type.
+    if let Some(semantic_type) = vega_content.get("semantic_type").and_then(Value::as_str) {
+        vega["provenance"] = json!({
+            "role_axis": semantic_type,
+            "semantic_type": semantic_type,
+        });
+    }
     frames.push(json!({
         "protocol_version": PROTOCOL_VERSION,
         "sequence": sequence,

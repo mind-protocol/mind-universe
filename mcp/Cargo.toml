@@ -1,0 +1,31 @@
+[package]
+name = "mind-mcp"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+# Detached from the `crates/*` library workspace (same convention as
+# apps/universe-server): this is a standalone bootstrap binary, not a member
+# crate. It reaches the kernel through path dependencies only.
+[workspace]
+
+[[bin]]
+name = "mind-mcp"
+path = "src/main.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+universe-core = { path = "../crates/universe-core" }
+universe-store = { path = "../crates/universe-store" }
+universe-assets = { path = "../crates/universe-assets" }
+universe-supervisor = { path = "../crates/universe-supervisor" }
+universe-transactions = { path = "../crates/universe-transactions" }
+universe-protocol = { path = "../crates/universe-protocol" }
+# The generic write-side translator: a mutation compiles to exactly one of the
+# four kernel verbs through `mutation_translate::translate_mutation_proposal`,
+# a type-level guarantee shared with the MutationBond runtime.
+universe-e2e = { path = "../crates/universe-e2e" }
+
+[dev-dependencies]
+tempfile = "3"

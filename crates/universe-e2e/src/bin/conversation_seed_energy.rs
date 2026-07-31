@@ -119,5 +119,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         "  distinct_propensities={} distinct_sentences={}",
         seed.distinct_propensities, seed.distinct_sentences
     );
+    for bond in &seed.bonds {
+        let sentence: String = bond.sentence.chars().take(110).collect();
+        println!(
+            "  [{:?} prop={:+} energy={}] {}",
+            bond.polarity, bond.propensity_micro, bond.energy, sentence
+        );
+    }
     Ok(())
 }

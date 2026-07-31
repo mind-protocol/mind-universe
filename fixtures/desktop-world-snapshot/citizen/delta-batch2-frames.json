@@ -339,6 +339,10 @@
           2000000,
           0
         ],
+        "provenance": {
+          "role_axis": "actor",
+          "semantic_type": "actor"
+        },
         "residency": "hot",
         "symbol": "actor",
         "visual": {

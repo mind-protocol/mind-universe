@@ -1,0 +1,53 @@
+{
+  "policy_id": "visual-resolution-policy-v1",
+  "supersedes": "visual-projection-policy-v0",
+  "note": "Provenance-based resolution. Removes the universal default: a node resolves its form through provenance -> producing toolkit -> that toolkit's visual binding -> the archetype declared for node.role_axis / semantic_type. There is NO default_authority that dresses every node as a citizen. A node with no producing-toolkit binding renders as the honest bare-presence fallback (a recognizably 'unbound' point), never a fabricated identity and never a defaulted citizen. The citizen-energy catalog is DEMOTED to one toolkit binding among others. v0 is kept only until the Rust VisualPolicy authority (crates/universe-assets/src/visual.rs) migrates to this shape; then v0 is deleted.",
+  "resolution": {
+    "order": ["provenance_toolkit_binding", "fallback_presence"],
+    "provenance_toolkit_binding": "node.provenance -> producing toolkit -> registered visual binding -> archetype for (role_axis, semantic_type).",
+    "fallback_presence": "A node whose producing toolkit declares no binding for its config renders as the shared bare-presence point: an explicit, recognizable 'unbound' shell.",
+    "forbidden": [
+      "a universal default_authority that dresses every node the same",
+      "resolving form by LOD residency alone with no provenance",
+      "substituting a citizen/energy form for a node produced by a different toolkit"
+    ]
+  },
+  "toolkit_bindings": [
+    {
+      "toolkit": "space:l2:mind-universe:underground-toolkit-v0",
+      "binding_member": "visual_binding:l2:mind-universe:underground-toolkit-v0",
+      "carried_in_construct": "fixtures/ontology/underground-toolkit-v0.json",
+      "binding_edge": "space PROJECTS_AS visual_binding",
+      "justification": "The underground toolkit dresses its produced roles in its own infrastructure grammar (vault, well, station, junction, reservoir, manhole, sealed hatch). Appearance is carried AS a member of the construct, not a standalone file."
+    },
+    {
+      "toolkit": "space:l2:mind-universe:sky-toolkit-v0",
+      "binding_member": "visual_binding:l2:mind-universe:sky-toolkit-v0",
+      "carried_in_construct": "fixtures/ontology/sky-toolkit-v0.json",
+      "binding_edge": "space PROJECTS_AS visual_binding",
+      "justification": "The Sky toolkit dresses any authored atom program as a luminous constellation (star + constellation lines), carried AS a member of the construct."
+    },
+    {
+      "toolkit": "citizen-energy",
+      "binding_authority": "visual-mapping:l2:mind-desktop:citizen-energy-semi-humanoid-v1",
+      "artifact": "fixtures/assets/visual-embodiment-catalog.json",
+      "justification": "The citizen-energy kit dresses an actor as the energy semi-humanoid. DEMOTED from universal default to one toolkit binding; applies only to nodes whose provenance is the citizen-energy toolkit."
+    }
+  ],
+  "fallback_presence": {
+    "form": [
+      ["points", "presence", "particle", [0, 0, 0], [0, 0, 0], [1, 1, 1], 1, 0.5]
+    ],
+    "palette": { "core": "#7f8b96", "emissive": "#7f8b96", "shell": "#7f8b96", "particle": "#9db9c9" },
+    "note": "No toolkit binding = a bare, unglowing presence point. Recognizably unbound, not a defaulted body."
+  },
+  "epistemic_modulation": {
+    "note": "Shared honesty grammar, reused by every toolkit binding; step 3 drives it from measurement. Carried over unchanged from v0.",
+    "observed": { "confident": true, "emissive_scale": 1.0, "opacity_scale": 1.0, "desaturate": 0.0 },
+    "measured": { "confident": true, "emissive_scale": 1.0, "opacity_scale": 1.0, "desaturate": 0.0 },
+    "known_absent": { "confident": false, "emissive_scale": 0.0, "opacity_scale": 0.35, "desaturate": 0.9 },
+    "unknown": { "confident": false, "emissive_scale": 0.0, "opacity_scale": 0.5, "desaturate": 0.8 },
+    "not_measured": { "confident": false, "emissive_scale": 0.0, "opacity_scale": 0.5, "desaturate": 0.8 },
+    "measurement_failed": { "confident": false, "emissive_scale": 0.0, "opacity_scale": 0.6, "desaturate": 1.0, "hue": "#ff5a5a" }
+  }
+}

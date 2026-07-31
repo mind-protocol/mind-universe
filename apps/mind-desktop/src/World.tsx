@@ -1,14 +1,29 @@
-import { Html, Line, Stars } from "@react-three/drei";
+import { Html, Stars } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
-import { PlaneGeometry } from "three";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  CatmullRomCurve3,
+  PlaneGeometry,
+  TubeGeometry,
+  Vector3 as ThreeVector3
+} from "three";
 import type { Group } from "three";
-import type { MaterializedEntity, MaterializedRelation } from "./contracts";
+import type {
+  EntityVisualPrimitive,
+  MaterializedEntity,
+  MaterializedRelation
+} from "./contracts";
 import {
   TERRAIN_SEGMENTS,
   TERRAIN_SIZE,
   terrainHeight
 } from "./terrain";
+import { settleOnGround } from "./gravity";
+import {
+  drapedRoute,
+  infrastructureStyle,
+  projectPhysicalProfile
+} from "./relation-infrastructure";
 import { ActorControls } from "./ActorControls";
 import type { MotionBounds } from "./actor-control";
 import type { Vector3 as Vec3 } from "./contracts";
@@ -60,17 +75,53 @@ function EntityGeometry({
   }
 }
 
+// A node's physical extent, read from the geometry it is ACTUALLY drawn with
+// (see EntityGeometry) — honest sizing from the node's own form, not an invented
+// per-role table. Footprint (horizontal) and half-height (vertical) are kept
+// separate so gravity stacks correctly: a flat/wide shape carries what sits on it
+// at its surface. Dimensions mirror the geometry args as full extents [width,
+// height]; a future `space` plateau primitive (wide + thin) drops in here.
+const GEOMETRY_EXTENT: Record<
+  EntityVisualPrimitive,
+  { readonly width: number; readonly height: number }
+> = {
+  pulsing_core: { width: 2, height: 2 },
+  open_polyhedral_attractor: { width: 2, height: 2 },
+  oriented_ring: { width: 1.88, height: 0.32 },
+  bounded_volume: { width: 1.6, height: 1.6 },
+  faceted_router: { width: 2, height: 2 },
+  slab: { width: 1.2, height: 1.8 },
+  torus_knot: { width: 2, height: 2 },
+  cylinder: { width: 0.8, height: 1.6 },
+  tetrahedron: { width: 2.4, height: 2.4 },
+  unknown: { width: 2, height: 2 }
+};
+
+function nodeExtent(entity: MaterializedEntity): {
+  readonly footprint: number;
+  readonly halfHeight: number;
+} {
+  const dim = GEOMETRY_EXTENT[entity.visual.primitive];
+  const scale = entity.visual.material.scale;
+  return {
+    footprint: Math.max(0.2, (dim.width / 2) * scale),
+    halfHeight: Math.max(0.2, (dim.height / 2) * scale)
+  };
+}
+
 function Atom({
   entity,
   presentation,
   selected,
   onSelect,
+  onHover,
   synchronized
 }: {
   readonly entity: MaterializedEntity;
   readonly presentation: EntityPresentation | undefined;
   readonly selected: boolean;
   readonly onSelect: () => void;
+  readonly onHover: (id: string | null) => void;
   readonly synchronized: boolean;
 }) {
   if (
@@ -92,20 +143,22 @@ function Atom({
       presentation={presentation}
       selected={selected}
       onSelect={onSelect}
+      onHover={onHover}
     />
   );
 }
 
 function GenericAtom({
   entity,
-  presentation,
   selected,
-  onSelect
+  onSelect,
+  onHover
 }: {
   readonly entity: MaterializedEntity;
   readonly presentation: EntityPresentation | undefined;
   readonly selected: boolean;
   readonly onSelect: () => void;
+  readonly onHover: (id: string | null) => void;
 }) {
   const group = useRef<Group>(null);
   const { primitive, motion, material } = entity.visual;
@@ -143,6 +196,14 @@ function GenericAtom({
           event.stopPropagation();
           onSelect();
         }}
+        onPointerOver={(event) => {
+          event.stopPropagation();
+          onHover(entity.id);
+        }}
+        onPointerOut={(event) => {
+          event.stopPropagation();
+          onHover(null);
+        }}
       >
         <EntityGeometry primitive={primitive} />
         <meshStandardMaterial
@@ -159,29 +220,15 @@ function GenericAtom({
           }
         />
       </mesh>
-      {presentation && (
-        <Html
-          center
-          distanceFactor={11}
-          position={[0, selected ? 1.85 : 1.45, 0]}
-          zIndexRange={[20, 0]}
-        >
-          <button
-            type="button"
-            className={`entity-label${selected ? " selected" : ""}`}
-            data-epistemic={presentation.epistemic}
-            onClick={onSelect}
-          >
-            <strong>{presentation.label}</strong>
-            <span>{presentation.state.replaceAll("_", " ")}</span>
-            {selected && <small>{presentation.detail}</small>}
-          </button>
-        </Html>
-      )}
     </group>
   );
 }
 
+// A Bond is a street between two building footprints, not a wire between floating
+// centres (ontology3d forbids generic lines). Its predicate resolves to an
+// infrastructure family — causeway, channel, provenance beam, zone band, … — and
+// the route drapes over the land so it reads as a road you could walk. An
+// unclassified predicate stays a foggy "unknown" street rather than pretending.
 function Bond({
   relation,
   entities,
@@ -193,38 +240,94 @@ function Bond({
 }) {
   const source = entities.get(relation.source);
   const target = entities.get(relation.target);
-  if (!source || !target) return null;
-  const { material, width, primitive } = relation.visual;
+  // Single canonical table (ALIGN.md §2), fed from EITHER carrier of the same
+  // channels so the bond looks identical whether it came from a fixture or the
+  // live store:
+  //   1. the fixture projection's full physical_profile (presentation.physics), or
+  //   2. the wire, which carries polarity/hierarchy on relation.visual
+  //      (desktop_world_snapshot → protocol-adapter, ALIGN.md §4).
+  // The wire omits permanence and any calibration signal, so a wire-sourced bond
+  // renders a neutral thickness and is treated as uncalibrated (honest fog) rather
+  // than asserting a calibration it never received. A predicate with neither
+  // carrier stays on the predicate-family fallback below.
+  const wirePolarity: readonly [number, number] | undefined =
+    relation.visual.polarity;
+  const wireHierarchy: number | undefined = relation.visual.hierarchy;
+  const wireChannels =
+    wirePolarity !== undefined || wireHierarchy !== undefined
+      ? projectPhysicalProfile({
+          family: "unknown",
+          polarity: wirePolarity ?? [0, 0],
+          hierarchy: wireHierarchy ?? 0,
+          permanence: 0.5,
+          mode: "axis",
+          calibrated: false
+        })
+      : null;
+  const channels = presentation?.physics
+    ? projectPhysicalProfile(presentation.physics)
+    : wireChannels;
+  const style = infrastructureStyle(presentation?.predicate);
+  const color = channels ? channels.lightColor : style.color;
+  const radius = channels ? channels.radius : 0.02 + style.width * 0.012;
+  const slope = channels ? channels.slope : 0;
 
-  const midpoint = source.position.map(
-    (coordinate, index) => (coordinate + target.position[index]) / 2
-  ) as unknown as [number, number, number];
+  // The bond is a soft, organic vein rather than a hard wire: a Catmull-Rom curve
+  // swept as a slender tube, self-lit yet faint like a filament.
+  const geometry = useMemo(() => {
+    if (!source || !target) return null;
+    let route: Vec3[];
+    if (channels) {
+      // Canonical path: route between the REAL building positions and pitch the
+      // conduit by hierarchy (+slope ⇒ source below target). No flattening — the
+      // link keeps the third dimension the layout gives it.
+      const [ax, ay, az] = source.position;
+      const [bx, by, bz] = target.position;
+      const samples = 18;
+      route = Array.from({ length: samples + 1 }, (_, i) => {
+        const t = i / samples;
+        const x = ax + (bx - ax) * t;
+        const z = az + (bz - az) * t;
+        const baseY = ay + (by - ay) * t;
+        const tilt = (t - 0.5) * slope * 2.2;
+        const arch = Math.sin(t * Math.PI) * 0.35;
+        return [x, baseY + tilt + arch, z] as Vec3;
+      });
+    } else {
+      // Fallback: drape along the land between footprints (predicate-only source).
+      route = drapedRoute(
+        [source.position[0], 0, source.position[2]],
+        [target.position[0], 0, target.position[2]]
+      );
+    }
+    const curve = new CatmullRomCurve3(
+      route.map((point) => new ThreeVector3(point[0], point[1], point[2])),
+      false,
+      "catmullrom",
+      0.5
+    );
+    return new TubeGeometry(curve, 48, radius, 8, false);
+  }, [source, target, radius, slope, channels]);
 
-  const isLuminous = primitive === "luminous_chain";
-  const isNavigable = primitive === "navigable_path";
-  const color = isLuminous ? material.emissive : material.color;
-  const opacity = isLuminous ? Math.min(1, material.opacity * 1.5) : material.opacity;
-  const finalWidth = isLuminous || isNavigable ? width * 2 : width;
-  const dashed = isNavigable;
+  useEffect(() => () => geometry?.dispose(), [geometry]);
+
+  if (!geometry) return null;
 
   return (
-    <Fragment>
-      <Line
-        points={[[...source.position], [...target.position]]}
-        color={color}
-        lineWidth={finalWidth}
+    <mesh geometry={geometry} raycast={() => null}>
+      <meshStandardMaterial
+        color="#05070d"
+        emissive={color}
+        emissiveIntensity={2.6}
         transparent
-        opacity={opacity}
-        dashed={dashed}
-        dashSize={dashed ? 0.4 : undefined}
-        gapSize={dashed ? 0.2 : undefined}
+        // Uncalibrated profiles read fainter — the honesty channel (ALIGN §2).
+        opacity={channels && !channels.calibrated ? 0.11 : 0.16}
+        roughness={1}
+        metalness={0}
+        toneMapped={false}
+        depthWrite={false}
       />
-      {presentation?.label && (
-        <Html center distanceFactor={13} position={midpoint} zIndexRange={[10, 0]}>
-          <span className="relation-label">{presentation.label}</span>
-        </Html>
-      )}
-    </Fragment>
+    </mesh>
   );
 }
 
@@ -262,13 +365,9 @@ function Ground() {
     // Chrome, not entities: neither surface intercepts clicks meant for buildings.
     <group rotation={[-Math.PI / 2, 0, 0]} raycast={() => null}>
       <mesh geometry={geometry} raycast={() => null}>
-        <meshStandardMaterial
-          color="#0a1424"
-          roughness={0.95}
-          metalness={0}
-          transparent
-          opacity={0.9}
-        />
+        {/* Opaque land: at standing eye height the floor must read as solid
+            ground, never a translucent sheet you can see the void through. */}
+        <meshStandardMaterial color="#0a1424" roughness={0.95} metalness={0} />
       </mesh>
       <mesh geometry={geometry} raycast={() => null}>
         <meshBasicMaterial color="#2f5488" wireframe transparent opacity={0.3} />
@@ -312,60 +411,203 @@ export function World({
   universe,
   entityPresentation,
   relationPresentation,
-  actorControl
+  actorControl,
+  focus
 }: {
   readonly universe: UniverseView;
   readonly entityPresentation: ReadonlyMap<string, EntityPresentation>;
   readonly relationPresentation: ReadonlyMap<string, RelationPresentation>;
   readonly actorControl?: ActorControlProps;
+  // Optional default framing: preselect this entity and point the observer
+  // camera at `target`, so the viz opens looking at (e.g.) the latest active
+  // ActorSession rather than the world origin.
+  readonly focus?: { readonly entityId: string; readonly target: Vec3 };
 }) {
   const [selected, setSelected] = useState<string | null>(
-    "00000000000000000000000000005005"
+    focus?.entityId ?? "00000000000000000000000000005005"
   );
-  const hasEmbodiedEntity = [...universe.entities.values()].some(
-    (entity) => entity.embodiment !== undefined
+  // The node under the pointer (its label/detail float above it). Hover is a pure
+  // observation — it reads presentation, never mutates the world.
+  const [hovered, setHovered] = useState<string | null>(null);
+  useEffect(() => {
+    if (!hovered) return;
+    document.body.style.cursor = "pointer";
+    return () => {
+      document.body.style.cursor = "";
+    };
+  }, [hovered]);
+  // Gravity: every building's base rests on the land, except when its footprint
+  // overlaps another and it stacks on top (ontology3d: a city rests on solid
+  // ground, not in a void). The kernel layout keeps x/z authoritative; here we
+  // only settle the height onto the terrain relief the scene actually draws, so
+  // atoms sit on the ground instead of floating over a foundation column.
+  const groundedEntities = useMemo(() => {
+    const settled = settleOnGround(
+      [...universe.entities.values()].map((entity) => {
+        const extent = nodeExtent(entity);
+        return {
+          id: entity.id,
+          x: entity.position[0],
+          z: entity.position[2],
+          footprint: extent.footprint,
+          halfHeight: extent.halfHeight,
+          seedY: entity.position[1]
+        };
+      }),
+      terrainHeight
+    );
+    const grounded = new Map<string, MaterializedEntity>();
+    for (const entity of universe.entities.values()) {
+      const drop = settled.get(entity.id);
+      grounded.set(
+        entity.id,
+        drop
+          ? { ...entity, position: [entity.position[0], drop.y, entity.position[2]] }
+          : entity
+      );
+    }
+    return grounded;
+  }, [universe.entities]);
+  // A *solo* embodiment fixture (just the avatar, nothing else) earns the close,
+  // intimate framing. An avatar dropped into a populated city is NOT solo — the
+  // scene is still a city and must keep its city framing, or one embodied entity
+  // would collapse the whole view onto the avatar.
+  const soloEmbodiment =
+    universe.entities.size <= 2 &&
+    [...universe.entities.values()].some(
+      (entity) => entity.embodiment !== undefined
+    );
+  // Frame the camera and atmosphere to the city's footprint so a large ontology
+  // registry (~90 units across) is fully visible, while small fixtures keep their
+  // close framing. cityRadius is the farthest building from the plaza centre.
+  let cityRadius = 0;
+  for (const entity of universe.entities.values()) {
+    cityRadius = Math.max(
+      cityRadius,
+      Math.hypot(entity.position[0], entity.position[2])
+    );
+  }
+  const wideCity = !soloEmbodiment && cityRadius > 25;
+  // A default focus (e.g. the latest active ActorSession) overrides framing: the
+  // observer stands right next to the main node, a short gap out from it (its own
+  // footprint plus a small margin) and looks at it. The eye's y is pinned to the
+  // floor + standing height by ObserverControls, so only x/z matter here.
+  const focusEntity = focus ? universe.entities.get(focus.entityId) : undefined;
+  // Stand just clear of the node: its own footprint plus a ~3-unit margin of space.
+  const focusStandoff = focusEntity ? nodeExtent(focusEntity).footprint + 3 : 3;
+  const cameraPosition: Vec3 = focus
+    ? [focus.target[0], focus.target[1], focus.target[2] + focusStandoff]
+    : soloEmbodiment
+    ? [0, 1.1, 6]
+    : wideCity
+      ? [0, cityRadius * 0.72, cityRadius * 1.5]
+      : [0, 2.2, 18];
+  const cameraFov = soloEmbodiment ? 46 : wideCity ? 55 : 52;
+  const fogFar = wideCity ? cityRadius * 2.8 : 80;
+  const starRadius = wideCity ? cityRadius * 2.1 : 70;
+
+  // Bounded-neighborhood filter (ontology3d query-budget spirit): keep only the
+  // buildings within a radius of the plaza centre, culling the most distant first.
+  // `null` means the whole city. The control appears only for large graphs.
+  // Top-K nearest the plaza centre: dragging the control down keeps fewer, denser
+  // buildings and drops the most distant first. `null` means the whole city.
+  const [keepCount, setKeepCount] = useState<number | null>(null);
+  const totalNodes = universe.entities.size;
+  const showFilter = totalNodes > 50;
+  const sortedByDistance = [...groundedEntities.values()].sort(
+    (a, b) =>
+      a.position[0] ** 2 + a.position[2] ** 2 -
+      (b.position[0] ** 2 + b.position[2] ** 2)
+  );
+  const keep = keepCount ?? totalNodes;
+  const filterMin = Math.min(10, totalNodes);
+  const visibleEntities = sortedByDistance.slice(0, keep);
+  const visibleIds = new Set(visibleEntities.map((entity) => entity.id));
+  const visibleRelations = [...universe.relations.values()].filter(
+    (relation) =>
+      visibleIds.has(relation.source) && visibleIds.has(relation.target)
   );
 
+  // The hover tooltip anchors just above the hovered node's crown (its grounded
+  // centre + half-height + a small gap), and only for a node currently visible.
+  const hoveredEntity =
+    hovered && visibleIds.has(hovered) ? groundedEntities.get(hovered) : undefined;
+  const hoveredTooltip = hoveredEntity
+    ? {
+        id: hoveredEntity.id,
+        presentation: entityPresentation.get(hoveredEntity.id),
+        position: [
+          hoveredEntity.position[0],
+          hoveredEntity.position[1] + nodeExtent(hoveredEntity).halfHeight + 0.9,
+          hoveredEntity.position[2]
+        ] as Vec3
+      }
+    : null;
+
   return (
+    <>
     <Canvas
-      camera={{
-        position: hasEmbodiedEntity ? [0, 1.1, 6] : [0, 2.2, 18],
-        fov: hasEmbodiedEntity ? 46 : 52
-      }}
+      camera={{ position: cameraPosition, fov: cameraFov }}
       dpr={[1, 2]}
       onPointerMissed={() => setSelected(null)}
     >
       <color attach="background" args={["#020307"]} />
-      <fog attach="fog" args={["#020307", 18, 80]} />
-      <ambientLight intensity={0.08} />
+      <fog attach="fog" args={["#020307", 18, fogFar]} />
+      <ambientLight intensity={wideCity ? 0.16 : 0.08} />
       <pointLight position={[0, 5, 2]} intensity={10} color="#c9dcff" />
-      <Stars radius={70} depth={30} count={900} factor={1.5} fade speed={0.1} />
+      <Stars radius={starRadius} depth={30} count={900} factor={1.5} fade speed={0.1} />
       <Ground />
-      {[...universe.entities.values()].map((entity) => (
+      {visibleEntities.map((entity) => (
         <Foundation key={`foundation-${entity.id}`} entity={entity} />
       ))}
-      {[...universe.relations.values()].map((relation) => (
+      {visibleRelations.map((relation) => (
         <Bond
           key={relation.id}
           relation={relation}
-          entities={universe.entities}
+          entities={groundedEntities}
           presentation={relationPresentation.get(relation.id)}
         />
       ))}
-      {[...universe.entities.values()].map((entity) => (
+      {visibleEntities.map((entity) => (
         <Atom
           key={entity.id}
           entity={entity}
           presentation={entityPresentation.get(entity.id)}
           selected={selected === entity.id}
           onSelect={() => setSelected(entity.id)}
+          onHover={setHovered}
           synchronized={universe.synchronized}
         />
       ))}
+      {hoveredTooltip && (
+        <Html
+          position={hoveredTooltip.position}
+          center
+          zIndexRange={[100, 0]}
+          style={{ pointerEvents: "none" }}
+        >
+          <div className="node-tooltip">
+            <strong>{hoveredTooltip.presentation?.label ?? hoveredTooltip.id}</strong>
+            {hoveredTooltip.presentation?.detail ? (
+              <span className="node-tooltip__detail">
+                {hoveredTooltip.presentation.detail}
+              </span>
+            ) : null}
+            {hoveredTooltip.presentation ? (
+              <span className="node-tooltip__meta">
+                {hoveredTooltip.presentation.state} ·{" "}
+                {hoveredTooltip.presentation.epistemic}
+              </span>
+            ) : null}
+          </div>
+        </Html>
+      )}
       {[...universe.transfers.values()].map((transfer) => {
-        const source = universe.entities.get(transfer.source);
-        const target = universe.entities.get(transfer.target);
+        const source = groundedEntities.get(transfer.source);
+        const target = groundedEntities.get(transfer.target);
         if (!source || !target) return null;
+        if (!visibleIds.has(transfer.source) || !visibleIds.has(transfer.target))
+          return null;
         return (
           <EnergyTransferEffect
             key={transfer.transferId}
@@ -375,7 +617,12 @@ export function World({
           />
         );
       })}
-      <ObserverControls movementEnabled={!actorControl?.piloting} />
+      <ObserverControls
+        movementEnabled={!actorControl?.piloting}
+        initialCamera={cameraPosition}
+        initialTarget={focus?.target}
+        groundHeight={terrainHeight}
+      />
       {actorControl && (
         <ActorControls
           bounds={actorControl.bounds}
@@ -384,5 +631,52 @@ export function World({
         />
       )}
     </Canvas>
+    {showFilter && (
+      <div
+        className="node-filter"
+        style={{
+          position: "absolute",
+          left: 16,
+          bottom: 16,
+          zIndex: 30,
+          display: "flex",
+          flexDirection: "column",
+          gap: 4,
+          width: 210,
+          padding: "10px 12px",
+          background: "rgba(4,8,16,0.72)",
+          border: "1px solid #22406e",
+          borderRadius: 8,
+          color: "#c9dcff",
+          font: "12px/1.4 system-ui, sans-serif",
+          backdropFilter: "blur(4px)"
+        }}
+      >
+        <label style={{ display: "flex", justifyContent: "space-between" }}>
+          <span>Voisinage borné</span>
+          <strong>
+            {visibleEntities.length}/{totalNodes}
+          </strong>
+        </label>
+        <input
+          type="range"
+          min={filterMin}
+          max={totalNodes}
+          step={1}
+          value={keep}
+          onChange={(event) => {
+            const value = Number(event.target.value);
+            setKeepCount(value >= totalNodes ? null : value);
+          }}
+        />
+        <small style={{ opacity: 0.7 }}>
+          {keepCount == null
+            ? "ville entière"
+            : `${keep} plus proches · plus distants masqués`}
+        </small>
+      </div>
+    )}
+    </>
   );
 }
+

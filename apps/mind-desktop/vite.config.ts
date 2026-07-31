@@ -1,8 +1,9 @@
-import { defineConfig } from "vite";
+import { defineConfig, configDefaults } from "vitest/config";
 import react from "@vitejs/plugin-react";
+import universeStream from "./scripts/vite-plugin-universe-stream.mjs";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), universeStream()],
   clearScreen: false,
   server: {
     host: "127.0.0.1",
@@ -12,5 +13,11 @@ export default defineConfig({
     // repo-level fixtures/ directory (single source of truth for the renderer).
     fs: { allow: ["../.."] }
   },
-  envPrefix: ["VITE_", "TAURI_"]
+  envPrefix: ["VITE_", "TAURI_"],
+  test: {
+    // Never scan nested git worktrees (leftover agent scaffolding under .claude/):
+    // a stale worktree carries duplicate *.test.ts that reference unmaterialized
+    // artifacts and would fail the app's own suite with foreign noise.
+    exclude: [...configDefaults.exclude, "**/.claude/**"]
+  }
 });

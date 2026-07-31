@@ -778,6 +778,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "universe-core",
+ "universe-physics",
  "universe-store",
  "universe-supervisor",
 ]
@@ -820,6 +821,7 @@ name = "universe-supervisor"
 version = "0.1.0"
 dependencies = [
  "serde",
+ "serde_json",
  "universe-capabilities",
  "universe-compiler",
  "universe-core",

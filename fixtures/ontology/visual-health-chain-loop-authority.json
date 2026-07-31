@@ -3,7 +3,7 @@
   "version": 0,
   "universe": "0000000000000000000000000a701091",
   "provenance": {
-    "note": "Translates the ChatGPT-authored 'Visual Health Chain' self-verifying-loop bundle (nodes-as-code convention) into ONE governing mind-universe authority-fixture loop, mirroring the ChangeSet-overlay shape of vision-integration-loop-authority.json. Each bundle role node becomes one loop_* member; the two runtime production_rules and the visual_contract are carried as content on the loop_space (they are produced by execution, not pre-created as entities). Two required additions are folded in: (1) toolkit TOTALITY on a declared rayon, and (2) binding to the concrete visual-embodiment/1 primitive contract in crates/universe-assets/src/visual.rs. This file is the graph authority; it is structurally valid and activatable, but no runtime Observer has run, so loop Health remains not_measured.",
+    "note": "Translates the ChatGPT-authored 'Visual Health Chain' construct bundle (nodes-as-code convention) into ONE governing mind-universe authority-fixture loop, mirroring the ChangeSet-overlay shape of vision-integration-loop-authority.json. Each bundle role node becomes one loop_* member; the two runtime production_rules and the visual_contract are carried as content on the loop_space (they are produced by execution, not pre-created as entities). Two required additions are folded in: (1) toolkit TOTALITY on a declared rayon, and (2) binding to the concrete visual-embodiment/1 primitive contract in crates/universe-assets/src/visual.rs. This file is the graph authority; it is structurally valid and activatable, but no runtime Observer has run, so loop Health remains not_measured.",
     "source_bundle": "visual-health-chain-bundle.py (module_id space:mind-meta:visual-health-chain-v0)",
     "template_mirrored": "fixtures/ontology/vision-integration-loop-authority.json",
     "primitive_contract_authority": "crates/universe-assets/src/visual.rs (visual-embodiment/1)"
@@ -34,7 +34,7 @@
         "base_manifest": "00000000000000000000000000001000",
         "base_schema_version": "1.17.0",
         "change_id": "visual-health-chain-loop-authority-v1",
-        "objective": "Activate the ChatGPT-authored Visual Health Chain self-verifying loop as health-measured graph authority: a shared evidence-bearing visual spine that is TOTAL on its declared rayon and bound to the concrete visual-embodiment/1 primitive contract.",
+        "objective": "Activate the ChatGPT-authored Visual Health Chain construct as health-measured graph authority: a shared evidence-bearing visual spine that is TOTAL on its declared rayon and bound to the concrete visual-embodiment/1 primitive contract.",
         "status": "approved_by_fixture_authority",
         "target_schema_version": "1.18.0-visual-health-chain-loop.1"
       }
@@ -46,7 +46,7 @@
         "kind": "loop_space",
         "canonical_id": "visual-health-chain",
         "source_node_id": "space:mind-meta:visual-health-chain-v0",
-        "contractKind": "self_verifying_loop",
+        "contractKind": "construct",
         "title": "Visual Health Chain",
         "version": 0,
         "layer": "L2",
@@ -211,7 +211,7 @@
         "source_node_id": "code:mind-meta:visual-health-chain:v0",
         "authority": "graph-native",
         "language": "causal-expression-ast-v1",
-        "moduleEnvelope": {"id": "string", "node_type": "space", "subtype": "string", "content.contractKind": "self_verifying_loop"},
+        "moduleEnvelope": {"id": "string", "node_type": "space", "subtype": "string", "content.contractKind": "construct"},
         "pieceStateSchema": {"lifecycle": ["planned", "graph-defined", "materialized", "wired", "running", "verified"], "epistemic": ["observed", "measured", "known_absent", "unknown", "not_measured", "measurement_failed"], "health": ["healthy", "degraded", "stale", "unknown", "not_measured", "measurement_failed"], "evidenceRefs": "string[]", "observedAt": "timestamp|null", "evidenceAgeSeconds": "number|null", "blockingCauses": "string[]"},
         "healthExpressionAst": {"op": "cond", "branches": [{"if": {"op": "eq", "left": {"ref": "observer.execution_status"}, "right": "failure"}, "then": "measurement_failed"}, {"if": {"op": "eq", "left": {"ref": "required_measurements.executed"}, "right": false}, "then": "not_measured"}, {"if": {"op": "gt", "left": {"ref": "evidence.age_seconds"}, "right": {"ref": "evidence.ttl_seconds"}}, "then": "stale"}, {"if": {"op": "gt", "left": {"ref": "hard_invariant_failures.count"}, "right": 0}, "then": "degraded"}, {"if": {"op": "and", "args": [{"op": "eq", "left": {"ref": "required_measurements.complete"}, "right": true}, {"op": "eq", "left": {"ref": "all_thresholds.pass"}, "right": true}, {"op": "eq", "left": {"ref": "evidence.fresh"}, "right": true}]}, "then": "healthy"}], "else": "unknown"},
         "noImplicitPython": true,

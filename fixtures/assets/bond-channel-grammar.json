@@ -1,0 +1,30 @@
+{
+  "grammar_id": "bond-channel-grammar-v0",
+  "aligns_with": "ALIGN.md §2 — one table predicate→render, projected from canonical",
+  "static_channels": [
+    { "attribute": "family", "channel": "hue", "rule": "grande intention (20 familles canoniques)" },
+    { "attribute": "permanence", "channel": "material", "domain": [0, 1], "ladder": ["fil", "cable", "poutre", "arche"] },
+    { "attribute": "hierarchy", "channel": "slope", "domain": [-1, 1], "rule": "+1 source sous la cible (partie→tout) · -1 au-dessus · 0 horizontal ; ne jamais aplatir" },
+    { "attribute": "polarity_sign", "channel": "light_color", "positive": "excitation", "negative": "inhibition" },
+    { "attribute": "polarity_asymmetry", "channel": "chevrons", "rule": "symétrique = double-sens · asymétrique = quasi-unidirectionnel" },
+    { "attribute": "mode", "channel": "synthesis_visible", "rule": "semantic_required ⇒ la phrase {a}…{b} reste affichée" }
+  ],
+  "dynamic_channels": [
+    { "attribute": "energy", "channel": "light_packets", "requires_epistemic": "measured" },
+    { "attribute": "weight", "channel": "thickness", "rule": "usage cumulé" },
+    { "attribute": "recency", "channel": "patina", "rule": "frais = net · ancien = terne, jamais effacé" },
+    { "attribute": "stability", "channel": "flicker", "rule": "instable ⇒ scintille" },
+    { "attribute": "gate", "channel": "valve", "rule": "ouvert / goulot / éteint — l'unique interface comportement→physique" }
+  ],
+  "honesty": {
+    "unknown": "fog",
+    "not_measured": "fog",
+    "runtime_compatibility_only": "ghost",
+    "rule": "un canal absent passe en brume/pointillé, jamais une valeur par défaut confiante"
+  },
+  "colors": {
+    "excitation": "#46e0d0",
+    "inhibition": "#d8607a",
+    "neutral": "#5a6675"
+  }
+}

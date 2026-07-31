@@ -13,11 +13,13 @@ use universe_ir::{
     ExecutionRequestState, TriggerEvent, TriggerSubscription, Value,
 };
 use universe_physics::{
-    execute_local_atom_cluster, map_relation_physical_delta, AtomBond, AtomExecutionBudget,
-    AtomExecutionReceipt, AtomSpec, BondPolarity, LocalAtomCluster, RelationBindingReadback,
-    RelationPhysicalDelta, RelationPhysicsBudget, RelationPhysicsReceipt, UniversePhysics,
+    execute_local_atom_cluster, fired_atoms, map_relation_physical_delta,
+    resolve_physics_event_deposits, AtomBond, AtomExecutionBudget, AtomExecutionReceipt,
+    AtomInjectionRequest, AtomSpec, BondPolarity, LocalAtomCluster, PhysicsEventDeposit,
+    RelationBindingReadback, RelationPhysicalDelta, RelationPhysicsBudget, RelationPhysicsReceipt,
+    UniversePhysics,
 };
-use universe_store::{load_genesis, UniverseSnapshot, UniverseStore};
+use universe_store::{load_genesis, ContentRef, UniverseSnapshot, UniverseStore};
 use universe_transactions::{CommitReceipt, UniverseTransaction, UniverseWriteSet};
 use universe_vm::{execute_program, ExecutionLimits, ExecutionReceipt, VmError, VmHost};
 
@@ -672,6 +674,41 @@ pub trait PhaseHook {
     fn run(&mut self, phase: TickPhase, snapshot: &UniverseSnapshot) -> Result<(), UniverseError>;
 }
 
+/// A caller-supplied (graph-authored) declaration binding a fired construct Atom
+/// to the [`EffectIntent`] it emits as a CANDIDATE.
+///
+/// The supervisor holds no capability policy of its own: when the bound Atom
+/// crosses its threshold in the Physics phase, the exact declared intent is
+/// surfaced as a candidate. It is never invented here, and — critically — never
+/// committed here. Only the 4-verb write-path may commit it.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct PhysicsEffectBinding {
+    pub atom: EntityKey,
+    pub candidate: EffectIntent,
+}
+
+/// The measured outcome of one bounded Physics-phase deposit wave.
+///
+/// Every field is evidence, not a self-declared success. The wave runs
+/// post-Commit against the committed snapshot and never advances or mutates it.
+#[derive(Clone, Debug)]
+pub struct PhysicsDepositOutcome {
+    /// The committed tick this wave observed. Framing only; unchanged by the wave.
+    pub observed_at_tick: Tick,
+    /// Measured physical evidence for the sensor cluster run.
+    pub sensor: AtomExecutionReceipt,
+    /// The runtime deposits the bridge routed from sensor events onto the
+    /// construct's trigger Atoms. In-memory runtime state only; nothing committed.
+    pub deposits: Vec<AtomInjectionRequest>,
+    /// Measured physical evidence for the construct cluster run (with deposits).
+    pub construct: AtomExecutionReceipt,
+    /// Construct Atoms that crossed their threshold this wave.
+    pub fired_construct_atoms: BTreeSet<EntityKey>,
+    /// CANDIDATE effects: one per effect-binding whose Atom fired, in binding
+    /// order. Proposals only — the 4-verb write-path disposes of them.
+    pub candidate_effects: Vec<EffectIntent>,
+}
+
 pub struct Supervisor {
     store: UniverseStore,
     snapshot: UniverseSnapshot,
@@ -907,6 +944,65 @@ impl Supervisor {
             .or_default() += 1;
     }
 
+    /// Run one bounded Physics-phase deposit wave — the wiring of the
+    /// physics-event -> Atom-deposit bridge into the supervisor's inert Physics
+    /// hook.
+    ///
+    /// The wave: (1) runs a bounded sensor cluster; (2) collects the Atoms that
+    /// crossed their threshold as significant physics events; (3) routes them
+    /// through the declared [`PhysicsEventDeposit`] bindings onto the construct's
+    /// downstream trigger Atoms — the DepositBond fire; (4) runs the construct
+    /// cluster with those deposits landed as injections, so a dormant construct
+    /// self-wakes; and (5) surfaces a CANDIDATE [`EffectIntent`] for each declared
+    /// effect Atom that fired.
+    ///
+    /// It takes `&self`: it reads the committed snapshot's tick for framing and
+    /// NEVER mutates the store or snapshot. A fired effect Atom becomes a
+    /// candidate proposal — it is returned, not committed. Clusters and `budget`
+    /// are caller-supplied from graph authority (a bounded selection such as
+    /// `cluster_from_space`, and the same budget source as
+    /// `execute_runtime_bond_artifact`); no budget is a buried literal here.
+    pub fn run_physics_deposit_phase(
+        &self,
+        sensor_cluster: LocalAtomCluster,
+        deposit_bindings: &[PhysicsEventDeposit],
+        mut construct_cluster: LocalAtomCluster,
+        effect_bindings: &[PhysicsEffectBinding],
+        budget: AtomExecutionBudget,
+    ) -> Result<PhysicsDepositOutcome, UniverseError> {
+        // (1)-(2): run the sensor and collect its threshold crossings as events.
+        let sensor = execute_local_atom_cluster(sensor_cluster, budget)?;
+        let events = fired_atoms(&sensor);
+
+        // (3): route events onto downstream construct trigger Atoms. A physics
+        // event never mutates the store; the deposit is transient runtime state.
+        let deposits = resolve_physics_event_deposits(deposit_bindings, &events)?;
+
+        // (4): land the deposits as injections and run the construct cluster so
+        // it self-wakes if a deposit crosses a threshold.
+        construct_cluster
+            .injections
+            .extend(deposits.iter().cloned());
+        let construct = execute_local_atom_cluster(construct_cluster, budget)?;
+        let fired_construct_atoms = fired_atoms(&construct);
+
+        // (5): a fired effect Atom becomes a CANDIDATE effect — never committed here.
+        let candidate_effects = effect_bindings
+            .iter()
+            .filter(|binding| fired_construct_atoms.contains(&binding.atom))
+            .map(|binding| binding.candidate.clone())
+            .collect();
+
+        Ok(PhysicsDepositOutcome {
+            observed_at_tick: self.snapshot.tick,
+            sensor,
+            deposits,
+            construct,
+            fired_construct_atoms,
+            candidate_effects,
+        })
+    }
+
     pub fn advance(
         &mut self,
         hook: &mut dyn PhaseHook,
@@ -936,6 +1032,25 @@ impl Supervisor {
 
     pub fn independent_readback(&self) -> Result<UniverseSnapshot, UniverseError> {
         self.store.replay(self.store.load_snapshot()?)
+    }
+
+    /// Reads a content value back from the durable content segment given its
+    /// [`ContentRef`]. A thin passthrough so a read path outside the supervisor
+    /// (e.g. an independent readback of a just-committed entity) can hydrate the
+    /// content its entities reference, without a second store handle.
+    pub fn read_content(&self, content: &ContentRef) -> Result<serde_json::Value, UniverseError> {
+        self.store.read_content(content)
+    }
+
+    /// Appends a content value to the durable content segment, returning its
+    /// [`ContentRef`]. A thin passthrough so a write path outside the supervisor
+    /// (e.g. a headless adapter assembling a write set) can attach content to the
+    /// entities it commits, without a second store handle.
+    pub fn append_content(
+        &self,
+        value: &serde_json::Value,
+    ) -> Result<ContentRef, UniverseError> {
+        self.store.append_content(value)
     }
 }
 
@@ -1486,5 +1601,177 @@ mod tests {
         }
         .verify()
         .unwrap();
+    }
+
+    #[test]
+    fn physics_phase_deposit_wakes_a_construct_and_only_proposes_the_effect() {
+        let temp = tempfile::tempdir().unwrap();
+        let genesis = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../fixtures/genesis/minimal-genesis.json");
+        let supervisor = Supervisor::boot(temp.path(), genesis).unwrap();
+
+        // Independent readback of the committed store BEFORE the wave.
+        let before = supervisor.independent_readback().unwrap();
+
+        // A sensor Atom seeded to its threshold: an intersection-enter that
+        // fires on its own (full Rapier sensor-collider geometry is out of
+        // scope; the seeded firing SIMULATES the reported crossing).
+        let sensor_atom = EntityKey(101);
+        let sensor_cluster = LocalAtomCluster {
+            atoms: vec![AtomSpec {
+                key: sensor_atom,
+                threshold: 100,
+                seed_energy: 100,
+                required_supports: Vec::new(),
+                inhibition_threshold: None,
+            }],
+            bonds: Vec::new(),
+            injections: Vec::new(),
+        };
+
+        // A dormant construct trigger Atom (also the effect Atom): threshold 100,
+        // no seed. It cannot fire until the sensor event is routed onto it.
+        let trigger_atom = EntityKey(202);
+        let construct_cluster = LocalAtomCluster {
+            atoms: vec![AtomSpec {
+                key: trigger_atom,
+                threshold: 100,
+                seed_energy: 0,
+                required_supports: Vec::new(),
+                inhibition_threshold: None,
+            }],
+            bonds: Vec::new(),
+            injections: Vec::new(),
+        };
+
+        // The DepositBond: sensor event -> +100 onto the construct trigger.
+        let deposit_bindings = vec![PhysicsEventDeposit {
+            trigger: sensor_atom,
+            target: trigger_atom,
+            weight: 100,
+        }];
+
+        // The declared effect: when the trigger fires, propose this `notify`.
+        let candidate = EffectIntent {
+            capability: "notify".into(),
+            idempotency_key: "house-alarm-entry".into(),
+            payload: b"entry".to_vec(),
+            deadline_tick: Tick(10),
+            causal_ancestry: vec!["physics-event".into()],
+        };
+        let effect_bindings = vec![PhysicsEffectBinding {
+            atom: trigger_atom,
+            candidate: candidate.clone(),
+        }];
+
+        // Budget stands in for graph authority (same source as
+        // `execute_runtime_bond_artifact`'s `plan.budgets`).
+        let budget = AtomExecutionBudget {
+            max_atoms: 1,
+            max_bonds: 1,
+            max_steps: 2,
+            max_total_energy: 100,
+        };
+
+        let outcome = supervisor
+            .run_physics_deposit_phase(
+                sensor_cluster,
+                &deposit_bindings,
+                construct_cluster,
+                &effect_bindings,
+                budget,
+            )
+            .unwrap();
+
+        // The sensor fired -> the event routed onto the trigger.
+        assert!(outcome.sensor.terminal_starved.is_empty());
+        assert_eq!(outcome.deposits.len(), 1);
+        assert_eq!(outcome.deposits[0].atom, trigger_atom);
+        assert_eq!(outcome.deposits[0].energy, 100);
+
+        // The construct self-woke and fired at its threshold.
+        assert!(outcome.fired_construct_atoms.contains(&trigger_atom));
+
+        // The fire yields exactly the declared CANDIDATE effect — proposed only.
+        assert_eq!(outcome.candidate_effects, vec![candidate]);
+        assert_eq!(outcome.observed_at_tick, before.tick);
+
+        // Nothing was committed: no transaction was enqueued by the wave...
+        assert!(supervisor.pending.is_empty());
+        // ...and the committed store is byte-identical before and after.
+        let after = supervisor.independent_readback().unwrap();
+        assert_eq!(before, after);
+        assert_eq!(
+            serde_json::to_vec(&before).unwrap(),
+            serde_json::to_vec(&after).unwrap()
+        );
+    }
+
+    #[test]
+    fn physics_phase_without_a_matching_event_proposes_no_effect() {
+        let temp = tempfile::tempdir().unwrap();
+        let genesis = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../fixtures/genesis/minimal-genesis.json");
+        let supervisor = Supervisor::boot(temp.path(), genesis).unwrap();
+        let before = supervisor.independent_readback().unwrap();
+
+        // A sensor Atom that does NOT reach its threshold: no event.
+        let sensor_atom = EntityKey(101);
+        let sensor_cluster = LocalAtomCluster {
+            atoms: vec![AtomSpec {
+                key: sensor_atom,
+                threshold: 100,
+                seed_energy: 10,
+                required_supports: Vec::new(),
+                inhibition_threshold: None,
+            }],
+            bonds: Vec::new(),
+            injections: Vec::new(),
+        };
+        let trigger_atom = EntityKey(202);
+        let construct_cluster = LocalAtomCluster {
+            atoms: vec![AtomSpec {
+                key: trigger_atom,
+                threshold: 100,
+                seed_energy: 0,
+                required_supports: Vec::new(),
+                inhibition_threshold: None,
+            }],
+            bonds: Vec::new(),
+            injections: Vec::new(),
+        };
+        let outcome = supervisor
+            .run_physics_deposit_phase(
+                sensor_cluster,
+                &[PhysicsEventDeposit {
+                    trigger: sensor_atom,
+                    target: trigger_atom,
+                    weight: 100,
+                }],
+                construct_cluster,
+                &[PhysicsEffectBinding {
+                    atom: trigger_atom,
+                    candidate: EffectIntent {
+                        capability: "notify".into(),
+                        idempotency_key: "unfired".into(),
+                        payload: Vec::new(),
+                        deadline_tick: Tick(10),
+                        causal_ancestry: Vec::new(),
+                    },
+                }],
+                AtomExecutionBudget {
+                    max_atoms: 1,
+                    max_bonds: 1,
+                    max_steps: 2,
+                    max_total_energy: 100,
+                },
+            )
+            .unwrap();
+
+        // No sensor firing -> no deposit -> no construct firing -> no candidate.
+        assert!(outcome.deposits.is_empty());
+        assert!(outcome.fired_construct_atoms.is_empty());
+        assert!(outcome.candidate_effects.is_empty());
+        assert_eq!(before, supervisor.independent_readback().unwrap());
     }
 }

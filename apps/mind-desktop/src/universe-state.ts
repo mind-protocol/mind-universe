@@ -1,4 +1,5 @@
 import type {
+  AffordanceInstance,
   ControlState,
   EnergyTransfer,
   MaterializedEntity,
@@ -15,6 +16,11 @@ export interface UniverseView {
   readonly relations: ReadonlyMap<string, MaterializedRelation>;
   readonly transfers: ReadonlyMap<string, EnergyTransfer>;
   readonly control: ControlState;
+  // The affordance face (S3, perception half). The observation always carries a
+  // DEFINED list — `[]` is the honest "nothing offered here" default, never
+  // `undefined`. A producer of candidate templates feeding this is the action
+  // half (out of scope for the perception slice); see `deriveAvailableActions`.
+  readonly available_actions: readonly AffordanceInstance[];
 }
 
 export const emptyUniverseView = (): UniverseView => ({
@@ -24,7 +30,8 @@ export const emptyUniverseView = (): UniverseView => ({
   entities: new Map(),
   relations: new Map(),
   transfers: new Map(),
-  control: { kind: "observer" }
+  control: { kind: "observer" },
+  available_actions: []
 });
 
 export function applyUniverseEvent(

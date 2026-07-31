@@ -1,0 +1,180 @@
+{
+  "contract": "mind-universe-authority-fixture",
+  "version": 0,
+  "universe": "0000000000000000000000000a701091",
+  "symbols": [],
+  "canonical_predicate_remap": {
+    "why": "The grant originally minted a NEW normative predicate HOLDS_CAPABILITY (actor -> capability held), which is NOT in the canonical seed predicate vocabulary (fixtures/ontology/canonical-ontology.json). Interning it violates the ZERO-new-symbols invariant. It is remapped to the nearest ACTIVE-VOICE canonical predicate — documented like the orientation-beacon / energy-pen fixtures and consistent with how GUARDED_BY->SAFEGUARDS was handled: the authored intent is preserved as prose, the interned symbol stays canonical, and the empty top-level symbols array plus the shared canonical::grant_fixture_interns_zero_new_symbols test both assert 0 additions on install.",
+    "HOLDS_CAPABILITY": {
+      "canonical": "USED",
+      "swap": false,
+      "note": "actor HOLDS_CAPABILITY capability becomes actor USED capability. USED is the canonical generic agent->instrument/capability predicate (an actor wields the capability as its instrument of authority). No direction swap: the edge stays actor(source) -> capability(target), so the bounded reader still materializes each actor's held capability set from its OUTGOING USED edges. No canonical predicate names capability-possession directly; USED is the nearest active-voice fit, chosen the same way construction-toolkit-v0.json mapped CONSTRUCTED_BY->PRODUCES."
+    }
+  },
+  "entities": [
+    {
+      "key": "00000000000000000000000000005a00",
+      "symbol": "change",
+      "content": {
+        "kind": "ontology_changeset",
+        "change_id": "underground-maintenance-grant-v1",
+        "base_manifest": "00000000000000000000000000001000",
+        "activation": "active_graph_overlay",
+        "status": "approved_by_fixture_authority",
+        "objective": "Grant the capability authority:underground-maintenance to one maintenance actor, and an observe-only capability to one plain citizen, as attributable graph edges a bounded reader can materialize into each actor's held capability set. The grant is DATA only; whether a mutate is admitted is decided by SealedCapabilityPort against the read set, never by this fixture.",
+        "members": [
+          "00000000000000000000000000005a01",
+          "00000000000000000000000000005a10",
+          "00000000000000000000000000005a11",
+          "00000000000000000000000000005a20",
+          "00000000000000000000000000005a21",
+          "00000000000000000000000000005a30"
+        ]
+      }
+    },
+    {
+      "key": "00000000000000000000000000005a01",
+      "symbol": "terme",
+      "content": {
+        "kind": "ontology_extension_definition",
+        "canonical": true,
+        "canonical_id": "USED",
+        "authored_predicate": "HOLDS_CAPABILITY",
+        "remapped_to": "USED",
+        "definition_kind": "predicate_usage_note",
+        "family": "normative",
+        "description": "Binds an actor (source) to a capability it holds (target), expressed with the canonical USED predicate (authored intent: HOLDS_CAPABILITY; see the top-level canonical_predicate_remap). This is a USAGE note over an existing canonical predicate, NOT a new predicate definition — it mints no symbol. A bounded local read of an actor's outgoing USED edges to capability targets materializes exactly the capability set that actor holds — nothing more. Holding an observe capability never implies holding a mutate/authority capability; the set is read verbatim and adjudicated elsewhere.",
+        "endpoint_constraint": {
+          "source_types": ["actor"],
+          "target": "capability"
+        },
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005a10",
+      "symbol": "thing",
+      "content": {
+        "kind": "capability",
+        "canonical_id": "capability:l2:mind-universe:authority-underground-maintenance",
+        "capability": "authority:underground-maintenance",
+        "class": "authority",
+        "note": "The exact capability string the Underground sealed hatch (port:l2:mind-universe:underground:sealed-hatch-v0) requires for a mutate. Held only by a maintenance authority, never by an ordinary citizen."
+      }
+    },
+    {
+      "key": "00000000000000000000000000005a11",
+      "symbol": "thing",
+      "content": {
+        "kind": "capability",
+        "canonical_id": "capability:l2:mind-universe:observe",
+        "capability": "observe",
+        "class": "observe",
+        "note": "An observe-only capability (the kind a manhole grants). A citizen may hold this and still fail closed at the sealed hatch: observation never widens toward mutation."
+      }
+    },
+    {
+      "key": "00000000000000000000000000005a20",
+      "symbol": "actor",
+      "content": {
+        "kind": "actor",
+        "canonical_id": "actor:l2:mind-universe:underground-maintenance-authority",
+        "name": "Underground maintenance authority",
+        "role": "maintenance_authority",
+        "note": "Holds authority:underground-maintenance via a canonical USED edge (authored HOLDS_CAPABILITY). The held set is what a bounded read returns; this note is not itself the authority."
+      }
+    },
+    {
+      "key": "00000000000000000000000000005a21",
+      "symbol": "actor",
+      "content": {
+        "kind": "actor",
+        "canonical_id": "actor:l2:mind-universe:plain-citizen",
+        "name": "Plain citizen",
+        "role": "citizen",
+        "note": "Holds only observe; holds NO authority capability. Feeding this actor's read set to the sealed hatch must fail closed, attributably."
+      }
+    },
+    {
+      "key": "00000000000000000000000000005a30",
+      "symbol": "observation",
+      "content": {
+        "kind": "capability_grant_provenance",
+        "constructor": "authority-fixture",
+        "epistemic": {
+          "state": "measured",
+          "value": true
+        },
+        "statement": "The maintenance authority was granted authority:underground-maintenance, and the plain citizen was granted observe, by this approved authority fixture. Both grants are attributable to this changeset."
+      }
+    }
+  ],
+  "relations": [
+    {
+      "key": "00000000000000000000000000005b00",
+      "source": "00000000000000000000000000005a20",
+      "target": "00000000000000000000000000005a10",
+      "predicate": "USED",
+      "content": {
+        "kind": "capability_grant",
+        "role": "grant",
+        "authored_predicate": "HOLDS_CAPABILITY",
+        "justification": "The maintenance authority holds authority:underground-maintenance (canonical USED edge; authored HOLDS_CAPABILITY); this is the sole edge that admits an underground mutate at the sealed hatch."
+      }
+    },
+    {
+      "key": "00000000000000000000000000005b01",
+      "source": "00000000000000000000000000005a21",
+      "target": "00000000000000000000000000005a11",
+      "predicate": "USED",
+      "content": {
+        "kind": "capability_grant",
+        "role": "grant",
+        "authored_predicate": "HOLDS_CAPABILITY",
+        "justification": "The plain citizen holds observe only (canonical USED edge; authored HOLDS_CAPABILITY). This edge exists to prove the read materializes a non-empty set that still lacks the authority capability, so fail-closed is a real decision, not an empty-set artifact."
+      }
+    },
+    {
+      "key": "00000000000000000000000000005b10",
+      "source": "00000000000000000000000000005a01",
+      "target": "00000000000000000000000000005a00",
+      "predicate": "PART_OF",
+      "content": { "kind": "ontology_relation", "role": "changeset_membership" }
+    },
+    {
+      "key": "00000000000000000000000000005b11",
+      "source": "00000000000000000000000000005a10",
+      "target": "00000000000000000000000000005a00",
+      "predicate": "PART_OF",
+      "content": { "kind": "ontology_relation", "role": "changeset_membership" }
+    },
+    {
+      "key": "00000000000000000000000000005b12",
+      "source": "00000000000000000000000000005a11",
+      "target": "00000000000000000000000000005a00",
+      "predicate": "PART_OF",
+      "content": { "kind": "ontology_relation", "role": "changeset_membership" }
+    },
+    {
+      "key": "00000000000000000000000000005b13",
+      "source": "00000000000000000000000000005a20",
+      "target": "00000000000000000000000000005a00",
+      "predicate": "PART_OF",
+      "content": { "kind": "ontology_relation", "role": "changeset_membership" }
+    },
+    {
+      "key": "00000000000000000000000000005b14",
+      "source": "00000000000000000000000000005a21",
+      "target": "00000000000000000000000000005a00",
+      "predicate": "PART_OF",
+      "content": { "kind": "ontology_relation", "role": "changeset_membership" }
+    },
+    {
+      "key": "00000000000000000000000000005b15",
+      "source": "00000000000000000000000000005a30",
+      "target": "00000000000000000000000000005a00",
+      "predicate": "PART_OF",
+      "content": { "kind": "ontology_relation", "role": "changeset_membership" }
+    }
+  ]
+}

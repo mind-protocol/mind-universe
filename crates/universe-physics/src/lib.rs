@@ -1019,6 +1019,107 @@ impl AtomDynamics {
     }
 }
 
+// ---------------------------------------------------------------------------
+// The physics-event -> Atom-deposit bridge.
+//
+// This is the single load-bearing seam CLAUDE.md names: "physics-event -> energy
+// deposit onto a construct's trigger atom -- the *same* bridge that injects an
+// L3 stimulus into an L1 field. Build it once; it powers both the house alarm
+// and perception." It is pure trusted-computing-base plumbing and carries zero
+// variable policy: the trigger identity, the target Atom, and the weight are all
+// graph authority, resolved *before* the bridge runs.
+// ---------------------------------------------------------------------------
+
+/// A declared, data-driven binding from a significant physics event to an energy
+/// deposit on a construct's trigger Atom — one edge of the `DepositBond` pattern
+/// (`event -> +energy on a trigger atom`).
+///
+/// The native floor gives the event no ontology: it is identified only by a
+/// stable [`EntityKey`] handle. What that handle *means* — a Rapier sensor
+/// collider's intersection-enter, an Atom's threshold crossing — is graph data,
+/// resolved elsewhere. The bridge can only turn "event `trigger` occurred" plus
+/// "deposit `weight` onto `target`" into a runtime deposit request. It commits
+/// nothing and consults no predicate name.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct PhysicsEventDeposit {
+    /// The event-source handle this binding listens for. Either a sensor
+    /// collider entity (an intersection-enter) or an Atom (a threshold
+    /// crossing) — the native floor does not distinguish them.
+    pub trigger: EntityKey,
+    /// The downstream trigger Atom that receives the deposit.
+    pub target: EntityKey,
+    /// Energy deposited onto the target's support when the event occurs. Must be
+    /// positive; the weight is graph authority, never a native default.
+    pub weight: u64,
+}
+
+/// The set of Atoms that crossed their firing threshold during a cluster run.
+///
+/// Each is a significant physics event — a threshold crossing — that a
+/// [`PhysicsEventDeposit`] binding may route onward onto a downstream trigger
+/// Atom. Reads measured evidence only; it invents nothing.
+pub fn fired_atoms(receipt: &AtomExecutionReceipt) -> BTreeSet<EntityKey> {
+    receipt
+        .run
+        .steps
+        .iter()
+        .flat_map(|step| step.fired.iter().copied())
+        .collect()
+}
+
+/// Resolve declared bindings against the physics events observed this wave,
+/// producing runtime deposits ([`AtomInjectionRequest`]) onto downstream trigger
+/// Atoms.
+///
+/// Deterministic and bounded: output order follows `bindings`, one request per
+/// binding whose `trigger` is present in `events`. It allocates only — it never
+/// mutates a store, a snapshot, or the Atom field. Turning a request into an
+/// actual `+energy` deposit is the caller's next step, via the existing
+/// `AtomInjectionRequest`/[`AtomDynamics::inject`] primitive (see
+/// [`deposit_onto_dynamics`] or [`LocalAtomCluster::injections`]).
+pub fn resolve_physics_event_deposits(
+    bindings: &[PhysicsEventDeposit],
+    events: &BTreeSet<EntityKey>,
+) -> Result<Vec<AtomInjectionRequest>, UniverseError> {
+    let mut deposits = Vec::new();
+    for binding in bindings {
+        if binding.weight == 0 {
+            return Err(UniverseError::Validation(
+                "physics-event deposit weight must be positive".into(),
+            ));
+        }
+        if events.contains(&binding.trigger) {
+            deposits.push(AtomInjectionRequest {
+                atom: binding.target,
+                energy: binding.weight,
+                provenance: format!(
+                    "physics-event:{}->atom:{}",
+                    binding.trigger, binding.target
+                ),
+            });
+        }
+    }
+    Ok(deposits)
+}
+
+/// Land resolved deposits onto a live [`AtomDynamics`] field BEFORE its next
+/// step wave, so a construct that was dormant now self-wakes when the deposit
+/// crosses its threshold.
+///
+/// This is the runtime landing of the bridge: `+weight` lands on the in-memory
+/// Atom support field ONLY. A [`PhysicsEvent`] never mutates the committed
+/// store; the deposit is transient runtime state, released with the solver.
+pub fn deposit_onto_dynamics(
+    dynamics: &mut AtomDynamics,
+    deposits: &[AtomInjectionRequest],
+) -> Result<Vec<AtomInjection>, UniverseError> {
+    let mut applied = Vec::with_capacity(deposits.len());
+    for deposit in deposits {
+        applied.push(dynamics.inject(deposit.atom, deposit.energy, deposit.provenance.clone())?);
+    }
+    Ok(applied)
+}
+
 fn readback_from_command(
     command: &RelationPhysicsCommand,
     status: RelationBindingStatus,
@@ -2622,5 +2723,132 @@ mod tests {
         assert_eq!(unknown.convergence, Epistemic::Unknown);
         assert_eq!(unknown.energy_conservation, Epistemic::Unknown);
         assert_eq!(unknown.envelope, Epistemic::Unknown);
+    }
+
+    // -- the physics-event -> Atom-deposit bridge -------------------------
+
+    #[test]
+    fn a_simulated_event_deposits_energy_and_the_construct_trigger_self_wakes() {
+        // A construct's trigger Atom, seeded empty, dormant: threshold 100, no
+        // support, cannot fire on its own.
+        let trigger = EntityKey(42);
+        let mut dynamics = AtomDynamics::new(
+            vec![AtomSpec {
+                key: trigger,
+                threshold: 100,
+                seed_energy: 0,
+                required_supports: Vec::new(),
+                inhibition_threshold: None,
+            }],
+            Vec::new(),
+        )
+        .unwrap();
+
+        // Nothing fires while dormant.
+        let quiet = dynamics.clone().run_until_quiescent(4).unwrap();
+        assert!(quiet.quiescent);
+        assert!(quiet.steps.is_empty());
+        assert!(!dynamics.fired(trigger));
+
+        // A significant physics event: a sensor collider (entity 7) reports an
+        // intersection-enter. Rapier collider geometry is out of scope here, so
+        // the event is SIMULATED as its stable handle appearing in the observed
+        // event set — exactly the shape the bridge consumes.
+        let sensor = EntityKey(7);
+        let events: BTreeSet<EntityKey> = [sensor].into_iter().collect();
+        let bindings = vec![PhysicsEventDeposit {
+            trigger: sensor,
+            target: trigger,
+            weight: 100,
+        }];
+
+        // Resolve the event against the declared binding -> a runtime deposit.
+        let deposits = resolve_physics_event_deposits(&bindings, &events).unwrap();
+        assert_eq!(deposits.len(), 1);
+        assert_eq!(deposits[0].atom, trigger);
+        assert_eq!(deposits[0].energy, 100);
+
+        // Land the deposit onto the live field BEFORE the next step wave.
+        deposit_onto_dynamics(&mut dynamics, &deposits).unwrap();
+        assert_eq!(dynamics.state(trigger).unwrap().support_energy, 100);
+
+        // The construct self-wakes: it now crosses its threshold and fires.
+        let run = dynamics.run_until_quiescent(4).unwrap();
+        assert!(run.quiescent);
+        assert_eq!(run.steps.len(), 1);
+        assert_eq!(run.steps[0].fired, vec![trigger]);
+        assert!(dynamics.fired(trigger));
+    }
+
+    #[test]
+    fn an_unbound_event_deposits_nothing_and_a_zero_weight_binding_is_rejected() {
+        let target = EntityKey(1);
+        let bindings = vec![PhysicsEventDeposit {
+            trigger: EntityKey(7),
+            target,
+            weight: 100,
+        }];
+
+        // An event for an unbound handle produces no deposit.
+        let unrelated: BTreeSet<EntityKey> = [EntityKey(99)].into_iter().collect();
+        assert!(resolve_physics_event_deposits(&bindings, &unrelated)
+            .unwrap()
+            .is_empty());
+
+        // A zero-weight binding is invalid — weight is graph authority and must
+        // be positive; there is no native default.
+        let events: BTreeSet<EntityKey> = [EntityKey(7)].into_iter().collect();
+        let zero = vec![PhysicsEventDeposit {
+            trigger: EntityKey(7),
+            target,
+            weight: 0,
+        }];
+        assert!(resolve_physics_event_deposits(&zero, &events).is_err());
+    }
+
+    #[test]
+    fn fired_atoms_are_collected_as_events_and_route_through_the_bridge() {
+        // A sensor Atom that fires on its own (seeded to threshold), then a
+        // downstream construct-trigger Atom that only fires once the sensor's
+        // firing (a threshold crossing) is routed as a deposit.
+        let sensor = EntityKey(1);
+        let receipt = execute_local_atom_cluster(
+            LocalAtomCluster {
+                atoms: vec![AtomSpec {
+                    key: sensor,
+                    threshold: 100,
+                    seed_energy: 100,
+                    required_supports: Vec::new(),
+                    inhibition_threshold: None,
+                }],
+                bonds: Vec::new(),
+                injections: Vec::new(),
+            },
+            AtomExecutionBudget {
+                max_atoms: 1,
+                max_bonds: 1,
+                max_steps: 2,
+                max_total_energy: 100,
+            },
+        )
+        .unwrap();
+
+        // The sensor's threshold crossing is a measured event.
+        let events = fired_atoms(&receipt);
+        assert!(events.contains(&sensor));
+
+        // Route it onto a downstream construct trigger.
+        let downstream = EntityKey(2);
+        let deposits = resolve_physics_event_deposits(
+            &[PhysicsEventDeposit {
+                trigger: sensor,
+                target: downstream,
+                weight: 100,
+            }],
+            &events,
+        )
+        .unwrap();
+        assert_eq!(deposits.len(), 1);
+        assert_eq!(deposits[0].atom, downstream);
     }
 }

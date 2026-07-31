@@ -32,6 +32,27 @@ main {
   pointer-events: none;
 }
 
+.audio-toggle {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.5rem;
+  z-index: 30;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid rgb(120 180 255 / 35%);
+  border-radius: 999px;
+  background: rgb(8 14 26 / 78%);
+  color: rgb(220 232 255 / 88%);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.audio-toggle[aria-pressed="true"] {
+  border-color: rgb(140 227 255 / 70%);
+  color: rgb(200 240 255 / 100%);
+}
+
 .projection-heading {
   position: fixed;
   top: 1.25rem;
@@ -225,4 +246,42 @@ main {
   .projection-evidence li {
     width: auto;
   }
+}
+
+/* Hover tooltip: a small card floating above the node under the pointer. Lives
+   inside the drei <Html> layer (pointer-events disabled) so it never intercepts
+   the hover it describes. */
+.node-tooltip {
+  transform: translateY(-100%);
+  min-width: 6rem;
+  max-width: 20rem;
+  padding: 0.4rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  background: rgb(4 8 16 / 88%);
+  border: 1px solid #22406e;
+  border-radius: 8px;
+  color: #c9dcff;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 45%);
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}
+
+.node-tooltip strong {
+  font-size: 0.82rem;
+  color: #eaf2ff;
+}
+
+.node-tooltip__detail {
+  font-size: 0.68rem;
+  color: rgb(201 220 255 / 78%);
+  white-space: normal;
+}
+
+.node-tooltip__meta {
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(201 220 255 / 52%);
 }

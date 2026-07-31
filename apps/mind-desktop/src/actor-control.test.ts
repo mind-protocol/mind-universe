@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ControlState, MaterializedEntity, Vector3 } from "./contracts";
+import { NEUTRAL_DYNAMICS } from "./entity-dynamics";
 import type { UniverseView } from "./universe-state";
 import { emptyUniverseView } from "./universe-state";
 import {
@@ -38,7 +39,8 @@ function entity(id: string, position: Vector3): MaterializedEntity {
       primitive: "unknown",
       motion: "still",
       material: { color: "#fff", emissive: "#fff", emissiveIntensity: 0, opacity: 1, scale: 1 }
-    }
+    },
+    dynamics: NEUTRAL_DYNAMICS
   };
 }
 
@@ -86,10 +88,10 @@ describe("bounded displacement", () => {
     expect(d[0]).toBeCloseTo(0);
   });
 
-  it("rises along the vertical axis on the shipped (buoyant) fixture", () => {
+  it("withholds the vertical axis on the shipped (grounded) fixture — no flying", () => {
     const upIntent = { forward: 0, right: 0, up: 1, speedMultiplier: 1 } as const;
     const d = actorDisplacement(upIntent, 0.016, BASIS, motionBounds);
-    expect(d[1]).toBeGreaterThan(0); // up basis is +Y
+    expect(d).toEqual([0, 0, 0]); // the contract denies `up`, so nothing lifts
   });
 
   it("withholds any axis the contract does not permit", () => {
@@ -183,9 +185,9 @@ describe("bounds validation", () => {
     ).toThrow(/max_speed/);
   });
 
-  it("loads the shipped fixture as a valid bound", () => {
+  it("loads the shipped fixture as a valid, grounded bound", () => {
     expect(motionBounds.boundActor).toBe(AVATAR);
-    expect(motionBounds.axes.up).toBe(true);
+    expect(motionBounds.axes.up).toBe(false); // grounded: the avatar cannot fly
   });
 });
 
