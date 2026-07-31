@@ -249,6 +249,7 @@ fn run() -> Result<(), Box<dyn Error>> {
 
     // canonical_id -> (EntityKey, wrapper) index (as bin/wire_dependency.rs).
     let mut id_to_key: BTreeMap<String, EntityKey> = BTreeMap::new();
+    let mut key_to_id: BTreeMap<EntityKey, String> = BTreeMap::new();
     let mut key_to_wrapper: BTreeMap<EntityKey, Value> = BTreeMap::new();
     let mut wrappers_by_id: BTreeMap<String, Value> = BTreeMap::new();
     for entity in &snapshot.entities {
@@ -256,6 +257,7 @@ fn run() -> Result<(), Box<dyn Error>> {
             let wrapper = store.read_content(ptr)?;
             if let Some(cid) = wrapper.get("canonical_id").and_then(Value::as_str) {
                 id_to_key.insert(cid.to_string(), entity.key);
+                key_to_id.insert(entity.key, cid.to_string());
                 wrappers_by_id.insert(cid.to_string(), wrapper.clone());
                 key_to_wrapper.insert(entity.key, wrapper);
             }
@@ -325,18 +327,55 @@ fn run() -> Result<(), Box<dyn Error>> {
     }
 
     // Read each member's fields.
-    let mut members: Vec<BoundMember> = Vec::new();
-    for key in &member_keys {
-        if let Some(w) = key_to_wrapper.get(key) {
-            members.push(BoundMember {
-                canonical_id: w.get("canonical_id").and_then(Value::as_str).unwrap_or("").to_string(),
-                subtype: w.get("subtype").and_then(Value::as_str).unwrap_or("").to_string(),
-                node_type: w.get("node_type").and_then(Value::as_str).unwrap_or("").to_string(),
-                inner: w.get("content").cloned().unwrap_or(Value::Null),
-            });
+    let read_members = |keys: &BTreeSet<EntityKey>| -> Vec<BoundMember> {
+        let mut out: Vec<BoundMember> = Vec::new();
+        for key in keys {
+            if let Some(w) = key_to_wrapper.get(key) {
+                out.push(BoundMember {
+                    canonical_id: w.get("canonical_id").and_then(Value::as_str).unwrap_or("").to_string(),
+                    subtype: w.get("subtype").and_then(Value::as_str).unwrap_or("").to_string(),
+                    node_type: w.get("node_type").and_then(Value::as_str).unwrap_or("").to_string(),
+                    inner: w.get("content").cloned().unwrap_or(Value::Null),
+                });
+            }
+        }
+        out.sort_by(|a, b| a.canonical_id.cmp(&b.canonical_id));
+        out
+    };
+    let mut members = read_members(&member_keys);
+
+    // (c) satellite-by-content-reference: bind satellite-kind entities
+    //     (capability_port / physicalization_binding / broadcast_port) that a
+    //     BOUND member's content names by canonical_id — e.g. the Sky code's
+    //     `authoring_gate.port_id`. Such a port carries NO construct-internal
+    //     relation and a divergent id slug (`sky:authoring-v0` != the construct
+    //     slug), so neither the suffix match (a) nor the relation closure (b)
+    //     reaches it; a content reference FROM an already-bound member is an
+    //     attributable, bounded link. We admit only satellite kinds, never a
+    //     `space` (that would cross into another construct), so a `[[space:...]]`
+    //     wiki-link in a lineage string can never drag another construct in.
+    let mut referenced: BTreeSet<String> = BTreeSet::new();
+    for m in &members {
+        collect_strings(&m.inner, &mut referenced);
+    }
+    let mut satellite_added = false;
+    for cid in &referenced {
+        let Some(w) = wrappers_by_id.get(cid) else { continue };
+        let subtype = w.get("subtype").and_then(Value::as_str).unwrap_or("");
+        let is_satellite = is_satellite_subtype(subtype)
+            || cid.starts_with("port:")
+            || cid.starts_with("broadcast_port:");
+        if is_satellite {
+            if let Some(k) = id_to_key.get(cid) {
+                if member_keys.insert(*k) {
+                    satellite_added = true;
+                }
+            }
         }
     }
-    members.sort_by(|a, b| a.canonical_id.cmp(&b.canonical_id));
+    if satellite_added {
+        members = read_members(&member_keys);
+    }
 
     // --- Honesty fields (topology-map SS3): read from the implementation member.
     let mut honesty = Honesty::default();
@@ -485,6 +524,42 @@ fn run() -> Result<(), Box<dyn Error>> {
         }
     }
 
+    // --- Incoming consumers (for the `definition` OFFER item) ------------------
+    // Constructs that point AT this one via a consume predicate (DEPENDS_ON /
+    // APPLIES_IN) consume whatever it defines: it OFFERS them that definition.
+    // READ-ONLY: a pure scan of the committed relation set.
+    let consume_predicates: BTreeSet<u32> = ["DEPENDS_ON", "APPLIES_IN"]
+        .into_iter()
+        .filter_map(|p| snapshot.symbol_id(p))
+        .collect();
+    let root_key = id_to_key[&root_id];
+    let mut consumed_by: Vec<String> = Vec::new();
+    for r in &snapshot.relations {
+        if r.target == root_key && consume_predicates.contains(&r.predicate) {
+            if let Some(src) = key_to_id.get(&r.source) {
+                if *src != root_id {
+                    consumed_by.push(src.clone());
+                }
+            }
+        }
+    }
+    consumed_by.sort();
+    consumed_by.dedup();
+
+    // --- OFFER: what the construct provides, from its own graph content --------
+    let root_content = wrappers_by_id
+        .get(&root_id)
+        .and_then(|w| w.get("content"))
+        .cloned()
+        .unwrap_or(Value::Null);
+    let offers = compute_offer(
+        &root_id,
+        &root_content,
+        &members,
+        &consumed_by,
+        runtime_moment_present,
+    );
+
     // --- Render the ConstructMap ----------------------------------------------
     let observation_status = if budget_exhausted {
         "budget_exhausted"
@@ -507,6 +582,7 @@ fn run() -> Result<(), Box<dyn Error>> {
         runtime_moment_present,
         &failure_front,
         observation_status,
+        &offers,
     );
     print!("{out}");
     Ok(())
@@ -679,6 +755,7 @@ fn render_map(
     runtime_moment_present: bool,
     failure_front: &[usize],
     observation_status: &str,
+    offers: &[OfferItem],
 ) -> String {
     let mut s = String::new();
     let member_of = |part: &str| -> Option<&BoundMember> {
@@ -909,20 +986,94 @@ fn render_map(
     }
     s.push('\n');
 
+    // OFFER -----------------------------------------------------------------
+    // What the construct PROVIDES, typed and matchable. Each item is either
+    // active (proven/live now) or offered-but-inactive (present-but-unproven);
+    // the `provides_type` is the pairing key for a future cross-construct market.
+    s.push_str("OFFER   (what it provides, typed; * = present-but-unproven / inactive)\n");
+    if offers.is_empty() {
+        s.push_str("  (none derivable from its graph content)\n");
+    } else {
+        for kind in ["affordance", "capability", "port", "effect", "moment", "definition"] {
+            let group: Vec<&OfferItem> = offers.iter().filter(|o| o.kind == kind).collect();
+            if group.is_empty() {
+                // honest absence for the always-expected structural kinds
+                if matches!(kind, "affordance" | "effect") {
+                    s.push_str(&format!(
+                        "  {kind:<11} (none — the construct declares no {kind} in its graph content)\n"
+                    ));
+                }
+                continue;
+            }
+            for o in group {
+                let mark = if o.active { " " } else { "*" };
+                s.push_str(&format!(
+                    "  {mark}{:<10} {:<28} :: {}\n",
+                    o.kind,
+                    truncate(&o.name, 28),
+                    o.provides_type
+                ));
+                s.push_str(&wrap_indent(&o.detail, 16, 96));
+            }
+        }
+    }
+    s.push('\n');
+
     // NEEDS -----------------------------------------------------------------
-    s.push_str("NEEDS   (ordered: unblocks the most downstream first)\n");
+    s.push_str("NEEDS   (ordered: unblocks the most downstream first; satisfiable_by = the matchable type)\n");
     let needs = compute_needs(template, states, index, required, det, part_to_member, members);
     for need in &needs {
         s.push_str(&format!(
             "  {}. [{}] {:<24} unblocks {:<2}  -> {}\n",
             need.rank, need.blocker_kind, truncate(&need.target, 24), need.unblocks_count, need.action
         ));
+        s.push_str(&format!("       satisfiable_by: {}\n", need.satisfiable_by));
         if !need.depends_on.is_empty() {
             let deps: Vec<String> = need.depends_on.iter().map(|d| d.to_string()).collect();
             s.push_str(&format!("       (needs {})\n", deps.join(", ")));
         }
     }
     s.push('\n');
+
+    // MATCHING --------------------------------------------------------------
+    // Does any of THIS construct's own offers satisfy any of its own needs?
+    // Usually not — needs are cross-construct. We surface every same-type
+    // overlap and state honestly whether the offer is live enough to satisfy it.
+    s.push_str("MATCHING   (self offers vs self needs — a future cross-construct matcher pairs the types)\n");
+    let offer_types: BTreeMap<&str, &OfferItem> =
+        offers.iter().map(|o| (o.provides_type.as_str(), o)).collect();
+    let mut any_overlap = false;
+    for need in &needs {
+        if let Some(o) = offer_types.get(need.satisfiable_by) {
+            any_overlap = true;
+            let verdict = if o.active {
+                "SATISFIED by an ACTIVE self-offer"
+            } else {
+                "NOT satisfied: the self-offer is present-but-inactive (declared, not proven) — it does not close the need"
+            };
+            s.push_str(&format!(
+                "  need #{} ({}) <-> offer [{}] {} :: {verdict}\n",
+                need.rank, need.satisfiable_by, o.kind, truncate(&o.name, 20)
+            ));
+        }
+    }
+    if !any_overlap {
+        s.push_str("  no self-offer's provides_type matches any need's satisfiable_by (needs are cross-construct).\n");
+    }
+    s.push_str("  open need types (for a cross-construct matcher to source elsewhere):\n");
+    let open: Vec<&str> = needs
+        .iter()
+        .filter(|n| {
+            offer_types
+                .get(n.satisfiable_by)
+                .map(|o| !o.active)
+                .unwrap_or(true)
+        })
+        .map(|n| n.satisfiable_by)
+        .collect();
+    s.push_str(&format!("    {}\n", open.join("  |  ")));
+    s.push('\n');
+
     s.push_str(
         "END — READ-ONLY: no store write, no event appended, no transaction committed.\n",
     );
@@ -1006,6 +1157,12 @@ struct Need {
     unblocks_count: usize,
     action: String,
     depends_on: Vec<usize>,
+    /// The typed thing that would SATISFY this need — a `capability:*`,
+    /// `moment:*`, `verification:*` or `definition:*` string. A future
+    /// cross-construct matcher pairs this against another construct's OFFER
+    /// `provides_type`. Made explicit here so needs and offers share one type
+    /// vocabulary; the matcher itself is not built yet.
+    satisfiable_by: &'static str,
 }
 
 /// Ordered repairs: seeded from the honest lifecycle ladder for a written-not-run
@@ -1058,6 +1215,7 @@ fn compute_needs(
             "Wire the construct into the physics field: materialize the trigger band (Sensor/DepositBond/trigger atom/Threshold) so a physics event can fire it. wiring_status not_wired->wired."
                 .into(),
         depends_on: vec![],
+        satisfiable_by: "capability:physics-event-energy-deposit-bridge",
     });
     let obs_unblocks = reach("observability_algorithm").max(1);
     needs.push(Need {
@@ -1069,6 +1227,7 @@ fn compute_needs(
             "Run the mechanism + the INDEPENDENT observer to commit a Moment and produce a validation_run + the metric dimensions. runtime_status not_running->running; verification_status not_measured->measured."
                 .into(),
         depends_on: vec![1],
+        satisfiable_by: "moment:validation_run",
     });
     needs.push(Need {
         rank: 3,
@@ -1079,6 +1238,7 @@ fn compute_needs(
             "Execute the authored scenarios + the observer fault-detection tests against the fresh trace, moving behavior/observer claims self_reported->independently_verified."
                 .into(),
         depends_on: vec![2],
+        satisfiable_by: "verification:independently_verified",
     });
     needs.push(Need {
         rank: 4,
@@ -1087,6 +1247,7 @@ fn compute_needs(
         unblocks_count: reach("health").max(1),
         action: "Derive health from the fresh metric vector per health.derivation (not_measured->healthy|degraded).".into(),
         depends_on: vec![2],
+        satisfiable_by: "moment:health_assessment",
     });
     // missing_binding need if a physicalization_binding satellite is present.
     let _ = part_to_member;
@@ -1100,9 +1261,291 @@ fn compute_needs(
                 "Drive the deferred state sockets from three independent streams: degree->size (poids), measured support->brightness (activation; unmeasured=Fog), causal-chain health->line continuity (validité)."
                     .into(),
             depends_on: vec![2],
+            satisfiable_by: "definition:state-channel-streams",
         });
     }
     needs
+}
+
+// ---------------------------------------------------------------------------
+// OFFER — what the construct PROVIDES, derived READ-ONLY from its own graph
+// content and its incident edges. Every item carries a `provides_type` so a
+// future cross-construct matcher can pair it against a NEED's `satisfiable_by`.
+// Epistemic honesty: an item that is present-but-unproven (a port with no
+// relation, a runtime moment declared but never produced) is still OFFERED, but
+// `active=false` and the detail says so — a declared offer is not a live one.
+// ---------------------------------------------------------------------------
+struct OfferItem {
+    kind: &'static str, // affordance | capability | port | effect | moment | definition
+    name: String,
+    provides_type: String,
+    active: bool,
+    detail: String,
+}
+
+fn is_satellite_subtype(s: &str) -> bool {
+    matches!(
+        s,
+        "capability_port" | "physicalization_binding" | "broadcast_port"
+    )
+}
+
+/// Collect every string value in a JSON tree (used to find canonical-id
+/// references a member's content names — e.g. a code member's port_id).
+fn collect_strings(v: &Value, out: &mut BTreeSet<String>) {
+    match v {
+        Value::String(s) => {
+            out.insert(s.clone());
+        }
+        Value::Array(a) => a.iter().for_each(|x| collect_strings(x, out)),
+        Value::Object(o) => o.values().for_each(|x| collect_strings(x, out)),
+        _ => {}
+    }
+}
+
+/// Recursively harvest declared world-facing effects: an `emits_effect_intent`
+/// object's `effect`, an `effect_gate`'s `on_effector_activation`, or a plain
+/// `effect` string that names an EffectIntent/notify. Returns (name, detail).
+fn collect_effects(v: &Value, out: &mut Vec<(String, String)>) {
+    if let Value::Object(o) = v {
+        if let Some(e) = o.get("emits_effect_intent").and_then(Value::as_object) {
+            let name = e.get("effect").and_then(Value::as_str).unwrap_or("effect").to_string();
+            let cap = e.get("required_capability").and_then(Value::as_str).unwrap_or("-");
+            out.push((name, format!("emits_effect_intent; required_capability={cap}")));
+        }
+        if let Some(g) = o.get("effect_gate").and_then(Value::as_object) {
+            if let Some(act) = g.get("on_effector_activation").and_then(Value::as_str) {
+                out.push((act.to_string(), "effect_gate.on_effector_activation".into()));
+            }
+        }
+        if let Some(eff) = o.get("effect").and_then(Value::as_str) {
+            if eff.contains("EffectIntent") || eff.contains("notify") {
+                out.push(("notify".into(), "behavior.effect (EffectIntent)".into()));
+            }
+        }
+        for val in o.values() {
+            collect_effects(val, out);
+        }
+    } else if let Value::Array(a) = v {
+        for val in a {
+            collect_effects(val, out);
+        }
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn compute_offer(
+    root_id: &str,
+    root_content: &Value,
+    members: &[BoundMember],
+    consumed_by: &[String],
+    runtime_moment_present: bool,
+) -> Vec<OfferItem> {
+    let mut offers: Vec<OfferItem> = Vec::new();
+    let arr = |v: &Value, key: &str| -> Vec<String> {
+        v.get(key)
+            .and_then(Value::as_array)
+            .map(|a| a.iter().filter_map(|x| x.as_str().map(str::to_string)).collect())
+            .unwrap_or_default()
+    };
+
+    // --- affordance ---------------------------------------------------------
+    // read verbs (observe-only) are dedup'd across the port and the contract;
+    // author verbs stay separate because they are capability-gated.
+    let mut read_verbs: BTreeSet<String> = BTreeSet::new();
+    let mut author_verbs: BTreeSet<String> = BTreeSet::new();
+    let mut mutate_capability: Option<String> = None;
+
+    for m in members {
+        if m.subtype == "capability_port" {
+            for v in arr(&m.inner, "observe_capabilities") {
+                read_verbs.insert(v);
+            }
+            if let Some(c) = m.inner.get("required_mutate_capability").and_then(Value::as_str) {
+                mutate_capability.get_or_insert_with(|| c.to_string());
+            }
+        }
+    }
+    if let Some(pc) = root_content.get("programming_contract") {
+        for v in arr(pc, "observer_capabilities") {
+            read_verbs.insert(v);
+        }
+        for v in arr(pc, "author_capabilities") {
+            author_verbs.insert(v);
+        }
+    }
+    // behavior action verbs: the construct's declared callable surface lives on
+    // the code member's `entrypoints` (the concrete verbs behavior enacts).
+    let mut mechanism_verbs: BTreeSet<String> = BTreeSet::new();
+    for m in members {
+        if m.subtype == "code" {
+            for v in arr(&m.inner, "entrypoints") {
+                mechanism_verbs.insert(v);
+            }
+        }
+    }
+    let read_justif = root_content
+        .get("programming_contract")
+        .and_then(|pc| pc.get("rule"))
+        .and_then(Value::as_str)
+        .map(str::to_string);
+    for v in &read_verbs {
+        offers.push(OfferItem {
+            kind: "affordance",
+            name: v.clone(),
+            provides_type: format!("verb:{v}"),
+            active: true,
+            detail: "access=observe; precondition=none (read-only surface)".into(),
+        });
+    }
+    let gate = mutate_capability.clone().unwrap_or_else(|| "authoring capability".into());
+    for v in &author_verbs {
+        offers.push(OfferItem {
+            kind: "affordance",
+            name: v.clone(),
+            provides_type: format!("verb:{v}"),
+            active: false,
+            detail: format!(
+                "access=author; precondition=actor holds {gate}{}",
+                read_justif
+                    .as_deref()
+                    .map(|j| format!("; justification: {}", first_sentence(j)))
+                    .unwrap_or_default()
+            ),
+        });
+    }
+    for v in &mechanism_verbs {
+        offers.push(OfferItem {
+            kind: "affordance",
+            name: v.clone(),
+            provides_type: format!("verb:{v}"),
+            active: true,
+            detail: "access=mechanism; declared code entrypoint (callable surface)".into(),
+        });
+    }
+
+    // --- capability ---------------------------------------------------------
+    // capabilities this construct gates access behind (authority:*).
+    let mut authorities: BTreeSet<String> = BTreeSet::new();
+    let mut all_strings: BTreeSet<String> = BTreeSet::new();
+    collect_strings(root_content, &mut all_strings);
+    for m in members {
+        collect_strings(&m.inner, &mut all_strings);
+    }
+    for s in &all_strings {
+        if s.starts_with("authority:") {
+            authorities.insert(s.clone());
+        }
+    }
+    for a in &authorities {
+        offers.push(OfferItem {
+            kind: "capability",
+            name: a.clone(),
+            provides_type: format!("capability:{a}"),
+            active: true,
+            detail: "authority gate: an actor must hold this capability to pass the port".into(),
+        });
+    }
+
+    // --- port ---------------------------------------------------------------
+    // exported ports and their link state. A port with no incident relation is
+    // present but UNLINKED -> it names the capability but is currently inactive.
+    for m in members {
+        if is_satellite_subtype(&m.subtype)
+            && (m.subtype.ends_with("_port") || m.canonical_id.starts_with("port:"))
+        {
+            let posture = m
+                .inner
+                .get("state")
+                .and_then(Value::as_str)
+                .unwrap_or("unspecified");
+            let cap = m
+                .inner
+                .get("required_mutate_capability")
+                .and_then(Value::as_str)
+                .unwrap_or("-");
+            // No construct-internal relation reaches these ports in the store,
+            // so the readback link-state is `unlinked` (inactive as a wired
+            // export); the content posture is reported alongside, not as proof.
+            offers.push(OfferItem {
+                kind: "port",
+                name: m.canonical_id.clone(),
+                provides_type: format!("port:{}", m.canonical_id),
+                active: false,
+                detail: format!(
+                    "link_state=unlinked (no relation wires it -> inactive); posture={posture}; gates={cap}"
+                ),
+            });
+        }
+    }
+
+    // --- effect -------------------------------------------------------------
+    let mut effects: Vec<(String, String)> = Vec::new();
+    for m in members {
+        if matches!(m.subtype.as_str(), "code" | "behavior") {
+            collect_effects(&m.inner, &mut effects);
+        }
+    }
+    collect_effects(root_content, &mut effects);
+    effects.sort();
+    effects.dedup();
+    for (name, detail) in &effects {
+        offers.push(OfferItem {
+            kind: "effect",
+            name: name.clone(),
+            provides_type: format!("effect:{name}"),
+            active: false,
+            detail: format!("{detail}; requires authorized transport + EffectReceipt (never proven by a firing)"),
+        });
+    }
+
+    // --- moment -------------------------------------------------------------
+    // runtime moments the construct can PRODUCE. Declared here; whether any real
+    // moment exists in the store is `runtime_moment_present`.
+    for sub in arr(root_content, "runtime_moment_subtypes") {
+        offers.push(OfferItem {
+            kind: "moment",
+            name: sub.clone(),
+            provides_type: format!("moment:{sub}"),
+            active: runtime_moment_present,
+            detail: if runtime_moment_present {
+                "runtime moment present in the store".into()
+            } else {
+                "declared; PRODUCED by execution (precreated:false); none in the store yet -> inactive".into()
+            },
+        });
+    }
+
+    // --- definition ---------------------------------------------------------
+    // what this construct defines for OTHERS: the consumers that DEPENDS_ON /
+    // APPLIES_IN it. With consumers it is actively consumed; without, it is
+    // offered but not yet depended on (known_absent consumers).
+    let def_name = root_content
+        .get("name")
+        .and_then(Value::as_str)
+        .unwrap_or(root_id)
+        .to_string();
+    offers.push(OfferItem {
+        kind: "definition",
+        name: def_name,
+        provides_type: format!("definition:{root_id}"),
+        active: !consumed_by.is_empty(),
+        detail: if consumed_by.is_empty() {
+            "no construct DEPENDS_ON / APPLIES_IN it yet (known_absent consumers)".into()
+        } else {
+            format!("consumed_by {} construct(s): {}", consumed_by.len(), consumed_by.join(", "))
+        },
+    });
+
+    offers
+}
+
+/// First sentence (up to the first period) of a longer justification string.
+fn first_sentence(s: &str) -> String {
+    match s.find(". ") {
+        Some(i) => s[..=i].trim().to_string(),
+        None => s.to_string(),
+    }
 }
 
 // ---------------------------------------------------------------------------
