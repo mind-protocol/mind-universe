@@ -13,9 +13,7 @@ mod act;
 mod frame;
 mod jsonrpc;
 mod mcp;
-mod pov;
 mod raster;
-mod sense;
 mod session;
 mod world;
 

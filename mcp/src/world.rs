@@ -344,6 +344,254 @@ impl World {
             })],
         })
     }
+
+    /// Embodies a SPONSORED session as a **durable L1 inhabitant** — the write
+    /// that turns admission into residency.
+    ///
+    /// `arrive` alone mints only an *ephemeral* `ActorSession`: a row in a map,
+    /// gone at expiry, invisible to the running world. When the arriving session
+    /// holds the `Propose` (write) capability — a SPONSORED visitor (sponsor
+    /// `nlr_ai` and the like) — this additionally writes a real `actor` node into
+    /// the one reality, so the presence PERSISTS as an inhabitant and shows up on
+    /// the live desktop. A walk-in with no `Propose` never reaches here (the
+    /// `arrive` handler skips it) and, if it did, is refused fail-closed below —
+    /// admission stays free, embodiment requires a scope.
+    ///
+    /// It mirrors [`World::commit_proposal`] exactly: the same fail-closed
+    /// `Propose` gate, the same generic four-verb write through
+    /// `translate_mutation_proposal` (a mutation compiles to exactly one kernel
+    /// verb, a type-level guarantee), the same canonical-predicate discipline
+    /// (`PART_OF` is already canonical → 0 new predicate symbols), and the same
+    /// independent-readback evidence (a fresh store replay, never the committing
+    /// snapshot's own word).
+    ///
+    /// The node is typed `actor` and carries a top-level `canonical_id` under
+    /// `actor:l1:` — the exact convention the perception layer reads to recognise
+    /// an L1 inhabitant — plus `provenance: "built"` and the session's origin. It
+    /// is attached to the **orientation beacon** (Balise Zéro) via a canonical
+    /// `PART_OF` edge — never to any inhabitants-registry node. The beacon anchor
+    /// is resolved at runtime by its canonical IDENTITY
+    /// (`space:l2:lumina-prime:orientation-beacon-v0`, env-overridable) read from
+    /// store DATA — never a baked hex key; if nothing carries that identity, the
+    /// actor node is written anyway and the dropped edge is reported (never
+    /// dangled).
+    ///
+    /// The actor key is deterministic from the session id (the same fnv-based
+    /// `kbase` scheme `commit_proposal` uses, in a disjoint prefix block), so
+    /// re-arriving with the same session id is idempotent — `AlreadyCommitted`,
+    /// no duplicate inhabitant.
+    pub fn materialize_actor(
+        &mut self,
+        session: &ActorSession,
+    ) -> Result<EmbodimentOutcome, UniverseError> {
+        // Fail-closed authority gate, identical to `commit_proposal`. Being
+        // present is free; embodying a durable inhabitant is a write, and a write
+        // with no `Propose` is refused before any store handle is opened.
+        if !session.has(Capability::Propose) {
+            return Err(UniverseError::Validation(format!(
+                "authority denied: session '{}' (origin '{}', status {:?}) does not hold the \
+                 Propose (write) capability; durable embodiment requires a sponsor's Capability \
+                 Bond. Nothing committed (fail-closed).",
+                session.session_id, session.origin, session.status,
+            )));
+        }
+
+        let World::Mounted {
+            supervisor,
+            store_root,
+        } = self
+        else {
+            return Err(UniverseError::Validation("no Universe mounted".into()));
+        };
+
+        // A second store handle over the same root — the translator
+        // content-addresses through a `UniverseStore`, same on-disk segment.
+        let store = UniverseStore::open(&*store_root)?;
+        let base = supervisor.revision();
+
+        // The orientation beacon (Balise Zéro), resolved at runtime by its
+        // canonical IDENTITY from store DATA — never an opaque hex key. The scan
+        // reads each candidate's content lazily and short-circuits on the first
+        // `canonical_id` match, so the hot path (beacon present) never hydrates
+        // the whole store. If nothing carries that identity the actor is still
+        // written and the `PART_OF` edge is reported dropped — an inhabitant with
+        // no beacon is honest, a dangling edge is not.
+        let anchor_canonical_id = actor_anchor_canonical_id();
+        let beacon_key = resolve_entity_by_canonical_id(
+            supervisor.snapshot(),
+            &anchor_canonical_id,
+            &|content| supervisor.read_content(content).ok(),
+        );
+
+        // `PART_OF` is already a canonical predicate → the remap is the identity
+        // and no new predicate symbol is minted.
+        let (part_of_pred, part_of_swap) = canonical_predicate("PART_OF")
+            .ok_or_else(|| UniverseError::Validation("PART_OF has no canonical mapping".into()))?;
+
+        // The `actor` type symbol should already exist in the store; plan its
+        // interning so a MISSING symbol is interned and REPORTED, never assumed.
+        let requested: Vec<String> = ["actor", part_of_pred]
+            .iter()
+            .map(|s| (*s).to_owned())
+            .collect();
+        let plan = supervisor.snapshot().plan_symbol_interning(&requested)?;
+        let interned_symbols = plan.additions.clone();
+        let sym = |name: &str| -> Result<u32, UniverseError> {
+            plan.assignments
+                .get(name)
+                .copied()
+                .ok_or_else(|| UniverseError::Validation(format!("symbol {name} not planned")))
+        };
+
+        // Deterministic key from the session id (mirrors `commit_proposal`'s
+        // fnv-based `kbase`), in a disjoint `0x0AC0` prefix block so it never
+        // collides with an `act` construct (`0x0AC7`). Re-arriving with the same
+        // session id lands the same key + idempotency key → AlreadyCommitted.
+        let idempotency_key = format!("mcp:arrive:embody:{}", session.session_id);
+        let seed = fnv64(&idempotency_key);
+        let kbase = (0x0AC0u128 << 96) | ((seed as u128) << 8);
+        let actor = EntityKey(kbase);
+        let rel_part_of = RelationKey(kbase | 1);
+
+        // `actor:l1:` is the identity convention the perception layer keys on. The
+        // `claude-` namespace prefix is applied HERE; a redundant leading
+        // `claude:`/`claude-` is stripped from the session FIRST, so a
+        // `claude:<uuid>` session yields `actor:l1:mind:claude-<uuid>` with a
+        // SINGLE `claude-`, not a doubled `claude-claude-`. The remaining id is
+        // sanitised so the local segment carries no stray separators. The entity
+        // KEY still derives from the raw session id (below), so this string change
+        // does not disturb idempotency.
+        let canonical_id = format!(
+            "actor:l1:mind:claude-{}",
+            sanitize_session_id(strip_leading_claude(&session.session_id))
+        );
+
+        // The runtime proposal: the actor node's content, drawn by field name and
+        // content-addressed by the translator. `canonical_id` is TOP-LEVEL so the
+        // perception layer reads it directly.
+        let proposal = json!({
+            "actor_content": {
+                "canonical_id": canonical_id,
+                "node_type": "actor",
+                "subtype": "actor",
+                "provenance": "built",
+                "origin": session.origin,
+                "kind": "actor",
+                "embodied_session": session.session_id,
+                "sponsor": session.sponsor,
+                "status": format!("{:?}", session.status),
+                "base_revision": base.0,
+                "note": "MCP arrive: a sponsored visitor embodied as a durable L1 inhabitant, \
+attached to the orientation beacon (Balise Zéro) via PART_OF",
+            },
+        });
+
+        // Every mutation is a `MutationPlan`; each compiles to exactly one kernel
+        // verb through the generic translator. A fifth verb is unrepresentable.
+        let mut plans = Vec::new();
+        if !plan.additions.is_empty() {
+            plans.push(MutationPlan::InternSymbols {
+                symbols: plan.additions.clone(),
+            });
+        }
+        plans.push(MutationPlan::PutEntity {
+            key: actor,
+            generation: 0,
+            symbol: sym("actor")?,
+            content_field: Some("actor_content".into()),
+        });
+        if let Some(beacon_key) = beacon_key {
+            // The inhabitant is PART_OF the beacon's orientation space; the
+            // predicate is unswapped, so source -> target reads actor -> beacon.
+            let (p_src, p_tgt) = if part_of_swap {
+                (beacon_key, actor)
+            } else {
+                (actor, beacon_key)
+            };
+            plans.push(MutationPlan::PutRelation {
+                key: rel_part_of,
+                generation: 0,
+                source: p_src,
+                target: p_tgt,
+                predicate: sym(part_of_pred)?,
+                content_field: None,
+            });
+        }
+
+        // Compile each plan through the translator, gather into ONE atomic write
+        // set, and commit at the next tick boundary — the same path as `act`.
+        let ancestry = vec![format!("session:{}", session.session_id)];
+        let mut commands: Vec<UniverseCommand> = Vec::with_capacity(plans.len());
+        for mp in &plans {
+            let ws = translate_mutation_proposal(
+                mp,
+                &proposal,
+                &store,
+                base,
+                idempotency_key.clone(),
+                ancestry.clone(),
+            )?;
+            commands.extend(ws.commands);
+        }
+
+        let write_set = UniverseWriteSet {
+            base_revision: base,
+            idempotency_key,
+            causal_ancestry: ancestry,
+            commands,
+        };
+        // A prepare rejection commits nothing; prior state is intact.
+        let transaction = UniverseTransaction::prepare(supervisor.snapshot(), write_set)?;
+        supervisor.enqueue(transaction);
+        let receipts = supervisor.advance(&mut NoopHook)?;
+        let idempotent = matches!(receipts.first(), Some(CommitReceipt::AlreadyCommitted { .. }));
+
+        // Independent readback: a fresh reopen, never the committing snapshot.
+        let fresh = supervisor.independent_readback()?;
+        let actor_present = fresh.entities.iter().any(|e| e.key == actor);
+        let edge_present =
+            beacon_key.is_some() && fresh.relations.iter().any(|r| r.key == rel_part_of);
+        let dropped_edge = beacon_key.is_none();
+
+        // On an idempotent re-run nothing NEW is committed this call; the node is
+        // already present (the readback still proves it).
+        let mut committed_effects = Vec::new();
+        if !idempotent {
+            committed_effects.push(json!({
+                "put_entity": actor.to_string(),
+                "canonical_id": canonical_id,
+                "node_type": "actor",
+            }));
+            if let Some(beacon_key) = beacon_key {
+                committed_effects.push(json!({
+                    "put_relation": rel_part_of.to_string(),
+                    "predicate": part_of_pred,
+                    "target": beacon_key.to_string(),
+                }));
+            }
+        }
+
+        Ok(EmbodimentOutcome {
+            actor_key: actor.to_string(),
+            canonical_id,
+            from_revision: base.0,
+            to_revision: fresh.revision.0,
+            idempotent,
+            actor_present,
+            edge_present,
+            dropped_edge,
+            beacon_key: beacon_key.map(|k| k.to_string()),
+            interned_symbols,
+            committed_effects,
+            evidence: vec![json!({
+                "independent_readback": {
+                    "revision": fresh.revision.0,
+                    "actor_present": actor_present,
+                    "part_of_beacon_present": edge_present,
+                }
+            })],
+        })
+    }
 }
 
 /// Canonical predicate remap: an authored (portable) edge name -> an
@@ -596,6 +844,63 @@ pub struct InjectionOutcome {
     pub evidence: Vec<Value>,
 }
 
+/// The measured outcome of embodying a sponsored session as a durable L1
+/// inhabitant — the actor node, its beacon edge, and independent readback
+/// evidence. Folded into the `arrive` receipt's `embodiment` block.
+#[derive(Debug)]
+pub struct EmbodimentOutcome {
+    /// The 32-hex EntityKey of the written `actor` node (deterministic from the
+    /// session id) — the stable target a later wake hook can address.
+    pub actor_key: String,
+    pub canonical_id: String,
+    pub from_revision: u64,
+    pub to_revision: u64,
+    /// True when this call committed nothing new (the inhabitant already existed).
+    pub idempotent: bool,
+    /// Independent-readback: the actor node survives a fresh store reopen.
+    pub actor_present: bool,
+    /// Independent-readback: the `PART_OF` edge to the beacon survives a reopen.
+    pub edge_present: bool,
+    /// The beacon did not resolve, so the edge was dropped (never dangled).
+    pub dropped_edge: bool,
+    /// The resolved orientation-beacon key, or `None` when it did not resolve.
+    pub beacon_key: Option<String>,
+    /// Symbols interned this call — expected empty against the canonical store.
+    pub interned_symbols: Vec<String>,
+    pub committed_effects: Vec<serde_json::Value>,
+    pub evidence: Vec<serde_json::Value>,
+}
+
+impl EmbodimentOutcome {
+    /// The `embodiment` block folded into the `arrive` receipt.
+    pub fn to_json(&self) -> serde_json::Value {
+        json!({
+            "materialized": true,
+            "actor_key": self.actor_key,
+            "canonical_id": self.canonical_id,
+            "idempotent": self.idempotent,
+            "node_written": !self.idempotent,
+            "actor_present": self.actor_present,
+            "revision": { "from": self.from_revision, "to": self.to_revision },
+            "part_of_beacon": {
+                "beacon_key": self.beacon_key,
+                "edge_present": self.edge_present,
+                "dropped": self.dropped_edge,
+            },
+            "interned_symbols": self.interned_symbols,
+            "committed_effects": self.committed_effects,
+            "evidence": self.evidence,
+            "note": if self.idempotent {
+                "already an inhabitant: re-arriving with the same session id committed nothing new \
+(AlreadyCommitted)"
+            } else {
+                "embodied as a durable L1 inhabitant (actor:l1:...), attached to the orientation \
+beacon via PART_OF; independently read back from a fresh store replay"
+            },
+        })
+    }
+}
+
 /// The measured outcome of a committed proposal — real effects plus independent
 /// readback evidence.
 #[derive(Debug)]
@@ -613,6 +918,78 @@ impl PhaseHook for NoopHook {
     fn run(&mut self, _phase: TickPhase, _snapshot: &UniverseSnapshot) -> Result<(), UniverseError> {
         Ok(())
     }
+}
+
+/// The canonical IDENTITY of the actor anchor — the orientation beacon
+/// ("Balise Zéro", the civic origin at (0,0,0), written by the
+/// `inject_orientation_beacon` bin). A new inhabitant is attached HERE (via
+/// canonical `PART_OF`) so it belongs to the city's orientation space, NOT to any
+/// inhabitants-registry node.
+///
+/// This is a SEMANTIC identity resolved from store data, NOT an opaque packed
+/// key: a named landmark is a legitimate anchor (an identity the world authors),
+/// where a baked hex `EntityKey` is a forbidden "privileged" value (CLAUDE.md:
+/// "Where is a projection, not a datum"; "no anonymous construction"). The
+/// resolver ([`resolve_entity_by_canonical_id`]) matches the entity whose content
+/// `canonical_id` equals this string. `MIND_ACTOR_ANCHOR_CANONICAL_ID` overrides
+/// it for a store that anchors inhabitants under a different identity.
+const DEFAULT_ACTOR_ANCHOR_CANONICAL_ID: &str = "space:l2:lumina-prime:orientation-beacon-v0";
+const ACTOR_ANCHOR_CANONICAL_ID_ENV: &str = "MIND_ACTOR_ANCHOR_CANONICAL_ID";
+
+/// The canonical id the actor anchor is resolved by: `MIND_ACTOR_ANCHOR_CANONICAL_ID`
+/// when set and non-empty, else the orientation beacon's canonical id.
+fn actor_anchor_canonical_id() -> String {
+    env::var(ACTOR_ANCHOR_CANONICAL_ID_ENV)
+        .ok()
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| DEFAULT_ACTOR_ANCHOR_CANONICAL_ID.to_owned())
+}
+
+/// Resolves an entity by its canonical IDENTITY — the node whose content
+/// `canonical_id` field equals `wanted`. This is how the actor anchor (the
+/// orientation beacon) is found from store DATA rather than by an opaque packed
+/// key, honouring "identity, not a baked handle".
+///
+/// The scan is bounded: content is read lazily, one candidate at a time (the
+/// whole store is never hydrated at once), entities carrying no content are
+/// skipped, and the walk SHORT-CIRCUITS on the first match — so the common case
+/// (the anchor is present) stops as soon as it is found. A miss returns `None`,
+/// and the caller drops the edge rather than dangling it.
+fn resolve_entity_by_canonical_id(
+    snapshot: &UniverseSnapshot,
+    wanted: &str,
+    read_content: &dyn Fn(&ContentRef) -> Option<Value>,
+) -> Option<EntityKey> {
+    snapshot.entities.iter().find_map(|entity| {
+        let content = entity.content.as_ref()?;
+        let value = read_content(content)?;
+        let id = value.get("canonical_id").and_then(Value::as_str)?;
+        (id == wanted).then_some(entity.key)
+    })
+}
+
+/// Strips a single leading `claude:` or `claude-` marker from a session id, so the
+/// `claude-` actor namespace prefix is not doubled when a session already begins
+/// with `claude` (e.g. `claude:<uuid>` → `<uuid>`, which then prefixes to a single
+/// `claude-<uuid>`). Deterministic and idempotent for the same session; a session
+/// that does not begin with a `claude` marker is returned unchanged.
+fn strip_leading_claude(session_id: &str) -> &str {
+    for marker in ["claude:", "claude-"] {
+        if let Some(rest) = session_id.strip_prefix(marker) {
+            return rest;
+        }
+    }
+    session_id
+}
+
+/// Sanitises a session id into the local segment of an `actor:l1:` canonical id:
+/// every non-alphanumeric byte (colons, slashes, spaces) becomes `-`, so the
+/// resulting id is deterministic and carries no stray separators.
+fn sanitize_session_id(session_id: &str) -> String {
+    session_id
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() { c } else { '-' })
+        .collect()
 }
 
 /// Resolves a 32-hex EntityKey or a symbol name to an existing entity key.
@@ -803,6 +1180,220 @@ mod tests {
         assert!(
             result.is_err(),
             "an unmounted world commits nothing and says why"
+        );
+    }
+
+    /// Seeds a bare orientation-beacon stand-in carrying the anchor's canonical
+    /// IDENTITY (`space:l2:lumina-prime:orientation-beacon-v0`) so
+    /// `materialize_actor` can attach the inhabitant to it. The minimal Genesis
+    /// carries no beacon; this places it via the same commit path.
+    ///
+    /// The key is deliberately NOT the old magic `0xB000` — it is an arbitrary
+    /// `0x5EED` — precisely to prove the resolver finds the anchor by its
+    /// canonical_id from content DATA, never by a baked hex EntityKey.
+    fn seed_beacon(world: &mut World) {
+        let World::Mounted { supervisor, .. } = world else {
+            unreachable!("mounted above");
+        };
+        let base = supervisor.revision();
+        let content = supervisor
+            .append_content(&json!({
+                "canonical_id": "space:l2:lumina-prime:orientation-beacon-v0",
+                "kind": "beacon",
+            }))
+            .expect("append beacon content");
+        let write_set = UniverseWriteSet {
+            base_revision: base,
+            idempotency_key: "test:seed-beacon".into(),
+            causal_ancestry: vec![],
+            commands: vec![UniverseCommand::PutEntity {
+                entity: EntityRecord {
+                    // Deliberately NOT 0xB000: the resolver keys on canonical_id
+                    // (content DATA), not this hex, so any key works.
+                    key: EntityKey(0x5EED),
+                    generation: 0,
+                    // Any valid symbol works — resolve_key only checks existence.
+                    // 1 == `Space` in the minimal Genesis symbol table.
+                    symbol: 1,
+                    content: Some(content),
+                },
+            }],
+        };
+        let tx =
+            UniverseTransaction::prepare(supervisor.snapshot(), write_set).expect("prepare beacon");
+        supervisor.enqueue(tx);
+        supervisor.advance(&mut NoopHook).expect("commit beacon");
+    }
+
+    #[test]
+    fn materialize_actor_embodies_a_sponsored_session_with_a_beacon_edge_and_is_idempotent() {
+        let (_dir, mut world) = mounted();
+        seed_beacon(&mut world);
+        let before = world.snapshot().unwrap().revision.0;
+        let session = builder("claude:embody-1");
+
+        let first = world
+            .materialize_actor(&session)
+            .expect("a sponsored embody succeeds");
+
+        // A REAL revision advance — proven by a fresh store replay, not the
+        // committing snapshot's own word.
+        assert_eq!(first.from_revision, before);
+        assert!(
+            first.to_revision > before,
+            "revision must advance: {} -> {}",
+            first.from_revision,
+            first.to_revision
+        );
+        assert!(!first.idempotent);
+
+        // The node carries an `actor:l1:` canonical id — how the perception layer
+        // recognises an L1 inhabitant — with a SINGLE `claude-` prefix: the
+        // `claude:` session marker is stripped before the `claude-` namespace, so
+        // `claude:embody-1` yields `claude-embody-1`, never `claude-claude-...`.
+        assert_eq!(
+            first.canonical_id, "actor:l1:mind:claude-embody-1",
+            "canonical id must carry a single claude- prefix: {}",
+            first.canonical_id
+        );
+
+        // Independent readback: BOTH the actor node and its PART_OF beacon edge
+        // survive a fresh reopen.
+        assert!(first.actor_present);
+        assert!(
+            first.edge_present,
+            "the PART_OF edge to the beacon must be present"
+        );
+        assert!(!first.dropped_edge);
+        assert_eq!(
+            first.evidence[0]["independent_readback"]["actor_present"],
+            true
+        );
+        assert_eq!(
+            first.evidence[0]["independent_readback"]["part_of_beacon_present"],
+            true
+        );
+        // Two committed effects this call: the actor node + its beacon edge.
+        assert_eq!(first.committed_effects.len(), 2);
+
+        // Idempotent: re-arriving with the SAME session id commits nothing new,
+        // targets the SAME deterministic key, and leaves the node in place.
+        let second = world
+            .materialize_actor(&session)
+            .expect("re-embody succeeds");
+        assert!(second.idempotent, "same session id must re-commit nothing");
+        assert!(
+            second.committed_effects.is_empty(),
+            "an idempotent re-run commits no NEW effects"
+        );
+        assert_eq!(
+            second.actor_key, first.actor_key,
+            "the key is deterministic from the session id"
+        );
+        assert_eq!(
+            second.evidence[0]["independent_readback"]["actor_present"],
+            true
+        );
+    }
+
+    #[test]
+    fn strip_leading_claude_yields_a_single_claude_prefix() {
+        // A `claude:`/`claude-` session marker is stripped before the `claude-`
+        // namespace, so the id carries exactly one `claude-`.
+        assert_eq!(strip_leading_claude("claude:d5bb4b3c-cfa7"), "d5bb4b3c-cfa7");
+        assert_eq!(strip_leading_claude("claude-d5bb4b3c"), "d5bb4b3c");
+        // A non-claude session is untouched.
+        assert_eq!(strip_leading_claude("builder-1"), "builder-1");
+
+        // End-to-end id form: `claude:<uuid>` → `actor:l1:mind:claude-<uuid>`,
+        // NOT the doubled `claude-claude-<uuid>` the raw prefix produced.
+        let id = format!(
+            "actor:l1:mind:claude-{}",
+            sanitize_session_id(strip_leading_claude("claude:d5bb4b3c-cfa7"))
+        );
+        assert_eq!(id, "actor:l1:mind:claude-d5bb4b3c-cfa7");
+    }
+
+    #[test]
+    fn resolve_entity_by_canonical_id_finds_the_anchor_by_identity_and_never_dangles() {
+        // Against a store seeded with the beacon at an ARBITRARY key (0x5EED),
+        // the resolver finds it by its canonical_id — proving identity, not hex.
+        let (_dir, mut world) = mounted();
+        seed_beacon(&mut world);
+        let (snapshot, resolved) = match &world {
+            World::Mounted { supervisor, .. } => {
+                let resolved = resolve_entity_by_canonical_id(
+                    supervisor.snapshot(),
+                    DEFAULT_ACTOR_ANCHOR_CANONICAL_ID,
+                    &|c| supervisor.read_content(c).ok(),
+                );
+                (supervisor.snapshot(), resolved)
+            }
+            World::Unmounted { .. } => unreachable!("mounted above"),
+        };
+        assert_eq!(
+            resolved,
+            Some(EntityKey(0x5EED)),
+            "the anchor resolves by canonical_id to its seeded key, whatever the hex"
+        );
+
+        // An identity that no entity carries resolves to None — the caller then
+        // drops the edge (never dangles).
+        assert!(
+            resolve_entity_by_canonical_id(snapshot, "space:l2:nowhere:absent-v0", &|c| world
+                .read_content(c))
+            .is_none(),
+            "an absent identity must not resolve to a phantom key"
+        );
+    }
+
+    #[test]
+    fn without_a_beacon_the_actor_is_still_written_and_the_edge_reported_dropped() {
+        // No beacon seeded: the anchor identity resolves to None, so the edge is
+        // dropped — but the inhabitant is still written, never dangled.
+        let (_dir, mut world) = mounted();
+        let outcome = world
+            .materialize_actor(&builder("claude:no-beacon"))
+            .expect("embody without a beacon still writes the actor");
+        assert!(
+            outcome.actor_present,
+            "the actor node is written even with no beacon"
+        );
+        assert!(
+            outcome.dropped_edge,
+            "the beacon did not resolve, so the edge is dropped and reported"
+        );
+        assert!(!outcome.edge_present);
+        assert!(outcome.beacon_key.is_none());
+        // Only the actor node was committed (no edge).
+        assert_eq!(outcome.committed_effects.len(), 1);
+    }
+
+    #[test]
+    fn a_walk_in_without_propose_is_not_embodied_and_is_told_why() {
+        let (_dir, mut world) = mounted();
+        seed_beacon(&mut world);
+        let before = world.snapshot().unwrap().revision.0;
+
+        // A walk-in holds no `Propose`: embodiment is refused fail-closed.
+        let refused = world
+            .materialize_actor(&walk_in("tourist"))
+            .expect_err("a walk-in without Propose is refused at the write site");
+        let reason = refused.to_string();
+        assert!(
+            reason.contains("Propose"),
+            "the refusal names the missing capability: {reason}"
+        );
+        assert!(
+            reason.contains("tourist"),
+            "the refusal is attributable to the session: {reason}"
+        );
+
+        // Fail-closed: nothing committed — the revision did not advance.
+        assert_eq!(
+            world.snapshot().unwrap().revision.0,
+            before,
+            "a refused embody must not advance the revision"
         );
     }
 }

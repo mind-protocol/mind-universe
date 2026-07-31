@@ -17,12 +17,15 @@
 
 use std::collections::{BTreeMap, VecDeque};
 
-use universe_core::{EntityKey, UniverseError};
-use universe_physics::AtomExecutionBudget;
+use universe_core::{EntityKey, Revision, UniverseError};
+use universe_physics::{AtomExecutionBudget, AtomInjectionRequest, AtomRun};
 use universe_store::UniverseSnapshot;
 use universe_supervisor::{PhysicsWaveInputs, PhysicsWaveSelector};
 
+use crate::call_bridge::{deliver_atom_fired_calls, ConstructCall, DeliveredCall};
 use crate::construct_resolver::ResolvedConstruct;
+use crate::wake_bridge::atom_run_to_wake_events;
+use crate::E2eError;
 
 /// A serial wake-queue selector over constructs resolved from the graph.
 ///
@@ -38,6 +41,14 @@ pub struct GraphWaveSelector {
     budget: AtomExecutionBudget,
     /// Ids enqueued by [`Self::wake`], drained one-per-`select` in FIFO order.
     queue: VecDeque<EntityKey>,
+    /// Graph-declared construct -> construct call wirings: when a caller's emitter
+    /// atom fires, [`Self::deliver_fire`] resolves these into fresh bounded
+    /// deposits onto the named callees' gates. Data, never native policy.
+    call_bindings: Vec<ConstructCall>,
+    /// Fresh bounded deposits staged for a callee by a delivered call, landed on
+    /// its gate atoms when it is next drained by [`Self::select`], then cleared.
+    /// Transient runtime state: a call never mutates the store.
+    pending_deposits: BTreeMap<EntityKey, Vec<AtomInjectionRequest>>,
 }
 
 impl GraphWaveSelector {
@@ -47,12 +58,58 @@ impl GraphWaveSelector {
             table: BTreeMap::new(),
             budget,
             queue: VecDeque::new(),
+            call_bindings: Vec::new(),
+            pending_deposits: BTreeMap::new(),
         }
     }
 
     /// Register a resolved construct under its stable id (its `code` node key).
     pub fn register(&mut self, id: EntityKey, resolved: ResolvedConstruct) {
         self.table.insert(id, resolved);
+    }
+
+    /// Wire a graph-declared construct -> construct call: when the caller's emitter
+    /// atom (`call.deposit.trigger`) fires, [`Self::deliver_fire`] deposits a fresh
+    /// bounded quantum onto the callee's gate and wakes the callee. The wiring is
+    /// data the caller brings from the graph — the selector invents no calls.
+    pub fn wire_call(&mut self, call: ConstructCall) {
+        self.call_bindings.push(call);
+    }
+
+    /// Ingest one fired construct's run: turn its threshold crossings into
+    /// `AtomFired` events (via the [`atom_run_to_wake_events`] PRODUCER), resolve
+    /// the declared call wirings whose source atom fired (via the [`call_bridge`]
+    /// CONSUMER), and for each resolved call STAGE its fresh bounded deposit onto
+    /// the callee's gate and WAKE the callee onto this queue.
+    ///
+    /// This is "construct A calls construct B" wired into the serial loop: the
+    /// caller's fire is TERMINAL (its own energy is untouched — the deposit is a
+    /// new bounded quantum), and the callee runs on a later drain with the deposit
+    /// landed on its gate. Returns the delivered calls as measured evidence; it
+    /// mutates no store — staging and waking are transient runtime state only.
+    ///
+    /// [`call_bridge`]: crate::call_bridge
+    pub fn deliver_fire(
+        &mut self,
+        run: &AtomRun,
+        source_revision: Revision,
+    ) -> Result<Vec<DeliveredCall>, E2eError> {
+        let fired_events = atom_run_to_wake_events(run, source_revision);
+        let delivered = deliver_atom_fired_calls(&self.call_bindings, &fired_events)?;
+        for call in &delivered {
+            self.pending_deposits
+                .entry(call.target_construct)
+                .or_default()
+                .push(call.deposit.clone());
+            self.queue.push_back(call.target_construct);
+        }
+        Ok(delivered)
+    }
+
+    /// The number of fresh bounded deposits currently staged for `id` by delivered
+    /// calls, awaiting the callee's next drain. Zero once drained.
+    pub fn pending_deposits(&self, id: EntityKey) -> usize {
+        self.pending_deposits.get(&id).map_or(0, Vec::len)
     }
 
     /// Enqueue a construct to wake on the next `select`.
@@ -89,10 +146,18 @@ impl PhysicsWaveSelector for GraphWaveSelector {
         let resolved = self.table.get(&id).ok_or_else(|| {
             UniverseError::Validation(format!("woken construct {id} is not registered"))
         })?;
+        // Land any fresh bounded deposits a delivered call staged for this callee
+        // onto its construct cluster's gate atoms, BEFORE its wave runs — so a
+        // construct woken purely by another construct's call self-wakes on that
+        // call. A callee woken by its own sensor (no staged deposit) is unchanged.
+        let mut construct_cluster = resolved.construct_cluster.clone();
+        if let Some(staged) = self.pending_deposits.remove(&id) {
+            construct_cluster.injections.extend(staged);
+        }
         Ok(Some(PhysicsWaveInputs {
             sensor_cluster: resolved.sensor_cluster.clone(),
             deposit_bindings: resolved.deposit_bindings.clone(),
-            construct_cluster: resolved.construct_cluster.clone(),
+            construct_cluster,
             effect_bindings: resolved.effect_bindings.clone(),
             budget: self.budget,
         }))

@@ -10,7 +10,7 @@
 //! Huffman tables, naïve FDCT). JPEG so the frame stays small on the wire.
 
 use crate::frame::{self, HEIGHT, WIDTH};
-use crate::pov::{Pov, SphereSighting};
+use universe_supervisor::perception::{Pov, SphereSighting};
 
 type Rgb = [u8; 3];
 
@@ -566,7 +566,7 @@ mod tests {
             label: label.into(),
             primitive: "sphere",
             position,
-            distance_m: crate::pov::distance([0.0, 0.0, 0.0], position),
+            distance_m: universe_supervisor::perception::pov::distance([0.0, 0.0, 0.0], position),
             bearing: "ahead",
         }
     }

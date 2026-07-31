@@ -7,6 +7,7 @@ license.workspace = true
 [dependencies]
 serde.workspace = true
 serde_json.workspace = true
+universe-assets = { path = "../universe-assets" }
 universe-capabilities = { path = "../universe-capabilities" }
 universe-compiler = { path = "../universe-compiler" }
 universe-core = { path = "../universe-core" }

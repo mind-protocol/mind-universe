@@ -264,6 +264,41 @@ function renderBeing(
       parts.push(
         `<line x1="${f(center.x)}" y1="${f(center.y - half)}" x2="${f(center.x)}" y2="${f(center.y + half)}" stroke="${color}" stroke-opacity="${f(0.7 * alpha)}" stroke-width="${wpx}" stroke-linecap="round"/>`
       );
+    } else if (kind === "box") {
+      // a machined/masonry block — a rect, hard edges (no rounding)
+      const w = effScale[0] * UNIT;
+      const h = effScale[1] * UNIT;
+      parts.push(
+        `<rect x="${f(center.x - w / 2)}" y="${f(center.y - h / 2)}" width="${f(w)}" height="${f(h)}" fill="${color}" fill-opacity="${f(alpha)}"/>`
+      );
+    } else if (kind === "cylinder" || kind === "tube") {
+      // a shaft / conduit — a rounded-end rect; a tube is slender
+      const w = (kind === "tube" ? 0.36 : 1) * effScale[0] * UNIT;
+      const h = effScale[1] * UNIT;
+      parts.push(
+        `<rect x="${f(center.x - w / 2)}" y="${f(center.y - h / 2)}" width="${f(w)}" height="${f(h)}" rx="${f(w / 2)}" fill="${color}" fill-opacity="${f(alpha)}"/>`
+      );
+    } else if (kind === "cone") {
+      // a horn / funnel / gain — an upward triangle
+      const w = effScale[0] * UNIT;
+      const h = effScale[1] * UNIT;
+      parts.push(
+        `<polygon points="${f(center.x)},${f(center.y - h / 2)} ${f(center.x - w / 2)},${f(center.y + h / 2)} ${f(center.x + w / 2)},${f(center.y + h / 2)}" fill="${color}" fill-opacity="${f(alpha)}"/>`
+      );
+    } else if (kind === "torus") {
+      // a port / rim / ring — a stroked circle, hollow centre
+      const r = f(((effScale[0] + effScale[2]) / 2) * UNIT * 0.6);
+      const sw = f(Math.max(1, effScale[1] * UNIT * 0.3));
+      parts.push(
+        `<circle cx="${f(center.x)}" cy="${f(center.y)}" r="${r}" fill="none" stroke="${color}" stroke-opacity="${f(alpha)}" stroke-width="${sw}"/>`
+      );
+    } else if (kind === "plane") {
+      // a membrane / surface / card — a thin flat rect
+      const w = effScale[0] * UNIT;
+      const h = Math.max(1, effScale[1] * UNIT * 0.25);
+      parts.push(
+        `<rect x="${f(center.x - w / 2)}" y="${f(center.y - h / 2)}" width="${f(w)}" height="${f(h)}" fill="${color}" fill-opacity="${f(0.8 * alpha)}"/>`
+      );
     } else {
       // icosphere / sphere — the energy core, with a soft emissive halo. Energy
       // both brightens (glow) and widens (haloBoost) the halo, so a high-energy

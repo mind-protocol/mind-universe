@@ -244,6 +244,19 @@ function GraphPrimitive({
         <icosahedronGeometry args={[1, 3]} />
       ) : kind === "capsule" ? (
         <capsuleGeometry args={[1, 1, 8, 20]} />
+      ) : kind === "box" ? (
+        <boxGeometry args={[1, 1, 1]} />
+      ) : kind === "cylinder" ? (
+        <cylinderGeometry args={[1, 1, 1, 24]} />
+      ) : kind === "cone" ? (
+        <coneGeometry args={[1, 1, 24]} />
+      ) : kind === "torus" ? (
+        <torusGeometry args={[1, 0.35, 16, 32]} />
+      ) : kind === "plane" ? (
+        <planeGeometry args={[1, 1]} />
+      ) : kind === "tube" ? (
+        // a thin conduit — a slender cylinder along its local Y axis
+        <cylinderGeometry args={[0.18, 0.18, 1, 16]} />
       ) : (
         <sphereGeometry args={[1, 28, 28]} />
       )}

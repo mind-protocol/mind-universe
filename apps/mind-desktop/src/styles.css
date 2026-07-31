@@ -291,8 +291,6 @@ main {
 .minimap {
   position: absolute;
   z-index: 40;
-  display: flex;
-  flex-direction: column;
   overflow: hidden;
   background: rgb(4 8 16 / 82%);
   border: 1px solid #22406e;
@@ -300,24 +298,27 @@ main {
   box-shadow: 0 8px 26px rgb(0 0 0 / 45%);
   backdrop-filter: blur(4px);
   user-select: none;
-}
-
-.minimap__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 22px;
-  padding: 0 6px 0 10px;
   cursor: move;
-  font-size: 0.62rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgb(201 220 255 / 62%);
-  border-bottom: 1px solid rgb(34 64 110 / 60%);
   touch-action: none;
 }
 
+/* Non-interactive title in the top-left; clicks pass through to drag the panel. */
+.minimap__label {
+  position: absolute;
+  top: 5px;
+  left: 8px;
+  pointer-events: none;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(201 220 255 / 48%);
+}
+
+/* Zoom controls float in the bottom-right; they opt out of the panel drag. */
 .minimap__zoom {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
   display: flex;
   gap: 3px;
 }
@@ -331,20 +332,18 @@ main {
   line-height: 1;
   font-size: 0.8rem;
   color: #c9dcff;
-  background: rgb(34 64 110 / 45%);
+  background: rgb(34 64 110 / 55%);
   border: 1px solid #22406e;
   border-radius: 4px;
   cursor: pointer;
 }
 
 .minimap__zoom button:hover {
-  background: rgb(58 96 150 / 55%);
+  background: rgb(58 96 150 / 65%);
 }
 
 .minimap__body {
   display: block;
-  flex: 1;
-  cursor: crosshair;
   touch-action: none;
 }
 
@@ -384,20 +383,22 @@ main {
   }
 }
 
+/* Resize grip at the TOP-right corner: the panel is pinned bottom-left, so it
+   grows up and to the right. */
 .minimap__resize {
   position: absolute;
   right: 0;
-  bottom: 0;
-  width: 14px;
-  height: 14px;
-  cursor: nwse-resize;
+  top: 0;
+  width: 16px;
+  height: 16px;
+  cursor: nesw-resize;
   touch-action: none;
   background: linear-gradient(
-    135deg,
+    45deg,
     transparent 0 45%,
-    rgb(201 220 255 / 45%) 45% 55%,
+    rgb(201 220 255 / 50%) 45% 55%,
     transparent 55% 70%,
-    rgb(201 220 255 / 45%) 70% 80%,
+    rgb(201 220 255 / 50%) 70% 80%,
     transparent 80%
   );
 }

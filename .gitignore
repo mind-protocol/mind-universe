@@ -21,3 +21,6 @@ logs/
 
 # Scratch
 New Text Document.txt
+
+# Claude Code personal settings (machine-specific hook paths)
+.claude/settings.local.json

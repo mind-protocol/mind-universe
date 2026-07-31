@@ -1,0 +1,551 @@
+{
+  "id": "space:l2:mind-universe:appearance-toolkit-v0",
+  "node_type": "space",
+  "subtype": "appearance_toolkit",
+  "content": {
+    "contractKind": "construct",
+    "name": "Appearance toolkit v0 (each affordance gets a materialization + a default — an agent dresses a construct affordance by affordance, e.g. a magic cup)",
+    "dominant_scale": "sensemaking",
+    "lineage": "The CROSS-SCALE meta-toolkit for FORM, and the visual completion of the affordance face: the unit of appearance is the AFFORDANCE, not the object. It COMPOSES the existing affordance face (crates/universe-affordance/ + fixtures/affordance/affordance-catalog.json — closed kernel verbs inspect|place|connect|open|build|test, justification required, epistemic cells actionable|empty|fogged|forbidden) by adding a MATERIALIZATION per affordance, and it composes the proven MutationBond write-path (crates/universe-e2e/src/mutation_translate.rs, four closed kernel verbs) to attach the binding by a PROJECTS_AS edge — exactly like the Construction toolkit attaches a structure. The Sky toolkit's star binding (fixtures/ontology/sky-toolkit-v0.json) is a whole-object instance of the same primitive-tuple schema; here that schema materializes AFFORDANCES. Appearance is AUTHORED, never derived from kernel type. See [[space:l2:mind-universe:sky-toolkit-v0]], [[space:l2:mind-universe:construction-toolkit-v0]], [[space:l2:mind-universe:abstraction-toolkit-v0]].",
+    "parent_scope": {
+      "classification": "standalone",
+      "justification": "Portable bootstrap toolkit awaiting installation under the canonical physicalization registry Space. Exactly one scope classification; no PART_OF edge is written to an unbuilt parent."
+    },
+    "runtime_moment_subtypes": ["validation_run", "health_assessment"],
+    "native_law_boundary": "The renderer knows only a CLOSED set of drawable primitives and how to bind the three construct state-channels (poids -> size, activation -> brightness, validite -> continuity). The affordance face knows only a CLOSED set of kernel verb kinds (inspect, place, connect, open, build, test) and four epistemic cells (actionable, empty, fogged, forbidden). A MATERIALIZATION is a free composition of primitives keyed to ONE affordance; which primitives materialize `sip` or `enchant`, what each part MEANS (which affordance it shows), and how measured state drives each socket are payload data, never terms in native dispatch. A domain affordance name (drink, enchant, ...) is data carried over a kernel kind; it never selects renderer or physics behaviour by name. Adding a drawable primitive is an attributable renderer extension; an authored materialization reaching for an out-of-palette primitive is refused, never silently dropped.",
+    "purpose": "Make APPEARANCE per-AFFORDANCE. A construct offers affordances (each: a kernel kind in the closed set inspect|place|connect|open|build|test, an optional domain subtype like sip or enchant, a justification, a target, and an epistemic cell). The toolkit produces a physicalization_binding that MATERIALIZES EACH AFFORDANCE — a sub-form composed over the closed palette — and ships a DEFAULT materialization per kernel kind, so NO affordance is ever un-materialized. The construct's whole form is the UNION of its affordances' materializations; a construct with no affordance is a grey presence point (nothing to do -> nothing to show). Each materialization renders faithfully to its affordance's epistemic cell (actionable solid, fogged Fog, forbidden struck, empty absent) and carries the three honest state-channels; every visible part declares WHICH affordance it materializes (inverse_mapping), so 'what you can do' and 'what it looks like' are one projection. A magic cup = a construct offering {contain, sip, fill, enchant}, each materialized — the enchant aura is the 'magic'. Shape is free per affordance; totality is guaranteed by the default; honesty by the cells and the sockets.",
+    "affordance_materialization_contract": {
+      "affordance": "a verb a construct offers, read from the affordance face: a kernel `kind` (closed: inspect|place|connect|open|build|test), an optional domain `subtype` (data: contain, sip, fill, enchant, ...), a required justification, a target and an epistemic cell.",
+      "materialization": "the visible form ONE affordance takes: an ordered list of form_primitive_tuples over the closed palette, keyed to that affordance. Specific if authored (keyed on the affordance's domain subtype), otherwise the DEFAULT for its kernel kind.",
+      "default_materialization": "one materialization shipped per closed kernel kind {inspect, place, connect, open, build, test}, used whenever an affordance has no authored specific materialization. Guarantees every affordance is materialized; a kernel kind with no default is a named hole (the toolkit ships all six).",
+      "binding": "the construct's viz-node = { per-affordance materialization } + the resolved defaults, reached by a construct PROJECTS_AS binding edge (appearance lives in the construct).",
+      "construct_form": "the UNION of the construct's affordance-materializations, assembled at observation; a construct that offers no affordance renders as a grey presence point, never a defaulted citizen.",
+      "epistemic_cell": "each materialization renders faithfully to its affordance's cell — actionable = solid/present, fogged = Fog, forbidden = struck/greyed, empty = absent. Only an observed/measured affordance is actionable-solid; an unproven one is Fog, never shown as usable.",
+      "primitive": "one closed, renderer-drawable shape; the palette is closed, an out-of-palette primitive is refused. A new primitive is an attributable renderer extension.",
+      "form_primitive_tuple": "[kind, part_name, palette_role, offset(vec3), rotation(vec3), scale(vec3>0), particle_count, particle_size]. The unit of free composition inside one materialization.",
+      "socket": "a binding point from a construct state-channel (poids | activation | validite) to a visual property; unmeasured drives Fog, never a fabricated value.",
+      "inverse_mapping": "the declared meaning of each visible part = WHICH affordance it materializes (a rim = sip; an aura = enchant). Makes an arbitrary form inspectable and non-lying; the affordance is recoverable from the rendered result.",
+      "fallback": "the per-kernel-kind default materialization is the fallback for an un-authored affordance; the ultimate fallback for a construct with no affordance is the grey presence point. Honest absence, never an invented form.",
+      "author_capabilities": ["materialize_affordance", "set_default_materialization", "bind_state_sockets", "attach_binding", "supersede_materialization"],
+      "observer_capabilities": ["observe", "read_binding", "inspect_materialization", "trace_affordance"],
+      "rule": "Every affordance a construct offers resolves a materialization: its authored specific one, else the default for its kernel kind. A materialization is composed only from closed-palette primitives (an out-of-palette one fails closed), renders faithfully to the affordance's epistemic cell, drives the three channels as honest sockets (unmeasured = Fog), and declares which affordance it shows (inverse_mapping). Authoring or altering a materialization is an attributable act through the authoring port, committed only through the four closed kernel verbs via a PROJECTS_AS edge; a mere observer inspects but does not re-materialize.",
+      "sealed_default": "unmaterialized_affordance_uses_its_kind_default; no_affordance_is_grey_presence"
+    }
+  },
+  "members": [
+    {
+      "id": "objective:l2:mind-universe:appearance-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "For ANY construct, EVERY affordance it offers resolves a materialization — its authored specific one keyed on the affordance's domain subtype, else the DEFAULT for its kernel kind (one shipped per closed kind inspect|place|connect|open|build|test) — so no affordance is ever un-materialized. Each materialization uses ONLY closed-palette primitives (an out-of-palette one is refused transactionally), renders faithfully to the affordance's epistemic cell (actionable solid, fogged Fog, forbidden struck, empty absent), drives the three construct channels as honest sockets (unmeasured = Fog, never a fabricated value), and declares which affordance every visible part materializes (inverse_mapping). The construct's whole form is the union of these materializations; a construct with no affordance renders as a grey presence point, never a defaulted citizen. The binding attaches by a PROJECTS_AS edge committed as one atomic write-set of the four closed kernel verbs — zero new symbols, no fifth verb. An agent can materialize sip, fill and enchant on a cup (making it a magic cup) while no materialization shows an affordance the construct does not offer or a state it did not measure."
+      }
+    },
+    {
+      "id": "pattern:l2:mind-universe:appearance-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "Appearance is materialized per-AFFORDANCE, not per-object. The toolkit reads a construct's affordances from the affordance face (kernel kind in the closed set, optional domain subtype, justification, target, epistemic cell) and, for EACH, resolves a materialization: the authored specific form (keyed on the domain subtype) if present, else the DEFAULT form for its kernel kind. A materialization is a sub-composition of form_primitive_tuples over the closed palette. The construct's whole form is the UNION of its affordance-materializations, assembled at observation; nothing is stored (where is a projection). Each materialization renders faithfully to its affordance's epistemic cell and drives the three honest channels (poids -> size, activation -> brightness with Fog for unmeasured, validite -> continuity severed at the first failure front). Every part declares which affordance it shows, so the render face and the affordance face are ONE projection keyed on the affordance. Attaching the binding is put_entity(binding) + put_relation(construct PROJECTS_AS binding) through the proven MutationBond write-path — the same four kernel verbs. A magic cup is a construct that offers {contain, sip, fill, enchant}, each materialized; the enchant aura is the magic.",
+        "epistemic_honesty": "A materialization is free in shape but honest in claim: it shows an affordance the construct actually offers, in the affordance's actual cell (an un-actionable affordance is Fog or struck, never a usable-looking solid), driven by measured state (an unmeasured channel is Fog, never a fabricated glow or fill). A default materialization is an honest placeholder, not a claim of a specific dressing. A construct with no affordance is a grey presence point, never a default citizen. The palette is closed; an invented primitive is refused, not silently dropped. A part with no declared affordance is an unreadable form and is refused."
+      }
+    },
+    {
+      "id": "vocabulary:l2:mind-universe:appearance-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "Affordance": "A verb a construct offers, read from the affordance face: a kernel kind (closed: inspect|place|connect|open|build|test), an optional domain subtype (contain, sip, fill, enchant, ...), a required justification, a target, and an epistemic cell.",
+          "Materialization": "The visible form ONE affordance takes — an ordered list of form_primitive_tuples over the closed palette, keyed to that affordance. Specific (authored, keyed on the domain subtype) or default (keyed on the kernel kind).",
+          "DefaultMaterialization": "One materialization shipped per closed kernel kind; the fallback for an un-authored affordance. Guarantees every affordance is materialized.",
+          "PhysicalizationBinding": "The construct's viz-node: its per-affordance materializations plus the resolved defaults, reached by a construct PROJECTS_AS binding edge (appearance lives in the construct).",
+          "ConstructForm": "The union of a construct's affordance-materializations, assembled at observation and never stored; no affordance -> grey presence point.",
+          "EpistemicCell": "The affordance face's cell (actionable | empty | fogged | forbidden); a materialization renders faithfully to it — only actionable is solid/usable.",
+          "Primitive": "One closed, renderer-drawable shape; the palette is closed, an out-of-palette primitive is refused; a new primitive is an attributable renderer extension.",
+          "Palette": "The closed set of allowed primitives; composition is total over it.",
+          "FormPrimitiveTuple": "[kind, part_name, palette_role, offset, rotation, scale(>0), particle_count, particle_size] — the unit of composition inside one materialization.",
+          "Socket": "A binding point from a construct state-channel (poids | activation | validite) to a visual property; unmeasured drives Fog.",
+          "InverseMapping": "The declared meaning of each visible part = which affordance it materializes; makes the form inspectable and non-lying.",
+          "Fog": "An unmeasured/unproven state or a non-actionable affordance; rendered dark/absent/struck, never as a usable solid or a fabricated value.",
+          "MagicCup": "ONE example construct — offers {contain, sip, fill, enchant}, each materialized; the enchant aura is the magic. Not the toolkit's definition."
+        }
+      }
+    },
+    {
+      "id": "behavior:l2:mind-universe:appearance-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "A target construct and the affordances it offers (from the affordance face: kernel kind, optional domain subtype, justification, target, epistemic cell), any authored specific materializations, the three channels' measurements, and the acting actor's capability set.",
+        "when": "An agent materializes an affordance (or supersedes one, or sets a default), the runtime shows a construct, or an observer inspects a materialization.",
+        "then": [
+          "For each affordance the construct offers, resolve a materialization: the authored specific one (keyed on the domain subtype) if present, else the default for its kernel kind.",
+          "Compose each materialization only from closed-palette primitives; refuse an out-of-palette primitive transactionally.",
+          "Render each materialization faithfully to its affordance's epistemic cell: actionable solid, fogged Fog, forbidden struck, empty absent.",
+          "Drive the three channels as honest sockets (unmeasured = Fog); require each channel socket-wired or explicitly not_driven.",
+          "Require every part to declare which affordance it materializes (inverse_mapping); refuse a part with no declared affordance.",
+          "Assemble the construct's whole form as the union of its affordance-materializations at observation; never store the union.",
+          "Attach the binding via put_entity(binding) + put_relation(construct PROJECTS_AS binding), aggregated into ONE atomic write-set (four closed kernel verbs only); read it back.",
+          "Serve inspection observe-only; resolve authoring against the appearance-authoring capability, failing an unauthorized one closed with a receipt.",
+          "Render a construct that offers no affordance as a grey presence point."
+        ],
+        "forbidden": [
+          "leaving an offered affordance un-materialized (no specific and no default)",
+          "materializing an affordance the construct does not offer",
+          "showing a non-actionable affordance as a usable solid instead of Fog/struck",
+          "inventing a primitive outside the closed palette",
+          "driving a socket with a fabricated value for an unmeasured channel",
+          "a part with no declared affordance (an unreadable form)",
+          "deriving appearance from kernel type instead of materializing the affordances",
+          "defaulting a construct with no affordance to a citizen instead of a grey presence point",
+          "storing the assembled construct-form union as a datum (where is a projection)",
+          "emitting a fifth write verb or a non-PROJECTS_AS attachment path",
+          "rendering a preview materialization as a committed binding",
+          "pre-creating validation_run or health_assessment"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l2:mind-universe:appearance-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "read the target construct's affordances from the affordance face (kernel kind, domain subtype, justification, target, epistemic cell)",
+          "for each affordance, resolve its materialization: authored specific (by domain subtype) else default (by kernel kind); a kernel kind with no default is a named hole",
+          "validate every materialization's tuples: kind in closed palette, arity correct, scale > 0; refuse and roll back an out-of-palette primitive",
+          "tag each materialization with its affordance's epistemic cell (actionable/empty/fogged/forbidden) for faithful rendering",
+          "require the three channels each socket-wired or explicitly not_driven; a socket renders measured state faithfully and unmeasured as Fog",
+          "require an inverse_mapping (the affordance it shows) per part",
+          "compose the binding entity: the per-affordance materializations + resolved defaults",
+          "translate put_entity(binding) + put_relation(construct PROJECTS_AS binding) through the generic mutation translator into UniverseCommands; aggregate into ONE UniverseWriteSet; commit atomically",
+          "read the binding back from a fresh reopen; assert the PROJECTS_AS edge, palette closure, each affordance materialized, the cells, the sockets and the inverse_mappings",
+          "assemble (at observation, never stored) the construct-form union of its materializations; a construct with no affordance is a grey presence point",
+          "for inspection: resolve the observe-only set; for authoring: require the appearance-authoring capability, else fail closed",
+          "emit the commit/rejection receipt; run the independent observer and the structured evaluation AST; derive health from fresh evidence"
+        ],
+        "resolution_rule": "materialization(affordance) = specific(affordance.subtype) if authored else default(affordance.kind); every offered affordance resolves one, or it is a named hole.",
+        "palette_rule": "compose(tuple) admitted iff tuple.kind in closed_palette AND scale > 0; otherwise TransactionRejected with the prior binding restored exactly.",
+        "cell_rule": "render(materialization) faithful to affordance.cell: actionable=solid, fogged=Fog, forbidden=struck, empty=absent; only observed/measured is actionable-solid.",
+        "capability_resolution": "inspect -> observe-only-set; authoring_port -> require(authority:appearance-authoring). No affordance escalates capability; an absent capability fails closed.",
+        "scheduler_projection": "tick-boundary/1; one binding attach = one write-set at one tick boundary. Determinism is NOT required — only the committed PROJECTS_AS edge and binding are authoritative.",
+        "python_escape_hatch": "forbidden_by_default"
+      }
+    },
+    {
+      "id": "code:l2:mind-universe:appearance-toolkit-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "authority": "Graph-native CodeDefinition projection composing the affordance face + the proven MutationBond write-path into a per-affordance materialization gesture. This JSON file is a materialized projection, not independent semantic authority.",
+        "language": "mind-ir+mutation-set",
+        "entrypoints": [
+          "read_construct_affordances",
+          "resolve_materialization",
+          "validate_palette_closure",
+          "render_to_epistemic_cell",
+          "bind_state_sockets",
+          "attach_binding",
+          "assemble_construct_form",
+          "observe_appearance",
+          "evaluate_appearance_ast"
+        ],
+        "authoring_gate": {
+          "port_id": "port:l2:mind-universe:appearance:authoring-v0",
+          "observe_capabilities": ["observe", "read_binding", "inspect_materialization", "trace_affordance"],
+          "required_mutate_capability": "authority:appearance-authoring",
+          "default_state": "unmaterialized_affordance_uses_its_kind_default",
+          "on_unauthorized": ["fail_closed", "leave_binding_unchanged", "emit_rejection_receipt"],
+          "rule": "Materializing, defaulting or superseding an affordance's form is admitted only from an actor holding authority:appearance-authoring. Inspecting grants none of it."
+        },
+        "palette": {
+          "note": "The CLOSED renderer alphabet. Composition is free OVER this set; the set is a renderer capability (like the four closed kernel write verbs and the six closed affordance kinds), extended only by an attributable renderer change. NOTE: v0's illustrative materializations reach for box/cylinder/cone/torus/plane/tube — currently OUTSIDE the renderer's closed 5 (ALLOWED_PRIMITIVES in crates/universe-assets/src/visual.rs:34 + contracts.ts + embodiment.ts). Extending the palette is the open renderer decision that gates hard-edged materializations.",
+          "closed": true,
+          "allowed_primitives": ["box", "cylinder", "cone", "torus", "plane", "tube", "capsule", "sphere", "icosphere", "points", "fresnel_shell"],
+          "form_primitive_tuple": {
+            "arity": 8,
+            "fields": ["kind", "part_name", "palette_role", "offset(vec3)", "rotation(vec3)", "scale(vec3>0)", "particle_count", "particle_size"],
+            "palette_roles": ["core", "emissive", "shell", "particle"]
+          },
+          "channels": ["poids", "activation", "validite"],
+          "epistemic_cells": ["actionable", "empty", "fogged", "forbidden"],
+          "kernel_affordance_kinds": ["inspect", "place", "connect", "open", "build", "test"]
+        },
+        "composes": {
+          "affordance_face": {
+            "authority": "crates/universe-affordance/ + fixtures/affordance/affordance-catalog.json",
+            "closed_kinds": ["inspect", "place", "connect", "open", "build", "test"],
+            "cells": ["actionable", "empty", "fogged", "forbidden"],
+            "note": "The Appearance toolkit READS affordances here and adds the materialization layer; it does not redefine the verb set or the cells."
+          },
+          "write_path": {
+            "primitive": "mutation_bond",
+            "primitive_authority": "fixtures/ontology/mutation-bond-authority.json",
+            "translator": "crates/universe-e2e/src/mutation_translate.rs::translate_mutation_receipt",
+            "kernel_verbs": ["intern_symbols", "put_entity", "put_relation", "tombstone_relation"],
+            "attach_model": "attach = put_entity(binding) + put_relation(construct PROJECTS_AS binding), one atomic write-set, four closed verbs, no fifth.",
+            "no_fifth_write_verb": true
+          }
+        },
+        "default_materializations": {
+          "note": "Shipped by the toolkit — ONE per closed kernel affordance kind. Used whenever an affordance has no authored specific materialization, guaranteeing totality. Each declares the affordance it shows (inverse_mapping). (Hard-edged primitives here depend on the palette extension.)",
+          "inspect": {"form": [["icosphere", "lens", "core", [0, 0, 0], [0, 0, 0], [0.2, 0.2, 0.2], 0, 0]], "inverse_mapping": "a lens = you can inspect this"},
+          "place": {"form": [["torus", "slot", "shell", [0, 0, 0], [0, 0, 0], [0.3, 0.3, 0.3], 0, 0]], "inverse_mapping": "an open slot = you can place into this"},
+          "connect": {"form": [["torus", "port", "core", [0, 0, 0], [0, 0, 0], [0.24, 0.24, 0.24], 0, 0]], "inverse_mapping": "a port/ring = you can connect here"},
+          "open": {"form": [["capsule", "seam", "shell", [0, 0, 0], [0, 0, 0], [0.3, 0.4, 0.3], 0, 0]], "inverse_mapping": "a seam/lid = you can open this"},
+          "build": {"form": [["box", "scaffold", "shell", [0, 0, 0], [0, 0, 0], [0.28, 0.28, 0.28], 0, 0]], "inverse_mapping": "a scaffold node = you can build here"},
+          "test": {"form": [["cylinder", "gauge", "emissive", [0, 0, 0], [0, 0, 0], [0.18, 0.3, 0.18], 0, 0]], "inverse_mapping": "a gauge = you can test this"}
+        },
+        "magic_cup_binding": {
+          "note": "GENERIC illustrative construct: a magic cup is a construct that OFFERS four affordances, each MATERIALIZED. A real construct supplies ANY affordances + materializations; the toolkit hard-codes no particular cup. This is to the Appearance toolkit what the machine_circuit is to the Mechanical toolkit — an example. Every affordance not given a specific materialization here would fall to default_materializations[kind].",
+          "target_construct": "<any construct, resolved at author time>",
+          "schema_version": "affordance-materialization/1",
+          "palette": {"core": "#f4e3b0", "emissive": "#8fd6ff", "shell": "#c9a86a", "particle": "#eaf6ff"},
+          "affordance_materializations": [
+            {
+              "affordance": {"subtype": "contain", "kernel_kind": "place", "justification": "a concave vessel affords holding contents", "cell": "actionable"},
+              "form": [["cylinder", "body", "shell", [0, 0, 0], [0, 0, 0], [0.4, 0.5, 0.4], 0, 0]],
+              "inverse_mapping": "the concave body = you can hold/place contents in this"
+            },
+            {
+              "affordance": {"subtype": "sip", "kernel_kind": "open", "justification": "the rim opens access to the contents", "cell": "actionable"},
+              "form": [["torus", "rim", "core", [0, 0.26, 0], [0, 0, 0], [0.42, 0.42, 0.42], 0, 0]],
+              "inverse_mapping": "a rim/lip = you can drink from here"
+            },
+            {
+              "affordance": {"subtype": "fill", "kernel_kind": "place", "justification": "the open mouth admits liquid", "cell": "actionable"},
+              "form": [["plane", "liquid", "emissive", [0, 0.12, 0], [1.5708, 0, 0], [0.36, 0.36, 0.36], 0, 0]],
+              "inverse_mapping": "the open mouth + liquid disc = you can fill it; disc height = measured fullness (Fog if unmeasured, never a zero default)"
+            },
+            {
+              "affordance": {"subtype": "enchant", "kernel_kind": "build", "justification": "the sigil affords building magic into the cup", "cell": "actionable"},
+              "form": [
+                ["fresnel_shell", "aura", "emissive", [0, 0.05, 0], [0, 0, 0], [0.72, 0.82, 0.72], 0, 0],
+                ["points", "sparkle", "particle", [0, 0.32, 0], [0, 0, 0], [1, 1, 1], 16, 0.4]
+              ],
+              "inverse_mapping": "the aura + sparkles = you can ENCHANT this; lit only when charge is MEASURED (Fog = uncharged, NOT empty-by-choice). This is the cup's 'magic' = its enchant affordance materialized."
+            }
+          ],
+          "state_sockets": [
+            {"socket": "whole.scale", "channel": "poids", "driven_by": "incoming degree / usage (weight)", "honesty": "weight absent -> neutral scale 1, never invented"},
+            {"socket": "aura.emissive + sparkle.count", "channel": "activation", "driven_by": "measured charge (the enchant affordance's live energy)", "honesty": "unmeasured or zero -> Fog: dark aura, no sparkles; NEVER a fabricated glow"},
+            {"socket": "sparkle.ring_continuity", "channel": "validite", "driven_by": "the construct's causal-chain health (health-chain judge)", "honesty": "healthy -> full ring; degraded/failed -> broken at the FIRST failure front; not_measured -> faint, never a confident full ring"}
+          ],
+          "cell_rendering": {
+            "note": "Each materialization renders faithful to its affordance's cell; a cup whose `enchant` is only fogged (charge unproven) shows a DARK aura, and one whose `sip` is forbidden (no access capability) shows a STRUCK rim — you SEE which affordances are live.",
+            "actionable": "solid / present",
+            "fogged": "Fog (dark/translucent)",
+            "forbidden": "struck / greyed",
+            "empty": "absent"
+          },
+          "construct_form": "the UNION of the four materializations, assembled at observation and never stored: {contain body} + {sip rim} + {fill mouth+liquid} + {enchant aura+sparkles} = a magic cup.",
+          "fallback": "any affordance not materialized here falls to default_materializations[kernel_kind]; a construct offering no affordance is a grey presence point.",
+          "lod_states": {
+            "note": "Residency selects which materializations to draw; a missing residency falls to the affordance's default or the grey presence point.",
+            "hot": "all affordances materialized",
+            "sleeping": "structural affordances (contain, sip) only",
+            "aggregated": "contain only",
+            "dormant": "grey presence point"
+          }
+        }
+      }
+    },
+    {
+      "id": "implementation:l2:mind-universe:appearance-toolkit-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "status": "materialized",
+        "artifact": "appearance-toolkit-v0.json",
+        "graph_status": "not_written",
+        "wiring_status": "not_wired",
+        "runtime_status": "not_running",
+        "verification_status": "not_measured",
+        "honesty": "The Appearance toolkit is materialized and shaped as a 12-role self-verifying construct whose unit of appearance is the AFFORDANCE: it reads a construct's affordances from the affordance face (crates/universe-affordance/, closed kernel kinds + epistemic cells) and materializes EACH — specific if authored, else the shipped default for its kernel kind — then attaches the binding through the ALREADY-PROVEN MutationBond write-path (put_entity + put_relation PROJECTS_AS, four closed verbs). The magic_cup_binding is the illustrative construct (offers contain/sip/fill/enchant, each materialized); default_materializations ships one form per kernel kind. TWO honest gaps remain, both flagged: (1) the closed renderer palette is 5 CELESTIAL primitives (visual.rs:34 + contracts.ts + embodiment.ts) — the illustrative materializations and defaults reach for box/cylinder/cone/torus/plane/tube, which are refused today; extending the palette is an open, attributable renderer decision. (2) graph_status not_written / not wielded — no binding is materialized, attached or shown yet. Next increment: a wield_appearance bin that reads a scratch construct's affordances, resolves each to a materialization (specific or default), attaches by PROJECTS_AS through the generic translator, and proves it by independent readback (every affordance materialized, out-of-palette refused, Fog on unmeasured, cell-faithful), mirroring wield_construction.rs."
+      }
+    },
+    {
+      "id": "justification:l2:mind-universe:appearance-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": [
+          "The unit of appearance is the AFFORDANCE, not the object: what a construct IS is what you can DO with it, so materializing each affordance is what makes the form mean — a magic cup is magic because its `enchant` affordance is materialized, not because someone drew a cup.",
+          "Requiring a DEFAULT materialization per kernel kind guarantees totality: no affordance is ever un-materialized, so a construct can never offer an action that is invisible — the default is an honest placeholder until a specific one is authored.",
+          "Keeping the render face and the affordance face ONE projection keyed on the affordance means 'what you can do' and 'what it looks like' can never drift: you cannot materialize an affordance the construct does not offer, and you cannot offer one that is not materialized.",
+          "Rendering each materialization faithful to its epistemic cell (actionable/fogged/forbidden/empty) keeps a possible action distinct from a live one at a glance — an un-charged enchant is a dark aura, a forbidden sip is a struck rim.",
+          "Composing the affordance face + the proven MutationBond write-path means the toolkit adds only the materialization layer and inherits both the verb discipline and the four-verb write guarantees for free.",
+          "A construct with no affordance is a grey presence point, never a fabricated default — nothing to do means nothing to show."
+        ],
+        "rejected": [
+          "materializing the OBJECT as one whole form, because that hides which parts are actionable and re-freezes one look per type — a magic cup cannot be derived, its affordances must be dressed",
+          "an affordance with no materialization and no default, because an invisible action is a lie of omission",
+          "showing a non-actionable affordance as a usable solid, because that fabricates an ability",
+          "deriving appearance from kernel type, because that can never dress a domain affordance like `enchant`",
+          "storing the assembled construct-form union, because where is a projection, not a datum",
+          "defaulting a construct with no affordance to a citizen, because that is the removed default_authority hiding absence as presence"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:mind-universe:appearance-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "structured_expression_ast",
+        "scenarios": [
+          "every_offered_affordance_resolves_a_materialization",
+          "un_authored_affordance_uses_its_kind_default",
+          "default_materialization_shipped_for_every_kernel_kind",
+          "agent_materializes_sip_fill_enchant_on_a_cup",
+          "enchant_aura_lit_only_when_charge_measured",
+          "materialization_faithful_to_epistemic_cell",
+          "fogged_affordance_renders_fog_not_solid",
+          "forbidden_affordance_renders_struck",
+          "materialization_uses_only_palette_primitives",
+          "out_of_palette_primitive_refused_transactionally",
+          "every_part_declares_its_affordance",
+          "construct_form_is_union_derived_not_stored",
+          "no_affordance_is_grey_presence_not_citizen",
+          "attach_commits_as_one_atomic_write_set",
+          "attach_uses_only_four_kernel_verbs",
+          "unauthorized_authoring_fails_closed",
+          "readback_from_fresh_store_matches"
+        ],
+        "negative_invariants": [
+          "an offered affordance left un-materialized rejected",
+          "a materialization of an affordance the construct does not offer rejected",
+          "a non-actionable affordance shown as a usable solid rejected",
+          "out-of-palette primitive rejected",
+          "a socket fabricating a value for an unmeasured channel rejected",
+          "a part with no declared affordance rejected",
+          "a stored construct-form union rejected",
+          "a construct with no affordance rendered as a default citizen rejected",
+          "a fifth write verb rejected"
+        ],
+        "invariants": [
+          "every offered affordance resolves a materialization (specific or default)",
+          "a default materialization exists for every closed kernel kind",
+          "a materialization uses only closed-palette primitives",
+          "a materialization renders faithful to its affordance's epistemic cell",
+          "the three channels are honest sockets (unmeasured = Fog) or explicitly not_driven",
+          "every part declares which affordance it materializes",
+          "the construct-form is the union of materializations, derived at observation and never stored",
+          "a construct with no affordance is a grey presence point",
+          "attaching a binding emits only the four closed kernel verbs via a PROJECTS_AS edge"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:mind-universe:appearance-observer-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "target": "observability_algorithm:l2:mind-universe:appearance-toolkit-v0",
+        "tests": [
+          "detect an offered affordance with no materialization and no default",
+          "detect a materialization for an affordance the construct does not offer",
+          "detect a non-actionable affordance rendered as a usable solid",
+          "detect a materialization tuple whose primitive is outside the closed palette",
+          "detect a socket showing a state the construct did not measure",
+          "detect a part with no declared affordance",
+          "detect a construct-form union written into the store",
+          "detect a construct with no affordance rendered as a default citizen",
+          "detect a binding attached by anything other than a PROJECTS_AS edge and the four kernel verbs",
+          "detect an authoring affordance offered to an actor without the capability",
+          "never convert an unmeasured or non-actionable affordance into a usable materialization"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l2:mind-universe:appearance-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Reads the target construct's affordances (from the affordance face), the resolved materializations (specific + defaults), the closed palette, the committed PROJECTS_AS edge and binding from a FRESH reopen, the epistemic cells, the sockets and their measurements, the inverse_mappings, the acting capability set and the commit receipt. It does not trust a renderer preview, a self-declared appearance, an assembled union treated as stored, or the implementation's self-report of graph_status.",
+        "checks": [
+          "every offered affordance resolved a materialization (specific or its kind's default)",
+          "a default materialization exists for every closed kernel kind",
+          "no materialization dresses an affordance the construct does not offer",
+          "each materialization is faithful to its affordance's epistemic cell (non-actionable is not a usable solid)",
+          "every materialization tuple's primitive is in the closed palette",
+          "no socket shows a state the construct did not measure (Fog honesty)",
+          "every part declares which affordance it materializes",
+          "the construct-form union is derived at observation and not present as a stored datum",
+          "a construct with no affordance renders as a grey presence point, not a default citizen",
+          "the binding is attached by a PROJECTS_AS edge using only the four closed kernel verbs",
+          "receipt integrity and independent readback match"
+        ]
+      }
+    },
+    {
+      "id": "metric:l2:mind-universe:appearance-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "dimensions": [
+          "affordance_materialization_coverage",
+          "default_materialization_completeness",
+          "spurious_materialization_rate",
+          "cell_fidelity_rate",
+          "non_actionable_shown_as_usable_rate",
+          "palette_closure_rate",
+          "out_of_palette_rejection_rate",
+          "three_channel_socket_coverage",
+          "fog_honesty_rate",
+          "part_affordance_declaration_rate",
+          "construct_form_union_not_stored_rate",
+          "no_affordance_grey_not_citizen_rate",
+          "projects_as_attachment_rate",
+          "four_verb_compliance",
+          "authoring_capability_gated_rate",
+          "receipt_integrity",
+          "independent_readback_match_rate",
+          "evidence_freshness_ms"
+        ]
+      }
+    },
+    {
+      "id": "health:l2:mind-universe:appearance-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "states": ["healthy", "degraded", "stale", "unknown", "not_measured", "measurement_failed"],
+        "derivation": {
+          "healthy": "All required fresh scenarios pass: every affordance a construct offered resolved a materialization (specific or its kind's default), a default existed for every kernel kind, each materialization used only palette primitives and rendered faithful to its affordance's epistemic cell, the three channels were honest sockets with Fog for unmeasured, every part declared its affordance, the construct-form union was derived and not stored, a construct with no affordance rendered as a grey presence point, the binding attached via a PROJECTS_AS edge using only the four kernel verbs, and independent readback matched.",
+          "degraded": "Fresh evidence exists but at least one non-catastrophic dimension violates its bound.",
+          "stale": "The latest otherwise valid evidence exceeds the configured freshness window.",
+          "unknown": "Required evidence cannot be resolved to a known state.",
+          "not_measured": "No fresh appearance run has measured the required dimensions.",
+          "measurement_failed": "The observer or evaluator failed to produce a trustworthy measurement."
+        },
+        "maintenance": [
+          "retry",
+          "inspect_affordance_materializations",
+          "add_missing_default_materialization",
+          "recheck_palette_closure",
+          "rebind_state_sockets",
+          "recheck_epistemic_cell_fidelity",
+          "declare_missing_part_affordance",
+          "reissue_appearance_capability",
+          "extend_renderer_palette",
+          "reconcile_rust_scheduler",
+          "ask_human"
+        ]
+      }
+    },
+    {
+      "id": "visual_binding:l2:mind-universe:appearance-toolkit-v0",
+      "node_type": "thing",
+      "subtype": "physicalization_binding",
+      "content": {
+        "kind": "physicalization_binding",
+        "note": "The Appearance toolkit's OWN appearance, authored by its own schema (dogfood): its affordances {materialize_affordance, inspect_materialization} are each materialized. A LOOM reads 'forms are woven here'. IDENTITY only; the three channels are declared as sockets, driven at step 3.",
+        "schema_version": "affordance-materialization/1",
+        "dominant_scale": "sensemaking",
+        "palette": {"core": "#e8e2d0", "emissive": "#9ad0c0", "shell": "#6b7a8f", "particle": "#f0f6ff"},
+        "form_primitive_tuple": {
+          "arity": 8,
+          "fields": ["kind", "part_name", "palette_role", "offset(vec3)", "rotation(vec3)", "scale(vec3>0)", "particle_count", "particle_size"],
+          "allowed_primitives": ["box", "cylinder", "cone", "torus", "plane", "tube", "capsule", "sphere", "icosphere", "points", "fresnel_shell"]
+        },
+        "affordance_materializations": [
+          {
+            "affordance": {"subtype": "materialize_affordance", "kernel_kind": "build", "justification": "the loom frame affords weaving a form onto an affordance", "cell": "actionable"},
+            "form": [["torus", "frame", "shell", [0, 0, 0], [0, 0, 0], [0.6, 0.6, 0.6], 0, 0]],
+            "inverse_mapping": "the loom frame = you can materialize an affordance here"
+          },
+          {
+            "affordance": {"subtype": "inspect_materialization", "kernel_kind": "inspect", "justification": "the sample motes afford inspecting the palette", "cell": "actionable"},
+            "form": [["points", "mote", "particle", [0, 0, 0], [0, 0, 0], [1, 1, 1], 10, 0.4]],
+            "inverse_mapping": "sample motes = you can inspect the palette it composes from; motes lit = live authoring activity (measured), bare = idle not broken"
+          }
+        ],
+        "state_sockets": [
+          {"socket": "whole.scale", "channel": "poids", "driven_by": "incoming degree / usage", "honesty": "absent -> neutral scale 1", "deferred_to": "step 3"},
+          {"socket": "mote.count + frame.emissive", "channel": "activation", "driven_by": "measured authoring activity", "honesty": "unmeasured -> Fog (bare frame, no motes)", "deferred_to": "step 3"}
+        ],
+        "fallback": "any affordance not materialized here falls to default_materializations[kernel_kind]; no affordance -> grey presence point",
+        "lod_states": {
+          "hot": "frame + motes",
+          "sleeping": "frame only",
+          "aggregated": "frame only",
+          "dormant": "grey presence point"
+        }
+      }
+    },
+    {
+      "id": "port:l2:mind-universe:appearance:authoring-v0",
+      "node_type": "thing",
+      "subtype": "capability_port",
+      "content": {
+        "name": "Appearance authoring port (materialize / default / supersede an affordance's form)",
+        "state": "unmaterialized_affordance_uses_its_kind_default",
+        "observe_capabilities": ["observe", "read_binding", "inspect_materialization", "trace_affordance"],
+        "required_mutate_capability": "authority:appearance-authoring",
+        "shape_contract": "observe_set_disjoint_from_authoring_set",
+        "reader_predicate": "actor_holds(authority:appearance-authoring)",
+        "effect_when_unauthorized": "fail_closed_and_leave_binding_unchanged",
+        "note": "Inspecting a materialization (tuples, cell, sockets, inverse_mapping) is a separate observe-only surface; this port is the ONLY authoring surface and it requires the appearance-authoring capability. A materialization authored here still obeys palette closure, epistemic-cell fidelity, the three honest sockets, and a required per-part affordance declaration."
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "space:l2:mind-universe:appearance-toolkit-v0",
+      "predicate": "IMPLEMENTED_IN",
+      "target": "implementation:l2:mind-universe:appearance-toolkit-v0"
+    },
+    {
+      "source": "space:l2:mind-universe:appearance-toolkit-v0",
+      "predicate": "DEFINED_BY_CODE",
+      "target": "code:l2:mind-universe:appearance-toolkit-v0"
+    },
+    {
+      "source": "code:l2:mind-universe:appearance-toolkit-v0",
+      "predicate": "IMPLEMENTED_BY",
+      "target": "implementation:l2:mind-universe:appearance-toolkit-v0"
+    },
+    {
+      "source": "pattern:l2:mind-universe:appearance-toolkit-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l2:mind-universe:appearance-toolkit-v0"
+    },
+    {
+      "source": "behavior:l2:mind-universe:appearance-toolkit-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:mind-universe:appearance-toolkit-v0"
+    },
+    {
+      "source": "implementation:l2:mind-universe:appearance-toolkit-v0",
+      "predicate": "OBSERVED_BY",
+      "target": "observability_algorithm:l2:mind-universe:appearance-toolkit-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:mind-universe:appearance-toolkit-v0",
+      "predicate": "PRODUCES",
+      "target": "metric:l2:mind-universe:appearance-toolkit-v0"
+    },
+    {
+      "source": "metric:l2:mind-universe:appearance-toolkit-v0",
+      "predicate": "FEEDS",
+      "target": "health:l2:mind-universe:appearance-toolkit-v0"
+    },
+    {
+      "source": "objective:l2:mind-universe:appearance-toolkit-v0",
+      "predicate": "SUPPORTS",
+      "target": "space:l2:mind-universe:appearance-toolkit-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:mind-universe:appearance-toolkit-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:mind-universe:appearance-observer-v0"
+    },
+    {
+      "source": "space:l2:mind-universe:appearance-toolkit-v0",
+      "predicate": "PROJECTS_AS",
+      "target": "visual_binding:l2:mind-universe:appearance-toolkit-v0"
+    }
+  ]
+}

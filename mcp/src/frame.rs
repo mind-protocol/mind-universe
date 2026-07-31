@@ -12,7 +12,7 @@
 //! math in `pov.rs` (YXZ yaw-then-pitch), and shows only what falls in front of
 //! the camera inside the field of view — the rest stays in the object manifest.
 
-use crate::pov::{Pov, SphereSighting};
+use universe_supervisor::perception::{Pov, SphereSighting};
 
 /// Image plane, in pixels. `pub` so the raster backend shares the exact frame.
 pub const WIDTH: f64 = 640.0;
@@ -85,6 +85,11 @@ fn basis(yaw: f64, pitch: f64) -> ([f64; 3], [f64; 3], [f64; 3]) {
 /// Projects the sphere world positions through the pinhole and returns the SVG
 /// document for the frame. `sightings` should be sorted nearest-first so nearer
 /// spheres paint last (on top).
+///
+/// The SVG twin of [`crate::raster::render_jpeg`]. The MCP tool result rides the
+/// JPEG only, so this is retained as the alternate transport representation (and
+/// exercised by tests) rather than called on the live path.
+#[allow(dead_code)]
 pub fn render_svg(pov: &Pov, sightings: &[SphereSighting], caption: &str) -> String {
     let cx = WIDTH / 2.0;
     let cy = HEIGHT / 2.0;
@@ -191,7 +196,7 @@ mod tests {
             label: label.into(),
             primitive: "sphere",
             position,
-            distance_m: super::super::pov::distance([0.0, 0.0, 0.0], position),
+            distance_m: universe_supervisor::perception::pov::distance([0.0, 0.0, 0.0], position),
             bearing: "ahead",
         }
     }

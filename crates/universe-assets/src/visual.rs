@@ -31,7 +31,24 @@ const SCHEMA_VERSION: &str = "visual-embodiment/1";
 // graph authority is validated by the SAME limits the renderer enforces.
 const MAX_PRIMITIVES: u64 = 12;
 const MAX_PARTICLES: u64 = 160;
-const ALLOWED_PRIMITIVES: [&str; 5] = ["icosphere", "sphere", "capsule", "points", "fresnel_shell"];
+// Closed renderer primitive palette. The celestial five (icosphere..fresnel_shell)
+// dress luminous constructs (Sky); the hard-edged six (box..tube) dress figurative
+// constructs whose form is a MATERIALIZED affordance (Appearance toolkit — a cup, a
+// module, a room). Extending this set is an attributable renderer change, like a new
+// opcode; an authored form reaching outside it is refused, never silently redrawn.
+const ALLOWED_PRIMITIVES: [&str; 11] = [
+    "icosphere",
+    "sphere",
+    "capsule",
+    "points",
+    "fresnel_shell",
+    "box",
+    "cylinder",
+    "cone",
+    "torus",
+    "plane",
+    "tube",
+];
 /// Renderer residency LOD keys (`PhysicalResidency` in contracts.ts).
 const RESIDENCIES: [&str; 4] = ["hot", "sleeping", "aggregated", "dormant"];
 /// The six epistemic states the visual authority must be able to render
@@ -730,6 +747,288 @@ pub fn validate_coverage(
 }
 
 // ---------------------------------------------------------------------------
+// Validation chrome — the honesty palette for a Construct's self-report.
+// ---------------------------------------------------------------------------
+//
+// The `validation_chrome` block is DATA (authored in the visual-embodiment
+// catalog): it names, per axis-value, a palette ROLE (never a hex). The kit
+// palette resolves a role to a colour; this module only looks the value up in
+// the block and hands back the role. The honesty invariant lives in the DATA:
+// every `not_measured`/`unknown` axis value maps to the `fog` role, so the
+// compiler cannot paint confidence it was not given.
+//
+// TOTALITY mirrors the coverage discipline above: the block must cover EVERY
+// enum value of each of the four axes. A missing value is a coverage hole and
+// is rejected — the observer never treats an unmapped value as an implicit
+// pass.
+
+/// The four honesty axes and the closed enum each ranges over. A
+/// `validation_chrome` block must map every value of every axis to a role.
+const CHROME_CORRECTNESS: [&str; 5] =
+    ["correct", "chained", "logical_error", "incomplete", "unknown"];
+const CHROME_TRUST: [&str; 4] = ["strong", "adequate", "weak", "not_measured"];
+const CHROME_HEALTH: [&str; 6] = [
+    "healthy",
+    "degraded",
+    "stale",
+    "measurement_failed",
+    "unknown",
+    "not_measured",
+];
+const CHROME_EPISTEMIC: [&str; 6] = [
+    "observed",
+    "measured",
+    "known_absent",
+    "measurement_failed",
+    "unknown",
+    "not_measured",
+];
+const CHROME_AXES: [(&str, &[&str]); 4] = [
+    ("correctness", &CHROME_CORRECTNESS),
+    ("trust", &CHROME_TRUST),
+    ("health", &CHROME_HEALTH),
+    ("epistemic", &CHROME_EPISTEMIC),
+];
+/// The closed set of palette roles a block may name. The kit palette resolves a
+/// role to an actual colour; the DATA never names a hex.
+const CHROME_ROLES: [&str; 5] = ["good", "warn", "bad", "neutral", "fog"];
+
+/// Validates a `validation_chrome` block: it must cover every enum value of each
+/// of the four axes (a missing value is a coverage hole → hard error, mirroring
+/// the totality discipline of `compute_coverage`); every mapped role must be
+/// from the allowed set; `fog_alpha ∈ [0, 1]`; and every emissive/brightness
+/// scalar must be finite and non-negative. No axis-value→role knowledge is
+/// hard-coded here — only the shape and totality of the block are checked.
+pub fn validate_validation_chrome(block: &Value) -> Result<(), UniverseError> {
+    let obj = block
+        .as_object()
+        .ok_or_else(|| validation("validation_chrome must be an object"))?;
+    let axis_palette = obj
+        .get("axis_palette")
+        .and_then(Value::as_object)
+        .ok_or_else(|| validation("validation_chrome has no axis_palette"))?;
+    for (axis, values) in CHROME_AXES {
+        let palette = axis_palette
+            .get(axis)
+            .and_then(Value::as_object)
+            .ok_or_else(|| validation(format!("axis_palette misses axis {axis}")))?;
+        for value in values {
+            let role = palette
+                .get(*value)
+                .and_then(Value::as_str)
+                .ok_or_else(|| {
+                    validation(format!(
+                        "axis_palette[{axis}] coverage hole: enum value '{value}' is unmapped"
+                    ))
+                })?;
+            if !CHROME_ROLES.contains(&role) {
+                return Err(validation(format!(
+                    "axis_palette[{axis}][{value}] role '{role}' is not an allowed palette role {CHROME_ROLES:?}"
+                )));
+            }
+        }
+    }
+    let fog_alpha = obj
+        .get("fog_alpha")
+        .and_then(Value::as_f64)
+        .ok_or_else(|| validation("validation_chrome.fog_alpha must be a number"))?;
+    if !fog_alpha.is_finite() || !(0.0..=1.0).contains(&fog_alpha) {
+        return Err(validation("validation_chrome.fog_alpha must be in [0, 1]"));
+    }
+    let liveness = obj
+        .get("liveness_emissive")
+        .and_then(Value::as_object)
+        .ok_or_else(|| validation("validation_chrome has no liveness_emissive"))?;
+    for key in ["cold", "pulsing"] {
+        let value = liveness
+            .get(key)
+            .and_then(Value::as_f64)
+            .ok_or_else(|| validation(format!("liveness_emissive.{key} must be a number")))?;
+        if !value.is_finite() || value < 0.0 {
+            return Err(validation(format!(
+                "liveness_emissive.{key} must be finite and non-negative"
+            )));
+        }
+    }
+    let orb = obj
+        .get("receipt_orb")
+        .and_then(Value::as_object)
+        .ok_or_else(|| validation("validation_chrome has no receipt_orb"))?;
+    for key in ["fresh_brightness", "stale_brightness"] {
+        let value = orb
+            .get(key)
+            .and_then(Value::as_f64)
+            .ok_or_else(|| validation(format!("receipt_orb.{key} must be a number")))?;
+        if !value.is_finite() || value < 0.0 {
+            return Err(validation(format!(
+                "receipt_orb.{key} must be finite and non-negative"
+            )));
+        }
+    }
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// ConstructChrome → visual instructions (the compile, generic).
+// ---------------------------------------------------------------------------
+//
+// FROZEN INPUT (produced by `bin/construct_chrome.rs`): one ConstructChrome
+// per construct. The compiler maps it to render instructions using ONLY the
+// `validation_chrome` block — a generic block lookup + role resolution, with NO
+// state→role/colour logic in Rust. The block is the authority for what a state
+// looks like; this code only reads it.
+
+/// The four resolved honesty axes of a Construct (the block keys them by value).
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ChromeAxes {
+    pub correctness: String,
+    pub trust: String,
+    pub health: String,
+    pub epistemic: String,
+}
+
+/// One receipt the Construct carries — an orb whose brightness reads freshness.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ChromeReceipt {
+    pub kind: String,
+    pub id: String,
+    pub fresh: bool,
+}
+
+/// The frozen input shape: one Construct's self-report, ready to be dressed by
+/// the block. Nothing here names a colour or a role — only measured/axis state.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ConstructChrome {
+    pub construct: String,
+    pub name: String,
+    pub lifecycle: String,
+    pub axes: ChromeAxes,
+    pub fog: bool,
+    pub liveness: String,
+    #[serde(default)]
+    pub needs_count: u64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub top_need: Option<String>,
+    #[serde(default)]
+    pub receipts: Vec<ChromeReceipt>,
+}
+
+/// One ring: an honesty axis resolved to its palette role.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct RingRole {
+    pub axis: String,
+    pub role: String,
+}
+
+/// One receipt orb, its brightness resolved from the block's fresh/stale scalars.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ReceiptOrb {
+    pub id: String,
+    pub brightness: f64,
+}
+
+/// The render instructions the compiler emits for one Construct — the whole of
+/// what the renderer needs to dress it, every value read from the block.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ChromeInstructions {
+    pub ring_roles: Vec<RingRole>,
+    pub body_alpha: f64,
+    pub emissive: f64,
+    pub receipt_orbs: Vec<ReceiptOrb>,
+}
+
+/// Compiles one ConstructChrome into visual instructions by pure block lookup:
+/// each axis value is resolved to a role through `axis_palette`; body alpha is
+/// the block's `fog_alpha` when the Construct is fogged (else fully present);
+/// emissive is the block's `liveness_emissive` for the Construct's liveness; and
+/// each receipt orb takes the block's fresh/stale brightness. No state→role or
+/// state→colour mapping is authored in Rust — the block is the only authority.
+pub fn compile_chrome(
+    block: &Value,
+    chrome: &ConstructChrome,
+) -> Result<ChromeInstructions, UniverseError> {
+    validate_validation_chrome(block)?;
+    let axis_palette = block
+        .get("axis_palette")
+        .and_then(Value::as_object)
+        .ok_or_else(|| validation("validation_chrome has no axis_palette"))?;
+
+    let axis_values = [
+        ("correctness", chrome.axes.correctness.as_str()),
+        ("trust", chrome.axes.trust.as_str()),
+        ("health", chrome.axes.health.as_str()),
+        ("epistemic", chrome.axes.epistemic.as_str()),
+    ];
+    let mut ring_roles = Vec::with_capacity(axis_values.len());
+    for (axis, value) in axis_values {
+        let role = axis_palette
+            .get(axis)
+            .and_then(Value::as_object)
+            .and_then(|palette| palette.get(value))
+            .and_then(Value::as_str)
+            .ok_or_else(|| {
+                validation(format!(
+                    "construct axis {axis} value '{value}' is not a defined enum value in the block"
+                ))
+            })?;
+        ring_roles.push(RingRole {
+            axis: axis.to_owned(),
+            role: role.to_owned(),
+        });
+    }
+
+    let fog_alpha = block
+        .get("fog_alpha")
+        .and_then(Value::as_f64)
+        .ok_or_else(|| validation("validation_chrome.fog_alpha must be a number"))?;
+    let body_alpha = if chrome.fog { fog_alpha } else { 1.0 };
+
+    let emissive = block
+        .get("liveness_emissive")
+        .and_then(Value::as_object)
+        .and_then(|liveness| liveness.get(chrome.liveness.as_str()))
+        .and_then(Value::as_f64)
+        .ok_or_else(|| {
+            validation(format!(
+                "liveness '{}' is not a defined liveness_emissive key in the block",
+                chrome.liveness
+            ))
+        })?;
+
+    let orb = block
+        .get("receipt_orb")
+        .and_then(Value::as_object)
+        .ok_or_else(|| validation("validation_chrome has no receipt_orb"))?;
+    let fresh_brightness = orb
+        .get("fresh_brightness")
+        .and_then(Value::as_f64)
+        .ok_or_else(|| validation("receipt_orb.fresh_brightness must be a number"))?;
+    let stale_brightness = orb
+        .get("stale_brightness")
+        .and_then(Value::as_f64)
+        .ok_or_else(|| validation("receipt_orb.stale_brightness must be a number"))?;
+    let receipt_orbs = chrome
+        .receipts
+        .iter()
+        .map(|receipt| ReceiptOrb {
+            id: receipt.id.clone(),
+            brightness: if receipt.fresh {
+                fresh_brightness
+            } else {
+                stale_brightness
+            },
+        })
+        .collect();
+
+    Ok(ChromeInstructions {
+        ring_roles,
+        body_alpha,
+        emissive,
+        receipt_orbs,
+    })
+}
+
+// ---------------------------------------------------------------------------
 // Materialization + independent readback.
 // ---------------------------------------------------------------------------
 
@@ -1327,9 +1626,10 @@ mod tests {
     /// totality is even measured.
     #[test]
     fn coverage_composes_with_five_structural_rejections() {
-        // Rule 1: primitive kind out of the allowed set.
+        // Rule 1: primitive kind out of the allowed set. (`torus` and the other
+        // hard-edged primitives are now IN the palette; use one that is not.)
         let mut c1 = catalog();
-        c1.mapping["forms"]["energy_orb"][0][0] = json!("torus");
+        c1.mapping["forms"]["energy_orb"][0][0] = json!("hypercube");
         assert!(matches!(
             validate_coverage(&policy(), &c1),
             Err(UniverseError::Validation(m)) if m.contains("is not allowed")
@@ -1366,5 +1666,132 @@ mod tests {
             validate_coverage(&policy(), &c5),
             Err(UniverseError::Validation(m)) if m.contains("degenerate")
         ));
+    }
+
+    // -----------------------------------------------------------------------
+    // Validation chrome — ConstructChrome → visual instructions.
+    // -----------------------------------------------------------------------
+
+    /// The frozen `validation_chrome` block, copied inline so the compile test
+    /// is pinned to the honesty palette independent of the catalog fixture.
+    fn frozen_chrome_block() -> Value {
+        json!({
+            "axis_palette": {
+                "correctness": { "correct": "good", "chained": "warn", "logical_error": "bad", "incomplete": "neutral", "unknown": "fog" },
+                "trust":       { "strong": "good", "adequate": "warn", "weak": "bad", "not_measured": "fog" },
+                "health":      { "healthy": "good", "degraded": "warn", "stale": "warn", "measurement_failed": "bad", "unknown": "fog", "not_measured": "fog" },
+                "epistemic":   { "observed": "good", "measured": "good", "known_absent": "neutral", "measurement_failed": "bad", "unknown": "fog", "not_measured": "fog" }
+            },
+            "fog_alpha": 0.42,
+            "liveness_emissive": { "cold": 0.0, "pulsing": 1.0 },
+            "receipt_orb": { "fresh_brightness": 1.0, "stale_brightness": 0.3 }
+        })
+    }
+
+    /// A written-but-not-run Construct: correctness is `chained` (warn), and the
+    /// three unmeasured axes fold to the `fog` role. The compiler paints no
+    /// confidence it was not given — fogged body alpha, cold (zero) emissive.
+    #[test]
+    fn written_not_run_construct_compiles_to_honest_chrome() {
+        let block = frozen_chrome_block();
+        let chrome = ConstructChrome {
+            construct: "self_verifying_loop".into(),
+            name: "written but not run".into(),
+            lifecycle: "written".into(),
+            axes: ChromeAxes {
+                correctness: "chained".into(),
+                trust: "not_measured".into(),
+                health: "not_measured".into(),
+                epistemic: "not_measured".into(),
+            },
+            fog: true,
+            liveness: "cold".into(),
+            needs_count: 0,
+            top_need: None,
+            receipts: vec![],
+        };
+        let out = compile_chrome(&block, &chrome).unwrap();
+        assert_eq!(
+            out.ring_roles,
+            vec![
+                RingRole { axis: "correctness".into(), role: "warn".into() },
+                RingRole { axis: "trust".into(), role: "fog".into() },
+                RingRole { axis: "health".into(), role: "fog".into() },
+                RingRole { axis: "epistemic".into(), role: "fog".into() },
+            ]
+        );
+        assert_eq!(out.body_alpha, 0.42);
+        assert_eq!(out.emissive, 0.0);
+    }
+
+    /// A correct + healthy + strongly-trusted + measured + pulsing Construct: all
+    /// four rings resolve to `good`, the body is fully present, and it emits.
+    #[test]
+    fn correct_healthy_construct_compiles_to_confident_chrome() {
+        let block = frozen_chrome_block();
+        let chrome = ConstructChrome {
+            construct: "self_verifying_loop".into(),
+            name: "green loop".into(),
+            lifecycle: "running".into(),
+            axes: ChromeAxes {
+                correctness: "correct".into(),
+                trust: "strong".into(),
+                health: "healthy".into(),
+                epistemic: "measured".into(),
+            },
+            fog: false,
+            liveness: "pulsing".into(),
+            needs_count: 0,
+            top_need: None,
+            receipts: vec![ChromeReceipt {
+                kind: "EffectReceipt".into(),
+                id: "r1".into(),
+                fresh: true,
+            }],
+        };
+        let out = compile_chrome(&block, &chrome).unwrap();
+        let roles: Vec<&str> = out.ring_roles.iter().map(|r| r.role.as_str()).collect();
+        assert_eq!(roles, vec!["good", "good", "good", "good"]);
+        assert_eq!(out.emissive, 1.0);
+        assert_eq!(out.body_alpha, 1.0);
+        assert_eq!(
+            out.receipt_orbs,
+            vec![ReceiptOrb { id: "r1".into(), brightness: 1.0 }]
+        );
+    }
+
+    /// A `validation_chrome` block missing one enum value of an axis is a
+    /// coverage hole and is rejected — the same totality discipline the coverage
+    /// observer applies to a kit's radius.
+    #[test]
+    fn validation_chrome_with_a_coverage_hole_is_rejected() {
+        let mut block = frozen_chrome_block();
+        // Drop the `stale` value from the health axis — a coverage hole.
+        block["axis_palette"]["health"]
+            .as_object_mut()
+            .unwrap()
+            .remove("stale");
+        assert!(matches!(
+            validate_validation_chrome(&block),
+            Err(UniverseError::Validation(m)) if m.contains("coverage hole") && m.contains("stale")
+        ));
+        // The compiler validates the block first, so it refuses it too.
+        let chrome = ConstructChrome {
+            construct: "x".into(),
+            name: "x".into(),
+            lifecycle: "written".into(),
+            axes: ChromeAxes {
+                correctness: "correct".into(),
+                trust: "strong".into(),
+                health: "healthy".into(),
+                epistemic: "measured".into(),
+            },
+            fog: false,
+            liveness: "cold".into(),
+            needs_count: 0,
+            top_need: None,
+            receipts: vec![],
+        };
+        assert!(compile_chrome(&block, &chrome).is_err());
     }
 }

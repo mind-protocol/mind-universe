@@ -1,5 +1,12 @@
 //! Deterministic bootstrap and tick-phase orchestration.
 
+/// Bounded local perception: the observation-builder shared by the headless MCP
+/// adapter and the endogenous L1 loop. Image rendering (SVG/JPEG) stays a
+/// transport concern in the MCP adapter, fed from an [`Observation`]'s POV +
+/// sightings.
+pub mod perception;
+pub use perception::{observe, observe_unmounted};
+
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{BTreeMap, BTreeSet},

@@ -1416,6 +1416,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tempfile",
+ "universe-assets",
  "universe-capabilities",
  "universe-compiler",
  "universe-core",

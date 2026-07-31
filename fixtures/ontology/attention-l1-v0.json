@@ -1,0 +1,533 @@
+{
+  "id": "space:l1:mind-universe:attention-l1-v0",
+  "node_type": "space",
+  "subtype": "attention",
+  "content": {
+    "contractKind": "construct",
+    "name": "Attention v0 (a citizen's inner faculty: field -> salience-ordered, budgeted manual frame)",
+    "dominant_scale": "sensemaking",
+    "level": "l1",
+    "lineage": "Shares the seal-gate/measured-support discipline of the Energy Pen and the Fog-honesty of the Abstraction toolkit, but at the citizen's INNER (L1) scale: where those L2 toolkits create and prove abstractions, this inner tool READS. It turns a bounded local field of L2 constructs into the readable, salience-ordered, budgeted manual frame the citizen's turn is prompted with. See [[space:l2:mind-universe:abstraction-toolkit-v0]] and [[space:l2:lumina-prime:energy-pen-v0]]. This construct is authored to LATER replace a native perception renderer; it is WRITTEN here, not yet wired.",
+    "parent_scope": {
+      "classification": "standalone",
+      "justification": "Portable inner-tool (L1) awaiting installation under a citizen's brain Space (an inner tool of the mind-eye). Exactly one scope classification; no PART_OF edge is written to an unbuilt parent brain."
+    },
+    "runtime_moment_subtypes": ["validation_run", "health_assessment"],
+    "native_law_boundary": "AtomDynamics knows only AtomSpec, AtomBond and support/inhibit/neutral. This tool is a reading grammar over that law: an attended entry is an atom, each attention precondition (field read, authored name resolved, faces collapsed, salience measured, budget available) is a support bond into an AND gate, budget exhaustion is an inhibition bond, and 'attended' (rendered into the frame) is a fire. WHICH object matters, WHAT its authored name is, what its faces mean, and which affordances it offers are typed payload data — never terms in the atom law. Energy only gates whether the five preconditions are present and measured and whether budget remains; it never encodes salience, meaning, or identity.",
+    "purpose": "Turn a bounded local field of visible constructs into a readable manual frame the citizen can act from. READ a bounded local field of visible objects (never a global scan). NAME each entry by its world-authored Space `name` — never a hardcoded label. COLLAPSE the full anatomy of one construct (Objective, Affordances, Inputs, Preconditions, Mechanism, Effects, Receipts, Observer, Metrics, Health, Maintenance) into a single named entry that still points back to the construct. ORDER entries by MEASURED salience, descending. RENDER within a character budget into a readable frame plus the bounded list of available affordances. An object present in the field but below the attention threshold or beyond the budget is UN-ATTENDED (Fog) — distinct from known_absent; it is never rendered as absent, and never silently dropped as if it were not there.",
+    "reading_contract": {
+      "field": "a bounded local observation of visible objects (an origin, a spatial/relational/semantic budget, a max count) — the manifest the frame is drawn from; a hot-path global scan is forbidden",
+      "entry": "one visible construct collapsed into a single named line: its authored Space `name`, a measured salience, and a back-pointer to the full construct — the collapse hides detail, it never erases it",
+      "authored_name": "the entry's label IS the world-authored `name` of the construct's Space, read from the graph; inventing or hardcoding a label is forbidden",
+      "salience": "a MEASURED per-entry weight toward the attention threshold; an asserted or unknown salience is refused (an entry with unmeasured salience stays in Fog)",
+      "attention_threshold": "the measured support an entry must reach across its five preconditions to be ATTENDED (rendered into the frame)",
+      "character_budget": "a bounded integer character budget for the whole frame; inclusion consumes budget; when budget is exhausted, lower-salience entries stay UN-ATTENDED (Fog), never silently dropped",
+      "manual_frame": "the assembled, salience-ordered, budget-bounded readable frame plus the bounded list of available affordances — the manual the citizen's turn is prompted with",
+      "attention_states": ["field_present", "measured", "attended", "un_attended", "over_budget", "fog", "unknown", "not_measured"],
+      "verbs": ["read", "name", "collapse", "order", "render"],
+      "reader_capabilities": ["observe", "read_field", "read_entry", "trace_salience", "inspect_affordances"],
+      "rule": "An entry is ATTENDED only when its five preconditions conduct to the attention threshold AND budget remains AND no exhaustion inhibits it; otherwise it is un-attended (Fog). Salience must be measured; an authored or unknown salience is refused. The entry label is the world-authored name; a hardcoded label is refused. Collapse is reversible: the entry always resolves back to the full construct. Reading is observe-only: attention perceives, it does not mutate the field it reads.",
+      "default_state": "un_attended_until_salience_conducts"
+    },
+    "un_attended": {
+      "state": "fog_perceived_not_attended",
+      "meaning": "present in the bounded field but below the attention threshold or beyond the budget",
+      "is_not": "known_absent — un-attended is NOT absence; the object remains in the field and can rise into attention when its measured salience or the remaining budget changes",
+      "may": ["be counted in an 'N more un-attended' summary", "rise into attention on a later read"],
+      "may_not": ["be rendered as an established/attended entry", "be reported as absent from the field", "be silently dropped from the manifest"]
+    }
+  },
+  "members": [
+    {
+      "id": "objective:l1:mind-universe:attention-l1-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "name": "Attention objective — a faithful, salience-ordered, budget-bounded manual frame",
+        "success_condition": "For any bounded local field of visible constructs, attention produces one readable manual frame in which every rendered entry is labelled by its world-authored Space `name`, carries a MEASURED salience, and collapses the construct's full anatomy into a single line that still resolves back to the construct. Entries are ordered by measured salience descending and rendered within a declared character budget; an entry beyond the budget or below the attention threshold is held as UN-ATTENDED (Fog) and, if summarised, counted honestly as un-attended — never rendered as absent and never silently dropped. The frame carries the bounded list of available affordances. No entry is labelled by a hardcoded string, no salience is admitted unmeasured, and the collapse never erases the detail it hides."
+      }
+    },
+    {
+      "id": "pattern:l1:mind-universe:attention-l1-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "name": "Attention pattern — a five-precondition attend gate over a bounded local field",
+        "pattern": "A bounded reading Space holds no energy of its own; it reads a local field. Each candidate visible construct physicalizes as an entry atom whose fire = 'attended' (rendered into the frame). Its five attention preconditions — the field was read, the authored name was resolved, the anatomy faces were collapsed, the salience was measured, and character budget remains — are its required_supports (an AND gate). Budget exhaustion is an inhibition bond that blocks 'attended' without erasing the entry from the field. To ATTEND, the circuit conducts the preconditions: an entry fires (is rendered) only when all five conducted to the attention threshold and no exhaustion inhibits it. Entries are then ordered by measured salience and assembled, within the budget, into one manual frame carrying the bounded affordance list. An un-attended entry stays in Fog — perceived, countable, re-attendable — never shown as attended and never reported absent.",
+        "epistemic_honesty": "A rendered entry is one whose salience actually conducted, not one asserted important. An entry label is the world-authored name, not a convenient string. An un-attended entry is Fog (present-but-not-attended), never known_absent and never dropped. A collapsed entry always resolves back to its full construct; collapse hides, it does not delete. Reading the field is not altering it."
+      }
+    },
+    {
+      "id": "vocabulary:l1:mind-universe:attention-l1-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "name": "Attention vocabulary — field, entry, authored name, salience, budget, Fog",
+        "terms": {
+          "ReadingSpace": "The bounded inner Space that reads one local field into a manual frame; roleAxis space, carries no energy, bounds the read.",
+          "Field": "A bounded local observation of visible objects (origin + spatial/relational/semantic budget + max count) — never a global scan.",
+          "Entry": "One visible construct collapsed into a single named line: authored name, measured salience, back-pointer to the full construct.",
+          "AuthoredName": "The world-authored `name` of the construct's Space, read from the graph. The ONLY legitimate label for an entry; a hardcoded label is forbidden.",
+          "Salience": "A measured per-entry weight toward the attention threshold. Asserted or unknown salience is refused.",
+          "AttentionGate": "The AND gate that fires an entry (renders it) only when all five preconditions conduct and no budget exhaustion inhibits it.",
+          "CharacterBudget": "A bounded integer character budget for the whole frame; inclusion consumes budget.",
+          "ManualFrame": "The assembled, salience-ordered, budget-bounded readable frame plus the bounded list of available affordances.",
+          "UnAttended": "An entry present in the field but below threshold or beyond budget: perceived, countable, re-attendable — not absent, not dropped.",
+          "Collapse": "Folding a construct's full anatomy (Objective..Maintenance) into one named entry that still resolves back to the construct.",
+          "Fog": "Un-attended, unknown or not_measured perception; shown dark/translucent or summarised, never as an attended entry."
+        }
+      }
+    },
+    {
+      "id": "behavior:l1:mind-universe:attention-l1-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "name": "Attention behavior — read, name, collapse, measure, attend, order, render",
+        "given": "A bounded local field of visible constructs (with a declared observation budget), each construct's world-authored Space `name` and full anatomy, a MEASURED per-entry salience, and a declared character budget for the frame.",
+        "when": "The citizen's inner tool reads the field to assemble the manual frame its turn is prompted with, or an observer reads the assembled frame.",
+        "then": [
+          "READ: take the bounded local field as the manifest; never scan the whole Universe.",
+          "NAME: label each entry with the construct's world-authored Space `name`, resolved from the graph.",
+          "COLLAPSE: fold each construct's full anatomy into one named entry that still resolves back to the construct.",
+          "MEASURE: admit each entry's salience only as measured evidence; hold an entry with unmeasured salience in Fog.",
+          "ATTEND: fire (render) an entry only when its five preconditions conduct to the attention threshold, budget remains, and no exhaustion inhibits it.",
+          "ORDER: sort attended entries by measured salience descending, ties broken by a stable entry id.",
+          "RENDER: assemble the attended entries within the character budget into a readable frame plus the bounded list of available affordances.",
+          "Hold every un-attended entry in Fog: countable as un-attended, re-attendable, never rendered as absent or silently dropped.",
+          "Serve reads as observe-only; attention perceives the field, it never mutates it."
+        ],
+        "forbidden": [
+          "reading which object matters, its name or its meaning inside the native AtomDynamics law",
+          "labelling an entry with a hardcoded string instead of its world-authored name",
+          "admitting an asserted, derived, unknown or not_measured salience",
+          "rendering an un-attended (below-threshold or over-budget) entry as an attended one",
+          "reporting an un-attended entry as absent from the field, or silently dropping it from the manifest",
+          "firing 'attended' while budget exhaustion inhibits the entry",
+          "firing an entry without all five preconditions conducted",
+          "collapsing a construct so its anatomy can no longer be resolved back",
+          "a hot-path scan of the whole Universe instead of a bounded local field",
+          "mutating the field while reading it",
+          "conducting a precondition or exhaustion bond more than once",
+          "presenting a rendered frame animation as an actual attended read",
+          "pre-creating validation_run or health_assessment"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l1:mind-universe:attention-l1-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "name": "Attention algorithm — conduct the five preconditions into the manual frame",
+        "steps": [
+          "READ: take the bounded local field (origin + budget + max count) as the entry manifest",
+          "for each visible construct, resolve its world-authored Space `name` from the graph (never a hardcoded label)",
+          "COLLAPSE the construct's full anatomy into one named entry carrying a back-pointer to the construct",
+          "map each attention precondition (field_read, name_resolved, faces_collapsed, salience_measured, budget_available) to a support bond into the attention gate",
+          "map budget exhaustion to an inhibition bond on the attention gate",
+          "validate exact u64 AtomSpec/AtomBond invariants",
+          "admit only measured salience through the membrane; hold unmeasured-salience entries in Fog",
+          "ATTEND: run_until_quiescent — fire an entry iff its five preconditions conduct to the attention threshold, budget remains, and it is not inhibited by exhaustion",
+          "hold below-threshold or over-budget entries un-attended (Fog); count them honestly, never as absent",
+          "verify admitted integer salience/budget is conserved",
+          "ORDER attended entries by measured salience descending, ties broken by stable entry id",
+          "RENDER the ordered entries within the character budget into a readable frame plus the bounded list of available affordances",
+          "assign each entry an attention state: attended / un_attended / over_budget / fog / unknown / not_measured",
+          "for a read: resolve the observe-only set; attention never mutates the field",
+          "emit the read receipt; run the independent observer and structured evaluation AST; derive health from fresh evidence"
+        ],
+        "attention_rule": "attended(e) iff measured_support(e) >= attention_threshold(e) AND all five preconditions(e) conducted AND budget_remaining >= cost(e) AND not exhausted(e); otherwise un_attended (Fog).",
+        "ordering_rule": "attended entries ordered by measured salience descending; ties broken by a stable entry id, never by assertion.",
+        "name_rule": "each entry's label is the world-authored Space `name`, read from the graph; a hardcoded label is refused.",
+        "capability_resolution": "read -> observe-only-set. No affordance escalates capability; attention holds no authoring capability and never mutates the field.",
+        "scheduler_projection": "deterministic-wave-ticks/1; exact same-tick tie semantics must be reconciled with the canonical Rust crate when integrated.",
+        "python_escape_hatch": "forbidden_by_default"
+      }
+    },
+    {
+      "id": "code:l1:mind-universe:attention-l1-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "name": "Attention code — the attention atom circuit (five-precondition AND gate)",
+        "authority": "Graph-native CodeDefinition projection for the L1 Attention inner tool; this JSON file is a materialized projection, not independent semantic authority.",
+        "language": "mind-ir+atom-fixture",
+        "entrypoints": [
+          "read_bounded_field",
+          "resolve_entry_name",
+          "collapse_faces",
+          "measure_salience",
+          "order_by_salience",
+          "render_frame_within_budget",
+          "list_affordances",
+          "observe_frame",
+          "evaluate_frame_ast"
+        ],
+        "frame_rules": {
+          "preconditions_required": 5,
+          "precondition_energy_each": 100,
+          "attention_gate_threshold": 500,
+          "name_source": "each entry's label is the world-authored Space `name`, read from the graph; a hardcoded label is forbidden",
+          "salience_ordering": "attended entries ordered by MEASURED salience descending; ties broken by a stable entry id, never by assertion",
+          "character_budget": "a bounded integer character budget for the whole frame; inclusion consumes budget; an entry beyond the remaining budget is held UN-ATTENDED (Fog) or truncated-with-marker, never silently dropped as absent",
+          "collapse": "the construct's full anatomy (Objective, Affordances, Inputs, Preconditions, Mechanism, Effects, Receipts, Observer, Metrics, Health, Maintenance) collapses into ONE named entry that still points back to the construct; collapse hides detail, it never erases it"
+        },
+        "frame_schema": {
+          "subtype": "manual_frame",
+          "required": [
+            "field_origin",
+            "observation_budget",
+            "entries",
+            "entry_name_per_entry",
+            "salience_per_entry",
+            "collapse_backpointer_per_entry",
+            "attention_state_per_entry",
+            "salience_order",
+            "character_budget",
+            "un_attended_count",
+            "available_affordances",
+            "read_at"
+          ],
+          "human_message_template": "Frame lue : {attended_count} entrée(s) attendue(s), {un_attended_count} en Fog, {affordance_count} affordance(s). Budget : {budget_chars} caractères."
+        },
+        "attention_atom_circuit": {
+          "note": "GENERIC illustrative attention: ONE representative candidate entry is conducted through the five-precondition AND gate into the rendered frame, with a budget-exhaustion inhibition path. A real field supplies MANY candidate entries with their own measured salience; the tool hard-codes no particular object, name, or salience. attention_gate proof_burden 500 = the five preconditions; a single unit of budget exhaustion blocks 'attended' without erasing the entry from the field.",
+          "atoms": [
+            { "key": "field_read", "roleAxis": "moment", "threshold": 100, "seed_energy": 0, "note": "the bounded local field of visible objects was read (never a global scan)" },
+            { "key": "name_resolved", "roleAxis": "narrative", "threshold": 100, "seed_energy": 0, "note": "the entry's world-authored Space name was resolved from the graph (never hardcoded)" },
+            { "key": "faces_collapsed", "roleAxis": "thing", "threshold": 100, "seed_energy": 0, "note": "the construct's anatomy faces collapsed into one named entry with a back-pointer" },
+            { "key": "salience_measured", "roleAxis": "narrative", "threshold": 100, "seed_energy": 0, "note": "the entry's salience was measured, not asserted" },
+            { "key": "budget_available", "roleAxis": "thing", "threshold": 100, "seed_energy": 0, "note": "character budget remains for this entry" },
+            {
+              "key": "attention_gate",
+              "roleAxis": "thing",
+              "threshold": 500,
+              "seed_energy": 0,
+              "inhibition_threshold": 1,
+              "required_supports": [
+                "field_to_gate",
+                "name_to_gate",
+                "faces_to_gate",
+                "salience_to_gate",
+                "budget_to_gate"
+              ],
+              "note": "an entry is ATTENDED (rendered) only when all five preconditions conduct (500) and no budget exhaustion inhibits it"
+            },
+            { "key": "budget_exhausted", "roleAxis": "moment", "threshold": 1, "seed_energy": 0, "note": "if it charges, the entry is over-budget: held UN-ATTENDED (Fog), not erased from the field" },
+            { "key": "frame_entry_rendered", "roleAxis": "moment", "threshold": 400, "seed_energy": 0, "note": "the attended entry rendered as one named line in the frame" },
+            { "key": "affordance_listed", "roleAxis": "thing", "threshold": 100, "seed_energy": 0, "note": "the entry's available affordances accompany the frame" },
+            {
+              "key": "manual_frame",
+              "roleAxis": "thing",
+              "threshold": 500,
+              "seed_energy": 0,
+              "required_supports": ["rendered_to_frame", "afford_to_frame"],
+              "note": "the assembled readable frame: salience-ordered entries (400) + the bounded affordance list (100)"
+            }
+          ],
+          "bonds": [
+            { "key": "field_to_gate", "source": "field_read", "target": "attention_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0", "note": "the bounded field was read" },
+            { "key": "name_to_gate", "source": "name_resolved", "target": "attention_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0", "note": "the authored name was resolved" },
+            { "key": "faces_to_gate", "source": "faces_collapsed", "target": "attention_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0", "note": "the anatomy faces collapsed into one entry" },
+            { "key": "salience_to_gate", "source": "salience_measured", "target": "attention_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0", "note": "the salience was measured" },
+            { "key": "budget_to_gate", "source": "budget_available", "target": "attention_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0", "note": "budget remains" },
+            { "key": "exhausted_to_gate", "source": "budget_exhausted", "target": "attention_gate", "polarity": "inhibit", "energy": 1, "energy_status": "measured:semantic_v0", "note": "budget exhaustion blocks 'attended'; the entry stays in Fog, its field presence intact" },
+            { "key": "gate_to_rendered", "source": "attention_gate", "target": "frame_entry_rendered", "polarity": "support", "energy": 400, "energy_status": "measured:semantic_v0", "note": "an attended entry is rendered into the frame" },
+            { "key": "gate_to_affordance", "source": "attention_gate", "target": "affordance_listed", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0", "note": "the entry's affordances accompany the frame" },
+            { "key": "rendered_to_frame", "source": "frame_entry_rendered", "target": "manual_frame", "polarity": "support", "energy": 400, "energy_status": "measured:semantic_v0", "note": "the rendered entry joins the frame" },
+            { "key": "afford_to_frame", "source": "affordance_listed", "target": "manual_frame", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0", "note": "the affordance list joins the frame" }
+          ],
+          "proof_note": "With all five preconditions conducting (500 >= 500) and no exhaustion charged, attention_gate fires = the entry is ATTENDED and rendered; the frame assembles from the rendered entry (400) and its affordance list (100). Inject 1 into budget_exhausted and the entry stays UN-ATTENDED (over-budget, Fog) while remaining present in the field — honest, re-attendable.",
+          "external_measured_injections": {
+            "field_read": 100,
+            "name_resolved": 100,
+            "faces_collapsed": 100,
+            "salience_measured": 100,
+            "budget_available": 100
+          }
+        }
+      }
+    },
+    {
+      "id": "implementation:l1:mind-universe:attention-l1-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "name": "Attention implementation — materialized, WRITTEN, not yet wired",
+        "status": "materialized",
+        "artifact": "attention-l1-v0.json",
+        "graph_status": "not_written",
+        "wiring_status": "not_wired",
+        "runtime_status": "not_running",
+        "verification_status": "not_measured",
+        "honesty": "The L1 Attention inner tool is materialized and structurally shaped as a construct. This field is written BEFORE injection; after an injector commits it, the on-disk graph carries the construct while this embedded field reads stale (WRITTEN but not wired, executed, or proven healthy). Attention is AUTHORED here; it is NOT yet wired to render the citizen's sense — no frame is assembled from a live field yet. This brick REPLACES no native renderer yet."
+      }
+    },
+    {
+      "id": "justification:l1:mind-universe:attention-l1-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "name": "Attention justification — why measured attention over a bounded field",
+        "why": [
+          "The citizen's turn is prompted with a bounded manual frame, not the raw graph; making that framing a first-class inner construct means it can be inspected, validated and repaired instead of hiding in native perception code.",
+          "Making 'attended' a FIRE gated by measured salience means an entry cannot enter the frame by assertion: a below-threshold or unmeasured-salience entry simply does not fire, so the difference between noticed and merely-present is measurable.",
+          "Labelling every entry by the world-authored Space `name` (never a hardcoded string) keeps the frame faithful to the constructed world: the manifest names what the citizen actually built.",
+          "Modelling budget exhaustion as inhibition (blocking without erasing) keeps un-attended distinct from absent: an over-budget entry stays in the field and can rise into attention later, instead of vanishing.",
+          "Collapsing the full anatomy into one named entry that still resolves back to the construct gives a readable frame without losing detail — the citizen reads a line and can still open the whole construct.",
+          "Reading a BOUNDED local field (never a global scan) honours the local-observations invariant: attention is situated perception, not omniscience."
+        ],
+        "rejected": [
+          "labelling entries by a hardcoded string, because the frame must name what the world authored, not what the renderer guessed",
+          "admitting an asserted or unknown salience, because energy is conserved gating, not importance-by-fiat",
+          "dropping over-budget entries silently, because that would render un-attended as absent and hide what is present",
+          "a collapse that cannot be resolved back to the construct, because that deletes the detail the citizen may need to act",
+          "a global Universe scan to build the frame, because a hot-path full scan violates bounded local observation",
+          "presenting a rendered frame animation as an attended read, because a picture is not conducted salience"
+        ]
+      }
+    },
+    {
+      "id": "validation:l1:mind-universe:attention-l1-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "name": "Attention validation — attend/name/order/budget scenarios and invariants",
+        "evaluation_kind": "structured_expression_ast",
+        "scenarios": [
+          "bounded_field_read_not_global_scan",
+          "entry_labelled_by_authored_name",
+          "hardcoded_label_rejected",
+          "salience_measured_admitted",
+          "unmeasured_salience_held_in_fog",
+          "entry_attended_only_with_all_five_preconditions",
+          "below_threshold_entry_stays_un_attended",
+          "over_budget_entry_stays_un_attended_not_absent",
+          "un_attended_counted_never_reported_absent",
+          "entries_ordered_by_measured_salience_descending",
+          "tie_broken_by_stable_entry_id",
+          "faces_collapsed_into_one_named_entry",
+          "collapse_resolves_back_to_construct",
+          "frame_rendered_within_character_budget",
+          "available_affordances_listed_with_frame",
+          "read_is_observe_only_field_unchanged",
+          "salience_conducts_once",
+          "reading_reaches_quiescence"
+        ],
+        "negative_invariants": [
+          "threshold zero rejected",
+          "inhibition threshold zero rejected",
+          "duplicate required supports rejected",
+          "neutral bond with nonzero energy rejected",
+          "unmeasured salience injection rejected",
+          "hardcoded entry label rejected",
+          "un-attended entry reported as absent rejected"
+        ],
+        "invariants": [
+          "an entry is attended only with measured support at or above the attention threshold, budget remaining, and no exhaustion",
+          "all five preconditions conducted before an entry fires",
+          "budget exhaustion blocks 'attended' without erasing the entry from the field",
+          "every rendered entry is labelled by its world-authored Space name",
+          "no entry label is a hardcoded string",
+          "admitted integer salience and budget are conserved",
+          "attended entries are ordered by measured salience descending, ties by stable id",
+          "the frame is assembled within the declared character budget",
+          "the frame carries the bounded list of available affordances",
+          "an un-attended entry is never rendered as attended or reported as absent",
+          "a collapsed entry resolves back to its full construct",
+          "the field observed is bounded and local, never a global scan",
+          "reading is observe-only: the field is not mutated"
+        ]
+      }
+    },
+    {
+      "id": "validation:l1:mind-universe:attention-observer-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "name": "Attention observer validation — faults the attention observer must catch",
+        "target": "observability_algorithm:l1:mind-universe:attention-l1-v0",
+        "tests": [
+          "detect an entry shown as attended whose salience did not conduct to threshold",
+          "detect an attended entry admitted from unmeasured salience",
+          "detect an 'attended' fire while budget exhaustion inhibits the entry",
+          "detect an entry fired without all five preconditions",
+          "detect an entry labelled by a hardcoded string rather than its authored name",
+          "detect an un-attended entry rendered as attended",
+          "detect an un-attended entry reported as absent or silently dropped",
+          "detect entries not ordered by measured salience",
+          "detect a frame that exceeds its declared character budget",
+          "detect a collapsed entry that cannot resolve back to its construct",
+          "detect a whole-Universe scan instead of a bounded local field",
+          "detect the field mutated during a read",
+          "detect a salience or exhaustion bond conducted twice",
+          "detect a rendered frame animation presented as an attended read",
+          "return measurement_failed when observer execution fails"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l1:mind-universe:attention-l1-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "name": "Attention observer — an independent read of the frame and its atom trace",
+        "independence": "Reads the bounded field manifest and its observation budget, each entry's resolved authored name and collapse back-pointer, the measured salience, the precondition and exhaustion bonds, the physicalized attention trace, final atom states, the salience order, the character budget, the un-attended count, the available affordances, the acting capability set and the receipts. It does not trust a runtime-declared attention state, a renderer animation, or a self-reported salience.",
+        "checks": [
+          "every 'attended' entry reached the attention threshold with measured support",
+          "no attention was admitted from unmeasured salience",
+          "no entry fired while budget exhaustion inhibited it",
+          "all five preconditions conducted before an entry fired",
+          "every rendered entry is labelled by its world-authored name (no hardcoded label)",
+          "un-attended entries preserved as Fog: counted, never reported absent, never silently dropped",
+          "attended entries ordered by measured salience descending, ties by stable id",
+          "the frame assembled within its declared character budget",
+          "the frame carries the bounded list of available affordances",
+          "every collapsed entry resolves back to its full construct",
+          "the field observed is bounded and local, never a global scan",
+          "reading left the field unmutated (observe-only)",
+          "integer salience and budget conservation",
+          "single conduction per precondition and exhaustion bond",
+          "measured-only membrane admission",
+          "quiescence",
+          "receipt integrity"
+        ]
+      }
+    },
+    {
+      "id": "metric:l1:mind-universe:attention-l1-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "name": "Attention metrics — fidelity, false-attention, name-fidelity, budget, conservation",
+        "dimensions": [
+          "attention_support_fidelity",
+          "false_attention_rate",
+          "unmeasured_salience_rejection_rate",
+          "authored_name_fidelity",
+          "hardcoded_label_rate",
+          "un_attended_vs_absent_accuracy",
+          "over_budget_held_as_fog_rate",
+          "salience_order_accuracy",
+          "tie_break_stability",
+          "collapse_reversibility_rate",
+          "frame_within_budget_rate",
+          "affordance_list_completeness",
+          "bounded_field_only_rate",
+          "read_observe_only_rate",
+          "salience_conservation_error_u64",
+          "single_conduction_accuracy",
+          "quiescence_reached",
+          "receipt_integrity",
+          "observer_fault_detection_rate",
+          "evidence_freshness_ms"
+        ]
+      }
+    },
+    {
+      "id": "health:l1:mind-universe:attention-l1-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "name": "Attention health — the fresh-evidence state of the reading faculty",
+        "states": [
+          "healthy",
+          "degraded",
+          "stale",
+          "unknown",
+          "not_measured",
+          "measurement_failed"
+        ],
+        "derivation": {
+          "healthy": "All required fresh validation scenarios pass; every attended entry reached the attention threshold with measured salience; every rendered entry is labelled by its world-authored name; un-attended entries are preserved as Fog and never reported absent; entries are ordered by measured salience; the frame fits its character budget and carries its affordance list; collapse resolves back; the field read is bounded and local; salience and budget are conserved.",
+          "degraded": "Fresh evidence exists but at least one non-catastrophic dimension violates its bound.",
+          "stale": "The latest otherwise valid evidence exceeds the configured freshness window.",
+          "unknown": "Required evidence cannot be resolved to a known state.",
+          "not_measured": "No fresh validation run has measured the required dimensions.",
+          "measurement_failed": "The observer or evaluator failed to produce a trustworthy measurement."
+        },
+        "maintenance": [
+          "retry",
+          "inspect_atom_event_ledger",
+          "inspect_field_manifest",
+          "re_resolve_authored_names",
+          "recompute_salience_order",
+          "recalibrate_character_budget",
+          "recount_un_attended",
+          "reverify_collapse_backpointers",
+          "rematerialize_code_projection",
+          "reconcile_rust_scheduler",
+          "ask_human"
+        ]
+      }
+    },
+    {
+      "id": "port:l1:mind-universe:attention:reading-v0",
+      "node_type": "thing",
+      "subtype": "capability_port",
+      "content": {
+        "name": "Attention reading port (read the field / trace salience / inspect affordances)",
+        "state": "observe_only",
+        "observe_capabilities": ["observe", "read_field", "read_entry", "trace_salience", "inspect_affordances"],
+        "required_mutate_capability": "none",
+        "shape_contract": "observe_only_read_does_not_mutate_the_field",
+        "reader_predicate": "inside_bounded_local_field AND salience_measured",
+        "effect_when_unauthorized": "fail_closed_and_leave_field_unchanged",
+        "note": "Attention is an observe-only faculty: it reads a bounded local field into a manual frame and holds NO authoring capability. It never mutates the field it reads; an entry is served into the frame only when it is inside the bounded field AND its salience is measured."
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "space:l1:mind-universe:attention-l1-v0",
+      "predicate": "IMPLEMENTED_IN",
+      "target": "implementation:l1:mind-universe:attention-l1-v0"
+    },
+    {
+      "source": "space:l1:mind-universe:attention-l1-v0",
+      "predicate": "DEFINED_BY_CODE",
+      "target": "code:l1:mind-universe:attention-l1-v0"
+    },
+    {
+      "source": "code:l1:mind-universe:attention-l1-v0",
+      "predicate": "IMPLEMENTED_BY",
+      "target": "implementation:l1:mind-universe:attention-l1-v0"
+    },
+    {
+      "source": "pattern:l1:mind-universe:attention-l1-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l1:mind-universe:attention-l1-v0"
+    },
+    {
+      "source": "behavior:l1:mind-universe:attention-l1-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l1:mind-universe:attention-l1-v0"
+    },
+    {
+      "source": "implementation:l1:mind-universe:attention-l1-v0",
+      "predicate": "OBSERVED_BY",
+      "target": "observability_algorithm:l1:mind-universe:attention-l1-v0"
+    },
+    {
+      "source": "observability_algorithm:l1:mind-universe:attention-l1-v0",
+      "predicate": "PRODUCES",
+      "target": "metric:l1:mind-universe:attention-l1-v0"
+    },
+    {
+      "source": "metric:l1:mind-universe:attention-l1-v0",
+      "predicate": "FEEDS",
+      "target": "health:l1:mind-universe:attention-l1-v0"
+    },
+    {
+      "source": "objective:l1:mind-universe:attention-l1-v0",
+      "predicate": "SUPPORTS",
+      "target": "space:l1:mind-universe:attention-l1-v0"
+    },
+    {
+      "source": "observability_algorithm:l1:mind-universe:attention-l1-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l1:mind-universe:attention-observer-v0"
+    }
+  ]
+}

@@ -390,14 +390,15 @@ Procedural decoration
 The renderer may decorate. A Genesis authority or authorised Actor must
 construct.
 
-**Where is a projection, not a datum.** No file — fixture, seed, or source —
-carries a hardcoded position or coordinate. Where a thing is lives entirely in
-its relations (PART_OF, adjacency, connection); the coordinate is a live
-projection derived from those relations by the single layout authority, read the
-same way by every observer. Position is never stored, never authored, never a
-literal. The city is alive — positions may drift, and we do not force them to be
-deterministic; the meaning lives in the topology, which is stable because it is
-authored.
+**Where is a construction, not a projection.** A construct is where the citizen
+built it. Its place is authored — an actor chose it in a construction act — and
+it is carried with provenance and a receipt, and persists across reload.
+Position is a datum of the built world, not a coordinate re-derived each frame
+from topology. A layout authority may still *scaffold* a node that has never
+been placed — propose a starting spot — but a citizen's placement is
+authoritative and is never silently overwritten by a solver. The city is alive:
+a citizen may move what they built, and that move is itself an attributable
+construction, receipted like any other.
 
 ### Stable identity
 
@@ -1031,7 +1032,6 @@ Use:
 - CSR-style adjacency for stable relation snapshots;
 - hierarchical spatial indexes;
 - bounded mutable overlays and tombstones for recent changes;
-- append-only immutable content segments;
 - lazy temporal evaluation;
 - event-driven causal frontiers;
 - chunk summaries and physical residency levels;

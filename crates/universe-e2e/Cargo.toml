@@ -27,3 +27,11 @@ universe-vm = { path = "../universe-vm" }
 
 [dev-dependencies]
 tempfile = "3"
+
+# Explicit registration for the L1 Attention injector. The sibling injectors in
+# src/bin/ are picked up by Cargo autodiscovery; this entry is additive (same
+# name + path, so it merges with the auto-discovered target rather than
+# duplicating it) and documents the injector alongside the fixture it loads.
+[[bin]]
+name = "inject_attention"
+path = "src/bin/inject_attention.rs"

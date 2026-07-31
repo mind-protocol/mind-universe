@@ -1,9 +1,8 @@
 import { defineConfig, configDefaults } from "vitest/config";
 import react from "@vitejs/plugin-react";
-import universeStream from "./scripts/vite-plugin-universe-stream.mjs";
 
 export default defineConfig({
-  plugins: [react(), universeStream()],
+  plugins: [react()],
   clearScreen: false,
   server: {
     host: "127.0.0.1",

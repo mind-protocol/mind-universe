@@ -18,7 +18,8 @@
 use serde::Deserialize;
 use serde_json::json;
 
-use crate::sense::{self, Observation, SenseParams};
+use universe_supervisor::perception::{observe, observe_unmounted, Observation, SenseParams};
+
 use crate::session::ActorSession;
 use crate::world::World;
 
@@ -32,6 +33,12 @@ pub struct ActParams {
     pub intent: String,
     #[serde(default)]
     pub target: Option<String>,
+    /// Vantage to observe the world-AFTER from (EntityKey hex or symbol name).
+    /// The perturbation commits regardless of this — `where` only situates the
+    /// readback POV, exactly like `sense`'s `where`. Defaults to `target`, then
+    /// to the actor's own position, when absent.
+    #[serde(default)]
+    pub r#where: Option<String>,
     #[serde(default)]
     pub constraints: Option<String>,
     #[serde(default)]
@@ -71,19 +78,23 @@ pub fn act(world: &mut World, params: &ActParams, session: &ActorSession) -> Obs
     // 2. Observe the world AFTER the commit (the advanced revision).
     let sense_params = SenseParams {
         actor_id: params.actor_id.clone(),
-        r#where: params.target.clone(),
+        // Observe the world-after from the explicit vantage when given, else from
+        // the proposal's target, else the actor. The commit above is unaffected.
+        r#where: params.r#where.clone().or_else(|| params.target.clone()),
         focus: Some(params.intent.clone()),
         scale: None,
         since: None,
         radius_m: None,
     };
     let mut observation = match (world.snapshot(), world.runtime_inventory()) {
-        (Some(snapshot), Some(inventory)) => {
-            sense::observe(snapshot, &inventory, &sense_params, Some(session), &|c| {
-                world.read_content(c)
-            })
-        }
-        _ => sense::observe_unmounted(world.unmounted_reason().unwrap_or("no Universe mounted")),
+        (Some(snapshot), Some(inventory)) => observe(
+            snapshot,
+            &inventory,
+            &sense_params,
+            Some(session.passport()),
+            &|c| world.read_content(c),
+        ),
+        _ => observe_unmounted(world.unmounted_reason().unwrap_or("no Universe mounted")),
     };
 
     attach_action(&mut observation, params, session, done);
@@ -175,8 +186,8 @@ loop is not a running one."),
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::sense::Uncertainty;
     use crate::session::{admit, AdmissionRequest};
+    use universe_supervisor::perception::Uncertainty;
 
     fn unmounted() -> World {
         World::Unmounted {

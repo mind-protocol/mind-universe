@@ -13,7 +13,13 @@ const ALLOWED_PRIMITIVES = new Set([
   "sphere",
   "capsule",
   "points",
-  "fresnel_shell"
+  "fresnel_shell",
+  "box",
+  "cylinder",
+  "cone",
+  "torus",
+  "plane",
+  "tube"
 ]);
 
 export interface MotionSample {

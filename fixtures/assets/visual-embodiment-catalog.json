@@ -50,6 +50,18 @@
       "embedding_orientation_max_rad": 3.141592653589793,
       "embedding_microvariation": 0.14
     },
+    "validation_chrome": {
+      "note": "The construct-honesty chrome: how a ConstructChrome's four validation axes, liveness, and receipts resolve to visual instructions. DATA, not code — the compiler does a generic block lookup + palette ROLE resolution and nothing else. TOTALITY: axis_palette covers EVERY enum value of each axis (a missing value is a coverage hole, rejected like the dynamics rayon check). HONESTY INVARIANT (data): every not_measured/unknown axis value maps to the 'fog' role here, so the compiler cannot paint confidence it was never given. No hex colors — only palette ROLES (good/warn/bad/neutral/fog), resolved by the kit palette.",
+      "axis_palette": {
+        "correctness": { "correct": "good", "chained": "warn", "logical_error": "bad", "incomplete": "neutral", "unknown": "fog" },
+        "trust":       { "strong": "good", "adequate": "warn", "weak": "bad", "not_measured": "fog" },
+        "health":      { "healthy": "good", "degraded": "warn", "stale": "warn", "measurement_failed": "bad", "unknown": "fog", "not_measured": "fog" },
+        "epistemic":   { "observed": "good", "measured": "good", "known_absent": "neutral", "measurement_failed": "bad", "unknown": "fog", "not_measured": "fog" }
+      },
+      "fog_alpha": 0.42,
+      "liveness_emissive": { "cold": 0.0, "pulsing": 1.0 },
+      "receipt_orb": { "fresh_brightness": 1.0, "stale_brightness": 0.3 }
+    },
     "reduced_motion": {
       "trail": false,
       "noise": false,

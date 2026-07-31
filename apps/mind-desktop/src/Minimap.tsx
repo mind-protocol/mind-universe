@@ -1,5 +1,6 @@
 import {
   type MutableRefObject,
+  type PointerEvent as ReactPointerEvent,
   type ReactElement,
   useCallback,
   useEffect,
@@ -24,14 +25,22 @@ export interface MinimapPose {
   readonly yaw: number;
 }
 
-const HEADER_H = 22;
 const PAD = 10;
 const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 8;
+// Opening panel size (square), flush in the bottom-left corner.
+const DEFAULT_SIZE = 300;
 
 type DragState =
   | { readonly mode: "move"; readonly sx: number; readonly sy: number; readonly ox: number; readonly oy: number }
-  | { readonly mode: "resize"; readonly sx: number; readonly sy: number; readonly ow: number; readonly oh: number }
+  | {
+      readonly mode: "resize";
+      readonly sx: number;
+      readonly sy: number;
+      readonly ow: number;
+      readonly oh: number;
+      readonly oy: number;
+    }
   | null;
 
 /**
@@ -39,6 +48,11 @@ type DragState =
  * SVG (no WebGL — renders even when the 3D loop is suspended). Every node is a dot
  * at its (x, z), coloured by its material; the observer's current position glows
  * and shows a facing needle.
+ *
+ * The whole map is grabbable — drag-and-drop it anywhere (the zoom buttons and the
+ * resize grip opt out). It opens flush in the bottom-left corner, so the resize
+ * grip sits at the TOP-right: dragging it grows the panel up and to the right while
+ * the bottom-left corner stays pinned.
  */
 export function Minimap({
   entities,
@@ -50,10 +64,10 @@ export function Minimap({
   readonly cityRadius: number;
 }) {
   // Minimaps live bottom-left, flush to the corner (the user can drag it anywhere).
-  const [size, setSize] = useState({ w: 212, h: 212 });
+  const [size, setSize] = useState({ w: DEFAULT_SIZE, h: DEFAULT_SIZE });
   const [pos, setPos] = useState(() => ({
     x: 0,
-    y: (typeof window !== "undefined" ? window.innerHeight : 720) - 212
+    y: (typeof window !== "undefined" ? window.innerHeight : 720) - DEFAULT_SIZE
   }));
   const [zoom, setZoom] = useState(1);
   const [pose, setPose] = useState<MinimapPose>(() => ({ ...poseRef.current }));
@@ -83,10 +97,13 @@ export function Minimap({
     if (state.mode === "move") {
       setPos({ x: state.ox + event.clientX - state.sx, y: state.oy + event.clientY - state.sy });
     } else {
-      setSize({
-        w: clampSize(state.ow + event.clientX - state.sx),
-        h: clampSize(state.oh + event.clientY - state.sy)
-      });
+      // Top-right resize: width grows to the right, height grows upward while the
+      // bottom edge (oy + oh) stays pinned, so the flush corner never lifts off.
+      const nextW = clampSize(state.ow + event.clientX - state.sx);
+      const nextH = clampSize(state.oh - (event.clientY - state.sy));
+      const bottom = state.oy + state.oh;
+      setSize({ w: nextW, h: nextH });
+      setPos((prev) => ({ x: prev.x, y: bottom - nextH }));
     }
   }, []);
   const onPointerUp = useCallback(() => {
@@ -110,8 +127,20 @@ export function Minimap({
     [onPointerMove, onPointerUp]
   );
 
+  // Drag-and-drop the whole panel by grabbing the map. The zoom buttons and the
+  // resize grip opt out (their own handlers stop propagation / are excluded here).
+  const onPanelPointerDown = useCallback(
+    (event: ReactPointerEvent) => {
+      const target = event.target as Element;
+      if (target.closest(".minimap__zoom") || target.closest(".minimap__resize")) return;
+      event.preventDefault();
+      beginDrag({ mode: "move", sx: event.clientX, sy: event.clientY, ox: pos.x, oy: pos.y });
+    },
+    [beginDrag, pos.x, pos.y]
+  );
+
   const bodyW = size.w;
-  const bodyH = Math.max(60, size.h - HEADER_H);
+  const bodyH = size.h;
   const view: MinimapView = {
     width: bodyW,
     height: bodyH,
@@ -156,34 +185,8 @@ export function Minimap({
     <div
       className="minimap"
       style={{ left: pos.x, top: pos.y, width: size.w, height: size.h }}
+      onPointerDown={onPanelPointerDown}
     >
-      <div
-        className="minimap__header"
-        onPointerDown={(event) => {
-          event.preventDefault();
-          beginDrag({ mode: "move", sx: event.clientX, sy: event.clientY, ox: pos.x, oy: pos.y });
-        }}
-      >
-        <span>minimap</span>
-        <span className="minimap__zoom">
-          <button
-            type="button"
-            aria-label="Dézoomer"
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={() => setZoom((z) => clampZoom(z / 1.3, MIN_ZOOM, MAX_ZOOM))}
-          >
-            −
-          </button>
-          <button
-            type="button"
-            aria-label="Zoomer"
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={() => setZoom((z) => clampZoom(z * 1.3, MIN_ZOOM, MAX_ZOOM))}
-          >
-            +
-          </button>
-        </span>
-      </div>
       <svg
         className="minimap__body"
         width={bodyW}
@@ -209,13 +212,37 @@ export function Minimap({
           <circle className="minimap__you" r={3.2} />
         </g>
       </svg>
+      <span className="minimap__label">minimap</span>
+      <div className="minimap__zoom">
+        <button
+          type="button"
+          aria-label="Dézoomer"
+          onClick={() => setZoom((z) => clampZoom(z / 1.3, MIN_ZOOM, MAX_ZOOM))}
+        >
+          −
+        </button>
+        <button
+          type="button"
+          aria-label="Zoomer"
+          onClick={() => setZoom((z) => clampZoom(z * 1.3, MIN_ZOOM, MAX_ZOOM))}
+        >
+          +
+        </button>
+      </div>
       <div
         className="minimap__resize"
         aria-label="Redimensionner"
         onPointerDown={(event) => {
           event.preventDefault();
           event.stopPropagation();
-          beginDrag({ mode: "resize", sx: event.clientX, sy: event.clientY, ow: size.w, oh: size.h });
+          beginDrag({
+            mode: "resize",
+            sx: event.clientX,
+            sy: event.clientY,
+            ow: size.w,
+            oh: size.h,
+            oy: pos.y
+          });
         }}
       />
     </div>

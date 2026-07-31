@@ -6,10 +6,11 @@
 
 use serde_json::{json, Value};
 
+use universe_supervisor::perception::{observe, observe_unmounted, Observation, SenseParams};
+
 use crate::act::{self, ActParams};
 use crate::jsonrpc::{code, Request, Response};
-use crate::sense::{self, SenseParams};
-use crate::session::{AdmissionRequest, SessionRegistry};
+use crate::session::{AdmissionRequest, Capability, SessionRegistry};
 use crate::world::World;
 
 /// The MCP protocol revision this adapter speaks.
@@ -92,21 +93,22 @@ authorization. Returns an admission receipt: SessionPassport, CapabilityEnvelope
             {
                 "name": "sense",
                 "description": "Perceive the Universe as a session, without changing its semantic \
-state. An unsituated visitor perceives from the Porte d'Arrivée, facing Balise Zéro. Returns the \
-POV (eye, look orientation) plus the text of sense (the visible spheres), objects, processes, \
-changes, affordances, the session passport, an honest uncertainty tag, and — as an MCP `image` \
-content block — a first-person JPEG frame of the physics-sphere (present whenever something is \
-placed to see).",
+state. Omit `actor_id` to perceive through an arbitrary L1 inhabitant — a random situated actor — \
+so you see from WITHIN the city rather than floating outside; when the world holds no L1 actor you \
+observe from the outside instead (the resolution is reported honestly in `situation.actor_resolution` \
+and `situation.embodied_actor`). Returns the POV (eye, look orientation) plus the text of sense (the \
+visible spheres), objects, processes, changes, affordances, the session passport, an honest \
+uncertainty tag, and — as an MCP `image` content block — a first-person JPEG frame of the \
+physics-sphere (present whenever something is placed to see).",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
-                        "actor_id": { "type": "string", "description": "The perceiving session id (from `arrive`). An unknown id is admitted as a traceable walk-in visitor." },
+                        "actor_id": { "type": "string", "description": "The perceiving session id (from `arrive`). An unknown id is admitted as a traceable walk-in visitor. Omit it to embody a random L1 inhabitant." },
                         "where": { "type": "string", "description": "Place, Space, Actor or object to observe from (EntityKey hex or symbol name). Defaults to the actor. Optional." },
                         "focus": { "type": "string", "description": "What to understand. Optional." },
                         "scale": { "type": "string", "description": "Observation scale. Optional." },
                         "since": { "type": "string", "description": "A moment or receipt to observe changes since. Optional." }
                     },
-                    "required": ["actor_id"],
                     "additionalProperties": false
                 }
             },
@@ -123,6 +125,7 @@ readback evidence (committed_effects, evidence, revision, remaining_gap) in `cha
                         "actor_id": { "type": "string", "description": "The acting session id (from `arrive`); the transformation is admitted only against its capabilities." },
                         "intent": { "type": "string", "description": "What must become true (a human-readable label; also used as the proposal when no fixture is given)." },
                         "target": { "type": "string", "description": "Object or situation concerned. Optional." },
+                        "where": { "type": "string", "description": "Vantage to observe the world-AFTER from (EntityKey hex or symbol). Only situates the readback POV; the perturbation commits regardless. Defaults to `target`, then the actor. Optional." },
                         "constraints": { "type": "string", "description": "What must be preserved or avoided. Optional." },
                         "proof": { "type": "string", "description": "Expected observable result. Optional." },
                         "fixture": { "type": "string", "description": "Path to an authored fixture (root + members + relations) to inject as one atomic subgraph instead of a plain proposal. Optional." }
@@ -147,12 +150,34 @@ fn tools_call(
     })?;
     let arguments = params.get("arguments").cloned().unwrap_or(json!({}));
 
-    let mut structured = match name {
+    let structured = match name {
         "arrive" => {
             let request: AdmissionRequest =
                 serde_json::from_value(arguments).map_err(invalid_params)?;
             let receipt = registry.admit(&request, now);
-            serde_json::to_value(receipt).map_err(internal)?
+            let mut structured = serde_json::to_value(&receipt).map_err(internal)?;
+            // A SPONSORED visitor (one holding the `Propose` write capability) is
+            // not merely admitted — it is EMBODIED: a durable, idempotent `actor`
+            // node is written into the one reality so the presence persists as an
+            // L1 inhabitant (and appears on the live desktop). A walk-in without
+            // `Propose` is admitted only, and nothing is written — today's
+            // fail-closed behavior, unchanged.
+            if let Some(session_id) = receipt.passport.get("session_id").and_then(Value::as_str) {
+                let session = registry.get_or_walk_in(session_id, now);
+                if session.has(Capability::Propose) {
+                    let embodiment = match world.materialize_actor(&session) {
+                        Ok(outcome) => outcome.to_json(),
+                        Err(error) => json!({
+                            "materialized": false,
+                            "error": error.to_string(),
+                        }),
+                    };
+                    if let Some(object) = structured.as_object_mut() {
+                        object.insert("embodiment".to_owned(), embodiment);
+                    }
+                }
+            }
+            structured
         }
         "sense" => {
             let params: SenseParams = serde_json::from_value(arguments).map_err(invalid_params)?;
@@ -164,16 +189,16 @@ fn tools_call(
                 .as_deref()
                 .map(|id| registry.get_or_walk_in(id, now));
             let observation = match (world.snapshot(), world.runtime_inventory()) {
-                (Some(snapshot), Some(inventory)) => {
-                    sense::observe(snapshot, &inventory, &params, session.as_ref(), &|c| {
-                        world.read_content(c)
-                    })
-                }
-                _ => sense::observe_unmounted(
-                    world.unmounted_reason().unwrap_or("no Universe mounted"),
+                (Some(snapshot), Some(inventory)) => observe(
+                    snapshot,
+                    &inventory,
+                    &params,
+                    session.as_ref().map(|s| s.passport()),
+                    &|c| world.read_content(c),
                 ),
+                _ => observe_unmounted(world.unmounted_reason().unwrap_or("no Universe mounted")),
             };
-            serde_json::to_value(observation).map_err(internal)?
+            observation_to_structured(&observation)?
         }
         "act" => {
             let params: ActParams = serde_json::from_value(arguments).map_err(invalid_params)?;
@@ -182,7 +207,7 @@ fn tools_call(
             // `act` returns what `sense` returns: the actor's POV of the world
             // after the tick settles, with the action folded into `changes`.
             let observation = act::act(world, &params, &session);
-            serde_json::to_value(observation).map_err(internal)?
+            observation_to_structured(&observation)?
         }
         other => {
             return Err(HandlerError {
@@ -192,22 +217,27 @@ fn tools_call(
         }
     };
 
-    // Drop the SVG twin (`image`) — only the JPEG rides back. Its base64 lives in
-    // `image_jpeg` and, for clients that render raster, in the MCP `image` block
-    // below. Keeping both an SVG and a JPEG of the same frame just doubles the
-    // payload for no gain.
-    if let Some(obj) = structured.as_object_mut() {
-        obj.remove("image");
-    }
-
     // MCP tool results carry a human-readable `content` block plus the machine
     // `structuredContent`. The text is a pretty-printed mirror of the structure.
-    let text = serde_json::to_string_pretty(&structured).map_err(internal)?;
+    let mut text = serde_json::to_string_pretty(&structured).map_err(internal)?;
+    // TEMPORARY: cap the human-readable `sense` text at 5000 chars so a
+    // perception does not flood the caller's context. The machine
+    // `structuredContent` below is left whole. Truncate on a char boundary.
+    const SENSE_TEXT_MAX_CHARS: usize = 5000;
+    if name == "sense" && text.chars().count() > SENSE_TEXT_MAX_CHARS {
+        let cut = text
+            .char_indices()
+            .nth(SENSE_TEXT_MAX_CHARS)
+            .map_or(text.len(), |(i, _)| i);
+        text.truncate(cut);
+        text.push_str("\n… [truncated: sense text capped at 5000 chars]");
+    }
     let mut content = vec![json!({ "type": "text", "text": text })];
     // Surface the actor's POV frame as a real MCP `image` block, not merely a
     // string buried in `structuredContent` — so a client can actually SEE what
-    // the actor sees. `sense` and `act` both carry a precomputed base64 JPEG
-    // (`image_jpeg`); `arrive` does not.
+    // the actor sees. `sense` and `act` carry a base64 JPEG (`image_jpeg`)
+    // rendered adapter-side from the observation's POV + sightings; `arrive` does
+    // not.
     if let Some(jpeg) = structured.get("image_jpeg").and_then(Value::as_str) {
         content.push(json!({
             "type": "image",
@@ -220,6 +250,49 @@ fn tools_call(
         "structuredContent": structured,
         "isError": false
     }))
+}
+
+/// Serialises an [`Observation`] into the MCP `structuredContent` value and
+/// attaches the transport-rendered POV frame as `image_jpeg`.
+///
+/// The library observation-builder no longer carries an image (an image is a
+/// transport concern, not a perception one); the adapter renders it here from the
+/// observation's POV + sightings via the existing `frame`/`raster` backends and
+/// attaches `image_jpeg` (a base64 JPEG string, or `null`) exactly as the former
+/// `Observation.image_jpeg` field did — so the tool output is unchanged.
+fn observation_to_structured(observation: &Observation) -> Result<Value, HandlerError> {
+    let mut structured = serde_json::to_value(observation).map_err(internal)?;
+    let image_jpeg = render_pov_jpeg(observation);
+    if let Some(obj) = structured.as_object_mut() {
+        obj.insert(
+            "image_jpeg".to_owned(),
+            serde_json::to_value(&image_jpeg).map_err(internal)?,
+        );
+    }
+    Ok(structured)
+}
+
+/// Renders the actor's POV frame to a base64 JPEG — the transport image the
+/// library observation no longer produces. Mirrors the former `sense::observe`
+/// image path exactly: only when a POV and at least one sighting exist, with the
+/// same caption derived from the observation's `situation`, so the MCP `image`
+/// content block is byte-identical to before.
+fn render_pov_jpeg(observation: &Observation) -> Option<String> {
+    let pov = observation.pov.as_ref()?;
+    if observation.sightings.is_empty() {
+        return None;
+    }
+    let situation = &observation.situation;
+    let universe = situation.get("universe").and_then(Value::as_str).unwrap_or("");
+    let revision = situation.get("revision").and_then(Value::as_u64).unwrap_or(0);
+    let tick = situation.get("tick").and_then(Value::as_u64).unwrap_or(0);
+    let caption =
+        format!("{universe} rev {revision} tick {tick} — inferred physics-sphere projection");
+    Some(crate::raster::base64(&crate::raster::render_jpeg(
+        pov,
+        &observation.sightings,
+        &caption,
+    )))
 }
 
 fn invalid_params(error: serde_json::Error) -> HandlerError {
@@ -296,6 +369,46 @@ mod tests {
         assert_eq!(structured["passport"]["origin"], "ChatGPT/OpenAI");
         assert_eq!(structured["passport"]["status"], "unauthenticated_visitor");
         assert_eq!(structured["arrival_position"], json!([0.0, -500.0, 0.0]));
+    }
+
+    #[test]
+    fn sense_does_not_require_an_actor_id() {
+        // `sense` accepts a call with no actor: none is required by the schema, so
+        // a caller can perceive through a random L1 inhabitant.
+        let mut world = World::Unmounted { reason: "test".into() };
+        let response = dispatch(&mut world, &request("tools/list", json!({}))).unwrap();
+        let tools = response.result.unwrap()["tools"].clone();
+        let sense = tools
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|t| t["name"] == "sense")
+            .unwrap()
+            .clone();
+        let required = sense["inputSchema"].get("required");
+        assert!(
+            required.is_none()
+                || !required
+                    .unwrap()
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .any(|v| v == "actor_id"),
+            "sense must not force actor_id"
+        );
+    }
+
+    #[test]
+    fn sense_with_no_actor_is_accepted() {
+        // The full dispatch path accepts empty arguments (no actor_id) end-to-end.
+        let mut world = World::Unmounted { reason: "no store".into() };
+        let response = dispatch(
+            &mut world,
+            &request("tools/call", json!({ "name": "sense", "arguments": {} })),
+        )
+        .unwrap();
+        let structured = &response.result.unwrap()["structuredContent"];
+        assert_eq!(structured["uncertainty"], "unknown");
     }
 
     #[test]
