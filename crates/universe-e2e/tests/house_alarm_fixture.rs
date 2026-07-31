@@ -18,6 +18,15 @@ use std::path::PathBuf;
 
 use serde_json::Value;
 
+// The authored -> canonical predicate remap and the node-type / subtype
+// allow-lists are the ONE shared source of truth (universe_e2e::canonical), so
+// this validator cannot drift from what the injectors actually intern. The
+// shared `canonical_predicate` returns `(canonical, swap)`; this structural
+// check only needs the canonical target, so it reads the `.0`.
+use universe_e2e::canonical::{
+    canonical_predicate, CANONICAL_NODE_TYPES, CANONICAL_SUBTYPES as CANONICAL_TYPE_SUBTYPES,
+};
+
 fn fixture_path() -> PathBuf {
     // tests run with CWD = crate dir (crates/universe-e2e); the fixtures live at
     // the workspace root.
@@ -29,32 +38,6 @@ fn load() -> Value {
     let raw = std::fs::read(fixture_path()).expect("house-alarm fixture is readable");
     serde_json::from_slice(&raw).expect("house-alarm fixture is valid JSON")
 }
-
-/// The authored -> canonical predicate remap, kept in lock-step with the
-/// injector (`crates/universe-e2e/src/bin/inject_orientation_beacon.rs`). An
-/// authored predicate absent from this table would mint a non-canonical symbol,
-/// so its absence is a hard failure.
-fn canonical_predicate(authored: &str) -> Option<&'static str> {
-    Some(match authored {
-        "PART_OF" => "PART_OF",
-        "IMPLEMENTED_IN" => "IMPLEMENTS",
-        "DEFINED_BY_CODE" => "DEFINES",
-        "IMPLEMENTED_BY" => "COMPILES_TO",
-        "JUSTIFIED_BY" => "GROUNDS",
-        "VALIDATED_BY" => "TESTS",
-        "OBSERVED_BY" => "OBSERVES",
-        "PRODUCES" => "PRODUCES",
-        "FEEDS" => "FEEDS",
-        "SUPPORTS" => "MOTIVATES",
-        _ => return None,
-    })
-}
-
-/// node_type symbols and validated subtypes that the injector interns. All of
-/// these already exist in the canonical seed, so a conforming fixture uses only
-/// these.
-const CANONICAL_NODE_TYPES: &[&str] = &["space", "narrative", "thing"];
-const CANONICAL_TYPE_SUBTYPES: &[&str] = &["metric", "validation"];
 
 fn nodes(doc: &Value) -> Vec<&Value> {
     let mut v = vec![doc];
@@ -163,7 +146,7 @@ fn zero_new_symbols_would_be_interned() {
     }
     for r in doc["relations"].as_array().unwrap() {
         let authored = r["predicate"].as_str().unwrap();
-        requested.insert(canonical_predicate(authored).unwrap().to_string());
+        requested.insert(canonical_predicate(authored).unwrap().0.to_string());
     }
     let canonical: BTreeSet<String> = ["space", "narrative", "thing", "metric", "validation"]
         .iter()

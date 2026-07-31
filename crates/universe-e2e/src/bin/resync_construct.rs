@@ -21,10 +21,12 @@ use std::{
 };
 
 use universe_core::{EntityKey, Tick};
+// The subtype-promotion rule (canonical subtype else node_type) is the ONE
+// shared source of truth in universe_e2e::canonical, so this bin cannot drift
+// from what the injectors intern.
+use universe_e2e::canonical::entity_symbol;
 use universe_store::{EntityRecord, UniverseStore};
 use universe_transactions::{UniverseCommand, UniverseTransaction, UniverseWriteSet};
-
-const CANONICAL_TYPE_SUBTYPES: &[&str] = &["metric", "validation"];
 
 fn main() {
     if let Err(error) = run() {
@@ -101,14 +103,6 @@ fn run() -> Result<(), Box<dyn Error>> {
     let base_revision = snapshot.revision;
     println!("base revision: {} | entities: {}", base_revision.0, snapshot.entities.len());
 
-    let entity_symbol = |node: &Node| -> String {
-        if CANONICAL_TYPE_SUBTYPES.contains(&node.subtype.as_str()) {
-            node.subtype.clone()
-        } else {
-            node.node_type.clone()
-        }
-    };
-
     let mut commands = Vec::new();
     let mut absent = Vec::new();
     let mut unchanged = 0usize;
@@ -144,7 +138,7 @@ fn run() -> Result<(), Box<dyn Error>> {
                 content: Some(store.append_content(&new_content)?),
             },
         });
-        let _ = entity_symbol(node);
+        let _ = entity_symbol(&node.node_type, &node.subtype);
     }
 
     for id in &absent {

@@ -709,6 +709,61 @@ pub struct PhysicsDepositOutcome {
     pub candidate_effects: Vec<EffectIntent>,
 }
 
+/// The graph-authored inputs for one bounded Physics-phase deposit wave.
+///
+/// The supervisor holds NO cluster-selection policy: it runs exactly the wave a
+/// caller-supplied [`PhysicsWaveSelector`] returns for the committed snapshot.
+/// Cluster selection (e.g. a bounded `cluster_from_space`), the DepositBond
+/// bindings, the effect bindings, and the budget are all authority the caller
+/// brings — never a literal buried in the supervisor.
+#[derive(Clone, Debug)]
+pub struct PhysicsWaveInputs {
+    pub sensor_cluster: LocalAtomCluster,
+    pub deposit_bindings: Vec<PhysicsEventDeposit>,
+    pub construct_cluster: LocalAtomCluster,
+    pub effect_bindings: Vec<PhysicsEffectBinding>,
+    pub budget: AtomExecutionBudget,
+}
+
+/// A caller-supplied seam that selects the bounded Physics-phase wave inputs for
+/// the committed snapshot, or `None` for a tick with no wave.
+///
+/// This is the generic seam that lets [`Supervisor::advance_driving_physics_wave`]
+/// run the wave WITHOUT the supervisor depending on any cluster-selection crate:
+/// the supervisor calls `select`, the caller decides which construct (if any)
+/// wakes this tick. It reads only the committed snapshot — a selector must never
+/// be a channel for mutation.
+pub trait PhysicsWaveSelector {
+    fn select(
+        &mut self,
+        snapshot: &UniverseSnapshot,
+    ) -> Result<Option<PhysicsWaveInputs>, UniverseError>;
+}
+
+/// The default selector: never selects a wave. It keeps the plain
+/// [`Supervisor::advance`] path byte-for-byte identical to its pre-wave
+/// behaviour (no wave runs), so existing callers are unaffected.
+pub struct NoPhysicsWave;
+
+impl PhysicsWaveSelector for NoPhysicsWave {
+    fn select(
+        &mut self,
+        _snapshot: &UniverseSnapshot,
+    ) -> Result<Option<PhysicsWaveInputs>, UniverseError> {
+        Ok(None)
+    }
+}
+
+/// The measured outcome of one advanced tick: the ordered commit receipts plus
+/// the optional Physics-phase deposit wave the selector drove. `physics_wave` is
+/// `Some` only when the selector returned inputs and the wave ran; its candidate
+/// effects are proposals only — never committed by the tick.
+#[derive(Clone, Debug)]
+pub struct TickOutcome {
+    pub commits: Vec<CommitReceipt>,
+    pub physics_wave: Option<PhysicsDepositOutcome>,
+}
+
 pub struct Supervisor {
     store: UniverseStore,
     snapshot: UniverseSnapshot,
@@ -1007,6 +1062,36 @@ impl Supervisor {
         &mut self,
         hook: &mut dyn PhaseHook,
     ) -> Result<Vec<CommitReceipt>, UniverseError> {
+        Ok(self
+            .advance_inner(hook, &mut NoPhysicsWave)?
+            .commits)
+    }
+
+    /// Advance one tick AND drive the Physics-phase deposit wave from a
+    /// caller-supplied selector.
+    ///
+    /// This is the tick-advance mechanism running the wave itself: during
+    /// [`TickPhase::Physics`] — after the commit boundary, against the committed
+    /// snapshot — it asks `selector` for the bounded wave inputs and, if any, runs
+    /// [`Self::run_physics_deposit_phase`]. The supervisor stays generic: it holds
+    /// no cluster-selection literal and never names a construct; the selector is
+    /// the only authority that decides which construct wakes. A
+    /// [`PhysicsDepositOutcome`] surfaces the fired-construct evidence and the
+    /// CANDIDATE effects. Because the wave takes `&self` and commits nothing, the
+    /// committed store is untouched by it — a PhysicsEvent never mutates the store.
+    pub fn advance_driving_physics_wave(
+        &mut self,
+        hook: &mut dyn PhaseHook,
+        selector: &mut dyn PhysicsWaveSelector,
+    ) -> Result<TickOutcome, UniverseError> {
+        self.advance_inner(hook, selector)
+    }
+
+    fn advance_inner(
+        &mut self,
+        hook: &mut dyn PhaseHook,
+        selector: &mut dyn PhysicsWaveSelector,
+    ) -> Result<TickOutcome, UniverseError> {
         if self.state != BootState::Ready {
             return Err(UniverseError::Validation("supervisor is not ready".into()));
         }
@@ -1020,6 +1105,20 @@ impl Supervisor {
         for transaction in pending {
             receipts.push(transaction.commit(&self.store, &mut self.snapshot, boundary_tick)?);
         }
+        // TickPhase::Physics — drive the wave generically from the selector,
+        // against the just-committed snapshot, then run the phase hook. The wave
+        // reads the snapshot (&self) and commits nothing: candidate effects are
+        // proposals the 4-verb write-path disposes of, never mutations here.
+        let physics_wave = match selector.select(&self.snapshot)? {
+            Some(inputs) => Some(self.run_physics_deposit_phase(
+                inputs.sensor_cluster,
+                &inputs.deposit_bindings,
+                inputs.construct_cluster,
+                &inputs.effect_bindings,
+                inputs.budget,
+            )?),
+            None => None,
+        };
         for phase in [
             TickPhase::Physics,
             TickPhase::Observation,
@@ -1027,7 +1126,10 @@ impl Supervisor {
         ] {
             hook.run(phase, &self.snapshot)?;
         }
-        Ok(receipts)
+        Ok(TickOutcome {
+            commits: receipts,
+            physics_wave,
+        })
     }
 
     pub fn independent_readback(&self) -> Result<UniverseSnapshot, UniverseError> {
@@ -1773,5 +1875,164 @@ mod tests {
         assert!(outcome.fired_construct_atoms.is_empty());
         assert!(outcome.candidate_effects.is_empty());
         assert_eq!(before, supervisor.independent_readback().unwrap());
+    }
+
+    #[test]
+    fn advance_alone_drives_the_wave_and_wakes_a_construct_without_mutating_the_store() {
+        use std::collections::BTreeMap;
+        use std::fs;
+        use std::path::{Path, PathBuf};
+
+        // The caller-supplied selector carrying house-alarm-shaped wave inputs.
+        // THIS is the only authority that decides a construct wakes this tick;
+        // the supervisor holds no cluster literal and never names the construct.
+        // It reads solely the committed snapshot — never a mutation channel.
+        struct AlarmWave {
+            sensor_atom: EntityKey,
+            trigger_atom: EntityKey,
+            candidate: EffectIntent,
+            selected: u32,
+        }
+        impl PhysicsWaveSelector for AlarmWave {
+            fn select(
+                &mut self,
+                _snapshot: &UniverseSnapshot,
+            ) -> Result<Option<PhysicsWaveInputs>, UniverseError> {
+                self.selected += 1;
+                Ok(Some(PhysicsWaveInputs {
+                    // A sensor Atom seeded to its threshold: it fires on its own,
+                    // standing in for the reported intersection-enter.
+                    sensor_cluster: LocalAtomCluster {
+                        atoms: vec![AtomSpec {
+                            key: self.sensor_atom,
+                            threshold: 100,
+                            seed_energy: 100,
+                            required_supports: Vec::new(),
+                            inhibition_threshold: None,
+                        }],
+                        bonds: Vec::new(),
+                        injections: Vec::new(),
+                    },
+                    deposit_bindings: vec![PhysicsEventDeposit {
+                        trigger: self.sensor_atom,
+                        target: self.trigger_atom,
+                        weight: 100,
+                    }],
+                    // The dormant construct trigger: cannot fire until the routed
+                    // deposit crosses its threshold.
+                    construct_cluster: LocalAtomCluster {
+                        atoms: vec![AtomSpec {
+                            key: self.trigger_atom,
+                            threshold: 100,
+                            seed_energy: 0,
+                            required_supports: Vec::new(),
+                            inhibition_threshold: None,
+                        }],
+                        bonds: Vec::new(),
+                        injections: Vec::new(),
+                    },
+                    effect_bindings: vec![PhysicsEffectBinding {
+                        atom: self.trigger_atom,
+                        candidate: self.candidate.clone(),
+                    }],
+                    budget: AtomExecutionBudget {
+                        max_atoms: 1,
+                        max_bonds: 1,
+                        max_steps: 2,
+                        max_total_energy: 100,
+                    },
+                }))
+            }
+        }
+
+        fn read_all_files(dir: &Path) -> BTreeMap<PathBuf, Vec<u8>> {
+            let mut out = BTreeMap::new();
+            let mut stack = vec![dir.to_path_buf()];
+            while let Some(current) = stack.pop() {
+                for entry in fs::read_dir(&current).unwrap() {
+                    let entry = entry.unwrap();
+                    let path = entry.path();
+                    if entry.file_type().unwrap().is_dir() {
+                        stack.push(path);
+                    } else {
+                        out.insert(path.clone(), fs::read(&path).unwrap());
+                    }
+                }
+            }
+            out
+        }
+
+        let temp = tempfile::tempdir().unwrap();
+        let store_dir = temp.path().join("store");
+        fs::create_dir_all(&store_dir).unwrap();
+        let genesis = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../fixtures/genesis/minimal-genesis.json");
+        let mut supervisor = Supervisor::boot(&store_dir, &genesis).unwrap();
+        let revision_before = supervisor.revision();
+        let bytes_before = read_all_files(&store_dir);
+
+        let candidate = EffectIntent {
+            capability: "notify".into(),
+            idempotency_key: "advance-driven-entry".into(),
+            payload: b"entry".to_vec(),
+            deadline_tick: Tick(10),
+            causal_ancestry: vec!["physics-event".into()],
+        };
+        let mut selector = AlarmWave {
+            sensor_atom: EntityKey(101),
+            trigger_atom: EntityKey(202),
+            candidate: candidate.clone(),
+            selected: 0,
+        };
+
+        // advance ALONE drives the wave — NO manual run_physics_deposit_phase call.
+        let mut hook = RecordingHook::default();
+        let outcome = supervisor
+            .advance_driving_physics_wave(&mut hook, &mut selector)
+            .unwrap();
+
+        // The selector was consulted exactly once, and the six phases ran in order
+        // (the wave runs inside TickPhase::Physics).
+        assert_eq!(selector.selected, 1);
+        assert_eq!(
+            hook.0,
+            vec![
+                TickPhase::Ingress,
+                TickPhase::Execution,
+                TickPhase::Commit,
+                TickPhase::Physics,
+                TickPhase::Observation,
+                TickPhase::Publish,
+            ]
+        );
+
+        // The wave ran and the construct self-woke on the routed deposit.
+        let wave = outcome
+            .physics_wave
+            .expect("advance must have driven a Physics-phase wave");
+        assert_eq!(wave.deposits.len(), 1);
+        assert_eq!(wave.deposits[0].atom, EntityKey(202));
+        assert!(wave.fired_construct_atoms.contains(&EntityKey(202)));
+        // Exactly the declared CANDIDATE effect surfaced — a proposal only.
+        assert_eq!(wave.candidate_effects, vec![candidate]);
+        // Nothing was committed by the tick (no pending transactions).
+        assert!(outcome.commits.is_empty());
+
+        // The committed store is BYTE-IDENTICAL before/after: a PhysicsEvent (and
+        // the candidate it surfaces) never mutates the committed store.
+        let bytes_after = read_all_files(&store_dir);
+        assert_eq!(
+            bytes_before, bytes_after,
+            "advance's Physics wave must not mutate the committed store"
+        );
+        assert_eq!(
+            supervisor.independent_readback().unwrap().revision,
+            revision_before
+        );
+
+        // Plain advance (the default NoPhysicsWave selector) drives NO wave, so
+        // existing callers are unaffected.
+        let plain = supervisor.advance(&mut RecordingHook::default()).unwrap();
+        assert!(plain.is_empty());
     }
 }

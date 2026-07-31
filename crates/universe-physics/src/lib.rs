@@ -1120,6 +1120,17 @@ pub fn deposit_onto_dynamics(
     Ok(applied)
 }
 
+/// A cuboid sensor/probe must have finite, strictly positive half-extents.
+fn validate_half_extents(half_extents: [f32; 3]) -> Result<(), UniverseError> {
+    if half_extents.iter().all(|value| value.is_finite() && *value > 0.0) {
+        Ok(())
+    } else {
+        Err(UniverseError::Validation(
+            "collider half-extents must be finite and positive".into(),
+        ))
+    }
+}
+
 fn readback_from_command(
     command: &RelationPhysicsCommand,
     status: RelationBindingStatus,
@@ -1187,6 +1198,12 @@ pub struct UniversePhysics {
     ccd: CCDSolver,
     bindings: BTreeMap<EntityKey, BodyBinding>,
     dormant: BTreeMap<EntityKey, PhysicalState>,
+    /// Sensor collider handle (as its raw `(index, generation)` parts, since
+    /// `ColliderHandle` is not `Ord`) -> the stable [`EntityKey`] it belongs to.
+    /// When the solver reports an intersection-enter for one of these colliders,
+    /// the entity is surfaced into the observed-event set. This map is the ONLY
+    /// ontology-free channel from Rapier geometry back to a Universe handle.
+    sensor_colliders: BTreeMap<(u32, u32), EntityKey>,
     relation_bindings: BTreeMap<RelationKey, RelationBinding>,
     active_relation_adjacency: BTreeMap<EntityKey, BTreeSet<RelationKey>>,
     applied_relation_commands: BTreeMap<String, RelationPhysicsCommand>,
@@ -1221,6 +1238,7 @@ impl UniversePhysics {
             ccd: CCDSolver::new(),
             bindings: BTreeMap::new(),
             dormant: BTreeMap::new(),
+            sensor_colliders: BTreeMap::new(),
             relation_bindings: BTreeMap::new(),
             active_relation_adjacency: BTreeMap::new(),
             applied_relation_commands: BTreeMap::new(),
@@ -1801,6 +1819,169 @@ impl UniversePhysics {
         Ok(true)
     }
 
+    /// Materialize a resident SENSOR: a fixed body carrying a cuboid *sensor*
+    /// collider that reports intersection-enter events. The collider's
+    /// `user_data` packs the stable entity handle, and the handle is tracked so a
+    /// reported intersection resolves back to this exact [`EntityKey`].
+    ///
+    /// This is trusted-computing-base geometry only. It carries no ontology: the
+    /// sensor is identified solely by its handle, exactly as
+    /// [`resolve_physics_event_deposits`] expects. What crossing it *means* is
+    /// graph authority resolved elsewhere.
+    pub fn arm_sensor(
+        &mut self,
+        entity: EntityKey,
+        generation: u32,
+        state: PhysicalState,
+        half_extents: [f32; 3],
+    ) -> Result<(), UniverseError> {
+        let user_data = self.materialize_fixed_body(entity, generation, state, half_extents)?;
+        let handle = self.bindings[&entity].handle;
+        let collider = ColliderBuilder::cuboid(half_extents[0], half_extents[1], half_extents[2])
+            .sensor(true)
+            .active_events(ActiveEvents::COLLISION_EVENTS)
+            .user_data(user_data)
+            .build();
+        let collider_handle = self
+            .colliders
+            .insert_with_parent(collider, handle, &mut self.bodies);
+        self.sensor_colliders
+            .insert(collider_handle.into_raw_parts(), entity);
+        Ok(())
+    }
+
+    /// Materialize a resident PROBE: a dynamic body carrying a solid cuboid
+    /// collider. A probe overlapping an armed sensor produces the sensor
+    /// intersection-enter the bridge consumes. Like a sensor, it carries no
+    /// ontology — only geometry and a packed handle.
+    pub fn place_probe(
+        &mut self,
+        entity: EntityKey,
+        generation: u32,
+        state: PhysicalState,
+        half_extents: [f32; 3],
+    ) -> Result<(), UniverseError> {
+        validate_half_extents(half_extents)?;
+        let user_data = self.materialize_body(entity, generation, state, RigidBodyType::Dynamic)?;
+        let handle = self.bindings[&entity].handle;
+        let collider = ColliderBuilder::cuboid(half_extents[0], half_extents[1], half_extents[2])
+            .user_data(user_data)
+            .build();
+        self.colliders
+            .insert_with_parent(collider, handle, &mut self.bodies);
+        Ok(())
+    }
+
+    /// Step the solver once and collect the stable [`EntityKey`] of every armed
+    /// sensor that the narrow phase reports an intersection-*enter* for this
+    /// step. The returned set is exactly the observed-event set
+    /// [`resolve_physics_event_deposits`] consumes — a REAL Rapier collider
+    /// crossing replacing the simulated handle used in unit tests.
+    ///
+    /// A [`PhysicsEvent`] never mutates the store: this reads solver geometry and
+    /// advances the physical tick only. The event carries a handle and nothing
+    /// else — zero ontology crosses this seam.
+    pub fn step_collecting_sensor_intersections(
+        &mut self,
+    ) -> Result<BTreeSet<EntityKey>, UniverseError> {
+        let (collision_send, collision_recv) = rapier3d::crossbeam::channel::unbounded();
+        let (contact_force_send, _contact_force_recv) = rapier3d::crossbeam::channel::unbounded();
+        let collector = ChannelEventCollector::new(collision_send, contact_force_send);
+        self.pipeline.step(
+            &self.gravity,
+            &self.integration,
+            &mut self.islands,
+            &mut self.broad_phase,
+            &mut self.narrow_phase,
+            &mut self.bodies,
+            &mut self.colliders,
+            &mut self.impulse_joints,
+            &mut self.multibody_joints,
+            &mut self.ccd,
+            None,
+            &(),
+            &collector,
+        );
+        self.tick.0 = self
+            .tick
+            .0
+            .checked_add(1)
+            .ok_or_else(|| UniverseError::Validation("physics tick overflow".into()))?;
+        let mut events = BTreeSet::new();
+        while let Ok(event) = collision_recv.try_recv() {
+            let CollisionEvent::Started(first, second, flags) = event else {
+                continue;
+            };
+            if !flags.contains(CollisionEventFlags::SENSOR) {
+                continue;
+            }
+            for handle in [first, second] {
+                if let Some(&entity) = self.sensor_colliders.get(&handle.into_raw_parts()) {
+                    events.insert(entity);
+                }
+            }
+        }
+        Ok(events)
+    }
+
+    /// Insert a rigid body of the given type at `state`, returning its packed
+    /// `user_data`. Shared by [`Self::arm_sensor`] and [`Self::place_probe`].
+    fn materialize_body(
+        &mut self,
+        entity: EntityKey,
+        generation: u32,
+        state: PhysicalState,
+        body_type: RigidBodyType,
+    ) -> Result<u128, UniverseError> {
+        state.validate()?;
+        if self.bindings.contains_key(&entity) {
+            return Err(UniverseError::Validation(
+                "entity is already physically resident".into(),
+            ));
+        }
+        if self.bindings.len() >= self.budget.max_active_bodies {
+            return Err(UniverseError::BudgetExhausted("active body budget".into()));
+        }
+        let slot = u64::try_from(self.bodies.len())
+            .map_err(|_| UniverseError::InvalidHandle("body slot overflow".into()))?;
+        let user_data = PackedHandle {
+            kind: HandleKind::Entity,
+            generation,
+            slot,
+        }
+        .pack()?;
+        let body = RigidBodyBuilder::new(body_type)
+            .translation(vector![
+                state.position[0],
+                state.position[1],
+                state.position[2]
+            ])
+            .linvel(vector![
+                state.velocity[0],
+                state.velocity[1],
+                state.velocity[2]
+            ])
+            .user_data(user_data)
+            .build();
+        let handle = self.bodies.insert(body);
+        self.bindings
+            .insert(entity, BodyBinding { handle, generation });
+        self.dormant.remove(&entity);
+        Ok(user_data)
+    }
+
+    /// Insert a FIXED body with validated cuboid half-extents (the sensor host).
+    fn materialize_fixed_body(
+        &mut self,
+        entity: EntityKey,
+        generation: u32,
+        state: PhysicalState,
+        half_extents: [f32; 3],
+    ) -> Result<u128, UniverseError> {
+        validate_half_extents(half_extents)?;
+        self.materialize_body(entity, generation, state, RigidBodyType::Fixed)
+    }
+
     fn release(&mut self, entity: EntityKey) -> Result<Option<PhysicalState>, UniverseError> {
         if self
             .active_relation_adjacency
@@ -1833,6 +2014,9 @@ impl UniversePhysics {
             &mut self.multibody_joints,
             true,
         );
+        // Removing the body removed its attached colliders; drop any sensor
+        // handle bookkeeping for this entity so no stale handle can be surfaced.
+        self.sensor_colliders.retain(|_, sensor_entity| *sensor_entity != entity);
         self.dormant.insert(entity, state);
         Ok(Some(state))
     }
@@ -2850,5 +3034,137 @@ mod tests {
         .unwrap();
         assert_eq!(deposits.len(), 1);
         assert_eq!(deposits[0].atom, downstream);
+    }
+
+    #[test]
+    fn a_real_rapier_sensor_crossing_surfaces_its_entity_and_drives_the_bridge() {
+        // A real solver, an armed sensor at the origin, and a probe body placed
+        // OVERLAPPING it. No hand-seeded event: the crossing is computed by the
+        // Rapier narrow phase.
+        let mut physics = UniversePhysics::new(
+            1.0 / 60.0,
+            PhysicsBudget {
+                max_active_bodies: 4,
+            },
+        )
+        .unwrap();
+        let sensor = EntityKey(7);
+        physics
+            .arm_sensor(
+                sensor,
+                0,
+                PhysicalState {
+                    position: [0.0, 0.0, 0.0],
+                    velocity: [0.0; 3],
+                },
+                [1.0, 1.0, 1.0],
+            )
+            .unwrap();
+
+        // Before any crossing, a step reports no sensor intersection.
+        let quiet = physics.step_collecting_sensor_intersections().unwrap();
+        assert!(quiet.is_empty(), "no probe present yet: no crossing");
+
+        // A citizen body crosses the membrane: a probe overlapping the sensor.
+        physics
+            .place_probe(
+                EntityKey(8),
+                0,
+                PhysicalState {
+                    position: [0.5, 0.0, 0.0],
+                    velocity: [0.0; 3],
+                },
+                [1.0, 1.0, 1.0],
+            )
+            .unwrap();
+
+        // The REAL event: the narrow phase reports the sensor intersection-enter,
+        // and the bridge surfaces the sensor's stable EntityKey — exactly the
+        // observed-event set `resolve_physics_event_deposits` consumes.
+        let events = physics.step_collecting_sensor_intersections().unwrap();
+        assert!(
+            events.contains(&sensor),
+            "a real collider crossing must surface the sensor's EntityKey handle"
+        );
+
+        // A dormant construct trigger: threshold 100, empty, cannot fire alone.
+        let trigger = EntityKey(42);
+        let mut dynamics = AtomDynamics::new(
+            vec![AtomSpec {
+                key: trigger,
+                threshold: 100,
+                seed_energy: 0,
+                required_supports: Vec::new(),
+                inhibition_threshold: None,
+            }],
+            Vec::new(),
+        )
+        .unwrap();
+        assert!(!dynamics.fired(trigger));
+
+        // Route the REAL event through a declared DepositBond onto the trigger.
+        let deposits = resolve_physics_event_deposits(
+            &[PhysicsEventDeposit {
+                trigger: sensor,
+                target: trigger,
+                weight: 100,
+            }],
+            &events,
+        )
+        .unwrap();
+        assert_eq!(deposits.len(), 1);
+        assert_eq!(deposits[0].atom, trigger);
+
+        // Land the deposit and the construct self-wakes on the real crossing.
+        deposit_onto_dynamics(&mut dynamics, &deposits).unwrap();
+        let run = dynamics.run_until_quiescent(4).unwrap();
+        assert!(run.quiescent);
+        assert_eq!(run.steps.len(), 1);
+        assert!(dynamics.fired(trigger));
+    }
+
+    #[test]
+    fn released_sensor_no_longer_surfaces_events() {
+        let mut physics = UniversePhysics::new(
+            1.0 / 60.0,
+            PhysicsBudget {
+                max_active_bodies: 4,
+            },
+        )
+        .unwrap();
+        let sensor = EntityKey(7);
+        physics
+            .arm_sensor(
+                sensor,
+                0,
+                PhysicalState {
+                    position: [0.0, 0.0, 0.0],
+                    velocity: [0.0; 3],
+                },
+                [1.0, 1.0, 1.0],
+            )
+            .unwrap();
+        physics
+            .place_probe(
+                EntityKey(8),
+                0,
+                PhysicalState {
+                    position: [0.5, 0.0, 0.0],
+                    velocity: [0.0; 3],
+                },
+                [1.0, 1.0, 1.0],
+            )
+            .unwrap();
+        assert!(physics
+            .step_collecting_sensor_intersections()
+            .unwrap()
+            .contains(&sensor));
+
+        // Releasing the sensor body drops its collider AND its handle bookkeeping;
+        // a later crossing can no longer resolve to a stale handle.
+        physics.apply(vec![PhysicsCommand::Release { entity: sensor }]);
+        assert!(physics.sensor_colliders.is_empty());
+        let events = physics.step_collecting_sensor_intersections().unwrap();
+        assert!(events.is_empty());
     }
 }
