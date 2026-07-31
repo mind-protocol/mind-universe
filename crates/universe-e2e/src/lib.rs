@@ -9,6 +9,7 @@ pub mod canonical;
 pub mod canonical_ride;
 pub mod canonical_seed_energy;
 pub mod cluster;
+pub mod construct_resolver;
 pub mod conversation_ride;
 pub mod conversation_seed_energy;
 pub mod covalidity;

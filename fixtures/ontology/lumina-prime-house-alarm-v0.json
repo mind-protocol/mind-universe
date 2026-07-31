@@ -198,20 +198,30 @@
                 "deposit_to_trigger"
               ]
             },
-            { "key": "notify_emitter", "roleAxis": "thing", "threshold": 100, "seed_energy": 0 },
-            { "key": "effect_receipt", "roleAxis": "moment", "threshold": 100, "seed_energy": 0 },
-            { "key": "crossing_ledger", "roleAxis": "moment", "threshold": 100, "seed_energy": 0 }
+            { "key": "notify_emitter", "roleAxis": "thing", "threshold": 100, "seed_energy": 0 }
           ],
           "bonds": [
             { "key": "sensor_to_intersection", "source": "entry_sensor_armed", "target": "citizen_body_intersects", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
             { "key": "physics_event_to_intersection", "source": "physics_intersection_event", "target": "citizen_body_intersects", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
             { "key": "deposit_to_trigger", "source": "citizen_body_intersects", "target": "alarm_trigger", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
-            { "key": "trigger_to_emitter", "source": "alarm_trigger", "target": "notify_emitter", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
-            { "key": "emitter_to_receipt", "source": "notify_emitter", "target": "effect_receipt", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
-            { "key": "emitter_to_ledger", "source": "notify_emitter", "target": "crossing_ledger", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" }
+            { "key": "trigger_to_emitter", "source": "alarm_trigger", "target": "notify_emitter", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" }
           ],
           "deposit_bond": "deposit_to_trigger",
           "trigger_atom": "alarm_trigger",
+          "terminal_emitter_honesty": "notify_emitter is a TERMINAL effect atom: on a fire it surfaces exactly one notify CANDIDATE (see effect_bindings), and conducts no energy onward. It was earlier authored to fan out into effect_receipt and crossing_ledger atoms, but that both violated atom energy conservation (a 100-support atom cannot conduct 200 out -> it starves and never fires) AND duplicated machinery that already exists for real: the genuine EffectReceipt is produced by executing the candidate through an authorized capability transport, and the genuine crossing Moment by the commit path -- neither is an atom the emitter energizes. The circuit therefore stops at the emitter; the receipt and the crossing Moment are proven by the real transport and commit machinery (and independently re-checked by this construct's observability_algorithm and validation), not by shadow atoms.",
+          "effect_bindings": [
+            {
+              "emitter_atom": "notify_emitter",
+              "capability": "safe.notify",
+              "idempotency_key": "house-alarm:notify:citizen-body-crossing-v0",
+              "message": "Entree detectee : un corps a franchi le seuil.",
+              "deadline_tick": 1000,
+              "causal_ancestry": [
+                "house-alarm:citizen-body-intersects"
+              ]
+            }
+          ],
+          "effect_bindings_honesty": "Explicit graph-authored binding of a fired atom to the CANDIDATE EffectIntent it proposes. It names which atom (notify_emitter) proposes which effect, so a ToolkitResolver reads the emitter -> candidate mapping FROM the circuit rather than a native driver hardcoding it. Surfacing the candidate is not sending it: the notify EffectIntent still requires the linked notify_port authorization and an authorized transport + EffectReceipt to become a real notification.",
           "external_measured_injections": {
             "entry_sensor_armed": 100,
             "physics_intersection_event": 100
