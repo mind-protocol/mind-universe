@@ -1,0 +1,340 @@
+{
+  "id": "space:l2:mind-universe:validity-toolkit-v0",
+  "node_type": "space",
+  "subtype": "validity_toolkit",
+  "content": {
+    "contractKind": "construct",
+    "name": "Validity toolkit v0 (the five-axis validity model)",
+    "dominant_scale": "sensemaking",
+    "lineage": "The shared canonical model of what 'valid' means for a construct. Every construct is a self-verifying loop (its validation -> observer -> observer-validation -> metric -> health spine), and this toolkit factors what that spine reports into FIVE orthogonal axes so no single 'health' collapses them. It is consumed by other constructs through DEPENDS_ON; it is not owned by one exclusive toolkit. Promoted from the model first authored in [[space:l2:mind-universe:abstraction-toolkit-v0]].",
+    "parent_scope": {
+      "classification": "standalone",
+      "justification": "A shared canonical contract awaiting installation under the sensemaking/meta registry Space. Exactly one scope classification; consumed via DEPENDS_ON, structurally owned by none."
+    },
+    "runtime_moment_subtypes": ["validation_run", "health_assessment"],
+    "native_law_boundary": "AtomDynamics knows only AtomSpec, AtomBond and support/inhibit/neutral. This toolkit adds no law; it is a model that reads a construct's own validity spine and reports five orthogonal statuses. The axes and their meanings are data.",
+    "purpose": "Give every construct one shared, canonical way to state its validity as a VECTOR over five orthogonal axes, never a single scalar. A construct DEPENDS_ON this model, and its health face reports one status per axis: (1) causal validity, (2) current truth, (3) degree, (4) scope, (5) context. The axes are independent — a construct may be causally valid yet currently false, currently true yet causally unsound, proven by a weak validator, valid only in scope, or valid only under a context — and each must stay separately visible.",
+    "validity_decomposition": {
+      "note": "The canonical five-axis validity model. Any construct that DEPENDS_ON this toolkit reports its health as one status per axis; axes are never collapsed.",
+      "causal_validity": {
+        "question": "does the causal/logical structure hold in principle? a-temporal, world-independent",
+        "lives_in": ["pattern", "behavior", "algorithm"],
+        "established_by": "proof over the causal structure (required arguments conduct, no logical contradiction) — the argument, not the current world",
+        "statuses": ["proven", "supported", "unproven", "refuted", "unknown"]
+      },
+      "current_truth": {
+        "question": "does it actually hold in the world RIGHT NOW?",
+        "lives_in": ["implementation", "health"],
+        "established_by": "fresh runtime evidence read by the observer (a runtime health_assessment)",
+        "statuses": ["holds_now", "does_not_hold", "stale", "not_measured", "unknown"],
+        "independence": "a construct may be causally valid yet currently false, or currently true yet causally unsound"
+      },
+      "validity_degree": {
+        "question": "how STRONG is the validity?",
+        "parts": {
+          "evidence_margin": "measured_support minus proof_burden — how far above threshold",
+          "validator_strength": "the validity AND strength of the validators themselves: is the observer itself proven (observer-validation passing), independent, strong? A pass from a weak or unproven validator is a weak proof."
+        },
+        "lives_in": ["metric", "observability_algorithm", "observer-validation"],
+        "statuses": ["strong", "adequate", "weak", "not_measured"]
+      },
+      "validity_scope": {
+        "question": "over what domain does it hold? space, time, type/population, scale, revision range",
+        "lives_in": "a declared scope (a rayon)",
+        "rule": "outside the declared scope a construct is OUT-OF-SCOPE, not false; a scope must be declared, never assumed universal",
+        "statuses": ["in_scope", "out_of_scope", "scope_undeclared"]
+      },
+      "validity_context": {
+        "question": "under what assumptions / preconditions / situation does the above hold?",
+        "lives_in": ["behavior.given (preconditions)", "the situation frame: universe revision, active actors, assumed premises"],
+        "rule": "distinguish valid-under-context-C from valid-unconditionally; a context change may re-open any of the other four axes",
+        "statuses": ["unconditional", "conditional_on_context", "context_unknown"]
+      },
+      "collapse_forbidden": "No overall health may hide a per-axis defect; each of the five statuses stays separately visible."
+    }
+  },
+  "members": [
+    {
+      "id": "objective:l2:mind-universe:validity-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "Every construct that DEPENDS_ON this toolkit reports its validity as five orthogonal statuses (causal validity, current truth, degree, scope, context), each a faithful projection of measured evidence, with no axis collapsed into another. The five distinguishable cases — causally-valid-but-currently-false, currently-true-but-causally-unsound, proven-by-a-weak-validator, in-scope-only, and conditional-on-context — are always separately visible, and this toolkit itself reports its own validity by the same five axes (it is an instance of the model it defines)."
+      }
+    },
+    {
+      "id": "pattern:l2:mind-universe:validity-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "A construct's self-verifying spine (validation -> observer -> observer-validation -> metric -> health, producing validation_run and health_assessment) reports not one scalar but five orthogonal axes. Theoretical/causal validity is read from the pattern/behavior/algorithm as an a-temporal argument; current truth from a fresh health_assessment reading the world; degree from the evidence margin and the validators' own strength and validity; scope from a declared rayon; context from the preconditions and situation frame. The axes are independent and separately statused.",
+        "epistemic_honesty": "A green overall is not permitted to hide a red axis. Out-of-scope is not false. A pass from an unproven validator is weak, not strong. Causal soundness is not current truth, and current truth is not causal soundness."
+      }
+    },
+    {
+      "id": "vocabulary:l2:mind-universe:validity-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "CausalValidity": "Does the causal/logical structure hold in principle? A-temporal, world-independent; read from pattern/behavior/algorithm.",
+          "CurrentTruth": "Does it hold in the world right now? From a fresh runtime health_assessment.",
+          "ValidityDegree": "How strong: the evidence margin (support minus burden) AND the validity and strength of the validators themselves.",
+          "ValidityScope": "The declared domain (space/time/type/scale/revision) over which it holds; out-of-scope is distinct from false.",
+          "ValidityContext": "The assumptions/preconditions/situation under which the other axes hold.",
+          "ValidatorStrength": "The validity and strength of a construct's own validators — is the observer proven, independent, strong?",
+          "CollapseForbidden": "The rule that no single overall status may hide a per-axis defect.",
+          "Rayon": "The enumerable declared domain of validity_scope."
+        }
+      }
+    },
+    {
+      "id": "behavior:l2:mind-universe:validity-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "A construct (its pattern/behavior/algorithm, its fresh health_assessment, its metric vector, its observer-validation result, a declared scope, and its preconditions/situation frame).",
+        "when": "The construct's health face is derived or refreshed, or an observer inspects the construct's validity.",
+        "then": [
+          "Derive causal_validity from the causal argument (required arguments conducted, no logical contradiction), independent of the current world.",
+          "Derive current_truth only from a fresh health_assessment reading the current world.",
+          "Derive validity_degree from the evidence margin AND the validators' own strength and validity.",
+          "Derive validity_scope against the declared rayon; report out_of_scope distinctly from false, and scope_undeclared as a defect.",
+          "Derive validity_context from the preconditions and situation frame; report conditional_on_context vs unconditional.",
+          "Report the five statuses separately; never collapse them into one overall."
+        ],
+        "forbidden": [
+          "collapsing the five axes into one overall status",
+          "reporting current_truth from the causal argument (or vice versa)",
+          "reporting a weak-validator pass as strong",
+          "treating out-of-scope as false",
+          "assuming universality when scope is undeclared",
+          "reporting unconditional validity while an unmet precondition stands",
+          "pre-creating validation_run or health_assessment"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l2:mind-universe:validity-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "resolve the construct and its self-verifying spine",
+          "read the causal argument (pattern/behavior/algorithm) and derive causal_validity a-temporally",
+          "read the fresh health_assessment and derive current_truth for the current world",
+          "read the metric margin and observer-validation and derive validity_degree (evidence margin + validator strength)",
+          "read the declared scope and derive validity_scope (in/out-of-scope/undeclared)",
+          "read the preconditions and situation frame and derive validity_context",
+          "emit the five statuses as an orthogonal vector; refuse to collapse",
+          "run the independent observer and structured evaluation AST; derive this toolkit's own validity by the same five axes"
+        ],
+        "python_escape_hatch": "forbidden_by_default"
+      }
+    },
+    {
+      "id": "code:l2:mind-universe:validity-toolkit-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "authority": "Graph-native CodeDefinition projection for the portable Validity toolkit; this JSON file is a materialized projection, not independent semantic authority.",
+        "language": "mind-ir+atom-fixture",
+        "entrypoints": [
+          "derive_causal_validity",
+          "derive_current_truth",
+          "derive_validity_degree",
+          "derive_validity_scope",
+          "derive_validity_context",
+          "emit_validity_vector",
+          "observe_validity",
+          "evaluate_validity_ast"
+        ],
+        "model_note": "This toolkit carries no atom circuit of its own; it is a model consumed by other constructs via DEPENDS_ON. Each consuming construct's health face reports one status per axis defined here."
+      }
+    },
+    {
+      "id": "implementation:l2:mind-universe:validity-toolkit-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "status": "materialized",
+        "artifact": "validity-toolkit-v0.json",
+        "graph_status": "not_written",
+        "wiring_status": "not_wired",
+        "runtime_status": "not_running",
+        "verification_status": "not_measured",
+        "honesty": "Materialized and structurally shaped as a construct. Written BEFORE injection; after an injector commits it and consuming constructs are wired via DEPENDS_ON, this field reads stale. No construct's validity is derived by this model at runtime yet."
+      }
+    },
+    {
+      "id": "justification:l2:mind-universe:validity-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": [
+          "A single 'health' scalar hides real distinctions: a construct can be causally sound but currently false, or true now but unsound; collapsing them loses exactly what a reader needs.",
+          "Separating the strength and validity of the validators from the result prevents a weak or unproven validator from lending false confidence.",
+          "A declared scope keeps out-of-scope distinct from false, so a construct valid in its rayon is not mistaken for universally valid or wrongly failed.",
+          "Naming the context keeps conditional validity honest: a construct valid under an assumption is not reported as valid unconditionally.",
+          "Factoring this once, shared and consumed via DEPENDS_ON, keeps all constructs' validity comparable instead of each inventing its own health semantics."
+        ],
+        "rejected": [
+          "one overall health scalar, because it conflates orthogonal axes",
+          "per-construct bespoke health semantics, because they become incomparable",
+          "assuming universal scope, because validity is always over some domain",
+          "reporting validator results without validator strength, because a weak pass is not a strong one"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:mind-universe:validity-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "structured_expression_ast",
+        "scenarios": [
+          "five_axes_reported_separately",
+          "causally_valid_but_currently_false_is_visible",
+          "currently_true_but_causally_unsound_is_visible",
+          "weak_validator_pass_reported_as_weak",
+          "out_of_scope_distinct_from_false",
+          "scope_undeclared_flagged_as_defect",
+          "conditional_context_not_reported_unconditional",
+          "no_axis_collapsed_into_overall",
+          "toolkit_reports_its_own_validity_by_the_same_axes"
+        ],
+        "invariants": [
+          "health is a vector over exactly five orthogonal axes",
+          "no axis is collapsed to hide another",
+          "causal_validity is derived independently of current_truth",
+          "validity_degree includes validator strength, not only the result",
+          "validity_scope reports out-of-scope distinctly from false",
+          "validity_context distinguishes conditional from unconditional",
+          "this toolkit is an instance of the model it defines"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:mind-universe:validity-observer-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "target": "observability_algorithm:l2:mind-universe:validity-toolkit-v0",
+        "tests": [
+          "detect an overall status that hid a red axis",
+          "detect current_truth derived from the causal argument",
+          "detect a weak-validator pass reported as strong",
+          "detect out-of-scope treated as false",
+          "detect undeclared scope assumed universal",
+          "detect unconditional reported while a precondition is unmet",
+          "never convert a per-axis defect into an overall pass"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l2:mind-universe:validity-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Reads a consuming construct's pattern/behavior/algorithm, its fresh health_assessment, its metric vector, its observer-validation result, its declared scope and its preconditions. It does not trust a construct's self-reported overall health.",
+        "checks": [
+          "five orthogonal statuses present and separate",
+          "causal_validity derived a-temporally",
+          "current_truth derived from fresh evidence only",
+          "validity_degree reflects margin AND validator strength",
+          "validity_scope reports in/out-of-scope/undeclared",
+          "validity_context reports conditional vs unconditional",
+          "no collapse of any axis",
+          "the toolkit reports its own validity by the same axes"
+        ]
+      }
+    },
+    {
+      "id": "metric:l2:mind-universe:validity-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "dimensions": [
+          "axis_separation_rate",
+          "collapse_violation_count",
+          "causal_vs_current_independence_accuracy",
+          "validator_strength_reported_rate",
+          "out_of_scope_distinct_from_false_rate",
+          "scope_undeclared_flag_rate",
+          "context_conditionality_accuracy",
+          "self_model_conformance",
+          "evidence_freshness_ms"
+        ]
+      }
+    },
+    {
+      "id": "health:l2:mind-universe:validity-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "note": "Homoiconic: this toolkit reports ITS OWN health as the same five-axis vector it defines.",
+        "validity_vector": {
+          "causal_validity": { "statuses": ["proven", "supported", "unproven", "refuted", "unknown"] },
+          "current_truth": { "statuses": ["holds_now", "does_not_hold", "stale", "not_measured", "unknown"] },
+          "validity_degree": { "statuses": ["strong", "adequate", "weak", "not_measured"] },
+          "validity_scope": { "statuses": ["in_scope", "out_of_scope", "scope_undeclared"] },
+          "validity_context": { "statuses": ["unconditional", "conditional_on_context", "context_unknown"] }
+        },
+        "collapse_forbidden": "No single overall health may hide a per-axis defect.",
+        "maintenance": ["retry", "re_derive_axis", "recompute_validator_strength", "declare_scope", "name_context", "reconcile_rust_scheduler", "ask_human"]
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "space:l2:mind-universe:validity-toolkit-v0",
+      "predicate": "IMPLEMENTED_IN",
+      "target": "implementation:l2:mind-universe:validity-toolkit-v0"
+    },
+    {
+      "source": "space:l2:mind-universe:validity-toolkit-v0",
+      "predicate": "DEFINED_BY_CODE",
+      "target": "code:l2:mind-universe:validity-toolkit-v0"
+    },
+    {
+      "source": "code:l2:mind-universe:validity-toolkit-v0",
+      "predicate": "IMPLEMENTED_BY",
+      "target": "implementation:l2:mind-universe:validity-toolkit-v0"
+    },
+    {
+      "source": "pattern:l2:mind-universe:validity-toolkit-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l2:mind-universe:validity-toolkit-v0"
+    },
+    {
+      "source": "behavior:l2:mind-universe:validity-toolkit-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:mind-universe:validity-toolkit-v0"
+    },
+    {
+      "source": "implementation:l2:mind-universe:validity-toolkit-v0",
+      "predicate": "OBSERVED_BY",
+      "target": "observability_algorithm:l2:mind-universe:validity-toolkit-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:mind-universe:validity-toolkit-v0",
+      "predicate": "PRODUCES",
+      "target": "metric:l2:mind-universe:validity-toolkit-v0"
+    },
+    {
+      "source": "metric:l2:mind-universe:validity-toolkit-v0",
+      "predicate": "FEEDS",
+      "target": "health:l2:mind-universe:validity-toolkit-v0"
+    },
+    {
+      "source": "objective:l2:mind-universe:validity-toolkit-v0",
+      "predicate": "SUPPORTS",
+      "target": "space:l2:mind-universe:validity-toolkit-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:mind-universe:validity-toolkit-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:mind-universe:validity-observer-v0"
+    }
+  ]
+}
