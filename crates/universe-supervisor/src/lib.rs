@@ -10,12 +10,13 @@ use universe_compiler::{build_execution_request, RuntimeBondArtifact, RuntimeBon
 use universe_core::{EntityKey, Epistemic, Revision, Tick, UniverseError};
 use universe_ir::{
     BehaviorLogicKind, CodeDefinition, ExecutionRequest, ExecutionRequestReceipt,
-    ExecutionRequestState, TriggerEvent, TriggerSubscription, Value,
+    ExecutionRequestState, TriggerEvent, TriggerEventKind, TriggerEventPayload, TriggerSubscription,
+    Value,
 };
 use universe_physics::{
     execute_local_atom_cluster, fired_atoms, map_relation_physical_delta,
     resolve_physics_event_deposits, AtomBond, AtomExecutionBudget, AtomExecutionReceipt,
-    AtomInjectionRequest, AtomSpec, BondPolarity, LocalAtomCluster, PhysicsEventDeposit,
+    AtomInjectionRequest, AtomRun, AtomSpec, BondPolarity, LocalAtomCluster, PhysicsEventDeposit,
     RelationBindingReadback, RelationPhysicalDelta, RelationPhysicsBudget, RelationPhysicsReceipt,
     UniversePhysics,
 };
@@ -494,6 +495,36 @@ impl TriggerScheduler {
             backlog: self.backlog(),
         }
     }
+
+    /// Removes and returns every queued request whose eligibility tick has
+    /// arrived (`eligible_at <= now`), in the queue's existing eligibility order,
+    /// leaving not-yet-eligible requests in place. This is the drain half of the
+    /// wake-queue: "the physics step fills a wake-queue; the serial loop drains
+    /// it." Draining a request stamps `last_measured` for its subscription at
+    /// `now`, so its declared cooldown applies to the next firing — a drained
+    /// request has genuinely been taken up for execution, not merely observed.
+    /// The queue is kept sorted by [`Self::ingest_event`], so the returned order
+    /// is the same stable eligibility order the scheduler admits with.
+    pub fn drain_eligible(&mut self, now: Tick) -> Vec<ExecutionRequest> {
+        let mut drained = Vec::new();
+        let mut remaining = Vec::with_capacity(self.queue.len());
+        for queued in std::mem::take(&mut self.queue) {
+            if queued.eligible_at.0 <= now.0 {
+                self.last_measured.insert(
+                    (
+                        queued.request.subscription,
+                        queued.request.subscription_revision,
+                    ),
+                    now,
+                );
+                drained.push(queued.request);
+            } else {
+                remaining.push(queued);
+            }
+        }
+        self.queue = remaining;
+        drained
+    }
 }
 
 fn lifecycle_receipt(
@@ -754,6 +785,135 @@ impl PhysicsWaveSelector for NoPhysicsWave {
     }
 }
 
+/// Map an executed construct-cluster [`AtomRun`] to one `AtomFired` wake event
+/// per atom that crossed its threshold this wave, in solver order.
+///
+/// This is the IN-TICK producer half of the physics-fire → wake-queue bridge.
+/// The supervisor owns the universe clock, so — unlike the standalone
+/// `wake_bridge` producer used for isolated proofs, which stamps the solver's
+/// step tick — both `occurred_at` and `observed_at` are stamped with the
+/// UNIVERSE tick the wave observed (`observed_tick`). This is load-bearing: fed
+/// into the live tick, a firing dated by the solver-local step tick (which
+/// starts at 0) would read as arbitrarily old against the universe clock and be
+/// rejected as `StaleEvent` by the compiler's freshness check. `event_id` still
+/// derives from the solver step and atom so each firing yields a distinct event.
+/// A firing is an observed physical fact, so the evidence is `Measured`. Fields
+/// are empty for now (the fired atom is the subject); populating them with the
+/// firing evidence is the C4-LIVE producer seam.
+pub fn wake_events_from_construct_run(
+    run: &AtomRun,
+    source_revision: Revision,
+    observed_tick: Tick,
+) -> Vec<TriggerEvent> {
+    let mut events = Vec::new();
+    for step in &run.steps {
+        for atom in &step.fired {
+            events.push(TriggerEvent {
+                event_id: format!("atom-fired:{}:{:#x}", step.tick.0, atom.0),
+                kind: TriggerEventKind::AtomFired,
+                source_revision,
+                occurred_at: observed_tick,
+                observed_at: observed_tick,
+                evidence: Epistemic::Measured(TriggerEventPayload {
+                    subject: Some(*atom),
+                    fields: BTreeMap::new(),
+                    receipt_hash: None,
+                }),
+                causal_ancestry: vec![],
+            });
+        }
+    }
+    events
+}
+
+/// The caller-supplied (graph / cognition authority) driver for the in-tick
+/// trigger drain. When the serial loop drains a now-eligible wake request, the
+/// driver resolves the request's pinned CodeDefinition, runs it against its OWN
+/// VM host, and translates the measured receipt into a CANDIDATE write-set.
+///
+/// The supervisor owns none of this: it holds no VM host, no code-resolution
+/// policy, and no proposal-to-write-set mapping. **The model proposes** (resolve
+/// + execute + translate); **the world disposes** (the tick prepares and commits
+/// the returned write-set at the boundary). This is the C4-LIVE seam frozen now
+/// so real invocation dispatch slots in without touching `advance_inner`.
+pub trait TriggerTickDriver {
+    /// Resolve the CodeDefinition pinned by a drained request. The request pins
+    /// `code_definition` / `code_revision` / `code_hash`; a production resolver
+    /// hydrates the definition from the committed snapshot and verifies the hash
+    /// so a later code revision cannot mutate an in-flight request. (Snapshot
+    /// hydration and hash verification are the C4-LIVE tightening.)
+    fn resolve_code(
+        &mut self,
+        request: &ExecutionRequest,
+    ) -> Result<CodeDefinition, UniverseError>;
+
+    /// Run the resolved program against the driver's own VM host, returning the
+    /// measured [`ExecutionReceipt`]. Returning the receipt (rather than taking a
+    /// host from the supervisor) keeps the supervisor generic over cognition — it
+    /// never holds the host.
+    fn execute(
+        &mut self,
+        code: &CodeDefinition,
+        inputs: &BTreeMap<String, Value>,
+        limits: ExecutionLimits,
+        revision: Revision,
+        tick: Tick,
+    ) -> Result<ExecutionReceipt, UniverseError>;
+
+    /// Translate the measured receipt into a candidate write-set (or `None`).
+    /// Commit authority never moves into the supervisor: this only PROPOSES; the
+    /// tick prepares and commits what is returned.
+    fn translate(
+        &mut self,
+        request: &ExecutionRequest,
+        receipt: &ExecutionReceipt,
+        snapshot: &UniverseSnapshot,
+    ) -> Result<Option<UniverseWriteSet>, UniverseError>;
+}
+
+/// The default driver: no trigger ever drains through it. With an empty
+/// subscription set nothing is ingested and nothing is drained, so its methods
+/// are never reached on the plain [`Supervisor::advance`] and
+/// [`Supervisor::advance_driving_physics_wave`] paths — keeping them byte-for-byte
+/// identical to their pre-slice behaviour. It returns an error rather than
+/// fabricate a result, so any accidental invocation fails loudly.
+pub struct NoTriggers;
+
+impl TriggerTickDriver for NoTriggers {
+    fn resolve_code(
+        &mut self,
+        _request: &ExecutionRequest,
+    ) -> Result<CodeDefinition, UniverseError> {
+        Err(UniverseError::Validation(
+            "no trigger driver is configured".into(),
+        ))
+    }
+
+    fn execute(
+        &mut self,
+        _code: &CodeDefinition,
+        _inputs: &BTreeMap<String, Value>,
+        _limits: ExecutionLimits,
+        _revision: Revision,
+        _tick: Tick,
+    ) -> Result<ExecutionReceipt, UniverseError> {
+        Err(UniverseError::Validation(
+            "no trigger driver is configured".into(),
+        ))
+    }
+
+    fn translate(
+        &mut self,
+        _request: &ExecutionRequest,
+        _receipt: &ExecutionReceipt,
+        _snapshot: &UniverseSnapshot,
+    ) -> Result<Option<UniverseWriteSet>, UniverseError> {
+        Err(UniverseError::Validation(
+            "no trigger driver is configured".into(),
+        ))
+    }
+}
+
 /// The measured outcome of one advanced tick: the ordered commit receipts plus
 /// the optional Physics-phase deposit wave the selector drove. `physics_wave` is
 /// `Some` only when the selector returned inputs and the wave ran; its candidate
@@ -778,6 +938,14 @@ pub struct Supervisor {
     /// failure. Owned evidence backing the `effect` health dimension.
     observed_transport_failures: u64,
     processed_effect_receipts: BTreeSet<String>,
+    /// The wake-queue: bounded, deterministic scheduler for graph-owned trigger
+    /// subscriptions. It must be OWNED so a firing ingested in tick N survives to
+    /// be drained in tick N+1.
+    trigger_scheduler: TriggerScheduler,
+    /// The graph-authored subscription set the scheduler matches wake events
+    /// against. Empty by default, so the whole trigger path is a no-op until a
+    /// construct declares its subscription via [`Supervisor::register_subscription`].
+    trigger_subscriptions: Vec<TriggerSubscription>,
 }
 
 impl Supervisor {
@@ -796,6 +964,16 @@ impl Supervisor {
             Err(error) => return Err(error),
         };
         snapshot.validate()?;
+        // Native hard caps around graph-owned trigger budgets. These bound
+        // scheduler resource use (trusted computing base); they never choose
+        // which events are interesting or which behavior executes.
+        let trigger_scheduler = TriggerScheduler::new(TriggerSchedulerLimits {
+            max_backlog: 1024,
+            max_requests_per_tick: 256,
+            max_fuel_per_tick: 1_048_576,
+            max_mutations_per_tick: 1024,
+            max_tracked_idempotency_keys: 65_536,
+        })?;
         Ok(Self {
             store,
             snapshot,
@@ -806,6 +984,8 @@ impl Supervisor {
             observed_transport_successes: 0,
             observed_transport_failures: 0,
             processed_effect_receipts: BTreeSet::new(),
+            trigger_scheduler,
+            trigger_subscriptions: Vec::new(),
         })
     }
 
@@ -828,6 +1008,21 @@ impl Supervisor {
     /// Transactions enqueued for the next tick boundary but not yet committed.
     pub fn pending_commit_backlog(&self) -> u32 {
         self.pending.len() as u32
+    }
+
+    /// Admits a graph-authored trigger subscription into the wake-queue's match
+    /// set. Future physics firings are ingested against the registered set; an
+    /// empty set (the default) makes the entire trigger path a no-op, so callers
+    /// that register nothing remain byte-for-byte unaffected.
+    pub fn register_subscription(&mut self, subscription: TriggerSubscription) {
+        self.trigger_subscriptions.push(subscription);
+    }
+
+    /// Wake requests enqueued on the wake-queue awaiting a future eligible tick.
+    /// Distinct from [`Self::pending_commit_backlog`] (prepared transactions
+    /// awaiting the commit boundary).
+    pub fn trigger_backlog(&self) -> u32 {
+        self.trigger_scheduler.backlog()
     }
 
     /// Reports honest supervisor status: the tick/revision/state/backlog the
@@ -1063,7 +1258,7 @@ impl Supervisor {
         hook: &mut dyn PhaseHook,
     ) -> Result<Vec<CommitReceipt>, UniverseError> {
         Ok(self
-            .advance_inner(hook, &mut NoPhysicsWave)?
+            .advance_inner(hook, &mut NoPhysicsWave, &mut NoTriggers)?
             .commits)
     }
 
@@ -1084,19 +1279,76 @@ impl Supervisor {
         hook: &mut dyn PhaseHook,
         selector: &mut dyn PhysicsWaveSelector,
     ) -> Result<TickOutcome, UniverseError> {
-        self.advance_inner(hook, selector)
+        self.advance_inner(hook, selector, &mut NoTriggers)
     }
 
-    fn advance_inner(
+    /// Advance one tick AND close the self-wake loop end to end: drain the
+    /// wake-queue's now-eligible trigger requests into THIS tick's commit, and
+    /// ingest the firings the caller-driven Physics wave produces onto the
+    /// wake-queue for a FUTURE tick.
+    ///
+    /// This is the heartbeat CLAUDE.md names: "the physics step fills a
+    /// wake-queue; the serial loop drains it, so dormant constructs cost
+    /// nothing." A construct wakes on a physics firing (Physics phase, tick N)
+    /// and its consequent Moment commits at the next tick's boundary (Ingress
+    /// drain, tick N+1) — an honest, load-bearing two-tick latency, because the
+    /// firing is observed strictly after this tick's commit boundary has closed.
+    ///
+    /// The supervisor stays generic: it holds no cluster policy (the `selector`
+    /// decides which construct wakes), no VM host / code resolution / proposal
+    /// mapping (the `driver`), and no subscription authority (registered via
+    /// [`Self::register_subscription`]). The model proposes; the world disposes.
+    pub fn advance_draining_triggers<D: TriggerTickDriver>(
         &mut self,
         hook: &mut dyn PhaseHook,
         selector: &mut dyn PhysicsWaveSelector,
+        driver: &mut D,
+    ) -> Result<TickOutcome, UniverseError> {
+        self.advance_inner(hook, selector, driver)
+    }
+
+    fn advance_inner<D: TriggerTickDriver>(
+        &mut self,
+        hook: &mut dyn PhaseHook,
+        selector: &mut dyn PhysicsWaveSelector,
+        driver: &mut D,
     ) -> Result<TickOutcome, UniverseError> {
         if self.state != BootState::Ready {
             return Err(UniverseError::Validation("supervisor is not ready".into()));
         }
         for phase in [TickPhase::Ingress, TickPhase::Execution] {
             hook.run(phase, &self.snapshot)?;
+        }
+        // Ingress work (slice-2): drain the wake-queue's now-eligible trigger
+        // requests BEFORE the commit boundary, so a self-woken construct's
+        // write-set lands in THIS tick's commit. Each drained request runs its
+        // pinned program on the caller's host (`driver.execute`); the caller
+        // translates the measured receipt into a candidate write-set, which the
+        // supervisor merely prepares and enqueues into `self.pending`. With an
+        // empty subscription set the queue is always empty, so this loop never
+        // runs and the tick stays byte-identical (consumer guard).
+        for request in self.trigger_scheduler.drain_eligible(self.snapshot.tick) {
+            let code = driver.resolve_code(&request)?;
+            let inputs = match &request.trigger.evidence {
+                Epistemic::Measured(payload) => payload.fields.clone(),
+                _ => BTreeMap::new(),
+            };
+            let limits = ExecutionLimits {
+                fuel: request.budgets.fuel,
+                max_proposals: request.budgets.max_mutations,
+            };
+            let receipt = driver.execute(
+                &code,
+                &inputs,
+                limits,
+                self.snapshot.revision,
+                self.snapshot.tick,
+            )?;
+            self.record_activation(RuntimeMechanismKind::Executor, "universe-vm");
+            if let Some(write_set) = driver.translate(&request, &receipt, &self.snapshot)? {
+                let transaction = UniverseTransaction::prepare(&self.snapshot, write_set)?;
+                self.enqueue(transaction);
+            }
         }
         let boundary_tick = Tick(self.snapshot.tick.0 + 1);
         hook.run(TickPhase::Commit, &self.snapshot)?;
@@ -1119,6 +1371,31 @@ impl Supervisor {
             )?),
             None => None,
         };
+        // Post-Physics ingest (slice-2): map the construct wave's firings into
+        // AtomFired wake events and ingest them against the registered
+        // subscriptions, filling the wake-queue for a FUTURE tick to drain. This
+        // runs strictly AFTER this tick's commit, which is exactly why the
+        // earliest a firing can commit a Moment is the next tick's boundary — the
+        // two-tick latency is exposed here, never hidden. Guarded twice: no wave
+        // ⇒ this block is skipped (producer guard); no subscriptions ⇒ zero
+        // enqueue (consumer guard). Either guard alone keeps the tick a no-op.
+        if let Some(outcome) = &physics_wave {
+            if !self.trigger_subscriptions.is_empty() {
+                let events = wake_events_from_construct_run(
+                    &outcome.construct.run,
+                    self.snapshot.revision,
+                    outcome.observed_at_tick,
+                );
+                for event in &events {
+                    let _ingress = self.trigger_scheduler.ingest_event(
+                        &self.trigger_subscriptions,
+                        event,
+                        self.snapshot.revision,
+                        self.snapshot.tick,
+                    );
+                }
+            }
+        }
         for phase in [
             TickPhase::Physics,
             TickPhase::Observation,
@@ -2034,5 +2311,420 @@ mod tests {
         // existing callers are unaffected.
         let plain = supervisor.advance(&mut RecordingHook::default()).unwrap();
         assert!(plain.is_empty());
+    }
+
+    /// Invariant #1 (byte-identical): a tick with NO wave and NO subscription —
+    /// the plain `advance` path through the now-generic `advance_inner` — must
+    /// leave the committed store byte-for-byte identical. Both slice-2 blocks are
+    /// no-ops here: the drain sees an empty queue, and the post-Physics ingest is
+    /// skipped because the (NoPhysicsWave) selector returns no wave.
+    #[test]
+    fn no_subscription_no_wave_tick_is_byte_identical() {
+        use std::collections::BTreeMap as FileMap;
+        use std::fs;
+        use std::path::{Path, PathBuf};
+
+        fn read_all_files(dir: &Path) -> FileMap<PathBuf, Vec<u8>> {
+            let mut out = FileMap::new();
+            let mut stack = vec![dir.to_path_buf()];
+            while let Some(current) = stack.pop() {
+                for entry in fs::read_dir(&current).unwrap() {
+                    let entry = entry.unwrap();
+                    let path = entry.path();
+                    if entry.file_type().unwrap().is_dir() {
+                        stack.push(path);
+                    } else {
+                        out.insert(path.clone(), fs::read(&path).unwrap());
+                    }
+                }
+            }
+            out
+        }
+
+        let temp = tempfile::tempdir().unwrap();
+        let store_dir = temp.path().join("store");
+        fs::create_dir_all(&store_dir).unwrap();
+        let genesis = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../fixtures/genesis/minimal-genesis.json");
+        let mut supervisor = Supervisor::boot(&store_dir, &genesis).unwrap();
+
+        let revision_before = supervisor.revision();
+        let bytes_before = read_all_files(&store_dir);
+
+        // No subscription registered; default NoPhysicsWave/NoTriggers path.
+        let commits = supervisor.advance(&mut RecordingHook::default()).unwrap();
+
+        assert!(commits.is_empty(), "a no-op tick commits nothing");
+        assert_eq!(supervisor.revision(), revision_before, "revision unchanged");
+        assert_eq!(supervisor.trigger_backlog(), 0, "wake-queue stays empty");
+        assert_eq!(
+            read_all_files(&store_dir),
+            bytes_before,
+            "a no-wave no-subscription tick must be byte-identical to before"
+        );
+    }
+
+    /// The heartbeat proof: a physics wave fires a construct's trigger atom in
+    /// tick N; the firing is ingested as an `AtomFired` wake event; the NEXT tick
+    /// drains the wake-queue, runs the pinned graph program, and commits a Moment
+    /// — all inside `advance_draining_triggers`. The 2-tick fire→commit latency is
+    /// asserted, not hidden: after tick N the Moment is ABSENT (backlog 1); only
+    /// after tick N+1 does it commit at revision+1, carrying the trigger-hop
+    /// causal token that proves it is genuinely derived from the firing.
+    #[test]
+    fn wake_event_commits_a_moment_two_ticks_after_firing() {
+        use universe_ir::{
+            Operator, TriggerBudgets, TriggerControls, TriggerEvidenceRequirement,
+        };
+        use universe_vm::execute_program;
+
+        // A trivial VM host: the wake program runs no queries, so every query
+        // method is unreachable. It declares no capabilities (the program needs
+        // none).
+        struct NullHost;
+        impl VmHost for NullHost {
+            fn is_cancelled(&self) -> bool {
+                false
+            }
+            fn capabilities(&self) -> BTreeSet<String> {
+                BTreeSet::new()
+            }
+            fn open_query(
+                &mut self,
+                _: &universe_ir::QuerySpec,
+                _: &Value,
+                _: &Value,
+            ) -> Result<Value, String> {
+                Err("wake program issues no query".into())
+            }
+            fn await_query(&mut self, _: &Value) -> Result<Value, String> {
+                Err("wake program issues no query".into())
+            }
+            fn follow_one(&mut self, _: &Value, _: &Value) -> Result<Value, String> {
+                Err("wake program follows nothing".into())
+            }
+            fn entity_symbol(&mut self, _: &Value) -> Result<Value, String> {
+                Err("wake program reads no symbol".into())
+            }
+            fn hydrate(&mut self, _: &[Value], _: u32) -> Result<Vec<Value>, String> {
+                Err("wake program hydrates nothing".into())
+            }
+        }
+
+        // The caller's cognition authority: resolve the pinned code, run it on its
+        // OWN host, translate the receipt into the Moment write-set. The
+        // supervisor owns none of this.
+        struct WakeDriver {
+            host: NullHost,
+            code: CodeDefinition,
+            code_key: EntityKey,
+            moment_key: EntityKey,
+        }
+        impl TriggerTickDriver for WakeDriver {
+            fn resolve_code(
+                &mut self,
+                request: &ExecutionRequest,
+            ) -> Result<CodeDefinition, UniverseError> {
+                // Slice-2 resolver: pinned to the one known construct code node.
+                // (C4-LIVE swaps in snapshot hydration + code_hash verification.)
+                if request.code_definition != self.code_key {
+                    return Err(UniverseError::Validation("unknown code definition".into()));
+                }
+                Ok(self.code.clone())
+            }
+            fn execute(
+                &mut self,
+                code: &CodeDefinition,
+                inputs: &BTreeMap<String, Value>,
+                limits: ExecutionLimits,
+                revision: Revision,
+                tick: Tick,
+            ) -> Result<ExecutionReceipt, UniverseError> {
+                execute_program(code, &mut self.host, inputs, revision, tick, limits)
+                    .map_err(|error| {
+                        UniverseError::Validation(format!("wake program failed: {error}"))
+                    })
+            }
+            fn translate(
+                &mut self,
+                request: &ExecutionRequest,
+                receipt: &ExecutionReceipt,
+                snapshot: &UniverseSnapshot,
+            ) -> Result<Option<UniverseWriteSet>, UniverseError> {
+                // The program genuinely ran and proposed exactly one command, so
+                // the Moment is DERIVED, never fabricated. Its causal ancestry
+                // carries the trigger-hop token, threading the subscription +
+                // event + request identity into the commit so the Moment is
+                // provably a consequence of the firing that woke the construct.
+                if receipt.proposals.len() != 1 {
+                    return Err(UniverseError::Validation(
+                        "wake program did not propose exactly one command".into(),
+                    ));
+                }
+                Ok(Some(UniverseWriteSet {
+                    base_revision: snapshot.revision,
+                    idempotency_key: format!("wake-moment:{}", request.request_id),
+                    causal_ancestry: request.descendant_causal_tokens(),
+                    commands: vec![UniverseCommand::PutEntity {
+                        entity: EntityRecord {
+                            key: self.moment_key,
+                            generation: 0,
+                            symbol: 0,
+                            content: None,
+                        },
+                    }],
+                }))
+            }
+        }
+
+        // A one-shot house-alarm-shaped wave: a seeded sensor atom fires, its
+        // event routes +100 onto a dormant construct trigger, which then crosses
+        // its threshold and fires. It fires ONLY on the first tick, so the
+        // wake-queue receives exactly one request.
+        struct OneShotAlarm {
+            sensor: EntityKey,
+            trigger: EntityKey,
+            fired: bool,
+        }
+        impl PhysicsWaveSelector for OneShotAlarm {
+            fn select(
+                &mut self,
+                _snapshot: &UniverseSnapshot,
+            ) -> Result<Option<PhysicsWaveInputs>, UniverseError> {
+                if self.fired {
+                    return Ok(None);
+                }
+                self.fired = true;
+                Ok(Some(PhysicsWaveInputs {
+                    sensor_cluster: LocalAtomCluster {
+                        atoms: vec![AtomSpec {
+                            key: self.sensor,
+                            threshold: 100,
+                            seed_energy: 100,
+                            required_supports: Vec::new(),
+                            inhibition_threshold: None,
+                        }],
+                        bonds: Vec::new(),
+                        injections: Vec::new(),
+                    },
+                    deposit_bindings: vec![PhysicsEventDeposit {
+                        trigger: self.sensor,
+                        target: self.trigger,
+                        weight: 100,
+                    }],
+                    construct_cluster: LocalAtomCluster {
+                        atoms: vec![AtomSpec {
+                            key: self.trigger,
+                            threshold: 100,
+                            seed_energy: 0,
+                            required_supports: Vec::new(),
+                            inhibition_threshold: None,
+                        }],
+                        bonds: Vec::new(),
+                        injections: Vec::new(),
+                    },
+                    effect_bindings: Vec::new(),
+                    budget: AtomExecutionBudget {
+                        max_atoms: 1,
+                        max_bonds: 1,
+                        max_steps: 2,
+                        max_total_energy: 100,
+                    },
+                }))
+            }
+        }
+
+        let temp = tempfile::tempdir().unwrap();
+        let store_dir = temp.path().join("store");
+        std::fs::create_dir_all(&store_dir).unwrap();
+        let genesis = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../fixtures/genesis/minimal-genesis.json");
+        let mut supervisor = Supervisor::boot(&store_dir, &genesis).unwrap();
+
+        // The Moment key the woken construct's program mints (next free key).
+        let moment_key = EntityKey(
+            supervisor
+                .snapshot()
+                .entities
+                .iter()
+                .map(|entity| entity.key.0)
+                .max()
+                .unwrap_or(0)
+                + 1,
+        );
+        let code_key = EntityKey(0x6002);
+
+        // The construct's graph program: propose one Moment record and return it.
+        // It reads no inputs (AtomFired carries none yet), so it needs no host
+        // query — the smallest genuine "proposes a command" program.
+        let code = CodeDefinition {
+            ir_version: 0,
+            revision: Revision(1),
+            required_capabilities: Vec::new(),
+            operators: vec![
+                Operator::Constant {
+                    value: Value::Entity(moment_key),
+                    output: 0,
+                },
+                Operator::MakeRecord {
+                    fields: vec![("moment".into(), 0)],
+                    output: 1,
+                },
+                Operator::Propose {
+                    command: 1,
+                    output: 2,
+                },
+                Operator::Return { value: 2 },
+            ],
+        };
+
+        // The graph-authored subscription: wake on AtomFired, run the construct's
+        // pinned code. debounce/cooldown are 0 so the request is eligible as soon
+        // as the wake-queue is drained on the NEXT tick — the two-tick latency
+        // comes from phase ordering (ingest is post-commit, drain is pre-commit),
+        // NOT from a tuned delay.
+        let subscription = TriggerSubscription {
+            contract_version: 0,
+            subscription: EntityKey(0x6001),
+            revision: Revision(7),
+            enabled: true,
+            event_kinds: vec![TriggerEventKind::AtomFired],
+            code_definition: code_key,
+            code_revision: Revision(1),
+            code_hash: "a".repeat(64),
+            evidence_requirement: TriggerEvidenceRequirement::Measured,
+            max_event_age_ticks: 8,
+            budgets: TriggerBudgets {
+                fuel: 64,
+                max_mutations: 4,
+                max_ticks: 3,
+            },
+            controls: TriggerControls {
+                cooldown_ticks: 0,
+                debounce_ticks: 0,
+                max_causal_depth: 4,
+                max_firings_per_tick: 3,
+            },
+            idempotency_namespace: "wake-slice2".into(),
+        };
+        supervisor.register_subscription(subscription);
+
+        let mut hook = RecordingHook::default();
+        let mut selector = OneShotAlarm {
+            sensor: EntityKey(101),
+            trigger: EntityKey(202),
+            fired: false,
+        };
+        let mut driver = WakeDriver {
+            host: NullHost,
+            code,
+            code_key,
+            moment_key,
+        };
+
+        let tick_before = supervisor.tick();
+        let revision_before = supervisor.revision();
+
+        // --- Tick N: the wave fires the construct trigger; the firing ingests one
+        // AtomFired wake event. Nothing commits (the drain ran first, on an empty
+        // queue), so the Moment is ABSENT and the store revision is unchanged —
+        // the firing is only observed AFTER this tick's commit boundary closed.
+        let out_n = supervisor
+            .advance_draining_triggers(&mut hook, &mut selector, &mut driver)
+            .unwrap();
+        let wave = out_n
+            .physics_wave
+            .expect("tick N drove the one-shot wave");
+        assert!(
+            wave.fired_construct_atoms.contains(&EntityKey(202)),
+            "the dormant construct self-woke on the routed deposit and fired"
+        );
+        assert!(
+            out_n.commits.is_empty(),
+            "tick N commits nothing — the firing is observed post-commit"
+        );
+        assert_eq!(
+            supervisor.trigger_backlog(),
+            1,
+            "the firing enqueued exactly one wake request"
+        );
+        let after_n = supervisor.independent_readback().unwrap();
+        assert_eq!(
+            after_n.revision, revision_before,
+            "no Moment one tick after firing — the latency is real"
+        );
+        assert!(
+            !after_n.entities.iter().any(|e| e.key == moment_key),
+            "the Moment is absent one tick after firing"
+        );
+
+        // --- Tick N+1: the drain pulls the now-eligible request, runs the pinned
+        // program, and commits the Moment at THIS tick's boundary. Two advance()
+        // calls: the honest two-tick fire→commit latency.
+        let out_n1 = supervisor
+            .advance_draining_triggers(&mut hook, &mut selector, &mut driver)
+            .unwrap();
+        assert_eq!(
+            supervisor.trigger_backlog(),
+            0,
+            "the wake request drained on tick N+1"
+        );
+        assert_eq!(
+            out_n1.commits.len(),
+            1,
+            "the drained request committed exactly one Moment"
+        );
+        let (commit_tick, ancestry) = match &out_n1.commits[0] {
+            CommitReceipt::Committed {
+                tick,
+                causal_ancestry,
+                ..
+            } => (*tick, causal_ancestry.clone()),
+            other => panic!("expected a committed Moment, got {other:?}"),
+        };
+        assert_eq!(
+            commit_tick,
+            Tick(tick_before.0 + 1),
+            "the Moment commits at tick N+1"
+        );
+        // The Moment is genuinely derived from the firing: its causal ancestry
+        // carries the trigger-hop token naming the subscription that woke it.
+        assert!(
+            ancestry
+                .iter()
+                .any(|token| token.starts_with("trigger-hop:v0:")
+                    && token.contains("00000000000000000000000000006001")),
+            "the committed Moment carries the trigger-hop causal token: {ancestry:?}"
+        );
+
+        // Independent readback: the Moment is now durably present at revision+1.
+        let readback = supervisor.independent_readback().unwrap();
+        assert_eq!(readback.revision, Revision(revision_before.0 + 1));
+        assert!(
+            readback.entities.iter().any(|e| e.key == moment_key),
+            "the woken construct's Moment is independently observable after N+1"
+        );
+
+        // One VM executor activation was recorded for the drained program.
+        assert!(supervisor.runtime_inventory().mechanisms.iter().any(|m| {
+            m.kind == RuntimeMechanismKind::Executor && m.name == "universe-vm" && m.activations == 1
+        }));
+
+        // Measured-facts trace (visible under `--nocapture`): the heartbeat, honest.
+        println!("-- heartbeat: physics fire -> wake-queue -> drain -> Moment --");
+        println!(
+            "tick N   : construct atom {:#x} FIRED in Physics; ingested 1 AtomFired; backlog=1; commits={}; Moment absent; revision={}",
+            EntityKey(202).0,
+            out_n.commits.len(),
+            after_n.revision.0
+        );
+        println!(
+            "tick N+1 : drained 1 request; ran pinned program (1 proposal); backlog=0; commits={}; Moment committed at tick {} revision {}",
+            out_n1.commits.len(),
+            commit_tick.0,
+            readback.revision.0
+        );
+        println!("causal   : committed Moment ancestry = {ancestry:?}");
+        println!("=> a construct self-woke from a physics firing and committed a Moment IN advance(), two ticks later (latency exposed, not hidden).");
     }
 }
