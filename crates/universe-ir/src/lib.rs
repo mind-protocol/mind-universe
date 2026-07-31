@@ -337,6 +337,16 @@ pub enum TriggerEventKind {
     /// wires itself into the field and is woken when the solver reports the
     /// firing for free — never a poll. The event's subject is the fired atom.
     AtomFired,
+    /// One construct calls another. Where `AtomFired` is a construct waking on
+    /// its OWN field crossing, `Invocation` is a construct waking a NAMED target:
+    /// the caller's fire (or dispatcher) addresses a specific callee subscription
+    /// and hands it arguments. The event's `subject` names the callee's entry
+    /// (the subscription/construct being invoked) and `fields` carries the call
+    /// arguments the callee's pinned program reads as inputs. Meaning, argument
+    /// schema, and dispatch policy remain graph data; the kernel only routes the
+    /// event to the matching subscription and preserves its causal ancestry so
+    /// the caller→callee hop is inspectable (the ping-pong / causal-depth guard).
+    Invocation,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
