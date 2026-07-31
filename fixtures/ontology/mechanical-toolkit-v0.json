@@ -1,0 +1,451 @@
+{
+  "id": "space:l2:mind-universe:mechanical-toolkit-v0",
+  "node_type": "space",
+  "subtype": "mechanical_toolkit",
+  "content": {
+    "contractKind": "construct",
+    "name": "Mechanical toolkit v0 (assemble modules into a machine)",
+    "dominant_scale": "mechanism",
+    "lineage": "Shares the Micro-energy circuit toolkit's AtomDynamics vocabulary (the 'micro-electric' kit), lifted to the MECHANISM scale. Where the Sky toolkit programs free luminous constellations and the Underground seals the immutable substrate, the Mechanical toolkit COMPOSES: it takes typed mechanical elements and couples them, only through compatible ports, into a running machine. See [[space:l2:mind-universe:sky-toolkit-v0]] and [[space:l2:mind-universe:underground-toolkit-v0]].",
+    "parent_scope": {
+      "classification": "standalone",
+      "justification": "Portable bootstrap toolkit awaiting installation under the canonical mechanism/physicalization registry Space. Exactly one scope classification; no PART_OF edge is written to an unbuilt parent."
+    },
+    "runtime_moment_subtypes": ["validation_run", "health_assessment"],
+    "native_law_boundary": "AtomDynamics knows only AtomSpec, AtomBond and support/inhibit/neutral. The Mechanical toolkit is a physicalization + composition grammar over that law: a module is an atom that transforms, a compatible coupling is a support bond, an interlock is inhibition, and a module activates (fires) only when all its required input ports are supplied. Port TYPES and transformation MEANING are payload data on modules and ports, never terms in the atom law.",
+    "purpose": "Take mechanical elements and build a machine that ACTS in the world. An engineer supplies modules — each a unit with typed input ports, typed output ports and a transformation (inputs -> outputs) — and couples them: an output port wired to a COMPATIBLE input port. A coupling is admitted only when the types match; an incompatible coupling resists and does not connect. The assembled machine is the graph of modules and couplings; it RUNS by activating each module once all its required input ports are supplied, propagating from sources to the machine's output. At its output the machine reaches OUT of the bay through Effectors: a terminal module's activation emits an EffectIntent that produces a real effect in the world — transform a thing, move a body, notify — via authorized transport, returning an EffectReceipt that is reinjected as a Moment. A validation rig proves the machine end to end. Any pipeline expressible as typed modules + compatible couplings, terminating in receipted effectors, is buildable.",
+    "machine_contract": {
+      "module": "one mechanical element: typed input ports + typed output ports + a transformation (inputs -> outputs); physicalized as an atom of roleAxis thing (a router that transforms)",
+      "port": "a typed connection point on a module (in or out) carrying a declared data type/shape",
+      "coupling": "an output port wired to a compatible input port; physicalized as a support bond that carries the signal once the source module activates",
+      "compatibility": "a coupling is admitted only when the output port's type is accepted by the input port's type; an incompatible coupling fails perceptibly and transactionally (it never silently mis-wires)",
+      "interlock": "a safety/precondition that inhibits a module's activation until it clears; physicalized as an inhibition bond",
+      "machine": "the assembled graph of modules and couplings, run to quiescence: each module activates once all its required input ports are supplied and no interlock blocks it",
+      "effector": "a terminal module whose activation emits an EffectIntent to act in the world (transform a thing, move a body, notify, ...); the effect happens only through authorized transport and returns an EffectReceipt reinjected as a Moment — a firing is not an effect until the receipt lands",
+      "effect_flow": "effector activates -> EffectIntent -> capability + policy check -> authorized transport -> actual transport result -> EffectReceipt -> reinjection into the Universe (timeout, cancellation, idempotency, cooldown, causal depth and independent readback mandatory)",
+      "validation_rig": "an independent harness that feeds inputs, runs the machine and checks the outputs against expected transformations",
+      "author_capabilities": ["assemble_machine", "add_module", "couple_ports", "decouple", "supersede_module"],
+      "observer_capabilities": ["observe", "read_machine", "trace_pipeline", "inspect_ports"],
+      "rule": "A module activates only when every required input port is supplied with MEASURED signal and no interlock inhibits it; a starved or interlocked module does not fire. A coupling exists only between compatible ports. Assembling or modifying a machine is an attributable act through the assembly port; a mere observer inspects but does not re-wire.",
+      "sealed_default": "read_only_until_assembled"
+    }
+  },
+  "members": [
+    {
+      "id": "objective:l2:mind-universe:mechanical-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "For any set of typed modules, the toolkit assembles a machine in which every coupling joins compatible ports, every module activates exactly once all its required inputs are supplied, incompatible couplings are refused transactionally, interlocks block activation until cleared, the signal propagates from sources to the machine output, integer signal energy is conserved, and a validation rig proves the outputs match the declared transformations. A starved, interlocked or incompatibly-wired module never activates, and no gesture implies a transformation the module cannot produce."
+      }
+    },
+    {
+      "id": "pattern:l2:mind-universe:mechanical-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "A bounded machine bay (a Space that carries no energy) holds the assembly. Each module physicalizes as an atom of roleAxis thing — a router that lets a signal through while transforming it; its required input ports are the atom's required_supports (an AND gate). Each compatible coupling physicalizes as a support bond from an output port to an input port; it conducts the signal once when the source module first activates. An interlock physicalizes as an inhibition bond that blocks activation until it clears. The machine RUNS via run_until_quiescent: modules activate in dependency order, the signal reaches the output, the field settles. Compatibility is a precondition on coupling: only matching port types couple, and an incompatible attempt resists and rolls back exactly.",
+        "epistemic_honesty": "An activated module is one whose inputs were actually supplied, not one that looks connected. A coupling is a compatible, committed wire, not a hopeful adjacency. A module that did not fire is starved or interlocked, not silently 'done'. A validation rig pass is measured output, not a green light asserted by the machine itself."
+      }
+    },
+    {
+      "id": "vocabulary:l2:mind-universe:mechanical-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "MachineBay": "The bounded Space that holds one assembly; roleAxis space, carries no energy, bounds the machine.",
+          "Module": "One mechanical element: typed input ports, typed output ports, and a transformation. Physicalized as a roleAxis-thing atom that activates when its required inputs are supplied.",
+          "Port": "A typed connection point on a module (input or output) carrying a declared data type/shape.",
+          "Coupling": "A committed wire between an output port and a COMPATIBLE input port; physicalized as a support bond that conducts the signal once.",
+          "Compatibility": "The rule that a coupling is admitted only when the output type is accepted by the input port; an incompatible attempt resists and rolls back.",
+          "Interlock": "A safety/precondition that inhibits a module's activation until it clears; physicalized as an inhibition bond.",
+          "Machine": "The assembled graph of modules and couplings, run to quiescence.",
+          "Transformation": "A module's declared input -> output relation; the meaning the module claims to produce, checked by the validation rig.",
+          "ValidationRig": "An independent harness that feeds inputs, runs the machine and checks outputs against the declared transformations.",
+          "Starved": "A module whose required inputs were not all supplied; it does not activate.",
+          "Effector": "A terminal module whose activation emits an EffectIntent to act in the world (transform, move, notify). The effect is real only once its EffectReceipt is reinjected.",
+          "EffectIntent": "A request for a real external effect emitted by an effector; carries the target, the effect, the required capability and idempotency. It is not itself the effect.",
+          "EffectReceipt": "The measured result of an EffectIntent's authorized transport, reinjected as a Moment. Proof the effect actually occurred; text claiming an effect is not evidence.",
+          "Fog": "An unmeasured or unknown signal/port; never rendered as a supplied input or a produced output."
+        }
+      }
+    },
+    {
+      "id": "behavior:l2:mind-universe:mechanical-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "A set of modules (typed input/output ports + transformations), a proposed set of couplings, measured input signals at the machine's sources, optional interlocks, and the acting actor's capability set.",
+        "when": "The engineer assembles or modifies the machine (add module, couple/decouple ports), the runtime runs the machine, or an observer inspects it.",
+        "then": [
+          "Admit a coupling only between compatible ports; refuse an incompatible coupling transactionally, restoring the prior assembly exactly.",
+          "Physicalize the assembly: one atom per module (required inputs = required_supports), one support bond per coupling, one inhibition bond per interlock.",
+          "Run the machine: run_until_quiescent — activate each module once all its required inputs are supplied and no interlock blocks it, conducting the signal once per coupling.",
+          "Hold starved or interlocked modules inactive; never fabricate an output they did not produce.",
+          "When a terminal Effector activates, emit an EffectIntent; through authorized transport produce the real effect (transform a thing, move a body, notify), then reinject the EffectReceipt as a Moment.",
+          "Feed the validation rig and check outputs against the declared transformations.",
+          "Serve every inspection as observe-only; resolve every assembly mutation against the required assembly capability, failing an unauthorized one closed with a receipt."
+        ],
+        "forbidden": [
+          "reading port types or transformation meaning inside the native AtomDynamics law",
+          "admitting a coupling between incompatible ports",
+          "silently mis-wiring instead of refusing an incompatible coupling",
+          "activating a module whose required inputs were not all supplied",
+          "activating an interlocked module",
+          "conducting a coupling more than once",
+          "streaming authored, derived, unknown or not_measured signal energy",
+          "fabricating an output a module did not produce (implying a transformation it cannot make)",
+          "claiming a world effect occurred without a returned EffectReceipt",
+          "an Effector producing a real effect from a preview or animation instead of a committed EffectIntent",
+          "emitting an EffectIntent without its required capability, cooldown or idempotency",
+          "presenting a renderer animation of a running machine as a validation-rig pass",
+          "offering assembly affordances to an actor without the assembly capability",
+          "pre-creating validation_run or health_assessment"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l2:mind-universe:mechanical-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "read the modules (typed ports + transformations) and the proposed couplings",
+          "for each coupling, check port-type compatibility; refuse and roll back any incompatible one",
+          "validate exact u64 AtomSpec/AtomBond invariants for the module circuit",
+          "map each module to a roleAxis-thing atom whose required_supports are its required input couplings",
+          "map each compatible coupling to a support bond, each interlock to an inhibition bond",
+          "admit only measured input signal at the machine's sources through the membrane",
+          "run_until_quiescent: activate each module meeting its required inputs and not inhibited, conduct once per coupling",
+          "hold starved and interlocked modules inactive",
+          "verify admitted integer signal energy is conserved",
+          "feed the validation rig and compare outputs to declared transformations",
+          "for an inspection: resolve the observe-only affordance set; for an assembly mutation: require the assembly capability, else fail closed",
+          "emit the commit or rejection receipt",
+          "run the independent observer and the structured evaluation AST",
+          "derive health from fresh validation evidence"
+        ],
+        "compatibility_rule": "couple(out, in) admitted iff type(out) is accepted by type(in); otherwise TransactionRejected with the prior assembly restored exactly.",
+        "capability_resolution": "inspect -> observe-only-set; assembly_port -> require(assembly_capability). No affordance escalates capability; an absent capability fails closed.",
+        "scheduler_projection": "deterministic-wave-ticks/1; exact same-tick tie semantics must be reconciled with the canonical Rust crate when integrated.",
+        "python_escape_hatch": "forbidden_by_default"
+      }
+    },
+    {
+      "id": "code:l2:mind-universe:mechanical-toolkit-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "authority": "Graph-native CodeDefinition projection for the portable Mechanical toolkit; this JSON file is a materialized projection, not independent semantic authority.",
+        "language": "mind-ir+atom-fixture",
+        "entrypoints": [
+          "load_modules",
+          "check_port_compatibility",
+          "assemble_machine",
+          "run_until_quiescent",
+          "run_validation_rig",
+          "resolve_assembly_capability",
+          "commit_or_reject_mutation",
+          "observe_machine",
+          "evaluate_machine_ast"
+        ],
+        "assembly_gate": {
+          "port_id": "port:l2:mind-universe:mechanical:assembly-v0",
+          "observe_capabilities": ["observe", "read_machine", "trace_pipeline", "inspect_ports"],
+          "required_mutate_capability": "authority:mechanical-assembly",
+          "default_state": "read_only_until_assembled",
+          "on_unauthorized": ["fail_closed", "leave_assembly_unchanged", "emit_rejection_receipt"],
+          "rule": "An assembly mutation (add module, couple/decouple) is admitted only when the acting capability set contains authority:mechanical-assembly. Inspecting grants none of it."
+        },
+        "machine_circuit": {
+          "note": "GENERIC illustrative machine that ACTS in the world: two sources feed a two-input mixer (an AND-gate module) whose output drives an Effector. When the effector activates it emits an EffectIntent (here: move a target body) that goes through the effect_gate to authorized transport and returns an EffectReceipt. A real machine supplies ANY typed modules + compatible couplings + effectors at assembly time; the toolkit hard-codes no particular machine or effect.",
+          "atoms": [
+            { "key": "source_a", "roleAxis": "actor", "threshold": 1, "seed_energy": 200, "ports": { "out": ["signal"] } },
+            { "key": "source_b", "roleAxis": "actor", "threshold": 1, "seed_energy": 200, "ports": { "out": ["signal"] } },
+            { "key": "mixer", "roleAxis": "thing", "threshold": 200, "seed_energy": 0, "required_supports": ["a_to_mixer", "b_to_mixer"], "ports": { "in": ["signal", "signal"], "out": ["mixed"] } },
+            { "key": "effector", "roleAxis": "thing", "threshold": 100, "seed_energy": 0, "required_supports": ["mixer_to_effector"], "ports": { "in": ["mixed"], "out": ["effect_intent"] }, "emits_effect_intent": { "effect": "move_body", "target": "<assembly-time>", "required_capability": "authority:effect-transport" } }
+          ],
+          "bonds": [
+            { "key": "a_to_mixer", "source": "source_a", "target": "mixer", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0", "coupling": "source_a.out(signal) -> mixer.in(signal)" },
+            { "key": "b_to_mixer", "source": "source_b", "target": "mixer", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0", "coupling": "source_b.out(signal) -> mixer.in(signal)" },
+            { "key": "mixer_to_effector", "source": "mixer", "target": "effector", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0", "coupling": "mixer.out(mixed) -> effector.in(mixed)" }
+          ],
+          "external_measured_injections": {}
+        },
+        "effect_gate": {
+          "port_id": "port:l2:mind-universe:mechanical:effect-v0",
+          "on_effector_activation": "emit EffectIntent",
+          "required_capability": "authority:effect-transport",
+          "flow": ["EffectIntent", "capability + policy check", "authorized transport", "actual transport result", "EffectReceipt", "reinjection as Moment"],
+          "mandatory": ["timeout", "cancellation", "idempotency", "cooldown", "causal_depth", "independent_readback"],
+          "rule": "A firing effector does NOT mutate the world directly. It emits an EffectIntent; only authorized transport produces the effect, and only the returned EffectReceipt proves it. A preview or animation is never a committed effect."
+        }
+      }
+    },
+    {
+      "id": "implementation:l2:mind-universe:mechanical-toolkit-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "status": "materialized",
+        "artifact": "mechanical-toolkit-v0.json",
+        "graph_status": "not_written",
+        "wiring_status": "not_wired",
+        "runtime_status": "not_running",
+        "verification_status": "not_measured",
+        "honesty": "The portable Mechanical toolkit is materialized and structurally shaped as a construct. This field is written BEFORE injection; after an injector commits it, the on-disk graph carries the construct while this embedded field reads stale (WRITTEN but not wired, executed, or proven healthy). No machine is assembled or run yet."
+      }
+    },
+    {
+      "id": "justification:l2:mind-universe:mechanical-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": [
+          "Building from typed modules with declared ports lets a machine be composed and re-composed instead of hand-wired once; the transformation is captured per module and re-used.",
+          "Enforcing port compatibility at coupling time — transactionally — means the machine cannot be assembled into a nonsensical wiring; an incompatible coupling resists instead of silently corrupting the pipeline.",
+          "Modelling a module as an AND-gate atom (activate only when all required inputs are supplied) makes dependency order emergent and starvation honest: a module with a missing input simply does not fire.",
+          "Interlocks as inhibition give real safety semantics: a module stays inactive until its precondition clears, without erasing the inputs it already has.",
+          "A validation rig that checks outputs against declared transformations keeps 'the machine runs' distinct from 'the machine is correct'.",
+          "Terminating the machine in Effectors that emit EffectIntents lets a machine actually act on the world — transform, move, notify — while the mandatory EffectIntent -> transport -> EffectReceipt flow keeps 'the machine fired' distinct from 'the effect happened', so a preview can never be mistaken for a committed effect.",
+          "Keeping assembly attributable through a port, while inspection stays open, mirrors the Sky and Underground capability discipline at the mechanism scale."
+        ],
+        "rejected": [
+          "wiring any output to any input, because incompatible couplings silently produce garbage",
+          "activating a module on partial inputs, because that fabricates a transformation from missing data",
+          "an interlock that erases inputs, because a cleared interlock should resume, not restart",
+          "declaring health from a running animation, because motion is not a validation-rig pass",
+          "floating-point signal energy, because the canonical law counts conserved integer energy",
+          "one permanent physical form per module, because a module may be re-physicalized without changing its identity"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:mind-universe:mechanical-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "structured_expression_ast",
+        "scenarios": [
+          "compatible_ports_couple",
+          "incompatible_ports_refuse_transactionally",
+          "module_activates_when_all_inputs_supplied",
+          "and_gate_module_waits_for_every_required_input",
+          "starved_module_does_not_activate",
+          "interlocked_module_stays_inactive_until_cleared",
+          "signal_conducts_once_per_coupling",
+          "machine_reaches_quiescence",
+          "validation_rig_checks_outputs_against_transformations",
+          "no_fabricated_output_from_missing_input",
+          "effector_activation_emits_effect_intent",
+          "world_effect_requires_effect_receipt",
+          "preview_is_not_a_committed_effect",
+          "unauthorized_effect_fails_closed",
+          "effect_intent_carries_capability_and_idempotency",
+          "assembly_mutation_requires_capability",
+          "unauthorized_assembly_fails_closed",
+          "unmeasured_input_rejected",
+          "energy_conserved"
+        ],
+        "negative_invariants": [
+          "threshold zero rejected",
+          "inhibition threshold zero rejected",
+          "duplicate required supports rejected",
+          "neutral bond with nonzero energy rejected",
+          "unmeasured input injection rejected",
+          "incompatible coupling admitted rejected"
+        ],
+        "invariants": [
+          "a coupling exists only between compatible ports",
+          "an incompatible coupling is refused and rolls back exactly",
+          "a module activates only when every required input is supplied and no interlock inhibits it",
+          "every coupling conducts at most once",
+          "admitted integer signal energy is conserved",
+          "no output is produced from missing inputs",
+          "a world effect occurs only through an EffectIntent that returns an EffectReceipt",
+          "an effector never mutates the world from a preview or animation",
+          "the validation rig checks outputs against declared transformations",
+          "every assembly affordance resolves to the assembly capability",
+          "an unauthorized assembly fails closed and leaves the machine unchanged"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:mind-universe:mechanical-observer-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "target": "observability_algorithm:l2:mind-universe:mechanical-toolkit-v0",
+        "tests": [
+          "detect a coupling between incompatible ports",
+          "detect a module that activated on partial inputs",
+          "detect an interlocked module that activated anyway",
+          "detect a fabricated output with no supplying input",
+          "detect a claimed world effect with no returned EffectReceipt",
+          "detect an effector that mutated the world from a preview instead of a committed EffectIntent",
+          "detect an EffectIntent emitted without its required capability or idempotency",
+          "detect duplicate coupling conduction",
+          "detect a validation-rig pass asserted without measured outputs",
+          "detect an assembly affordance offered to an actor without the capability",
+          "detect an unauthorized assembly that changed the machine",
+          "detect an unauthorized assembly dropped without a rejection receipt",
+          "detect non-conserved signal energy",
+          "never convert a missing input into a produced output"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l2:mind-universe:mechanical-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Reads the modules and their ports/transformations, the proposed and committed couplings, the physicalized activation trace, final module states, the acting capability set, each resolved affordance, the validation-rig outputs, the commit/rejection receipt and the catalog. It does not trust a runtime-declared health field, a renderer animation, or a machine's self-report of correctness.",
+        "checks": [
+          "every coupling joins compatible ports",
+          "every incompatible coupling attempt was refused and rolled back",
+          "every module activated only with all required inputs supplied",
+          "interlocks correctly kept their modules inactive until cleared",
+          "single conduction per coupling",
+          "integer signal energy conservation",
+          "no output produced from missing inputs",
+          "every claimed world effect has a returned EffectReceipt reinjected as a Moment",
+          "no effector mutated the world from a preview or animation",
+          "validation-rig outputs match declared transformations",
+          "measured-only membrane admission",
+          "starvation correctness",
+          "every assembly affordance requires the assembly capability",
+          "inspecting leaves the acting capability set unchanged",
+          "unauthorized assembly failed closed and left the machine unchanged",
+          "quiescence",
+          "receipt integrity"
+        ]
+      }
+    },
+    {
+      "id": "metric:l2:mind-universe:mechanical-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "dimensions": [
+          "port_compatibility_enforcement_rate",
+          "incompatible_coupling_rollback_rate",
+          "module_activation_input_completeness_accuracy",
+          "and_gate_fire_accuracy",
+          "interlock_accuracy",
+          "starvation_accuracy",
+          "single_conduction_accuracy",
+          "signal_conservation_error_u64",
+          "fabricated_output_rate",
+          "effect_receipt_backed_rate",
+          "uncommitted_effect_rate",
+          "validation_rig_output_match_rate",
+          "measured_stream_only_rate",
+          "assembly_affordance_capability_gated_rate",
+          "unauthorized_assembly_fail_closed_rate",
+          "quiescence_reached",
+          "receipt_integrity",
+          "observer_fault_detection_rate",
+          "evidence_freshness_ms"
+        ]
+      }
+    },
+    {
+      "id": "health:l2:mind-universe:mechanical-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "states": ["healthy", "degraded", "stale", "unknown", "not_measured", "measurement_failed"],
+        "derivation": {
+          "healthy": "All required fresh validation scenarios pass: every coupling joined compatible ports, incompatible couplings rolled back, every module activated only with all required inputs, interlocks behaved, signal conducted once per coupling and was conserved, no output came from missing inputs, the validation rig matched outputs to declared transformations, and assembly was capability-gated.",
+          "degraded": "Fresh evidence exists but at least one non-catastrophic dimension violates its bound.",
+          "stale": "The latest otherwise valid evidence exceeds the configured freshness window.",
+          "unknown": "Required evidence cannot be resolved to a known state.",
+          "not_measured": "No fresh validation run has measured the required dimensions.",
+          "measurement_failed": "The observer or evaluator failed to produce a trustworthy measurement."
+        },
+        "maintenance": [
+          "retry",
+          "inspect_activation_ledger",
+          "inspect_port_compatibility",
+          "recheck_couplings",
+          "clear_interlock",
+          "resupply_inputs",
+          "rerun_validation_rig",
+          "recalibrate_visual_bounds",
+          "rematerialize_catalog",
+          "reissue_assembly_capability",
+          "reconcile_rust_scheduler",
+          "ask_human"
+        ]
+      }
+    },
+    {
+      "id": "port:l2:mind-universe:mechanical:assembly-v0",
+      "node_type": "thing",
+      "subtype": "capability_port",
+      "content": {
+        "name": "Machine assembly port (compose / re-wire)",
+        "state": "read_only_until_assembled",
+        "observe_capabilities": ["observe", "read_machine", "trace_pipeline", "inspect_ports"],
+        "required_mutate_capability": "authority:mechanical-assembly",
+        "shape_contract": "observe_set_disjoint_from_assembly_set",
+        "reader_predicate": "actor_holds(authority:mechanical-assembly)",
+        "effect_when_unauthorized": "fail_closed_and_leave_assembly_unchanged",
+        "note": "Inspecting the machine (ports, couplings, pipeline) is a separate observe-only surface; this port is the ONLY assembly surface and it requires the mechanical-assembly capability. Couplings admitted here still obey port compatibility."
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "space:l2:mind-universe:mechanical-toolkit-v0",
+      "predicate": "IMPLEMENTED_IN",
+      "target": "implementation:l2:mind-universe:mechanical-toolkit-v0"
+    },
+    {
+      "source": "space:l2:mind-universe:mechanical-toolkit-v0",
+      "predicate": "DEFINED_BY_CODE",
+      "target": "code:l2:mind-universe:mechanical-toolkit-v0"
+    },
+    {
+      "source": "code:l2:mind-universe:mechanical-toolkit-v0",
+      "predicate": "IMPLEMENTED_BY",
+      "target": "implementation:l2:mind-universe:mechanical-toolkit-v0"
+    },
+    {
+      "source": "pattern:l2:mind-universe:mechanical-toolkit-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l2:mind-universe:mechanical-toolkit-v0"
+    },
+    {
+      "source": "behavior:l2:mind-universe:mechanical-toolkit-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:mind-universe:mechanical-toolkit-v0"
+    },
+    {
+      "source": "implementation:l2:mind-universe:mechanical-toolkit-v0",
+      "predicate": "OBSERVED_BY",
+      "target": "observability_algorithm:l2:mind-universe:mechanical-toolkit-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:mind-universe:mechanical-toolkit-v0",
+      "predicate": "PRODUCES",
+      "target": "metric:l2:mind-universe:mechanical-toolkit-v0"
+    },
+    {
+      "source": "metric:l2:mind-universe:mechanical-toolkit-v0",
+      "predicate": "FEEDS",
+      "target": "health:l2:mind-universe:mechanical-toolkit-v0"
+    },
+    {
+      "source": "objective:l2:mind-universe:mechanical-toolkit-v0",
+      "predicate": "SUPPORTS",
+      "target": "space:l2:mind-universe:mechanical-toolkit-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:mind-universe:mechanical-toolkit-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:mind-universe:mechanical-observer-v0"
+    }
+  ]
+}
