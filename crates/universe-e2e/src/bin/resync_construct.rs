@@ -50,13 +50,25 @@ fn node_from(v: &serde_json::Value) -> Result<Node, Box<dyn Error>> {
 }
 
 fn run() -> Result<(), Box<dyn Error>> {
-    let mut args = env::args_os().skip(1);
-    let fixture_path = args
-        .next()
-        .map(PathBuf::from)
-        .ok_or("usage: resync_construct <fixture.json> [store-dir]")?;
-    let store_dir = args
-        .next()
+    // Args: <fixture.json> [store-dir] [--keys-from <old-root-id>]
+    // --keys-from lets a RENAMED construct supersede the nodes of its old name,
+    // mapping the new fixture (same member order) onto the old key block. The
+    // stable keys are preserved, so relations pointing at them stay valid.
+    let mut positional: Vec<String> = Vec::new();
+    let mut keys_from: Option<String> = None;
+    let mut it = env::args().skip(1);
+    while let Some(a) = it.next() {
+        if a == "--keys-from" {
+            keys_from = Some(it.next().ok_or("--keys-from needs a value")?);
+        } else {
+            positional.push(a);
+        }
+    }
+    let fixture_path = PathBuf::from(
+        positional.first().ok_or("usage: resync_construct <fixture.json> [store-dir] [--keys-from <old-root-id>]")?,
+    );
+    let store_dir = positional
+        .get(1)
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("artifacts/ontology-registry/current/store"));
     println!("fixture  : {}", fixture_path.display());
@@ -65,9 +77,14 @@ fn run() -> Result<(), Box<dyn Error>> {
     let doc: serde_json::Value = serde_json::from_slice(&std::fs::read(&fixture_path)?)?;
     let root_id = doc.get("id").and_then(|v| v.as_str()).ok_or("fixture has no id")?.to_string();
 
-    // SAME deterministic key block as inject_construct.
+    // Key block: by default from this fixture's root id (same as inject_construct);
+    // with --keys-from, from the OLD root id so a rename supersedes old nodes.
+    let key_source = keys_from.clone().unwrap_or_else(|| root_id.clone());
+    if let Some(old) = &keys_from {
+        println!("keys-from : {old}  (renaming {root_id} onto old key block)");
+    }
     let mut hasher = DefaultHasher::new();
-    root_id.hash(&mut hasher);
+    key_source.hash(&mut hasher);
     let entity_base: u128 = 0x0001_0000 + ((hasher.finish() as u128 & 0x0FFF) << 16);
 
     let mut nodes: Vec<Node> = vec![node_from(&doc)?];
