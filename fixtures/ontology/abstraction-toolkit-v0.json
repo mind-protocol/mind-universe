@@ -22,6 +22,43 @@
       "proof_burden": "the threshold of measured support an abstraction must reach to count as proven",
       "abstraction_of": "generalization: a higher Pattern whose required_supports are its instances — it fires (the pattern holds) only when enough instances support it",
       "proof_states": ["proposed", "supported", "proven", "contradicted", "refuted", "unknown", "not_measured"],
+      "validity_decomposition": {
+        "note": "Validity is NOT one scalar. An abstraction (and every construct, since a construct is a self-verifying loop) carries these FIVE orthogonal axes, each with its own epistemic status; they are never collapsed into a single 'healthy'.",
+        "causal_validity": {
+          "question": "does the causal/logical structure hold in principle? a-temporal, world-independent",
+          "lives_in": ["pattern", "behavior", "algorithm"],
+          "established_by": "proof over the causal structure (required arguments conduct, no logical contradiction) — the argument, not the current world",
+          "statuses": ["proven", "supported", "unproven", "refuted", "unknown"]
+        },
+        "current_truth": {
+          "question": "does it actually hold in the world RIGHT NOW?",
+          "lives_in": ["implementation", "health"],
+          "established_by": "fresh runtime evidence read by the observer (a runtime health_assessment)",
+          "statuses": ["holds_now", "does_not_hold", "stale", "not_measured", "unknown"],
+          "independence": "a claim may be causally valid yet currently false (world not in that state), or currently true yet causally unsound (true by luck)"
+        },
+        "validity_degree": {
+          "question": "how STRONG is the validity?",
+          "parts": {
+            "evidence_margin": "measured_support minus proof_burden — how far above threshold",
+            "validator_strength": "the validity AND strength of the validators themselves: is the observer itself proven (observer-validation passing), independent, and how strong? A pass from a weak or unproven validator is a weak proof."
+          },
+          "lives_in": ["metric", "observability_algorithm", "observer-validation"],
+          "statuses": "graded (u64 margin + validator provenance), never a bare pass/fail"
+        },
+        "validity_scope": {
+          "question": "over what domain does it hold? space, time, type/population, scale, revision range",
+          "lives_in": "a declared scope (a rayon)",
+          "rule": "outside the declared scope an abstraction is OUT-OF-SCOPE, not false; a scope must be declared, never assumed universal",
+          "statuses": ["in_scope", "out_of_scope", "scope_undeclared"]
+        },
+        "validity_context": {
+          "question": "under what assumptions / preconditions / situation does the above hold?",
+          "lives_in": ["behavior.given (preconditions)", "the situation frame: universe revision, active actors, assumed premises"],
+          "rule": "distinguish valid-under-context-C from valid-unconditionally; a context change may re-open any of the other four axes",
+          "statuses": ["conditional_on_context", "unconditional", "context_unknown"]
+        }
+      },
       "verbs": ["create", "store", "prove", "show"],
       "author_capabilities": ["create_abstraction", "add_evidence", "raise_contradiction", "store_abstraction", "supersede_abstraction"],
       "observer_capabilities": ["observe", "read_abstraction", "trace_proof", "inspect_evidence"],
@@ -35,7 +72,7 @@
       "node_type": "narrative",
       "subtype": "objective",
       "content": {
-        "success_condition": "For any created abstraction, its shown proof state is a faithful projection of MEASURED evidence: proven only when support meets the proof burden and no contradiction stands; supported, contradicted, or Fog otherwise. Every abstraction is stored with provenance and a signature over exact atoms and revisions; mutating a proven abstraction invalidates its signature and re-opens its proof. A Pattern abstracted from instances holds only when enough instances support it. No unproven abstraction is ever shown as established, and no proof is admitted from unmeasured or contradicted evidence."
+        "success_condition": "For any created abstraction, its validity is shown as a VECTOR over five orthogonal axes, never a single scalar: (1) causal validity — does the causal/logical structure hold in principle; (2) current truth — does it hold in the world now; (3) degree — the evidence margin AND the validity/strength of the validators themselves; (4) scope — the declared domain where it holds, with out-of-scope distinct from false; (5) context — the assumptions/preconditions under which it holds. Each axis is a faithful projection of MEASURED evidence with its own status; causally-valid-but-currently-false, currently-true-but-causally-unsound, proven-by-a-weak-validator, in-scope-only, and conditional-on-context all remain separately visible. Every abstraction is stored with provenance and a signature over exact atoms and revisions; mutating a proven abstraction invalidates its signature and re-opens the affected axes. No axis is ever collapsed to hide another, and no proof is admitted from unmeasured or contradicted evidence."
       }
     },
     {
@@ -328,15 +365,31 @@
       "node_type": "narrative",
       "subtype": "health",
       "content": {
-        "states": ["healthy", "degraded", "stale", "unknown", "not_measured", "measurement_failed"],
-        "derivation": {
-          "healthy": "All required fresh validation scenarios pass: every proven abstraction reached its proof burden with measured support and no standing contradiction, required arguments conducted before firing, patterns held only with enough instances, contradictions blocked without erasing support, signatures bound exact atoms and re-opened on mutation, proof states were shown faithfully, and authoring was capability-gated.",
-          "degraded": "Fresh evidence exists but at least one non-catastrophic dimension violates its bound.",
-          "stale": "The latest otherwise valid evidence exceeds the configured freshness window.",
-          "unknown": "Required evidence cannot be resolved to a known state.",
-          "not_measured": "No fresh validation run has measured the required dimensions.",
-          "measurement_failed": "The observer or evaluator failed to produce a trustworthy measurement."
+        "note": "Health is NOT one scalar here. It is a VECTOR over the five orthogonal validity axes (see content.abstraction_contract.validity_decomposition); each axis carries its own status and is never collapsed into a single 'healthy'.",
+        "validity_vector": {
+          "causal_validity": {
+            "statuses": ["proven", "supported", "unproven", "refuted", "unknown"],
+            "derivation": "proven when the causal argument's required supports conducted and no logical contradiction stands — established over the structure, independent of the current world"
+          },
+          "current_truth": {
+            "statuses": ["holds_now", "does_not_hold", "stale", "not_measured", "unknown"],
+            "derivation": "holds_now only from a fresh runtime health_assessment reading the current world; may differ from causal_validity in either direction"
+          },
+          "validity_degree": {
+            "statuses": ["strong", "adequate", "weak", "not_measured"],
+            "derivation": "graded from the evidence margin (support minus burden) AND validator_strength (is the observer itself proven via observer-validation, independent, strong?); a pass from a weak/unproven validator is weak"
+          },
+          "validity_scope": {
+            "statuses": ["in_scope", "out_of_scope", "scope_undeclared"],
+            "derivation": "in_scope within the declared rayon; out-of-scope is not a failure; scope_undeclared is itself a defect (universality must not be assumed)"
+          },
+          "validity_context": {
+            "statuses": ["unconditional", "conditional_on_context", "context_unknown"],
+            "derivation": "unconditional only when no unmet precondition or assumption is required; otherwise conditional_on_context with the context named"
+          }
         },
+        "collapse_forbidden": "No single overall health may hide a per-axis defect: causally-valid-but-currently-false, currently-true-but-causally-unsound, proven-by-a-weak-validator, in-scope-only, or conditional-on-context must each remain separately visible.",
+        "measurement_failed": "The observer or evaluator failed to produce a trustworthy measurement on one or more axes; the failing axis is named, never converted to a pass.",
         "maintenance": [
           "retry",
           "inspect_proof_ledger",
