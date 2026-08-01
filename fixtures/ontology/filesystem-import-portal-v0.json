@@ -1,0 +1,801 @@
+{
+  "id": "space:l2:mind-universe:filesystem-import-portal-v0",
+  "node_type": "space",
+  "subtype": "import_portal",
+  "content": {
+    "contractKind": "construct",
+    "name": "Filesystem import portal v0 (a thing on the ground crosses into the world, and the world offers to make it a construct)",
+    "dominant_scale": "mechanism",
+    "level": "l2",
+    "built_with": "space:l2:mind-universe:mechanical-toolkit-v0",
+    "lineage": "PRODUCED BY the Mechanical toolkit: typed modules, compatible couplings, an AND-gate assembler and a terminal Effector are that toolkit's grammar. Where the Ollama probe's effector reaches out of the bay to THINK, this one reaches out to the GROUND — the filesystem the city stands on — and brings back a measured description of what is there. Its form is dressed by the Appearance toolkit's per-affordance grammar (an arch, two jambs, a membrane, motes). See [[space:l2:mind-universe:mechanical-toolkit-v0]] for the assembly contract, [[space:l2:mind-universe:appearance-toolkit-v0]] for the materialization schema, and [[space:l1:mind-universe:ollama-inference-probe-v0]] for the sibling machine that shares this effector discipline.",
+    "parent_scope": {
+      "classification": "standalone",
+      "justification": "Portable civic instrument (L2) awaiting installation on a parcel of the city. Exactly one scope classification; no PART_OF edge is written to an unbuilt district, and no Built pose is authored for a coordinate this portal does not yet have."
+    },
+    "runtime_moment_subtypes": ["validation_run", "health_assessment", "construct_suggestion"],
+    "native_law_boundary": "AtomDynamics knows only AtomSpec, AtomBond and support/inhibit/neutral. This construct is a physicalization + composition grammar over that law: a module is an atom that transforms, a compatible coupling is a support bond, the terminal effector is an atom whose fire surfaces a CANDIDATE EffectIntent. The path, the scope, the bounds, the digest, the byte kind and every port TYPE are typed payload data on modules and ports — never terms in the atom law. Energy only gates whether the required inputs are supplied; it never encodes which file was read, what it contained, or what came back.",
+    "purpose": "Let a thing that exists on the GROUND — a file, an image, a folder — cross into the world as a thing the world can hold, name, place and reason about; and then, having brought it in, OFFER (never decide) that a citizen turn it into a Construct. A citizen supplies two measured inputs: a path and a scope (one file, or a folder read to an authored depth). The machine assembles ONE bounded import request, the portal threshold fires, and the terminal Effector reaches out to the ground through a READ-ONLY transport that returns a measured manifest: for every entry its kind, size, modification time, sha256 digest, byte kind (utf-8 text, PNG, JPEG, GIF, WEBP, or unclassified binary) and a bounded head preview. Nothing crossed is guessed: an unreadable entry is recorded as measured failure, an entry beyond the authored bound is recorded as skipped-by-bound, and a path that does not exist is measured absence — never an empty folder. Each measured entry is then written into the world as ONE thing carrying its origin and its digest, and each such thing receives ONE construct_suggestion: a proposed producing toolkit with its reason, an anatomy skeleton whose measured fields are filled and whose unmeasured fields read `unknown`, and the exact next gesture. The suggestion is an offer with `accepted: null`; the portal never builds a construct by itself.",
+    "one_way_rule": "The crossing is ONE-WAY: ground -> world. The portal reads; it never writes, moves, renames or deletes anything on the filesystem. A world that can edit its own ground without an attributable act is a world that can lose its ground.",
+    "what_crosses": {
+      "crosses": "a MEASURED DESCRIPTION of the thing: origin path, kind, size, modification time, sha256 digest, byte kind, and a bounded text head when the bytes are utf-8 text",
+      "does_not_cross": "the bytes themselves. The file stays on the ground; the world holds a digest-identified handle back to it.",
+      "honesty": "An imported artifact is NOT the file. It is a measured, attributable description of a file as it was at one measured instant. If the file changes, the digest changes and the portal sees a DIFFERENT thing — relating the two versions is a citizen's decision (supersede with a reason), never the portal's."
+    },
+    "machine_contract": {
+      "module": "one element of this machine: typed input ports + typed output ports + a transformation; physicalized as an atom that activates when all its required inputs are supplied",
+      "coupling": "an output port wired to a COMPATIBLE input port; physicalized as a support bond",
+      "compatibility": "couple(out, in) is admitted iff the output port type is accepted by the input port type; an incompatible coupling is refused and the prior assembly is restored exactly",
+      "effector": "the terminal module whose activation emits an EffectIntent carrying the authored request bytes; the crossing is real only once its EffectReceipt returns",
+      "validation_rig": "an independent harness that reads the returned manifest and checks it against the declared transformation; a rig check with no evaluator is a hard failure, never a silent skip",
+      "rule": "A module activates only when every required input port is supplied with MEASURED signal. A coupling exists only between compatible ports. The effector transports the authored request bytes verbatim: it invents no path, no scope and no bound."
+    }
+  },
+  "members": [
+    {
+      "id": "objective:l2:mind-universe:filesystem-import-portal-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "For one measured path and one measured scope, every coupling of the machine joins compatible ports, the request module activates only once BOTH inputs are supplied, the portal threshold fires exactly once, exactly one import EffectIntent is emitted carrying the authored request bytes unchanged, and a real EffectReceipt returns from the read-only ground transport. The rig then measures the manifest against the declared transformation: the root exists and its kind matches the declared scope, every listed entry carries a measured kind and size, every readable file carries a measured sha256, no entry exceeds the authored preview bound, the authored entry bound is respected and its overflow reported as skipped-by-bound, and every unreadable entry is listed with its reason rather than dropped. Each measured entry is then written into the world as exactly one thing carrying its origin, digest and byte kind — deduplicated against an identical artifact already committed — and each written thing receives exactly one construct_suggestion whose `accepted` field is null. No artifact is claimed without a returned receipt, no suggestion is auto-accepted, and no rig check is reported as passing when no evaluator measured it."
+      }
+    },
+    {
+      "id": "pattern:l2:mind-universe:filesystem-import-portal-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "The Mechanical toolkit's assembly grammar applied to a threshold between two orders of reality. Two source modules (a path, a scope) supply typed outputs; a request module is an AND gate that activates only once BOTH are supplied and transforms them into ONE bounded import request; that activation deposits onto the portal threshold; the threshold conducts to a terminal Effector whose fire surfaces ONE candidate EffectIntent carrying the authored request bytes. The candidate becomes a crossing only through authorized, read-only transport, which returns a measured manifest as an EffectReceipt. The manifest is challenged by a rig, then each measured entry is written into the world as one thing, and each thing is answered by one suggestion that OFFERS a construct.",
+        "chain": "measured path + measured scope -> request module (AND gate) -> deposit -> portal threshold -> terminal Effector -> CANDIDATE EffectIntent -> capability declaration + limits -> read-only ground transport -> measured manifest -> EffectReceipt -> validation rig -> world write (one thing per entry) -> one construct_suggestion per thing -> Moments",
+        "epistemic_honesty": "An assembled machine is not a crossing. A fired effector is not an import. A returned manifest is not a valid import until the rig checks it against the declared transformation. A path that does not exist is MEASURED ABSENCE, never an empty folder. An entry the bound cut off is skipped-by-bound, never absent. An unreadable file is measured failure, never a zero-byte file. An imported artifact is a description, never the file. A suggestion is an offer, never a construct."
+      }
+    },
+    {
+      "id": "vocabulary:l2:mind-universe:filesystem-import-portal-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "PathModule": "The source module supplying the measured origin path on the ground. Its output port carries type `fs_path`.",
+          "ScopeModule": "The source module supplying the measured scope — one file, or a folder read to an authored depth and entry bound. Its output port carries type `import_scope`.",
+          "RequestModule": "The AND-gate module whose transformation is (fs_path, import_scope) -> import_request. It activates only when BOTH input ports are supplied; with one input it is Starved and nothing is requested.",
+          "PortalThreshold": "The trigger atom the assembled request deposits onto — the lintel of the portal. It fires at one measured support: one assembled request = one crossing.",
+          "PortalEffector": "The TERMINAL module. Its fire surfaces exactly one CANDIDATE EffectIntent carrying the authored request bytes; it conducts no energy onward.",
+          "ImportRequest": "The authored request payload bytes (path, scope, depth, entry bound, per-entry byte bound, digest algorithm, preview bound, symlink policy). Graph data, transported verbatim; the transport never edits it.",
+          "GroundTransport": "The READ-ONLY adapter that opens exactly the authored path under the authored bounds and returns the measured manifest bytes. It writes nothing to the filesystem, follows no symlink unless authored, and invents no entry.",
+          "Manifest": "The measured description the ground returns: root state + one record per entry (kind, size, modification time, sha256, byte kind, bounded preview) + the entries it could not read + the entries the bound cut off.",
+          "ByteKind": "The entry's classification, MEASURED from its head bytes: `utf8_text`, `image/png`, `image/jpeg`, `image/gif`, `image/webp`, or `binary_unclassified`. A file extension is a claim; the head bytes are evidence. When they disagree, both are recorded.",
+          "ImportedArtifact": "The thing written into the world for one measured entry: origin path, kind, size, digest, byte kind, bounded preview, measured-at instant, and the portal that carried it. It is a description of a file, NEVER the file.",
+          "ImportedFolder": "The thing written for the root of a directory import; each imported artifact of that import is PART_OF it.",
+          "ConstructSuggestion": "The offer the portal makes for one imported artifact: a proposed producing toolkit with its reason, an anatomy skeleton with `unknown` in every unmeasured field, and the exact next gesture. Its `accepted` field is null at write time and only a citizen may change it.",
+          "SkippedByBound": "An entry the ground holds but the authored entry/depth bound excluded. Known to exist, deliberately not imported — distinct from absent and from unreadable.",
+          "Unreadable": "An entry that exists but could not be read (permission, lock, I/O error). Measured failure with its reason — never a zero-byte artifact and never not_measured.",
+          "RootAbsent": "The authored path does not exist on the ground. MEASURED ABSENCE (known_absent) — never an empty import.",
+          "Starved": "A module whose required inputs were not all supplied. It does not activate and fabricates no request.",
+          "Fog": "An unmeasured or unknown field of an entry. Never rendered as a measured size, a zero digest, or an empty preview."
+        }
+      }
+    },
+    {
+      "id": "behavior:l2:mind-universe:filesystem-import-portal-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "A set of typed modules and their proposed couplings, a measured path, a measured scope with its bounds, an authored request payload, a graph-declared capability with its limits, an authored read-only transport, and the acting capability set.",
+        "when": "A citizen supplies the path and the scope and the machine is run.",
+        "then": [
+          "Admit a coupling only between compatible ports; refuse an incompatible coupling and restore the prior assembly exactly.",
+          "Physicalize the assembly: one atom per module (required inputs = required_supports), one support bond per coupling.",
+          "Run the machine to quiescence: activate each module once all its required inputs are supplied, conducting each coupling once.",
+          "Hold a starved module inactive; never fabricate a request it did not assemble.",
+          "On the terminal Effector's fire, surface exactly one CANDIDATE EffectIntent carrying the authored request bytes unchanged.",
+          "Resolve the candidate against the graph-declared capability and its limits before any transport; a limit violation fails BEFORE transport with a durable receipt.",
+          "Transport read-only to the authored path under the authored bounds, and return the measured manifest as an EffectReceipt.",
+          "Record a path that does not exist as measured absence, an unreadable entry as measured failure with its reason, and an entry beyond the bound as skipped-by-bound.",
+          "Run every rig check named by the graph; a check with no evaluator is a HARD failure of the run, never a silent skip.",
+          "Write ONE thing per measured entry into the world, carrying its origin, digest, byte kind and bounded preview; reuse an already-committed identical artifact instead of duplicating it.",
+          "Attach each written thing to the import root by PART_OF, and to the portal by PRODUCES.",
+          "Offer exactly ONE construct_suggestion per written thing, with `accepted: null` and every unmeasured anatomy field reading `unknown`.",
+          "Commit exactly one validation_run and one health_assessment derived from THIS run only."
+        ],
+        "forbidden": [
+          "writing, moving, renaming or deleting anything on the filesystem",
+          "reading a path other than the authored one, or beyond the authored depth and entry bound",
+          "following a symlink when the request does not authorize it",
+          "reading the path, the manifest or any byte kind inside the native AtomDynamics law",
+          "admitting a coupling between incompatible ports",
+          "activating the request module on a single supplied input",
+          "conducting a coupling more than once",
+          "the transport editing, re-templating or re-deriving the authored request payload",
+          "the transport choosing a path, a scope or a bound",
+          "claiming an import without a returned EffectReceipt",
+          "converting a missing path into an empty folder, an unreadable file into a zero-byte artifact, or a bound-skipped entry into an absent one",
+          "claiming the imported artifact IS the file, or that its bytes are held in the world",
+          "accepting a construct_suggestion, or writing a construct from one, without a citizen's attributable act",
+          "filling an unmeasured anatomy field of a suggestion with a plausible value instead of `unknown`",
+          "reporting a rig check as passed when no evaluator measured it",
+          "deriving overall health as healthy from a single import run",
+          "pre-creating validation_run, health_assessment or construct_suggestion",
+          "streaming authored, derived, unknown or not_measured signal energy"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l2:mind-universe:filesystem-import-portal-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "read the assembly (modules, ports, couplings) and the authored circuit from the COMMITTED graph, never from an authoring file",
+          "read the producing toolkit's compatibility rule from the committed Mechanical toolkit and check every proposed coupling against it",
+          "refuse every authored incompatible coupling and prove the assembly is unchanged",
+          "map each module to an atom whose required_supports are its required input couplings, and each compatible coupling to a support bond",
+          "admit only measured input signal at the machine's sources (a citizen's path and scope)",
+          "run the machine to quiescence; hold starved modules inactive",
+          "on the terminal effector's fire, surface exactly one candidate EffectIntent carrying the authored payload",
+          "resolve the candidate against the graph-declared capability registry (payload size, causal depth, deadline) before any transport",
+          "transport read-only to the authored path under the authored bounds and return the measured manifest",
+          "run every graph-named rig check with its evaluator; a missing evaluator fails the run",
+          "for each measured entry: derive its canonical identity from (origin path, digest, size); if that identity is already committed, REUSE it and record reused_existing; otherwise write one thing",
+          "attach each thing: PART_OF the import root, PRODUCES from the portal",
+          "for each written thing: resolve the proposed producing toolkit from the graph-declared proposal rule on MEASURED byte kind and structure; write one construct_suggestion with accepted=null and `unknown` in every unmeasured anatomy field",
+          "derive the health vector from THIS run's measured dimensions only, marking every uncovered dimension not_measured",
+          "commit the whole write as one atomic transaction and read it back independently"
+        ],
+        "compatibility_rule": "couple(out, in) admitted iff type(out) is accepted by type(in); otherwise refused with the prior assembly restored exactly.",
+        "starvation_rule": "the request module has TWO required supports; with one supplied input it does not activate and no import is requested.",
+        "identity_rule": "artifact identity = (origin path, sha256 digest, size). Same triple -> same thing (reused, not duplicated). Changed bytes -> changed digest -> a DIFFERENT thing; relating the two is a citizen's supersede-with-a-reason, never the portal's.",
+        "epistemic_precedence": ["Observed", "Measured", "Known_absent", "Unknown", "Not_measured"],
+        "evaluation": "structured_expression_ast",
+        "python_escape_hatch": "forbidden_by_default"
+      }
+    },
+    {
+      "id": "code:l2:mind-universe:filesystem-import-portal-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "authority": "Graph-native CodeDefinition for the filesystem import portal. This JSON file is a portable materialized projection, not independent semantic authority; the committed graph node is what the runtime reads.",
+        "language": "mind-ir+atom-fixture",
+        "runnable": true,
+        "runnable_note": "Runnable WITHOUT the physics-event -> atom-deposit bridge: this machine's source modules are supplied by MEASURED authored injections (a citizen naming a path and a scope IS the measured input of this machine). Nothing here is simulated to stand in for an unbuilt bridge.",
+        "entrypoints": [
+          "read_assembly",
+          "check_port_compatibility",
+          "assemble_machine",
+          "run_until_quiescent",
+          "emit_import_intent",
+          "transport_ground_read",
+          "run_validation_rig",
+          "write_imported_things",
+          "offer_construct_suggestions",
+          "observe_portal",
+          "evaluate_portal_ast"
+        ],
+        "machine_circuit": {
+          "note": "The Mechanical toolkit's grammar instantiated as a portal: modules + typed ports + couplings, terminating in an Effector that reaches out to the ground. `atoms`/`bonds`/`deposit_bond`/`trigger_atom`/`effect_bindings`/`external_measured_injections` are the physicalization the native floor consumes; `modules`/`couplings` carry the port TYPES the toolkit's compatibility rule is checked against. Every bond has exactly one declared coupling and vice versa.",
+          "modules": [
+            {
+              "key": "path_supplied",
+              "role": "source",
+              "ports": { "in": [], "out": [{ "name": "path", "type": "fs_path" }] },
+              "transformation": "supply the measured origin path a citizen named on the ground",
+              "physical_part": "left jamb"
+            },
+            {
+              "key": "scope_declared",
+              "role": "source",
+              "ports": { "in": [], "out": [{ "name": "scope", "type": "import_scope" }] },
+              "transformation": "supply the measured scope: one file, or a folder to an authored depth and entry bound",
+              "physical_part": "right jamb"
+            },
+            {
+              "key": "request_assembled",
+              "role": "transform",
+              "ports": {
+                "in": [
+                  { "name": "path", "type": "fs_path" },
+                  { "name": "scope", "type": "import_scope" }
+                ],
+                "out": [{ "name": "request", "type": "import_request" }]
+              },
+              "transformation": "(fs_path, import_scope) -> import_request",
+              "and_gate": true,
+              "physical_part": "keystone"
+            },
+            {
+              "key": "portal_threshold",
+              "role": "trigger",
+              "ports": {
+                "in": [{ "name": "request", "type": "import_request" }],
+                "out": [{ "name": "crossing", "type": "portal_crossing" }]
+              },
+              "transformation": "import_request -> portal_crossing (one assembled request = one crossing)",
+              "physical_part": "lintel"
+            },
+            {
+              "key": "portal_effector",
+              "role": "effector",
+              "terminal": true,
+              "ports": {
+                "in": [{ "name": "crossing", "type": "portal_crossing" }],
+                "out": [{ "name": "intent", "type": "effect_intent" }]
+              },
+              "transformation": "portal_crossing -> EffectIntent{fs.import, authored request bytes}",
+              "physical_part": "membrane"
+            }
+          ],
+          "couplings": [
+            { "key": "path_to_request", "from": "path_supplied.path", "to": "request_assembled.path", "out_type": "fs_path", "in_type": "fs_path" },
+            { "key": "scope_to_request", "from": "scope_declared.scope", "to": "request_assembled.scope", "out_type": "import_scope", "in_type": "import_scope" },
+            { "key": "request_to_threshold", "from": "request_assembled.request", "to": "portal_threshold.request", "out_type": "import_request", "in_type": "import_request" },
+            { "key": "threshold_to_effector", "from": "portal_threshold.crossing", "to": "portal_effector.crossing", "out_type": "portal_crossing", "in_type": "portal_crossing" }
+          ],
+          "refused_couplings": [
+            {
+              "key": "path_to_threshold_direct",
+              "from": "path_supplied.path",
+              "to": "portal_threshold.request",
+              "out_type": "fs_path",
+              "in_type": "import_request",
+              "expected": "refused_incompatible",
+              "why": "a bare path is not a bounded import request; admitting this coupling would let the portal cross with no scope, no depth and no entry bound — an unbounded read of the ground. Authored as a NEGATIVE case so the compatibility rule is MEASURED on this machine, not merely declared."
+            },
+            {
+              "key": "scope_to_effector_direct",
+              "from": "scope_declared.scope",
+              "to": "portal_effector.crossing",
+              "out_type": "import_scope",
+              "in_type": "portal_crossing",
+              "expected": "refused_incompatible",
+              "why": "a scope is not a crossing; admitting it would let the effector reach out to the ground before any request names a path."
+            }
+          ],
+          "atoms": [
+            { "key": "path_supplied", "roleAxis": "thing", "threshold": 100, "seed_energy": 0 },
+            { "key": "scope_declared", "roleAxis": "thing", "threshold": 100, "seed_energy": 0 },
+            {
+              "key": "request_assembled",
+              "roleAxis": "thing",
+              "threshold": 200,
+              "seed_energy": 0,
+              "required_supports": ["path_to_request", "scope_to_request"]
+            },
+            {
+              "key": "portal_threshold",
+              "roleAxis": "thing",
+              "threshold": 100,
+              "seed_energy": 0,
+              "required_supports": ["request_to_threshold"]
+            },
+            {
+              "key": "portal_effector",
+              "roleAxis": "thing",
+              "threshold": 100,
+              "seed_energy": 0,
+              "required_supports": ["threshold_to_effector"]
+            }
+          ],
+          "bonds": [
+            { "key": "path_to_request", "source": "path_supplied", "target": "request_assembled", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "scope_to_request", "source": "scope_declared", "target": "request_assembled", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "request_to_threshold", "source": "request_assembled", "target": "portal_threshold", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "threshold_to_effector", "source": "portal_threshold", "target": "portal_effector", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" }
+          ],
+          "deposit_bond": "request_to_threshold",
+          "trigger_atom": "portal_threshold",
+          "terminal_emitter_honesty": "portal_effector is TERMINAL: on a fire it surfaces exactly one candidate EffectIntent and conducts no energy onward. The EffectReceipt, the imported things and the suggestions are produced by the real transport and commit machinery — they are not shadow atoms this circuit energizes (an atom holding 100 support cannot conduct 200 outward without starving).",
+          "effect_bindings": [
+            {
+              "emitter_atom": "portal_effector",
+              "capability": "fs.import",
+              "idempotency_key": "import-portal:ground-read-v0",
+              "message": "{\"path\":\"fixtures/assets\",\"scope\":\"directory\",\"max_depth\":1,\"max_entries\":6,\"max_bytes_per_entry\":262144,\"preview_bytes\":480,\"digest\":\"sha256\",\"follow_symlinks\":false,\"mode\":\"read_only\"}",
+              "deadline_tick": 1000,
+              "causal_ancestry": ["import-portal:request-assembled"]
+            }
+          ],
+          "effect_bindings_honesty": "The `message` IS the import request: the exact bytes the ground transport consumes, authored in the graph. The transport holds zero policy — it chooses no path, no depth, no bound, and it never writes. Surfacing the candidate is not crossing: the crossing happens only through the declared capability and returns an EffectReceipt. The authored `path` is this portal's DEFAULT supply; a citizen supplying another path replaces exactly that one field and the substitution is recorded in the run evidence.",
+          "external_measured_injections": {
+            "path_supplied": 100,
+            "scope_declared": 100
+          },
+          "injection_honesty": "These two injections are MEASURED supplies, not stand-ins for an unbuilt bridge: a citizen naming a path and declaring a scope IS the measured input of this machine. Nothing here is simulated."
+        },
+        "capability_declaration": {
+          "capability": "fs.import",
+          "version": "1",
+          "max_payload_bytes": 4096,
+          "max_causal_depth": 4,
+          "sensitive": false,
+          "note": "Materialized into the runtime CapabilityRegistry from THIS graph node. The host holds no policy of its own: an undeclared capability is denied outright, and a limit violation fails BEFORE transport with a durable receipt."
+        },
+        "effect_transport": {
+          "port_id": "port:l2:mind-universe:import-portal:crossing-v0",
+          "capability": "fs.import",
+          "protocol": "filesystem/local-read",
+          "method": "READ",
+          "mode": "read_only",
+          "timeout_ms": 30000,
+          "mandatory": ["timeout", "idempotency", "causal_depth", "independent_readback", "read_only", "bounded_entries", "bounded_bytes"],
+          "rule": "The adapter reads the authored request bytes to learn the path and the bounds, opens EXACTLY that path, and returns the measured manifest bytes. It never writes, moves, renames or deletes; it never leaves the authored depth; it never follows a symlink unless the request authorizes it; it substitutes nothing. A missing path, an unreadable entry or a bound-skipped entry is reported as such — never as an empty result."
+        },
+        "validation_rig": {
+          "feeds": "the authored request payload; the manifest bytes returned by the authorized read-only transport",
+          "checks": [
+            { "id": "transport_succeeded", "asserts": "the EffectReceipt is TransportSucceeded", "load_bearing": true },
+            { "id": "manifest_is_json", "asserts": "the returned manifest parses as a JSON object", "load_bearing": true },
+            { "id": "request_echoed_unchanged", "asserts": "manifest.request is byte-equal in content to the transported request payload", "load_bearing": true },
+            { "id": "root_state_measured", "asserts": "manifest.root.state is one of measured_present or known_absent — never omitted", "load_bearing": true },
+            { "id": "root_kind_matches_scope", "asserts": "when the root is present, its kind matches the declared scope (file or directory)", "load_bearing": true },
+            { "id": "every_entry_kind_measured", "asserts": "every listed entry carries a measured kind and a measured size_bytes", "load_bearing": true },
+            { "id": "digest_covers_readable_files", "asserts": "every readable file entry within the byte bound carries a measured sha256; the others carry an explicit digest_status", "load_bearing": true },
+            { "id": "entry_bound_respected", "asserts": "the listed entries do not exceed max_entries and the overflow is reported as skipped_by_bound", "load_bearing": true },
+            { "id": "preview_bound_respected", "asserts": "no entry preview exceeds preview_bytes", "load_bearing": true },
+            { "id": "unreadable_recorded_not_dropped", "asserts": "entries_seen equals listed + skipped_by_bound + unreadable", "load_bearing": true },
+            { "id": "no_write_performed", "asserts": "the transport reports mode read_only and performed zero filesystem writes", "load_bearing": true },
+            { "id": "byte_kind_classified", "asserts": "every listed file entry carries a byte_kind measured from its head bytes", "load_bearing": false, "why": "classification quality degrades the import rather than invalidating it; binary_unclassified is an honest measured answer." },
+            { "id": "extension_agrees_with_bytes", "asserts": "for each listed file the extension-implied kind agrees with the head-bytes kind", "load_bearing": false, "why": "a disagreement is real knowledge about the ground (a mislabelled file), not a failure of the portal. Measured and reported." }
+          ],
+          "not_checked": [
+            { "id": "file_semantic_validity", "why": "whether a file's CONTENT is meaningful is not decidable from a bounded read; the portal measures what is there, it does not judge it" },
+            { "id": "availability_over_time", "why": "one crossing measures one instant of the ground, never a rate" },
+            { "id": "determinism", "why": "the ground changes under the world; two reads of the same path are not required to agree, and a disagreement is knowledge, not a fault" },
+            { "id": "suggestion_correctness", "why": "whether the proposed toolkit is the RIGHT one is a citizen's judgement; the portal measures only that a suggestion was offered and left unaccepted" }
+          ],
+          "rule": "Every check named here MUST be evaluated by the rig. A check with no evaluator is a HARD failure of the run — never a silent skip and never a pass."
+        },
+        "import_write": {
+          "note": "What the world gains from one crossing. This is the WRITE face: the rig proves the manifest, and only then is anything written.",
+          "folder_node": {
+            "node_type": "thing",
+            "subtype": "imported_folder",
+            "written_when": "the declared scope is `directory` and the root is measured present",
+            "carries": ["origin_path", "entry counts (listed / skipped_by_bound / unreadable)", "measured_at_unix_ms", "portal", "depth bound"]
+          },
+          "artifact_node": {
+            "node_type": "thing",
+            "subtype": "imported_artifact",
+            "written_per": "one measured manifest entry",
+            "carries": [
+              "origin_path (the handle back to the ground)",
+              "kind",
+              "size_bytes",
+              "modified_unix_ms",
+              "sha256 + digest_status",
+              "byte_kind (measured from head bytes) + extension_claim",
+              "bounded text preview + preview_status",
+              "measured_at_unix_ms",
+              "imported_by (the portal) and the acting session"
+            ],
+            "does_not_carry": "the file's bytes. `bytes_in_world: false` is stated on every artifact so no reader mistakes the handle for the content."
+          },
+          "edges": [
+            { "predicate": "PRODUCES", "from": "the portal space", "to": "each imported thing", "why": "the portal is the attributable producer of everything that crossed" },
+            { "predicate": "PART_OF", "from": "each imported artifact", "to": "the imported folder", "why": "a folder import is a whole with parts; a single-file import writes no folder and no PART_OF" },
+            { "predicate": "ADDRESSES", "from": "each construct_suggestion", "to": "the artifact it is about", "why": "the suggestion is ABOUT the thing; it changes nothing on it" }
+          ],
+          "identity": "canonical id derived from (origin path, sha256, size). An identical artifact already committed is REUSED, never duplicated; the run records `reused_existing` with the key it found.",
+          "honesty": "Writing a description is not importing a file. The artifact is a measured handle: it can go stale the instant it is written, and its freshness is the measured_at instant, not the moment it is read."
+        },
+        "suggestion_template": {
+          "note": "The portal's second gesture: having brought a thing in, it OFFERS that the thing become a Construct. An offer, never a decision.",
+          "moment_subtype": "construct_suggestion",
+          "written_per": "one imported artifact",
+          "decision_field": { "field": "accepted", "value_at_write": null, "rule": "Only a citizen's attributable act may set this. The portal never accepts its own suggestion, and nothing in the runtime consumes an unaccepted suggestion." },
+          "toolkit_proposal_rule": [
+            { "when": "byte_kind starts with image/", "propose": "space:l2:mind-universe:appearance-toolkit-v0", "why": "an image is a FORM; the Appearance toolkit materializes forms affordance by affordance" },
+            { "when": "kind is directory", "propose": "space:l2:mind-universe:construction-toolkit-v0", "why": "a folder is a structure with parts; the Construction toolkit builds rooms, routes and parcels as one atomic set" },
+            { "when": "byte_kind is utf8_text and the extension claims a document (.md, .txt, .json, .yaml, .toml)", "propose": "space:l2:mind-universe:abstraction-toolkit-v0", "why": "a document is a claim to be stored, proven and shown; the Abstraction toolkit creates, stores, proves and shows abstractions" },
+            { "when": "byte_kind is utf8_text and the extension claims executable code (.rs, .ts, .tsx, .js, .py, .sh)", "propose": "space:l2:mind-universe:mechanical-toolkit-v0", "why": "code is a mechanism: typed modules composed into a machine that acts" },
+            { "when": "nothing above matches", "propose": "unknown", "why": "no measured evidence selects a toolkit. `unknown` is the honest proposal — a plausible guess would be a decision wearing a measurement's clothes." }
+          ],
+          "proposal_honesty": "This rule maps MEASURED byte kinds to a proposed toolkit. It is a proposal derived from evidence, not a classification of what the thing MEANS. The citizen may propose any other toolkit, and the suggestion records that its own basis was a byte-kind heuristic.",
+          "anatomy_skeleton": {
+            "note": "The 11-part construct anatomy, pre-filled ONLY where this import measured something. Every other field is `unknown` — never a plausible fill.",
+            "objective": "unknown — only a citizen can say what this thing is FOR in the world",
+            "affordances": "unknown — what one can DO with this thing is not derivable from its bytes",
+            "inputs": "measured: origin path, digest, size, byte kind",
+            "preconditions": "measured: the origin path is readable at the measured instant",
+            "mechanism": "unknown",
+            "effects": "unknown",
+            "receipts": "measured: this import's EffectReceipt and the artifact's own commit receipt",
+            "observer": "unknown — a construct without an observer is an assertion",
+            "metrics": "unknown",
+            "health": "not_measured",
+            "maintenance": "measured: re-read the origin path and compare the digest"
+          },
+          "next_gesture": {
+            "step_1": "author fixtures/ontology/<name>-v0.json from the anatomy above, filling every `unknown` yourself",
+            "step_2": "./target/debug/inject_construct.exe fixtures/ontology/<name>-v0.json",
+            "step_3": "write one driver bin that runs it from the COMMITTED store and commits validation_run + health_assessment Moments",
+            "honesty": "These three steps are what a citizen would DO. The portal does not do them, does not schedule them, and does not mark the suggestion as followed."
+          }
+        }
+      }
+    },
+    {
+      "id": "implementation:l2:mind-universe:filesystem-import-portal-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "status": "materialized",
+        "artifact": "filesystem-import-portal-v0.json",
+        "graph_status": "not_written",
+        "wiring_status": "not_wired",
+        "runtime_status": "not_running",
+        "verification_status": "not_measured",
+        "honesty": "These four fields are written BEFORE injection and go STALE the moment an injector commits this construct. They are the authoring state, never a live status: after injection the on-disk graph carries the portal while this embedded field still reads not_written. The live state is what an independent readback of the store and this construct's own runtime Moments report — not this block."
+      }
+    },
+    {
+      "id": "justification:l2:mind-universe:filesystem-import-portal-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": [
+          "The world stands on a ground it cannot see. Everything a citizen already has — notes, images, code, folders — lives on the filesystem, and without a crossing it can only be described from outside, never held inside. A portal is the smallest honest crossing: bounded, read-only, receipted.",
+          "Building it as a Mechanical machine rather than a script makes the path and the scope typed modules that can be RE-COUPLED: the same portal serves a citizen's live choice once its source modules are fed by an affordance instead of by an authored default.",
+          "Making the request authored graph data and the transport a pure read puts every variable — path, depth, entry bound, byte bound, symlink policy — in the Universe, and leaves in native code only a mechanism with zero policy.",
+          "The AND-gate request module makes an unbounded crossing structurally impossible: a path with no scope assembles nothing, so the portal can never open onto the whole disk.",
+          "Importing a DESCRIPTION rather than the bytes keeps the world honest about what it holds: a digest-identified handle that can go stale, not a copy pretending to be the thing. The digest is what makes staleness detectable at all.",
+          "Suggesting rather than building is the load-bearing restraint. The portal has measured evidence about a thing (its kind, its shape) and no evidence about its MEANING; a construct authored from bytes alone would be a plausible story, which is exactly what this Universe refuses. So it offers, fills only what it measured, writes `unknown` everywhere else, and waits.",
+          "Dressing the machine as a portal is not decoration: the arch, the jambs, the lintel and the membrane materialize the machine's own modules, so what you see IS what the machine is, and a citizen can read the mechanism off its form."
+        ],
+        "rejected": [
+          "copying the file's bytes into the world, because the world would then hold a silent, unversioned duplicate whose divergence from the ground is invisible",
+          "an unbounded recursive read, because a portal with no bound is a hole, and one mistaken path would drown the city in things nobody chose",
+          "letting the transport pick defaults for depth or entry bounds, because a transport that decides is a hidden authoring layer",
+          "writing the construct directly from a file, because inferring purpose, affordances and effects from bytes is fabrication",
+          "auto-accepting a suggestion when the evidence is strong, because 'strong evidence' about a byte kind is still no evidence about meaning",
+          "read-write access to the ground, because a world that edits its own foundation without an attributable act can lose it",
+          "treating a missing path as an empty import, because absence measured is knowledge and absence assumed is a lie",
+          "deriving healthy from one crossing, because a single measurement certifies no rate and no stability"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:mind-universe:filesystem-import-portal-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "structured_expression_ast",
+        "scenarios": [
+          "compatible_couplings_admitted",
+          "incompatible_coupling_refused_transactionally",
+          "request_module_waits_for_both_inputs",
+          "starved_request_module_requests_nothing",
+          "machine_reaches_quiescence",
+          "effector_fires_once_and_surfaces_one_candidate",
+          "candidate_carries_authored_payload_unchanged",
+          "undeclared_capability_denied",
+          "transport_returns_effect_receipt",
+          "manifest_wellformed_and_request_echoed",
+          "root_kind_matches_declared_scope",
+          "missing_path_reported_as_known_absent",
+          "unreadable_entry_reported_as_measured_failure",
+          "entry_bound_respected_and_overflow_reported",
+          "preview_bound_respected",
+          "no_filesystem_write_performed",
+          "byte_kind_measured_from_head_bytes",
+          "one_thing_written_per_measured_entry",
+          "identical_artifact_reused_not_duplicated",
+          "one_suggestion_per_artifact",
+          "no_suggestion_auto_accepted",
+          "unmeasured_anatomy_fields_read_unknown",
+          "rig_check_without_evaluator_fails_the_run",
+          "energy_conserved"
+        ],
+        "negative_invariants": [
+          "threshold zero rejected",
+          "duplicate required supports rejected",
+          "neutral bond with nonzero energy rejected",
+          "incompatible coupling admitted rejected",
+          "import claimed without receipt rejected",
+          "missing path reported as empty folder rejected",
+          "unreadable entry reported as zero-byte artifact rejected",
+          "suggestion written with accepted=true rejected",
+          "unmeasured anatomy field filled with a plausible value rejected",
+          "any filesystem write rejected"
+        ],
+        "invariants": [
+          "a coupling exists only between compatible ports",
+          "an incompatible coupling is refused and the assembly is unchanged",
+          "the request module activates only when both inputs are supplied",
+          "every coupling conducts at most once",
+          "admitted integer signal energy is conserved",
+          "the candidate EffectIntent carries the authored payload bytes unchanged",
+          "the capability is resolved against the graph-declared registry before transport",
+          "an import exists only through an EffectIntent that returned an EffectReceipt",
+          "the transport performs zero filesystem writes",
+          "entries_seen = listed + skipped_by_bound + unreadable",
+          "exactly one thing is written per measured entry, or an identical committed artifact is reused",
+          "exactly one construct_suggestion is written per imported artifact, with accepted = null",
+          "every unmeasured anatomy field of a suggestion reads `unknown`",
+          "every rig check named in the graph is evaluated or the run fails"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:mind-universe:filesystem-import-portal-observer-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "target": "observability_algorithm:l2:mind-universe:filesystem-import-portal-v0",
+        "tests": [
+          "detect a coupling between incompatible ports",
+          "detect a request module that activated on one supplied input",
+          "detect a candidate whose payload differs from the authored request bytes",
+          "detect a claimed import with no returned EffectReceipt",
+          "detect a manifest whose echoed request differs from the transported one",
+          "detect a missing path reported as an empty folder",
+          "detect an unreadable entry reported as a zero-byte artifact",
+          "detect an entry cut by the bound reported as absent",
+          "detect a written artifact with no corresponding measured entry",
+          "detect a duplicated artifact for an identity already committed",
+          "detect an artifact claiming to hold the file's bytes",
+          "detect an imported artifact with no construct_suggestion",
+          "detect a suggestion written already accepted",
+          "detect an anatomy field filled where nothing was measured",
+          "detect any filesystem write performed by the transport",
+          "detect duplicate coupling conduction",
+          "detect non-conserved energy",
+          "detect overall health reported healthy from a single crossing",
+          "never convert an unreadable file into an absent measurement",
+          "return measurement_failed when observer execution itself fails"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l2:mind-universe:filesystem-import-portal-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Reads the committed assembly (modules, ports, couplings) from the store, the physicalized activation trace, the surfaced candidate EffectIntent and its payload bytes, the capability declaration actually enforced, the returned EffectReceipt, the raw manifest bytes, each rig check's evaluator result, and — from a FRESH reopen — every written thing, its edges, and every suggestion with its `accepted` field. It does not trust a runtime-declared health field, the construct's own implementation block, or a driver that merely ran.",
+        "checks": [
+          "every coupling joins compatible ports",
+          "every authored incompatible coupling was refused and the assembly unchanged",
+          "the request module activated only with both inputs supplied",
+          "single conduction per coupling",
+          "integer energy conservation",
+          "exactly one candidate surfaced by the terminal effector",
+          "the candidate payload equals the authored request bytes",
+          "the capability was resolved against the graph-declared registry",
+          "every claimed import has a returned EffectReceipt",
+          "the manifest echoes the transported request unchanged",
+          "entries_seen = listed + skipped_by_bound + unreadable",
+          "the transport reports read_only and performed zero writes",
+          "one committed thing per measured entry, none duplicated",
+          "every artifact states bytes_in_world = false and carries its origin path",
+          "one suggestion per artifact, all with accepted = null",
+          "every unmeasured anatomy field reads `unknown`",
+          "each rig check has a named evaluator and a measured result",
+          "quiescence",
+          "receipt integrity",
+          "evidence freshness"
+        ]
+      }
+    },
+    {
+      "id": "metric:l2:mind-universe:filesystem-import-portal-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "dimensions": [
+          "port_compatibility_enforcement_rate",
+          "incompatible_coupling_refusal_rate",
+          "and_gate_fire_accuracy",
+          "starvation_accuracy",
+          "single_conduction_accuracy",
+          "signal_conservation_error_u64",
+          "quiescence_reached",
+          "candidate_payload_fidelity",
+          "capability_declaration_enforced",
+          "effect_receipt_backed_rate",
+          "transport_latency_ms",
+          "read_only_respected",
+          "manifest_wellformed_rate",
+          "request_echo_fidelity",
+          "root_state_honesty",
+          "entry_accounting_complete_rate",
+          "digest_coverage_rate",
+          "byte_kind_classification_rate",
+          "extension_agreement_rate",
+          "preview_bound_respected_rate",
+          "artifacts_written",
+          "artifacts_reused",
+          "suggestion_coverage_rate",
+          "suggestion_auto_accepted_count",
+          "unknown_field_honesty_rate",
+          "rig_check_coverage",
+          "unreadable_honesty_rate",
+          "availability_over_time_rate",
+          "determinism_rate",
+          "observer_fault_detection_rate",
+          "evidence_freshness_ms"
+        ]
+      }
+    },
+    {
+      "id": "health:l2:mind-universe:filesystem-import-portal-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "states": ["healthy", "degraded", "stale", "unknown", "not_measured", "measurement_failed"],
+        "derivation": {
+          "healthy": "Requires a POPULATION of fresh crossings, not one: every load-bearing rig check passing across repeated runs over different roots (a file, a folder, an image, a missing path, an unreadable entry), an availability rate and a determinism rate actually measured, with couplings, starvation, conduction, conservation, entry accounting and suggestion coverage clean throughout. One successful crossing can never reach this state.",
+          "degraded": "Fresh evidence exists but at least one non-catastrophic dimension violates its bound — for example a successful import whose byte-kind classification left entries unclassified, or where a file's extension disagrees with its head bytes.",
+          "stale": "The latest otherwise valid evidence exceeds the configured freshness window. Note that an IMPORTED ARTIFACT going stale (its ground changed) is not the portal being stale — that is measured knowledge the portal is designed to expose.",
+          "unknown": "Required evidence cannot be resolved to a known state.",
+          "not_measured": "No fresh crossing has measured the required dimensions — the state of this portal before its first run, and the honest overall state after a single run, since the population dimensions remain unmeasured.",
+          "measurement_failed": "The rig or the observer failed to produce a trustworthy measurement — distinct from a measured unreadable entry or a measured missing path, which are knowledge, not failed measurements."
+        },
+        "maintenance": [
+          "retry",
+          "inspect_activation_trace",
+          "inspect_port_compatibility",
+          "inspect_effect_receipt",
+          "inspect_raw_manifest",
+          "recheck_origin_path_exists",
+          "re_read_and_compare_digest",
+          "raise_or_lower_entry_bound",
+          "raise_transport_timeout",
+          "recouple_path_module_to_a_live_affordance",
+          "rerun_validation_rig",
+          "reissue_capability_declaration",
+          "review_unaccepted_suggestions",
+          "ask_human"
+        ]
+      }
+    },
+    {
+      "id": "visual_binding:l2:mind-universe:filesystem-import-portal-v0",
+      "node_type": "thing",
+      "subtype": "physicalization_binding",
+      "content": {
+        "kind": "physicalization_binding",
+        "note": "The portal's FORM, authored by the Appearance toolkit's schema: the unit of appearance is the AFFORDANCE, and every visible part materializes one. The parts are not decoration — each is a module of the machine (left jamb = the path source, right jamb = the scope source, keystone = the AND-gate assembler, lintel = the threshold, membrane = the terminal effector), so what you see IS what the machine is. Overlay predicate PROJECTS_AS is not canonical; the binding is a MEMBER of the construct and is attached by PART_OF (part -> whole), exactly as wield_appearance does.",
+        "schema_version": "affordance-materialization/1",
+        "dominant_scale": "mechanism",
+        "overlay_predicate": "PROJECTS_AS",
+        "canonical_predicate": "PART_OF",
+        "palette": { "core": "#d8d2c4", "emissive": "#7fd2ff", "shell": "#4a5568", "particle": "#e8f4ff" },
+        "form_primitive_tuple": {
+          "arity": 8,
+          "fields": ["kind", "part_name", "palette_role", "offset(vec3)", "rotation(vec3)", "scale(vec3>0)", "particle_count", "particle_size"],
+          "palette_source": "the closed renderer palette declared by the Appearance toolkit (form_primitive_tuple.allowed_primitives); every primitive below is inside it, so nothing here is refused at render time"
+        },
+        "affordance_materializations": [
+          {
+            "affordance": { "subtype": "supply_path", "kernel_kind": "place", "justification": "the left jamb is where a citizen sets the path: a place affordance on the machine's fs_path source module", "cell": "actionable" },
+            "form": [["cylinder", "jamb_left", "shell", [-0.9, 0.9, 0], [0, 0, 0], [0.16, 1.8, 0.16], 0, 0]],
+            "inverse_mapping": "left jamb = you can place a path here (module path_supplied); lit = a path is supplied, bare = starved, not broken"
+          },
+          {
+            "affordance": { "subtype": "declare_scope", "kernel_kind": "place", "justification": "the right jamb is where a citizen sets the scope and its bounds: a place affordance on the import_scope source module", "cell": "actionable" },
+            "form": [["cylinder", "jamb_right", "shell", [0.9, 0.9, 0], [0, 0, 0], [0.16, 1.8, 0.16], 0, 0]],
+            "inverse_mapping": "right jamb = you can place a scope here (module scope_declared); lit = a scope is declared, bare = starved"
+          },
+          {
+            "affordance": { "subtype": "assemble_request", "kernel_kind": "connect", "justification": "the keystone joins the two jambs: it materializes the AND-gate that connects path and scope into ONE bounded request, and it visibly holds nothing when only one jamb is lit", "cell": "actionable" },
+            "form": [["box", "keystone", "core", [0, 1.85, 0], [0, 0, 0], [0.34, 0.26, 0.22], 0, 0]],
+            "inverse_mapping": "keystone = the request is assembled from BOTH jambs; dark keystone = one input missing, so no crossing is possible"
+          },
+          {
+            "affordance": { "subtype": "open_crossing", "kernel_kind": "open", "justification": "the lintel arch is the threshold that fires on one assembled request — the gesture of opening the portal onto the ground", "cell": "actionable" },
+            "form": [["torus", "arch", "shell", [0, 1.8, 0], [0, 0, 0], [1.0, 1.0, 0.14], 0, 0]],
+            "inverse_mapping": "arch = you can open a crossing here (module portal_threshold); a fired arch means one request crossed, not that things arrived"
+          },
+          {
+            "affordance": { "subtype": "cross_from_ground", "kernel_kind": "build", "justification": "the membrane is the terminal effector: the surface a thing on the ground crosses to become a thing in the world. It is the only surface that reaches out of the bay", "cell": "actionable" },
+            "form": [["fresnel_shell", "membrane", "emissive", [0, 0.95, 0], [0, 0, 0], [0.86, 0.86, 0.04], 0, 0]],
+            "inverse_mapping": "membrane = the crossing surface (module portal_effector); DARK when no crossing is measured — Fog, never a claim that nothing exists on the ground"
+          },
+          {
+            "affordance": { "subtype": "inspect_manifest", "kernel_kind": "inspect", "justification": "the motes are the things that actually crossed: one mote per imported artifact, inspectable back to its origin path and digest", "cell": "actionable" },
+            "form": [["points", "arrivals", "particle", [0, 0.95, 0.4], [0, 0, 0], [1, 1, 1], 0, 0.35]],
+            "inverse_mapping": "motes = the artifacts this portal carried in; ZERO motes = no measured crossing yet (Fog), never 'the ground is empty'"
+          },
+          {
+            "affordance": { "subtype": "review_suggestion", "kernel_kind": "build", "justification": "the offering ring holds the unaccepted construct_suggestions: a citizen may take one and build. It is deliberately OUTSIDE the membrane — the world offers, it does not carry out", "cell": "actionable" },
+            "form": [["torus", "offer_ring", "emissive", [0, 0.35, 0.55], [1.5708, 0, 0], [0.42, 0.42, 0.05], 0, 0]],
+            "inverse_mapping": "offer ring = pending suggestions awaiting a citizen; an unlit ring means no suggestion is pending, never that none was ever made"
+          }
+        ],
+        "state_sockets": [
+          { "socket": "membrane.emissive", "channel": "activation", "driven_by": "measured crossings (EffectReceipts returned)", "honesty": "unmeasured -> dark membrane (Fog); a dark membrane never means the ground is empty" },
+          { "socket": "arrivals.particle_count", "channel": "activation", "driven_by": "count of imported artifacts committed by this portal", "honesty": "unmeasured -> zero motes; zero motes is 'no measured crossing', not 'nothing there'" },
+          { "socket": "offer_ring.emissive", "channel": "activation", "driven_by": "count of construct_suggestions with accepted = null", "honesty": "unmeasured -> unlit ring; an accepted suggestion leaves the ring, it does not brighten it" },
+          { "socket": "jamb_left.emissive + jamb_right.emissive", "channel": "activation", "driven_by": "measured supply at each source module", "honesty": "one jamb lit = starved AND gate, rendered as visibly incomplete rather than as a ready portal" },
+          { "socket": "whole.scale", "channel": "poids", "driven_by": "incoming degree / usage", "honesty": "absent -> neutral scale 1" }
+        ],
+        "fallback": "any affordance not materialized here falls to default_materializations[kernel_kind] of the Appearance toolkit; no affordance -> grey presence point",
+        "lod_states": {
+          "hot": "jambs + keystone + arch + membrane + motes + offer ring",
+          "sleeping": "jambs + keystone + arch (dark membrane)",
+          "aggregated": "arch only",
+          "dormant": "grey presence point"
+        },
+        "honesty": "This binding is AUTHORED form. It is not proof that any renderer drew it: until a run measures a materialization pass against the closed palette, its render state is not_measured."
+      }
+    },
+    {
+      "id": "port:l2:mind-universe:import-portal:crossing-v0",
+      "node_type": "thing",
+      "subtype": "capability_port",
+      "content": {
+        "name": "Ground crossing port (read-only filesystem import)",
+        "state": "declared_transport_only",
+        "capability": "fs.import",
+        "mode": "read_only",
+        "observe_capabilities": ["observe", "read_machine", "trace_pipeline", "inspect_ports", "inspect_manifest"],
+        "required_mutate_capability": "authority:effect-transport",
+        "shape_contract": "authored_request_transported_verbatim_read_only",
+        "effect_when_unauthorized": "fail_closed_and_emit_rejection_receipt",
+        "note": "Inspecting the machine (modules, couplings, request, manifest, receipts) is a separate observe-only surface. This port is the ONLY surface through which the portal reaches out to the ground, and it carries no authoring power: it reads the authored path under the authored bounds and returns the measured manifest. It grants no write of any kind on the filesystem."
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "space:l2:mind-universe:filesystem-import-portal-v0",
+      "predicate": "IMPLEMENTED_IN",
+      "target": "implementation:l2:mind-universe:filesystem-import-portal-v0"
+    },
+    {
+      "source": "space:l2:mind-universe:filesystem-import-portal-v0",
+      "predicate": "DEFINED_BY_CODE",
+      "target": "code:l2:mind-universe:filesystem-import-portal-v0"
+    },
+    {
+      "source": "code:l2:mind-universe:filesystem-import-portal-v0",
+      "predicate": "IMPLEMENTED_BY",
+      "target": "implementation:l2:mind-universe:filesystem-import-portal-v0"
+    },
+    {
+      "source": "pattern:l2:mind-universe:filesystem-import-portal-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l2:mind-universe:filesystem-import-portal-v0"
+    },
+    {
+      "source": "behavior:l2:mind-universe:filesystem-import-portal-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:mind-universe:filesystem-import-portal-v0"
+    },
+    {
+      "source": "implementation:l2:mind-universe:filesystem-import-portal-v0",
+      "predicate": "OBSERVED_BY",
+      "target": "observability_algorithm:l2:mind-universe:filesystem-import-portal-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:mind-universe:filesystem-import-portal-v0",
+      "predicate": "PRODUCES",
+      "target": "metric:l2:mind-universe:filesystem-import-portal-v0"
+    },
+    {
+      "source": "metric:l2:mind-universe:filesystem-import-portal-v0",
+      "predicate": "FEEDS",
+      "target": "health:l2:mind-universe:filesystem-import-portal-v0"
+    },
+    {
+      "source": "objective:l2:mind-universe:filesystem-import-portal-v0",
+      "predicate": "SUPPORTS",
+      "target": "space:l2:mind-universe:filesystem-import-portal-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:mind-universe:filesystem-import-portal-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:mind-universe:filesystem-import-portal-observer-v0"
+    },
+    {
+      "source": "visual_binding:l2:mind-universe:filesystem-import-portal-v0",
+      "predicate": "PART_OF",
+      "target": "space:l2:mind-universe:filesystem-import-portal-v0"
+    },
+    {
+      "source": "port:l2:mind-universe:import-portal:crossing-v0",
+      "predicate": "PART_OF",
+      "target": "space:l2:mind-universe:filesystem-import-portal-v0"
+    }
+  ]
+}
