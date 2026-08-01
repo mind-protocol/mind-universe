@@ -209,7 +209,6 @@ pub fn create_behavior_bond_authority_store(
         UniverseWriteSet {
             base_revision: snapshot.revision,
             idempotency_key: "fixture:behavior-bond-authority:v1".into(),
-            causal_ancestry: vec!["changeset:behavior-bond-authority-v1".into()],
             commands,
         },
     )?;
@@ -449,7 +448,6 @@ pub fn install_authority_fixture(
         UniverseWriteSet {
             base_revision: snapshot.revision,
             idempotency_key: format!("fixture:authority:{stem}:v1"),
-            causal_ancestry: vec![format!("changeset:{stem}")],
             commands,
         },
     )?;
@@ -904,7 +902,6 @@ mod tests {
             UniverseWriteSet {
                 base_revision: snapshot.revision,
                 idempotency_key: "fixture:invalid-prefix".into(),
-                causal_ancestry: vec![],
                 commands: vec![
                     UniverseCommand::PutEntity {
                         entity: EntityRecord {

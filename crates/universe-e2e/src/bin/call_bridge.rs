@@ -119,6 +119,10 @@ struct CallDriver {
     code: CodeDefinition,
     code_key: EntityKey,
     moment_base: u128,
+    /// The causal tokens composed for the translated Moment -- the caller's hop
+    /// followed by B's own execution hop. Surfaced from the driver that builds
+    /// them; never read back out of a receipt.
+    translated_ancestry: Vec<String>,
 }
 
 impl TriggerTickDriver for CallDriver {
@@ -179,10 +183,10 @@ impl TriggerTickDriver for CallDriver {
         // ancestry threads the FULL hop chain the pinned request carries: the
         // caller's hop (from the Invocation event) followed by B's own execution
         // hop — so the Moment is provably a consequence of the call.
+        self.translated_ancestry = request.descendant_causal_tokens();
         Ok(Some(UniverseWriteSet {
             base_revision: snapshot.revision,
             idempotency_key: format!("call-moment:{}", request.request_id),
-            causal_ancestry: request.descendant_causal_tokens(),
             commands: vec![UniverseCommand::PutEntity {
                 entity: EntityRecord {
                     key: EntityKey(self.moment_base + consumed as u128),
@@ -361,6 +365,7 @@ fn drive(store_dir: &Path, genesis: &Path) -> Result<ProofOutput, Box<dyn Error>
         code: code.clone(),
         code_key,
         moment_base,
+        translated_ancestry: Vec::new(),
     };
     let resolved = driver.resolve_code(&request)?;
     let inputs = match &request.trigger.evidence {
@@ -381,7 +386,6 @@ fn drive(store_dir: &Path, genesis: &Path) -> Result<ProofOutput, Box<dyn Error>
         UniverseCommand::PutEntity { entity } => entity.key,
         other => return Err(format!("unexpected command: {other:?}").into()),
     };
-    let commit_ancestry_expected = write_set.causal_ancestry.clone();
 
     // --- Commit B's result Moment at the tick boundary.
     let transaction = UniverseTransaction::prepare(supervisor.snapshot(), write_set)?;
@@ -392,16 +396,13 @@ fn drive(store_dir: &Path, genesis: &Path) -> Result<ProofOutput, Box<dyn Error>
         .into_iter()
         .next()
         .ok_or("the drained call committed no Moment")?;
-    let (commit_tick, commit_revision, commit_ancestry) = match &commit {
+    let (commit_tick, commit_revision) = match &commit {
         CommitReceipt::Committed {
-            tick,
-            revision,
-            causal_ancestry,
-            ..
-        } => (*tick, *revision, causal_ancestry.clone()),
+            tick, revision, ..
+        } => (*tick, *revision),
         other => return Err(format!("expected a committed Moment, got {other:?}").into()),
     };
-    debug_assert_eq!(commit_ancestry, commit_ancestry_expected);
+    let commit_ancestry = driver.translated_ancestry.clone();
 
     // --- Independent readback: the Moment is durably present and reflects N.
     let readback = supervisor.independent_readback()?;

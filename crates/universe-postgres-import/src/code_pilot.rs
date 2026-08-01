@@ -485,7 +485,6 @@ pub fn run_code_pilot(
             UniverseWriteSet {
                 base_revision: independent.revision,
                 idempotency_key: import_key,
-                causal_ancestry: vec![manifest.changeset.change_id.clone()],
                 commands,
             },
         )?;

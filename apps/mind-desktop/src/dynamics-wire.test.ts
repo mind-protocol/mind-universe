@@ -8,6 +8,7 @@ import worldFrames from "../../../fixtures/desktop-world-snapshot/dynamics/world
 import { universeEventFromServerFrame } from "./protocol-adapter";
 import { renderSceneSvg } from "./scene-svg";
 import { applyUniverseEvent, emptyUniverseView } from "./universe-state";
+import { citizenEnergyMapping } from "./embodiment";
 
 const EMISSIVE = "#1b9fff"; // palette.emissive — only a glowing node paints it.
 
@@ -31,7 +32,7 @@ describe("per-node dynamics survive the wire (bin → adapter → renderer)", ()
       expect(typeof entity.dynamics!.weight).toBe("number");
       expect(Array.isArray(entity.dynamics!.embedding)).toBe(true);
       // The mapping carries the modulation envelope the renderer derives within.
-      expect(entity.embodiment!.mapping.dynamics).toBeDefined();
+      expect(citizenEnergyMapping(entity.embodiment!).dynamics).toBeDefined();
     }
   });
 

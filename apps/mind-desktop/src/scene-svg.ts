@@ -12,6 +12,7 @@ import type { EmbodimentDynamics } from "./contracts";
 import { deriveEntityDynamics, primitiveJitter } from "./entity-dynamics";
 import type { UniverseView } from "./universe-state";
 import resolutionPolicy from "../../../fixtures/assets/visual-resolution-policy-v1.json";
+import { embodimentDynamicsEnvelope } from "./embodiment";
 
 export interface SceneOptions {
   readonly width?: number;
@@ -374,7 +375,9 @@ export function renderSceneSvg(view: UniverseView, options: SceneOptions = {}): 
     // the node's live signals. A node whose confidence is 0 (base glow 0) cannot
     // be brightened by energy — the ALIGN §3 honesty gate, enforced here.
     const dyn = deriveEntityDynamics(
-      entity.embodiment?.mapping.dynamics as EmbodimentDynamics | undefined,
+      embodimentDynamicsEnvelope(entity.embodiment) as
+        | EmbodimentDynamics
+        | undefined,
       {
         energy: entity.dynamics?.energy,
         weight: entity.dynamics?.weight,

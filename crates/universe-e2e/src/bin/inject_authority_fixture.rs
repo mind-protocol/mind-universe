@@ -229,7 +229,6 @@ fn run() -> Result<(), Box<dyn Error>> {
     let write_set = UniverseWriteSet {
         base_revision,
         idempotency_key: format!("mutation:inject-authority-fixture:{stem}"),
-        causal_ancestry: vec![format!("changeset:{stem}")],
         commands,
     };
     let boundary_tick = Tick(snapshot.tick.0 + 1);

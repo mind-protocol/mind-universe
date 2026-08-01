@@ -56,6 +56,13 @@ fn canonical_predicate(authored: &str) -> Option<(&'static str, bool)> {
         // direction garde-fou -> élément protégé) with the direction SWAPPED, so
         // the stored edge reads hatch SAFEGUARDS mechanism. Interns 0 new symbols.
         "GUARDED_BY" => ("SAFEGUARDS", true),
+        // Appearance edge: a construct points at the physicalization_binding that
+        // carries its form (the sky / appearance / district fixtures all author it
+        // as PROJECTS_AS). PROJECTS_AS has no canonical symbol; the binding IS the
+        // construct's compiled projection, so it remaps to COMPILES_TO in the same
+        // direction (construct -> binding), exactly as code -> implementation.
+        // Interns 0 new symbols.
+        "PROJECTS_AS" => ("COMPILES_TO", false),
         _ => return None,
     })
 }
@@ -292,7 +299,6 @@ fn run() -> Result<(), Box<dyn Error>> {
     let write_set = UniverseWriteSet {
         base_revision,
         idempotency_key: format!("mutation:inject-construct:{root_id}"),
-        causal_ancestry: vec![format!("changeset:{root_id}")],
         commands,
     };
 

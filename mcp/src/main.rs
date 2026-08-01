@@ -3,17 +3,15 @@
 //! Transport: JSON-RPC 2.0 over stdio, one message per line (the MCP stdio
 //! convention). The adapter boots a real [`World`] from the environment and
 //! answers `initialize`, `tools/list`, and `tools/call` for the two verbs
-//! `sense` (perceive) and `act` (transform).
+//! `arrive` (announce yourself) and `sense` (perceive). There is no transform
+//! verb: the adapter is a pipe, not a host.
 //!
 //! It is a HEADLESS adapter: it reaches the kernel through the same Supervisor
 //! the 3D world uses and never maintains a second ontology (CLAUDE.md,
 //! "Headless adapters").
 
-mod act;
-mod frame;
 mod jsonrpc;
 mod mcp;
-mod raster;
 mod session;
 mod world;
 
@@ -40,7 +38,7 @@ fn main() {
         // Diagnostics go to stderr so they never corrupt the stdout wire.
         eprintln!("mind-mcp: {reason}");
     } else {
-        eprintln!("mind-mcp: Universe mounted; serving `sense` and `act` over stdio");
+        eprintln!("mind-mcp: Universe mounted; serving `arrive` and `sense` over stdio");
     }
 
     let stdin = io::stdin();

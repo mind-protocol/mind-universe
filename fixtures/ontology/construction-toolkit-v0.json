@@ -23,7 +23,7 @@
     },
     "modularity": {
       "parameter": "structure_kind",
-      "kinds": ["room", "route", "parcel"],
+      "kinds": ["room", "route", "parcel", "city", "district", "place"],
       "rule": "structure_kind selects the target scale, the geometry field-schema and the region kind. It is GRAPH DATA read from the ConstructionBond, never a term in native dispatch. The same generic mechanism is total over every declared kind; adding a kind is authoring data, not changing code.",
       "placement_model": "Placement is RELATIONAL, never a coordinate. Every structure is bound PART_OF its region (that containment IS where it is). A route additionally CONNECTS (canonical COMMUNICATES) its from-anchor and to-anchor — two OTHER NODES referenced by relation, so a route's whole place is its district plus its two endpoints. No structure carries a built_position field, an x/y/z, a path polyline or a boundary polygon; nothing stores a coordinate. The coordinate a renderer needs is a live projection the single layout authority derives from these relations, read the same way by every observer, and it may drift — the meaning is the stable authored topology, not any position value.",
       "geometry_model": "A structure's SIZE is a scalar property (a dimension, not a position): a room carries width/height/depth. Its PLACE is never a size and never a coordinate — it is the relations above. An unmeasured extent stays Fog (absent), never a zero-size default.",
@@ -48,6 +48,31 @@
           "region_kind": "territory",
           "region_predicate": "PART_OF",
           "connection_predicate": "COMMUNICATES"
+        },
+        "city": {
+          "scale": "civic",
+          "geometry": "no extent of any kind; a city is the ROOT region and its size is whatever is built inside it. Nothing is authored about how big it is.",
+          "region_kind": null,
+          "region_predicate": null,
+          "connection_predicate": null,
+          "root_region": true,
+          "note": "The ONLY kind with a null region_predicate: a city is PART_OF nothing because nothing above it is built. This is the honest counterpart of the severed registry root — a root structure is not a structure with a missing parent, it is a structure whose region_kind is known_absent. A kind whose region_predicate is null furnishes NO PART_OF step; it does not default to a dangling one."
+        },
+        "district": {
+          "scale": "civic",
+          "geometry": "no boundary; a district's extent is what is PART_OF it. Its only scalar property is a portfolio_priority rank (a rank is a property, not a position).",
+          "region_kind": "city",
+          "region_predicate": "PART_OF",
+          "connection_predicate": null,
+          "note": "A district is WHERE a body of work lives. Its place among the other districts is carried entirely by the routes that reach it and by what is PART_OF it — a district with no route to any other district is at the edge, and that is a readable fact about the work, not a layout accident."
+        },
+        "place": {
+          "scale": "civic",
+          "geometry": "no extent; a public place is a convergence point, sized by the routes that meet there",
+          "region_kind": "city",
+          "region_predicate": "PART_OF",
+          "connection_predicate": null,
+          "note": "A place (forum, square) is a civic anchor a route can COMMUNICATE with. It holds no work of its own; it is what the districts are reachable from."
         }
       }
     },

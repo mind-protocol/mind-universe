@@ -304,7 +304,6 @@ fn main() -> Result<(), Err> {
                 UniverseWriteSet {
                     base_revision: snapshot.revision,
                     idempotency_key,
-                    causal_ancestry: vec![format!("live-import:{graph_id}")],
                     commands,
                 },
             )?;

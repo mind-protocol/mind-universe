@@ -11,7 +11,8 @@ use std::{
     path::{Path, PathBuf},
 };
 use universe_core::{
-    ContentPtr, EntityKey, RelationKey, Revision, Tick, UniverseError, UniverseId, VersionEnvelope,
+    ContentPtr, Epistemic, EntityKey, RelationKey, Revision, Tick, UniverseError, UniverseId,
+    VersionEnvelope,
 };
 
 pub const SNAPSHOT_FORMAT_VERSION: u16 = 0;
@@ -20,6 +21,9 @@ pub const MAX_EVENT_MUTATIONS: usize = 4_096;
 const VERSIONED_CHECKPOINT_PREFIX: &str = "checkpoint-r";
 const VERSIONED_CHECKPOINT_SUFFIX: &str = ".json";
 const ACTIVE_EVENT_LOG: &str = "events.jsonl";
+/// Durable evidence of every same-parent divergence this store has settled.
+/// Written beside the log it settles; the log itself is never rewritten.
+const DIVERGENCE_RESOLUTION_LOG: &str = "divergence-resolutions.jsonl";
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct ContentRef {
@@ -549,12 +553,6 @@ impl MutableAdjacencyOverlay {
             UniverseMutation::PutEntity { entity } => {
                 self.added_entities.insert(entity.key);
             }
-            UniverseMutation::SupersedeEntity { .. } => {
-                // The entity already exists in the base snapshot; superseding
-                // revises its content only. The overlay tracks entity existence
-                // and relation incidence, not entity content, so a supersede
-                // leaves the adjacency overlay unchanged.
-            }
             UniverseMutation::PutRelation { relation } => {
                 self.remove_added_relation(relation.key);
                 self.tombstones.remove(&relation.key);
@@ -744,12 +742,9 @@ pub enum UniverseMutation {
     InternSymbols {
         symbols: Vec<String>,
     },
+    /// Write an entity. Upsert: a key that already exists is replaced in place,
+    /// so this is also how an entity's content is revised.
     PutEntity {
-        entity: EntityRecord,
-    },
-    /// Revise the content of an existing entity in place. Preserves the key,
-    /// requires a strictly greater generation than the current record.
-    SupersedeEntity {
         entity: EntityRecord,
     },
     PutRelation {
@@ -831,6 +826,367 @@ impl EventRecord {
     }
 }
 
+/// Criterion used to settle two writes that claim the same parent revision.
+///
+/// PROVISIONAL, chosen 2026-08-01. A world with many simultaneous writers
+/// diverges by design, so a boot that refuses on divergence is the bug; this is
+/// the first criterion that lets a divergent log boot at all. It is a
+/// placeholder, not an invariant: arrival order in one holder's log carries no
+/// meaning beyond "this byte landed after that one" — not attribution, not
+/// causal reach, not authority. Replace it with a considered criterion when one
+/// exists. Every caller names [`ResolutionRule::PROVISIONAL`], so the
+/// replacement is a one-line change here.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ResolutionRule {
+    /// Of the events claiming the same parent revision, the one appearing later
+    /// in the log continues the chain. The earlier ones are superseded: not
+    /// applied, never removed from the log, always reported.
+    LastArrivedWins,
+}
+
+impl ResolutionRule {
+    /// The criterion in force while no considered one has been decided.
+    pub const PROVISIONAL: Self = Self::LastArrivedWins;
+
+    /// The reason retained with every resolution this rule settles. A
+    /// resolution that does not keep why it chose what it chose is an erasure.
+    pub fn reason(self) -> &'static str {
+        match self {
+            Self::LastArrivedWins => {
+                "provisional criterion (2026-08-01): among the events claiming this parent \
+                 revision, the one appearing later in the active log continues the chain; the \
+                 earlier ones are superseded and retained in the log"
+            }
+        }
+    }
+}
+
+/// One event named exactly enough to be found again in the log it came from.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct DivergentEvent {
+    /// 0-based position among the complete records of the active event log.
+    pub log_position: u64,
+    pub idempotency_key: String,
+    /// The revision this event claims to produce. Both sides of a divergence
+    /// claim the same one; that is what makes it a divergence.
+    pub claimed_revision: Revision,
+    pub checksum: String,
+}
+
+/// One settled disagreement: who continued the chain, who did not, under which
+/// rule, and why.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct DivergenceResolution {
+    pub universe: UniverseId,
+    pub previous_revision: Revision,
+    pub rule: ResolutionRule,
+    pub reason: String,
+    pub winner: DivergentEvent,
+    /// Superseded, not erased. These records stay in the log byte-for-byte;
+    /// they are simply not applied to this holder's state.
+    pub superseded: Vec<DivergentEvent>,
+}
+
+/// A durably recorded resolution. `resolution_id` is the canonical hash of
+/// `resolution` and is the record's identity, which makes re-recording the same
+/// resolution on a later boot a no-op.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct DivergenceResolutionRecord {
+    pub resolution_id: String,
+    pub resolution: DivergenceResolution,
+}
+
+/// An event log read with same-parent divergence already settled.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ResolvedEventLog {
+    rule: ResolutionRule,
+    resolutions: Vec<DivergenceResolution>,
+    superseded_positions: BTreeSet<u64>,
+}
+
+impl ResolvedEventLog {
+    pub fn rule(&self) -> ResolutionRule {
+        self.rule
+    }
+
+    pub fn resolutions(&self) -> &[DivergenceResolution] {
+        &self.resolutions
+    }
+
+    pub fn has_divergence(&self) -> bool {
+        !self.resolutions.is_empty()
+    }
+
+    /// True when the record at this log position lost a divergence and must not
+    /// be applied. False for every position of a log without divergence, which
+    /// is why such a log replays exactly as it did before.
+    pub fn is_superseded(&self, log_position: usize) -> bool {
+        u64::try_from(log_position)
+            .map(|position| self.superseded_positions.contains(&position))
+            .unwrap_or(false)
+    }
+
+    /// Turns a revision conflict that survived resolution into an honest
+    /// report. It means the log's order cannot be settled by the rule (for
+    /// example an event whose parent the selected winners never reach); no
+    /// ordering is invented to paper over it.
+    fn explain(
+        &self,
+        log_position: usize,
+        event: &EventRecord,
+        error: UniverseError,
+    ) -> UniverseError {
+        match error {
+            UniverseError::RevisionConflict { expected, actual } if self.has_divergence() => {
+                UniverseError::CorruptLog(format!(
+                    "log position {log_position} (idempotency key {key}) claims parent {expected:?} \
+                     but this holder is at {actual:?} after applying the events {rule:?} selected: \
+                     the ordering of this log cannot be settled by that rule and no ordering was \
+                     invented. Resolve it explicitly.",
+                    key = event.idempotency_key,
+                    rule = self.rule,
+                ))
+            }
+            other => other,
+        }
+    }
+}
+
+/// Settles same-parent divergence in one already-read log, without I/O.
+///
+/// Divergence is the normal condition of a world with many simultaneous
+/// writers, so this reports rather than refuses. A log whose events all claim
+/// distinct parents produces no resolutions and no superseded positions.
+pub fn resolve_event_log(
+    events: &[EventRecord],
+    rule: ResolutionRule,
+) -> Result<ResolvedEventLog, UniverseError> {
+    let mut by_parent: BTreeMap<(UniverseId, Revision), Vec<usize>> = BTreeMap::new();
+    for (position, event) in events.iter().enumerate() {
+        by_parent
+            .entry((event.envelope.universe, event.previous_revision))
+            .or_default()
+            .push(position);
+    }
+
+    let mut resolutions = Vec::new();
+    let mut superseded_positions = BTreeSet::new();
+    for ((universe, previous_revision), positions) in by_parent {
+        // One writer that wrote the same event twice is not two writers. A
+        // repeated idempotency key is a duplicate, which replay already
+        // deduplicates; only distinct keys claiming the same parent disagree.
+        let distinct_keys: BTreeSet<&str> = positions
+            .iter()
+            .map(|position| events[*position].idempotency_key.as_str())
+            .collect();
+        if distinct_keys.len() < 2 {
+            continue;
+        }
+        let winner_position = match rule {
+            // Arrival order inside this holder's log. It is total and already
+            // recorded, so the choice is read off the log, never invented.
+            ResolutionRule::LastArrivedWins => {
+                *positions.last().expect("a parent group is never empty")
+            }
+        };
+        let winner_key = events[winner_position].idempotency_key.as_str();
+        let superseded = positions
+            .iter()
+            .filter(|position| events[**position].idempotency_key != winner_key)
+            .map(|position| divergent_event(*position, &events[*position]))
+            .collect::<Result<Vec<_>, _>>()?;
+        superseded_positions.extend(superseded.iter().map(|event| event.log_position));
+        resolutions.push(DivergenceResolution {
+            universe,
+            previous_revision,
+            rule,
+            reason: rule.reason().to_owned(),
+            winner: divergent_event(winner_position, &events[winner_position])?,
+            superseded,
+        });
+    }
+    Ok(ResolvedEventLog {
+        rule,
+        resolutions,
+        superseded_positions,
+    })
+}
+
+fn divergent_event(
+    log_position: usize,
+    event: &EventRecord,
+) -> Result<DivergentEvent, UniverseError> {
+    Ok(DivergentEvent {
+        log_position: u64::try_from(log_position)
+            .map_err(|_| UniverseError::BudgetExhausted("event log position exceeds u64".into()))?,
+        idempotency_key: event.idempotency_key.clone(),
+        claimed_revision: event.envelope.revision,
+        checksum: event.checksum.clone(),
+    })
+}
+
+/// A replay result together with the disagreements it had to settle to reach
+/// it. `resolutions` is empty for a log without divergence.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ReplayOutcome {
+    pub snapshot: UniverseSnapshot,
+    pub resolutions: Vec<DivergenceResolution>,
+}
+
+// ---------------------------------------------------------------------------
+// Held state: reading the durable projection as what it holds, not as a journal
+// to be re-run.
+//
+// `replay` below folds the whole active log into the checkpoint on every read.
+// That makes the log the authority: it must be a complete unbroken chain from
+// the base, and one record that does not fit takes the whole read down. Under
+// "No authoritative state" the log is not the authority — it is a crash log,
+// and its job is to survive a crash, not to rebuild the world.
+//
+// `UniverseStore::load_held` is the read path that follows from that. It reads
+// the durable projection and then salvages ONLY the tail the projection does
+// not already hold. When the projection is current it applies nothing, and the
+// log could be deleted without changing what is read. What cannot be salvaged
+// is reported with its reason; the caller decides what that is worth.
+//
+// It decides nothing else. It does not choose whether losing an unlandable
+// record is acceptable, it does not rewrite or truncate the log, and it does
+// not settle divergence by a criterion of its own — it reuses the store's one
+// PROVISIONAL rule so that no two read paths here disagree about what is held.
+// ---------------------------------------------------------------------------
+
+/// Which durable file the held state was read from.
+///
+/// Not cosmetic: [`UniverseStore::load_snapshot`] prefers a versioned
+/// checkpoint over `snapshot.json` whenever one exists, while
+/// [`UniverseStore::checkpoint`] only ever writes `snapshot.json`. On a store
+/// that has ever rolled over, a plain checkpoint is therefore written to a file
+/// no reader will look at. A holder that believes it is persisting needs to be
+/// able to see that, so it is reported rather than left implicit.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "source", rename_all = "snake_case")]
+pub enum ProjectionSource {
+    /// `snapshot.json`, the file [`UniverseStore::checkpoint`] writes.
+    Snapshot,
+    /// An immutable `checkpoint-r<revision>-<hash>.json`.
+    VersionedCheckpoint {
+        revision: Revision,
+        /// The revision of the `snapshot.json` this checkpoint is being read
+        /// INSTEAD OF. `KnownAbsent` when no such file exists, which is the
+        /// only case in which a plain checkpoint write would have been read
+        /// back. Anything else means plain checkpoint writes are invisible
+        /// here.
+        shadowed_snapshot: Epistemic<Revision>,
+    },
+}
+
+/// Why one log record did not end up in the held state.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "outcome", rename_all = "snake_case")]
+pub enum NotRecovered {
+    /// It lost a same-parent divergence under the store's provisional rule.
+    /// Superseded, not erased: still in the log, still reported here.
+    Superseded {
+        rule: ResolutionRule,
+        winner_idempotency_key: String,
+    },
+    /// It could not be landed on what this holder currently holds — most often
+    /// a record whose claimed parent revision this holder never reaches. The
+    /// exact store error is carried verbatim; nothing is inferred from it.
+    Unlandable { reason: String },
+}
+
+/// One log record named exactly enough to be found again, plus why it is not in
+/// the held state.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct UnrecoveredRecord {
+    /// 0-based position among the complete records of the active log.
+    pub log_position: u64,
+    pub idempotency_key: String,
+    pub claimed_revision: Revision,
+    pub outcome: NotRecovered,
+}
+
+/// What one [`UniverseStore::load_held`] actually had to do to the log.
+///
+/// Every field is a count of something that happened. None of them is a health
+/// score, and none of them is a claim that the held state is correct — only
+/// that this is what was read and this is what it cost.
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct CrashRecovery {
+    pub projection: ProjectionSource,
+    /// Complete records found in the active log.
+    pub log_records: u64,
+    /// Records the projection already held, identified by idempotency key.
+    /// These were not applied and would not have changed anything.
+    pub already_held: u64,
+    /// Records the projection did NOT hold and which were landed on it — the
+    /// writes that a crash would otherwise have lost. Zero means the log was
+    /// not needed to produce the held state.
+    pub recovered: u64,
+    /// Records that are in the log and not in the held state, each with its
+    /// reason. Reported, never silently dropped, never used to fail the read.
+    pub not_recovered: Vec<UnrecoveredRecord>,
+    /// Same-parent divergences settled to get here, with the rule and the
+    /// reason. Empty for a log without divergence.
+    pub resolutions: Vec<DivergenceResolution>,
+}
+
+impl CrashRecovery {
+    /// True when the held state could not have been produced from the durable
+    /// projection alone. False means the projection was current: the log was
+    /// read and verified, but nothing in it was needed.
+    pub fn needed_the_log(&self) -> bool {
+        self.recovered > 0
+    }
+
+    /// True when every record in the log is accounted for in the held state.
+    /// False does NOT mean the world is broken — it means writes exist in the
+    /// log that this holder does not hold, and someone has to decide about
+    /// them.
+    pub fn fully_landed(&self) -> bool {
+        self.not_recovered.is_empty()
+    }
+}
+
+/// What this holder currently holds, and the honest account of how it was read.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct HeldWorld {
+    snapshot: UniverseSnapshot,
+    recovery: CrashRecovery,
+}
+
+impl HeldWorld {
+    pub fn snapshot(&self) -> &UniverseSnapshot {
+        &self.snapshot
+    }
+
+    pub fn recovery(&self) -> &CrashRecovery {
+        &self.recovery
+    }
+
+    /// Takes the held state, dropping the account of how it was read. Callers
+    /// that discard the recovery report are discarding the only record of what
+    /// the log still carries and this holder does not.
+    pub fn into_snapshot(self) -> UniverseSnapshot {
+        self.snapshot
+    }
+}
+
+/// The resolution, if any, that superseded the record at this log position.
+fn superseding_resolution(
+    resolutions: &[DivergenceResolution],
+    log_position: u64,
+) -> Option<&DivergenceResolution> {
+    resolutions.iter().find(|resolution| {
+        resolution
+            .superseded
+            .iter()
+            .any(|event| event.log_position == log_position)
+    })
+}
+
 pub fn apply_event(
     snapshot: &mut UniverseSnapshot,
     event: &EventRecord,
@@ -904,37 +1260,20 @@ fn apply_mutation(
                     "entity references an unknown symbol".into(),
                 ));
             }
-            if snapshot
-                .entities
-                .iter()
-                .any(|existing| existing.key == entity.key)
-            {
-                return Err(UniverseError::Validation("duplicate entity key".into()));
-            }
-            snapshot.entities.push(entity.clone());
-            snapshot.entities.sort_by_key(|record| record.key);
-        }
-        UniverseMutation::SupersedeEntity { entity } => {
-            if entity.symbol as usize >= snapshot.symbols.len() {
-                return Err(UniverseError::Validation(
-                    "entity references an unknown symbol".into(),
-                ));
-            }
-            let index = snapshot
+            // Upsert. A key that already exists is REPLACED in place. Entity
+            // matter is not append-only: writing the same key again is a write,
+            // not a violation. The key never moves, so ordering and every
+            // referencing relation hold.
+            if let Some(index) = snapshot
                 .entities
                 .iter()
                 .position(|existing| existing.key == entity.key)
-                .ok_or_else(|| {
-                    UniverseError::Validation("entity supersede target is absent".into())
-                })?;
-            if entity.generation <= snapshot.entities[index].generation {
-                return Err(UniverseError::Validation(
-                    "entity supersede generation must be strictly greater than the current record"
-                        .into(),
-                ));
+            {
+                snapshot.entities[index] = entity.clone();
+            } else {
+                snapshot.entities.push(entity.clone());
+                snapshot.entities.sort_by_key(|record| record.key);
             }
-            // Key is unchanged, so ordering and every referencing relation hold.
-            snapshot.entities[index] = entity.clone();
         }
         UniverseMutation::PutRelation { relation } => {
             if relation.predicate as usize >= snapshot.symbols.len() {
@@ -1041,12 +1380,21 @@ impl UniverseStore {
     }
 
     pub fn load_snapshot(&self) -> Result<UniverseSnapshot, UniverseError> {
+        Ok(self.load_projection()?.0)
+    }
+
+    /// [`Self::load_snapshot`], also reporting which durable file was read.
+    ///
+    /// Byte-for-byte the same read and the same checks; the source is only
+    /// carried out so [`Self::load_held`] can report a projection that is being
+    /// written to one file and read from another.
+    fn load_projection(&self) -> Result<(UniverseSnapshot, ProjectionSource), UniverseError> {
         let Some((path, expected_revision, expected_hash)) = self.latest_versioned_checkpoint()?
         else {
             let bytes = fs::read(self.root.join("snapshot.json")).map_err(io_error)?;
             let snapshot: UniverseSnapshot = serde_json::from_slice(&bytes).map_err(json_error)?;
             snapshot.validate()?;
-            return Ok(snapshot);
+            return Ok((snapshot, ProjectionSource::Snapshot));
         };
         let bytes = fs::read(path).map_err(io_error)?;
         let snapshot: UniverseSnapshot = serde_json::from_slice(&bytes).map_err(json_error)?;
@@ -1063,7 +1411,33 @@ impl UniverseStore {
                 "checkpoint filename hash differs from snapshot hash".into(),
             ));
         }
-        Ok(snapshot)
+        let source = ProjectionSource::VersionedCheckpoint {
+            revision: snapshot.revision,
+            shadowed_snapshot: self.shadowed_snapshot_revision(),
+        };
+        Ok((snapshot, source))
+    }
+
+    /// The revision of a `snapshot.json` that exists but is NOT being read
+    /// because a versioned checkpoint takes precedence.
+    ///
+    /// Only consulted when a versioned checkpoint was selected, so a store that
+    /// has never rolled over pays nothing for it. A file that exists but cannot
+    /// be parsed is `MeasurementFailed` — it is emphatically not "absent".
+    fn shadowed_snapshot_revision(&self) -> Epistemic<Revision> {
+        let path = self.root.join("snapshot.json");
+        if !path.exists() {
+            return Epistemic::KnownAbsent;
+        }
+        match fs::read(&path)
+            .map_err(|error| error.to_string())
+            .and_then(|bytes| {
+                serde_json::from_slice::<UniverseSnapshot>(&bytes)
+                    .map_err(|error| error.to_string())
+            }) {
+            Ok(snapshot) => Epistemic::Measured(snapshot.revision),
+            Err(reason) => Epistemic::MeasurementFailed { reason },
+        }
     }
 
     /// Folds a verified bounded overlay into a durable immutable checkpoint,
@@ -1097,12 +1471,20 @@ impl UniverseStore {
         let base_relations = base.relations.clone();
         let mut current = base;
         let mut overlay = MutableAdjacencyOverlay::new(&base_adjacency, budget);
-        for event in self.read_event_records()? {
+        let events = self.read_event_records()?;
+        let resolved = self.resolve_and_record(&events)?;
+        for (position, event) in events.iter().enumerate() {
+            // A superseded event stays in the log and is not applied here, so
+            // this view holds exactly what `replay` holds.
+            if resolved.is_superseded(position) {
+                continue;
+            }
             let already_applied = current.event_keys.contains(&event.idempotency_key);
             if !already_applied {
-                overlay.apply_event(&current, &event)?;
+                overlay.apply_event(&current, event)?;
             }
-            apply_event(&mut current, &event)?;
+            apply_event(&mut current, event)
+                .map_err(|error| resolved.explain(position, event, error))?;
         }
         if overlay.base_universe != current.universe {
             return Err(UniverseError::Validation(
@@ -1136,14 +1518,230 @@ impl UniverseStore {
     }
 
     /// Replays valid records and truncates only an incomplete final record.
-    pub fn replay(
+    ///
+    /// Same-parent divergence is settled by [`ResolutionRule::PROVISIONAL`]
+    /// rather than refused: two holders writing at once is normal, and a boot
+    /// that stops on it takes the world down. Every resolution is recorded
+    /// durably by [`Self::resolve_and_record`]; callers that want it in hand
+    /// use [`Self::replay_resolved`].
+    pub fn replay(&self, snapshot: UniverseSnapshot) -> Result<UniverseSnapshot, UniverseError> {
+        Ok(self.replay_resolved(snapshot)?.snapshot)
+    }
+
+    /// [`Self::replay`], returning the divergences that had to be settled to
+    /// reach the result. The list is empty for a log without divergence.
+    pub fn replay_resolved(
         &self,
         mut snapshot: UniverseSnapshot,
-    ) -> Result<UniverseSnapshot, UniverseError> {
-        for event in self.read_event_records()? {
-            apply_event(&mut snapshot, &event)?;
+    ) -> Result<ReplayOutcome, UniverseError> {
+        let events = self.read_event_records()?;
+        let resolved = self.resolve_and_record(&events)?;
+        for (position, event) in events.iter().enumerate() {
+            if resolved.is_superseded(position) {
+                continue;
+            }
+            apply_event(&mut snapshot, event)
+                .map_err(|error| resolved.explain(position, event, error))?;
         }
-        Ok(snapshot)
+        Ok(ReplayOutcome {
+            snapshot,
+            resolutions: resolved.resolutions,
+        })
+    }
+
+    /// Reads what this holder currently holds, without rebuilding it from the
+    /// log.
+    ///
+    /// GIVEN a store root
+    /// WHEN the held state is read
+    /// THEN the durable projection is the state, and the active log is used
+    ///   only to salvage records the projection does not already hold
+    /// AND a record that cannot be salvaged is reported in
+    ///   [`CrashRecovery::not_recovered`] instead of failing the read
+    /// AND the log is neither rewritten nor truncated by this call.
+    ///
+    /// The difference from [`Self::replay`] is not the arithmetic — on a store
+    /// whose projection is stale, both fold the same records in the same order
+    /// and reach the same state. The difference is what is authoritative. Under
+    /// replay the log is: it must chain unbroken from the base, and one record
+    /// that does not fit ends the read, which is the failure that has taken the
+    /// live world down. Here the projection is: when it is current,
+    /// [`CrashRecovery::recovered`] is 0 and the log could be deleted without
+    /// changing what is read. The log is doing its actual job, which is to
+    /// survive a crash.
+    ///
+    /// Same-parent divergence is settled by exactly the same
+    /// [`ResolutionRule::PROVISIONAL`] that [`Self::replay`] uses, and recorded
+    /// durably the same way, so the two paths never disagree about what this
+    /// holder holds.
+    ///
+    /// NOT DECIDED HERE, deliberately: whether a non-empty `not_recovered` is
+    /// acceptable. This call reports it and returns; refusing to serve a world
+    /// that is missing a write is a policy, and policy does not belong in the
+    /// trusted computing base. No caller in the workspace uses this yet — the
+    /// existing [`Self::replay`] semantics are untouched.
+    pub fn load_held(&self) -> Result<HeldWorld, UniverseError> {
+        let (mut snapshot, projection) = self.load_projection()?;
+        let events = self.read_event_records()?;
+        let resolved = self.resolve_and_record(&events)?;
+        let resolutions = resolved.resolutions().to_vec();
+        let mut recovery = CrashRecovery {
+            projection,
+            log_records: u64::try_from(events.len()).map_err(|_| {
+                UniverseError::BudgetExhausted("event log record count exceeds u64".into())
+            })?,
+            already_held: 0,
+            recovered: 0,
+            not_recovered: Vec::new(),
+            resolutions,
+        };
+
+        for (position, event) in events.iter().enumerate() {
+            let log_position = u64::try_from(position).map_err(|_| {
+                UniverseError::BudgetExhausted("event log position exceeds u64".into())
+            })?;
+
+            // Lost a divergence. It stays in the log and is reported with the
+            // rule and the winner, so the version that lost is retained rather
+            // than erased.
+            if resolved.is_superseded(position) {
+                let outcome = match superseding_resolution(&recovery.resolutions, log_position) {
+                    Some(resolution) => NotRecovered::Superseded {
+                        rule: resolution.rule,
+                        winner_idempotency_key: resolution.winner.idempotency_key.clone(),
+                    },
+                    // Structurally unreachable: a superseded position comes
+                    // from a resolution. Reported honestly rather than
+                    // asserted away, because inventing a winner here would be
+                    // inventing state.
+                    None => NotRecovered::Unlandable {
+                        reason: "superseded by a resolution this read could not name".into(),
+                    },
+                };
+                recovery.not_recovered.push(UnrecoveredRecord {
+                    log_position,
+                    idempotency_key: event.idempotency_key.clone(),
+                    claimed_revision: event.envelope.revision,
+                    outcome,
+                });
+                continue;
+            }
+
+            // Already in the projection. This is the whole point: on a current
+            // projection every record lands here and nothing is rebuilt.
+            if snapshot.event_keys.contains(&event.idempotency_key) {
+                recovery.already_held += 1;
+                continue;
+            }
+
+            // `apply_event` builds a candidate and only publishes it on
+            // success, so a failure below leaves `snapshot` exactly as it was.
+            match apply_event(&mut snapshot, event) {
+                Ok(true) => recovery.recovered += 1,
+                // Unreachable given the check above, counted rather than
+                // assumed impossible.
+                Ok(false) => recovery.already_held += 1,
+                Err(error) => recovery.not_recovered.push(UnrecoveredRecord {
+                    log_position,
+                    idempotency_key: event.idempotency_key.clone(),
+                    claimed_revision: event.envelope.revision,
+                    outcome: NotRecovered::Unlandable {
+                        reason: error.to_string(),
+                    },
+                }),
+            }
+        }
+
+        Ok(HeldWorld { snapshot, recovery })
+    }
+
+    /// Settles same-parent divergence in one already-read log and records every
+    /// resolution durably beside it.
+    ///
+    /// Reading writes here. That is deliberate and already precedented in this
+    /// file: [`Self::read_event_log`] truncates an incomplete final record
+    /// while reading. A resolution that only lived in a returned value would be
+    /// invisible to whoever later asks why this write and not that one is in
+    /// the world, and the load-bearing caller (supervisor boot, through
+    /// [`Self::replay`]) keeps no report. So the choice, its reason, and the
+    /// version that lost survive the boot that settled them. Appends are
+    /// idempotent (identity is the canonical hash of the resolution), and a log
+    /// without divergence writes nothing at all.
+    fn resolve_and_record(
+        &self,
+        events: &[EventRecord],
+    ) -> Result<ResolvedEventLog, UniverseError> {
+        let resolved = resolve_event_log(events, ResolutionRule::PROVISIONAL)?;
+        self.record_divergence_resolutions(&resolved.resolutions)?;
+        Ok(resolved)
+    }
+
+    fn record_divergence_resolutions(
+        &self,
+        resolutions: &[DivergenceResolution],
+    ) -> Result<(), UniverseError> {
+        if resolutions.is_empty() {
+            return Ok(());
+        }
+        let known: BTreeSet<String> = self
+            .read_divergence_resolutions()?
+            .into_iter()
+            .map(|record| record.resolution_id)
+            .collect();
+        let mut appended = Vec::new();
+        let mut seen = known;
+        for resolution in resolutions {
+            let resolution_id = canonical_hash(resolution)?;
+            if !seen.insert(resolution_id.clone()) {
+                continue;
+            }
+            let record = DivergenceResolutionRecord {
+                resolution_id,
+                resolution: resolution.clone(),
+            };
+            appended.extend_from_slice(&serde_json::to_vec(&record).map_err(json_error)?);
+            appended.push(b'\n');
+        }
+        if appended.is_empty() {
+            return Ok(());
+        }
+        let mut file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(self.root.join(DIVERGENCE_RESOLUTION_LOG))
+            .map_err(io_error)?;
+        file.write_all(&appended).map_err(io_error)?;
+        file.sync_data().map_err(io_error)
+    }
+
+    /// Every divergence this store has settled, oldest first. The observable
+    /// after-the-fact answer to "which write won, which lost, under what rule".
+    pub fn read_divergence_resolutions(
+        &self,
+    ) -> Result<Vec<DivergenceResolutionRecord>, UniverseError> {
+        let path = self.root.join(DIVERGENCE_RESOLUTION_LOG);
+        if !path.exists() {
+            return Ok(Vec::new());
+        }
+        let bytes = fs::read(&path).map_err(io_error)?;
+        // An incomplete trailing record is ignored, never parsed and never
+        // repaired: this file is evidence, so it is only ever appended to.
+        let complete_len = bytes
+            .iter()
+            .rposition(|byte| *byte == b'\n')
+            .map(|index| index + 1)
+            .unwrap_or(0);
+        bytes[..complete_len]
+            .split(|byte| *byte == b'\n')
+            .filter(|line| !line.is_empty())
+            .map(|line| {
+                serde_json::from_slice(line).map_err(|error| {
+                    UniverseError::CorruptLog(format!(
+                        "invalid divergence resolution record: {error}"
+                    ))
+                })
+            })
+            .collect()
     }
 
     fn read_event_records(&self) -> Result<Vec<EventRecord>, UniverseError> {
@@ -1213,10 +1811,20 @@ impl UniverseStore {
 
         let previous_checkpoint_hash = base.canonical_hash()?;
         let log = self.read_event_log()?;
+        // The independent replay must settle divergence the same way the view
+        // did, or the two would disagree and the rollover would refuse a view
+        // that is in fact current. The archived log still carries every
+        // superseded record.
+        let resolved = self.resolve_and_record(&log.events)?;
         let mut independently_replayed = base.clone();
         let mut applied_event_count = 0u64;
-        for event in &log.events {
-            if apply_event(&mut independently_replayed, event)? {
+        for (position, event) in log.events.iter().enumerate() {
+            if resolved.is_superseded(position) {
+                continue;
+            }
+            if apply_event(&mut independently_replayed, event)
+                .map_err(|error| resolved.explain(position, event, error))?
+            {
                 applied_event_count = applied_event_count.checked_add(1).ok_or_else(|| {
                     UniverseError::BudgetExhausted(
                         "checkpoint rollover event count overflow".into(),
@@ -1765,7 +2373,7 @@ mod tests {
     }
 
     #[test]
-    fn supersede_revises_entity_in_place_preserving_key_and_relations() {
+    fn put_entity_revises_in_place_preserving_key_and_relations() {
         let mut snapshot = UniverseSnapshot::empty(UniverseId(9));
         snapshot.symbols.push("thing".into());
         snapshot.symbols.push("construct".into());
@@ -1821,14 +2429,15 @@ mod tests {
         .unwrap();
         apply_event(&mut snapshot, &put_rel).unwrap();
 
-        // Supersede entity 1: bump generation, swap its symbol (stand-in for a
+        // Write entity 1 again: bump generation, swap its symbol (stand-in for a
         // content revision such as contractKind self_verifying_loop -> construct).
-        let supersede = EventRecord::new(
+        // Writing a key that exists is a write, not a violation.
+        let revise = EventRecord::new(
             snapshot.universe,
             snapshot.revision,
             Tick(4),
-            "supersede-a",
-            UniverseMutation::SupersedeEntity {
+            "revise-a",
+            UniverseMutation::PutEntity {
                 entity: EntityRecord {
                     key: EntityKey(1),
                     generation: 1,
@@ -1838,7 +2447,7 @@ mod tests {
             },
         )
         .unwrap();
-        apply_event(&mut snapshot, &supersede).unwrap();
+        apply_event(&mut snapshot, &revise).unwrap();
 
         let revised = snapshot
             .entities
@@ -1854,69 +2463,16 @@ mod tests {
         );
         assert!(
             snapshot.relations.iter().any(|r| r.key == RelationKey(10)),
-            "relation referencing the superseded entity survives"
+            "relation referencing the revised entity survives"
         );
     }
 
+    /// The kernel knows no `supersede_entity`: the tag is not a mutation, so a
+    /// record naming it is a corrupt log record, not a legacy one to honour.
     #[test]
-    fn supersede_absent_entity_is_rejected() {
-        let mut snapshot = UniverseSnapshot::empty(UniverseId(9));
-        snapshot.symbols.push("thing".into());
-        let event = EventRecord::new(
-            snapshot.universe,
-            snapshot.revision,
-            Tick(1),
-            "supersede-missing",
-            UniverseMutation::SupersedeEntity {
-                entity: EntityRecord {
-                    key: EntityKey(42),
-                    generation: 1,
-                    symbol: 0,
-                    content: None,
-                },
-            },
-        )
-        .unwrap();
-        assert!(apply_event(&mut snapshot, &event).is_err());
-    }
-
-    #[test]
-    fn supersede_requires_strictly_greater_generation() {
-        let mut snapshot = UniverseSnapshot::empty(UniverseId(9));
-        snapshot.symbols.push("thing".into());
-        let put = EventRecord::new(
-            snapshot.universe,
-            snapshot.revision,
-            Tick(1),
-            "put",
-            UniverseMutation::PutEntity {
-                entity: EntityRecord {
-                    key: EntityKey(1),
-                    generation: 0,
-                    symbol: 0,
-                    content: None,
-                },
-            },
-        )
-        .unwrap();
-        apply_event(&mut snapshot, &put).unwrap();
-        // Same generation (0) must be rejected.
-        let stale = EventRecord::new(
-            snapshot.universe,
-            snapshot.revision,
-            Tick(2),
-            "supersede-stale",
-            UniverseMutation::SupersedeEntity {
-                entity: EntityRecord {
-                    key: EntityKey(1),
-                    generation: 0,
-                    symbol: 0,
-                    content: None,
-                },
-            },
-        )
-        .unwrap();
-        assert!(apply_event(&mut snapshot, &stale).is_err());
+    fn supersede_entity_is_not_a_mutation() {
+        let line = br#"{"kind":"supersede_entity","entity":{"key":"00000000000000000000000000000001","generation":1,"symbol":0,"content":null}}"#;
+        assert!(serde_json::from_slice::<UniverseMutation>(line).is_err());
     }
 
     #[test]
@@ -2604,5 +3160,560 @@ mod tests {
                 .as_deref(),
             Some("narrative")
         );
+    }
+
+    /// Three writers each read revision 0 and each committed a revision 1.
+    /// This is what the live log looked like when boot refused.
+    fn divergent_store(root: &Path) -> UniverseStore {
+        let store = UniverseStore::open(root).unwrap();
+        let mut base = UniverseSnapshot::empty(UniverseId(31));
+        base.symbols.push("thing".into());
+        store.checkpoint(&base).unwrap();
+        for (tick, key, entity) in [
+            (1u64, "writer-a", 1u128),
+            (2, "writer-b", 2),
+            (3, "writer-c", 3),
+        ] {
+            let event = EventRecord::new(
+                base.universe,
+                Revision(0),
+                Tick(tick),
+                key,
+                UniverseMutation::PutEntity {
+                    entity: EntityRecord {
+                        key: EntityKey(entity),
+                        generation: 0,
+                        symbol: 0,
+                        content: None,
+                    },
+                },
+            )
+            .unwrap();
+            store.append_event(&event).unwrap();
+        }
+        store
+    }
+
+    #[test]
+    fn same_parent_divergence_boots_and_the_last_arrived_continues_the_chain() {
+        let temp = tempfile::tempdir().unwrap();
+        let store = divergent_store(temp.path());
+
+        let outcome = store
+            .replay_resolved(store.load_snapshot().unwrap())
+            .unwrap();
+        assert_eq!(outcome.snapshot.revision, Revision(1));
+        assert_eq!(
+            outcome
+                .snapshot
+                .entities
+                .iter()
+                .map(|entity| entity.key)
+                .collect::<Vec<_>>(),
+            vec![EntityKey(3)],
+            "the last arrived write is the one in the world"
+        );
+        assert_eq!(
+            outcome.snapshot.event_keys.iter().collect::<Vec<_>>(),
+            vec!["writer-c"],
+            "a superseded event was not applied, so it is not recorded as applied"
+        );
+
+        assert_eq!(outcome.resolutions.len(), 1);
+        let resolution = &outcome.resolutions[0];
+        assert_eq!(resolution.rule, ResolutionRule::LastArrivedWins);
+        assert_eq!(resolution.previous_revision, Revision(0));
+        assert!(resolution.reason.contains("provisional"));
+        assert_eq!(resolution.winner.idempotency_key, "writer-c");
+        assert_eq!(resolution.winner.log_position, 2);
+        assert_eq!(
+            resolution
+                .superseded
+                .iter()
+                .map(|event| (event.log_position, event.idempotency_key.as_str()))
+                .collect::<Vec<_>>(),
+            vec![(0, "writer-a"), (1, "writer-b")]
+        );
+        assert!(resolution
+            .superseded
+            .iter()
+            .chain([&resolution.winner])
+            .all(|event| event.claimed_revision == Revision(1)));
+
+        // The two other read paths settle it identically, so no view of this
+        // store disagrees with another about what it holds.
+        assert_eq!(
+            store.replay(store.load_snapshot().unwrap()).unwrap(),
+            outcome.snapshot
+        );
+        let overlay = store
+            .load_current_overlay_indexed(AdjacencyOverlayBudget::default())
+            .unwrap();
+        assert_eq!(
+            overlay.snapshot().canonical_hash().unwrap(),
+            outcome.snapshot.canonical_hash().unwrap()
+        );
+    }
+
+    #[test]
+    fn superseded_events_are_retained_in_the_log_and_recorded_durably() {
+        let temp = tempfile::tempdir().unwrap();
+        let store = divergent_store(temp.path());
+        let before = fs::read(temp.path().join(ACTIVE_EVENT_LOG)).unwrap();
+        store.replay(store.load_snapshot().unwrap()).unwrap();
+
+        let after = fs::read(temp.path().join(ACTIVE_EVENT_LOG)).unwrap();
+        assert_eq!(after, before, "the log is never rewritten to settle it");
+        assert_eq!(
+            after
+                .split(|byte| *byte == b'\n')
+                .filter(|l| !l.is_empty())
+                .count(),
+            3,
+            "the two losing events are still in the log"
+        );
+        assert!(String::from_utf8_lossy(&after).contains("writer-a"));
+
+        let recorded = store.read_divergence_resolutions().unwrap();
+        assert_eq!(recorded.len(), 1);
+        assert_eq!(recorded[0].resolution.winner.idempotency_key, "writer-c");
+        assert_eq!(
+            recorded[0].resolution_id,
+            canonical_hash(&recorded[0].resolution).unwrap()
+        );
+
+        // Booting the same log again settles it the same way and records
+        // nothing new.
+        UniverseStore::open(temp.path())
+            .unwrap()
+            .replay(store.load_snapshot().unwrap())
+            .unwrap();
+        assert_eq!(store.read_divergence_resolutions().unwrap(), recorded);
+    }
+
+    #[test]
+    fn a_log_without_divergence_is_unchanged_by_resolution() {
+        let temp = tempfile::tempdir().unwrap();
+        let store = UniverseStore::open(temp.path()).unwrap();
+        let mut base = UniverseSnapshot::empty(UniverseId(32));
+        base.symbols.push("thing".into());
+        store.checkpoint(&base).unwrap();
+        let mut expected = base.clone();
+        for (previous, tick, key) in [(Revision(0), Tick(1), 1u128), (Revision(1), Tick(2), 2u128)]
+        {
+            let event = EventRecord::new(
+                base.universe,
+                previous,
+                tick,
+                format!("entity-{key}"),
+                UniverseMutation::PutEntity {
+                    entity: EntityRecord {
+                        key: EntityKey(key),
+                        generation: 0,
+                        symbol: 0,
+                        content: None,
+                    },
+                },
+            )
+            .unwrap();
+            store.append_event(&event).unwrap();
+            apply_event(&mut expected, &event).unwrap();
+        }
+
+        let outcome = store
+            .replay_resolved(store.load_snapshot().unwrap())
+            .unwrap();
+        assert_eq!(outcome.snapshot, expected);
+        assert_eq!(
+            outcome.snapshot.canonical_hash().unwrap(),
+            expected.canonical_hash().unwrap()
+        );
+        assert!(outcome.resolutions.is_empty());
+        assert!(
+            !temp.path().join(DIVERGENCE_RESOLUTION_LOG).exists(),
+            "nothing was settled, so nothing is recorded"
+        );
+        assert!(store.read_divergence_resolutions().unwrap().is_empty());
+    }
+
+    #[test]
+    fn a_conflict_without_divergence_still_reports_a_revision_conflict() {
+        let temp = tempfile::tempdir().unwrap();
+        let store = UniverseStore::open(temp.path()).unwrap();
+        let mut base = UniverseSnapshot::empty(UniverseId(33));
+        base.symbols.push("thing".into());
+        store.checkpoint(&base).unwrap();
+        let orphan = EventRecord::new(
+            base.universe,
+            Revision(5),
+            Tick(1),
+            "orphan",
+            UniverseMutation::PutEntity {
+                entity: EntityRecord {
+                    key: EntityKey(1),
+                    generation: 0,
+                    symbol: 0,
+                    content: None,
+                },
+            },
+        )
+        .unwrap();
+        store.append_event(&orphan).unwrap();
+        assert_eq!(
+            store.replay(store.load_snapshot().unwrap()),
+            Err(UniverseError::RevisionConflict {
+                expected: Revision(5),
+                actual: Revision(0),
+            })
+        );
+    }
+
+    #[test]
+    fn a_repeated_idempotency_key_is_a_duplicate_not_a_divergence() {
+        let temp = tempfile::tempdir().unwrap();
+        let store = UniverseStore::open(temp.path()).unwrap();
+        let mut base = UniverseSnapshot::empty(UniverseId(34));
+        base.symbols.push("thing".into());
+        store.checkpoint(&base).unwrap();
+        let event = EventRecord::new(
+            base.universe,
+            Revision(0),
+            Tick(1),
+            "one-writer",
+            UniverseMutation::PutEntity {
+                entity: EntityRecord {
+                    key: EntityKey(1),
+                    generation: 0,
+                    symbol: 0,
+                    content: None,
+                },
+            },
+        )
+        .unwrap();
+        store.append_event(&event).unwrap();
+        store.append_event(&event).unwrap();
+
+        let outcome = store
+            .replay_resolved(store.load_snapshot().unwrap())
+            .unwrap();
+        assert!(
+            outcome.resolutions.is_empty(),
+            "one writer writing twice is not two writers disagreeing"
+        );
+        assert_eq!(outcome.snapshot.revision, Revision(1));
+        assert_eq!(outcome.snapshot.entities.len(), 1);
+        assert!(!temp.path().join(DIVERGENCE_RESOLUTION_LOG).exists());
+    }
+
+    #[test]
+    fn an_ordering_the_rule_cannot_settle_fails_honestly() {
+        let temp = tempfile::tempdir().unwrap();
+        let store = UniverseStore::open(temp.path()).unwrap();
+        let mut base = UniverseSnapshot::empty(UniverseId(35));
+        base.symbols.push("thing".into());
+        store.checkpoint(&base).unwrap();
+        // A child of revision 1 arrives between the two writes that both claim
+        // revision 0 as their parent. Selecting the later of those two leaves
+        // the child with a parent this holder never reaches.
+        for (previous, tick, key, entity) in [
+            (Revision(0), Tick(1), "writer-a", 1u128),
+            (Revision(1), Tick(2), "writer-c", 3),
+            (Revision(0), Tick(3), "writer-b", 2),
+        ] {
+            let event = EventRecord::new(
+                base.universe,
+                previous,
+                tick,
+                key,
+                UniverseMutation::PutEntity {
+                    entity: EntityRecord {
+                        key: EntityKey(entity),
+                        generation: 0,
+                        symbol: 0,
+                        content: None,
+                    },
+                },
+            )
+            .unwrap();
+            store.append_event(&event).unwrap();
+        }
+
+        let error = store
+            .replay(store.load_snapshot().unwrap())
+            .expect_err("no ordering is invented to make this replay");
+        let UniverseError::CorruptLog(message) = error else {
+            panic!("expected an honest corrupt-log report, got {error:?}");
+        };
+        assert!(message.contains("writer-c"), "{message}");
+        assert!(
+            message.contains("cannot be settled by that rule"),
+            "{message}"
+        );
+    }
+
+    // --- held state ------------------------------------------------------
+    // These cover `load_held`: reading the durable projection as what this
+    // holder holds, with the log used only to salvage a crash.
+
+    /// A store whose state lives ONLY in the log: a revision-0 base checkpoint
+    /// and two writes on top. This is the shape of the live registry store.
+    fn store_with_two_writes(root: &Path, universe: UniverseId) -> UniverseStore {
+        let store = UniverseStore::open(root).unwrap();
+        let mut base = UniverseSnapshot::empty(universe);
+        base.symbols.push("thing".into());
+        store.checkpoint(&base).unwrap();
+        for (previous, tick, key) in [(Revision(0), Tick(1), 1u128), (Revision(1), Tick(2), 2u128)] {
+            let event = EventRecord::new(
+                universe,
+                previous,
+                tick,
+                format!("entity-{key}"),
+                UniverseMutation::PutEntity {
+                    entity: EntityRecord {
+                        key: EntityKey(key),
+                        generation: 0,
+                        symbol: 0,
+                        content: None,
+                    },
+                },
+            )
+            .unwrap();
+            store.append_event(&event).unwrap();
+        }
+        store
+    }
+
+    /// Fold the log into the projection once, the way a resident holder's
+    /// periodic backup writes out the state it is holding.
+    fn make_projection_current(store: &UniverseStore) -> UniverseSnapshot {
+        let current = store.replay(store.load_snapshot().unwrap()).unwrap();
+        store.checkpoint(&current).unwrap();
+        current
+    }
+
+    #[test]
+    fn a_current_projection_is_read_without_the_log_at_all() {
+        let temp = tempfile::tempdir().unwrap();
+        let store = store_with_two_writes(temp.path(), UniverseId(41));
+        let current = make_projection_current(&store);
+        // The crash log has done its job. Take it away entirely: nothing that
+        // follows may depend on it.
+        fs::remove_file(temp.path().join(ACTIVE_EVENT_LOG)).unwrap();
+
+        let held = UniverseStore::open(temp.path()).unwrap().load_held().unwrap();
+        assert_eq!(
+            held.snapshot().canonical_hash().unwrap(),
+            current.canonical_hash().unwrap(),
+            "the world is what the projection currently holds"
+        );
+        assert_eq!(held.snapshot().revision, Revision(2));
+        assert_eq!(held.snapshot().entities.len(), 2);
+        assert_eq!(held.recovery().log_records, 0);
+        assert_eq!(held.recovery().recovered, 0);
+        assert!(!held.recovery().needed_the_log());
+        assert!(held.recovery().fully_landed());
+        assert_eq!(held.recovery().projection, ProjectionSource::Snapshot);
+        assert!(held.recovery().resolutions.is_empty());
+    }
+
+    #[test]
+    fn a_current_projection_already_holds_every_record_the_log_beside_it_carries() {
+        let temp = tempfile::tempdir().unwrap();
+        let store = store_with_two_writes(temp.path(), UniverseId(42));
+        let current = make_projection_current(&store);
+        let log_before = fs::read(temp.path().join(ACTIVE_EVENT_LOG)).unwrap();
+
+        let held = store.load_held().unwrap();
+        assert_eq!(
+            held.snapshot().canonical_hash().unwrap(),
+            current.canonical_hash().unwrap()
+        );
+        assert_eq!(held.recovery().log_records, 2);
+        assert_eq!(
+            held.recovery().already_held,
+            2,
+            "both records were verified and found already held, so neither was applied"
+        );
+        assert_eq!(held.recovery().recovered, 0);
+        assert!(!held.recovery().needed_the_log());
+        assert_eq!(
+            fs::read(temp.path().join(ACTIVE_EVENT_LOG)).unwrap(),
+            log_before,
+            "reading the held state neither rewrites nor truncates the log"
+        );
+    }
+
+    #[test]
+    fn a_write_that_landed_after_the_projection_is_salvaged_from_the_log() {
+        let temp = tempfile::tempdir().unwrap();
+        let store = store_with_two_writes(temp.path(), UniverseId(43));
+        make_projection_current(&store);
+        // One more write lands, and then the process dies before it can copy
+        // the state it was holding. This is the case the log exists for.
+        let after_backup = EventRecord::new(
+            UniverseId(43),
+            Revision(2),
+            Tick(3),
+            "entity-3",
+            UniverseMutation::PutEntity {
+                entity: EntityRecord {
+                    key: EntityKey(3),
+                    generation: 0,
+                    symbol: 0,
+                    content: None,
+                },
+            },
+        )
+        .unwrap();
+        store.append_event(&after_backup).unwrap();
+
+        let held = UniverseStore::open(temp.path()).unwrap().load_held().unwrap();
+        assert_eq!(held.recovery().already_held, 2);
+        assert_eq!(
+            held.recovery().recovered,
+            1,
+            "exactly the write the projection did not hold"
+        );
+        assert!(held.recovery().needed_the_log());
+        assert!(held.recovery().fully_landed());
+        assert_eq!(held.snapshot().revision, Revision(3));
+        assert_eq!(held.snapshot().entities.len(), 3);
+        // The salvage lands on the same state the strict path reaches.
+        assert_eq!(
+            held.snapshot().canonical_hash().unwrap(),
+            store
+                .replay(store.load_snapshot().unwrap())
+                .unwrap()
+                .canonical_hash()
+                .unwrap()
+        );
+    }
+
+    #[test]
+    fn a_record_that_cannot_be_landed_is_reported_rather_than_failing_the_read() {
+        let temp = tempfile::tempdir().unwrap();
+        let store = UniverseStore::open(temp.path()).unwrap();
+        let mut base = UniverseSnapshot::empty(UniverseId(44));
+        base.symbols.push("thing".into());
+        store.checkpoint(&base).unwrap();
+        // A record claiming a parent this holder never reaches.
+        let orphan = EventRecord::new(
+            base.universe,
+            Revision(5),
+            Tick(1),
+            "orphan",
+            UniverseMutation::PutEntity {
+                entity: EntityRecord {
+                    key: EntityKey(1),
+                    generation: 0,
+                    symbol: 0,
+                    content: None,
+                },
+            },
+        )
+        .unwrap();
+        store.append_event(&orphan).unwrap();
+
+        // The log-as-authority path refuses to produce any state at all. This
+        // is the boot failure that has repeatedly taken the live world down.
+        assert_eq!(
+            store.replay(store.load_snapshot().unwrap()),
+            Err(UniverseError::RevisionConflict {
+                expected: Revision(5),
+                actual: Revision(0),
+            })
+        );
+
+        // Reading held state produces the state, and says what it is missing.
+        let held = store.load_held().unwrap();
+        assert_eq!(held.snapshot().revision, Revision(0));
+        assert!(held.snapshot().entities.is_empty());
+        assert_eq!(held.recovery().recovered, 0);
+        assert!(!held.recovery().fully_landed());
+        assert_eq!(held.recovery().not_recovered.len(), 1);
+        let unrecovered = &held.recovery().not_recovered[0];
+        assert_eq!(unrecovered.log_position, 0);
+        assert_eq!(unrecovered.idempotency_key, "orphan");
+        assert_eq!(unrecovered.claimed_revision, Revision(6));
+        let NotRecovered::Unlandable { reason } = &unrecovered.outcome else {
+            panic!("expected an unlandable report, got {:?}", unrecovered.outcome);
+        };
+        assert!(reason.contains("revision conflict"), "{reason}");
+    }
+
+    #[test]
+    fn a_divergent_tail_is_settled_and_every_superseded_write_is_named() {
+        let temp = tempfile::tempdir().unwrap();
+        let store = divergent_store(temp.path());
+        let log_before = fs::read(temp.path().join(ACTIVE_EVENT_LOG)).unwrap();
+
+        let held = store.load_held().unwrap();
+        // Settled by the store's one provisional rule, so this read agrees
+        // exactly with `replay` about what is held.
+        assert_eq!(
+            held.snapshot().canonical_hash().unwrap(),
+            store
+                .replay(store.load_snapshot().unwrap())
+                .unwrap()
+                .canonical_hash()
+                .unwrap()
+        );
+        assert_eq!(held.recovery().recovered, 1);
+        assert_eq!(held.recovery().resolutions.len(), 1);
+        assert_eq!(held.recovery().not_recovered.len(), 2);
+        for unrecovered in &held.recovery().not_recovered {
+            let NotRecovered::Superseded {
+                rule,
+                winner_idempotency_key,
+            } = &unrecovered.outcome
+            else {
+                panic!("expected a supersession, got {:?}", unrecovered.outcome);
+            };
+            assert_eq!(*rule, ResolutionRule::LastArrivedWins);
+            assert_eq!(winner_idempotency_key, "writer-c");
+        }
+        assert_eq!(
+            fs::read(temp.path().join(ACTIVE_EVENT_LOG)).unwrap(),
+            log_before,
+            "the version that lost is retained in the log, not erased"
+        );
+    }
+
+    #[test]
+    fn a_versioned_checkpoint_shadowing_a_plain_checkpoint_is_reported() {
+        let temp = tempfile::tempdir().unwrap();
+        let store = UniverseStore::open(temp.path()).unwrap();
+        let mut rolled = UniverseSnapshot::empty(UniverseId(45));
+        rolled.symbols.push("thing".into());
+        let rolled_hash = rolled.canonical_hash().unwrap();
+        store.write_versioned_checkpoint(&rolled, &rolled_hash).unwrap();
+
+        // A holder then copies the state it is holding the only way
+        // `checkpoint` knows how: into `snapshot.json`.
+        let mut backup = rolled.clone();
+        backup.revision = Revision(7);
+        backup.tick = Tick(7);
+        store.checkpoint(&backup).unwrap();
+
+        let held = store.load_held().unwrap();
+        // The backup is NOT what is read back. A holder that assumed otherwise
+        // would lose everything since the rollover on its next restart.
+        assert_eq!(held.snapshot().revision, Revision(0));
+        assert_eq!(
+            held.recovery().projection,
+            ProjectionSource::VersionedCheckpoint {
+                revision: Revision(0),
+                shadowed_snapshot: Epistemic::Measured(Revision(7)),
+            },
+            "the shadowing is reported, not left for a restart to discover"
+        );
+    }
+
+    #[test]
+    fn a_store_with_no_versioned_checkpoint_reports_no_shadowing() {
+        let temp = tempfile::tempdir().unwrap();
+        let store = store_with_two_writes(temp.path(), UniverseId(46));
+        let held = store.load_held().unwrap();
+        assert_eq!(held.recovery().projection, ProjectionSource::Snapshot);
     }
 }

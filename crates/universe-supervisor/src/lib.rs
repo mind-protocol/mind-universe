@@ -1516,7 +1516,6 @@ mod tests {
             UniverseWriteSet {
                 base_revision: Revision(0),
                 idempotency_key: "result-moment".into(),
-                causal_ancestry: vec!["graph-read-correlation".into()],
                 commands: vec![UniverseCommand::PutEntity {
                     entity: EntityRecord {
                         key: free_key,
@@ -1611,7 +1610,6 @@ mod tests {
             UniverseWriteSet {
                 base_revision: supervisor.revision(),
                 idempotency_key: "status-backlog-probe".into(),
-                causal_ancestry: vec!["status-observer".into()],
                 commands: vec![UniverseCommand::PutEntity {
                     entity: EntityRecord {
                         key: free_key,
@@ -1728,7 +1726,6 @@ mod tests {
                 Ok(Some(UniverseWriteSet {
                     base_revision: snapshot.revision,
                     idempotency_key: "reinject-effect-with-readback".into(),
-                    causal_ancestry: receipt.causal_ancestry.clone(),
                     commands: vec![UniverseCommand::PutEntity {
                         entity: EntityRecord {
                             key: receipt_entity,
@@ -1799,7 +1796,6 @@ mod tests {
             UniverseWriteSet {
                 base_revision: supervisor.revision(),
                 idempotency_key: "graph-relation-physical-binding".into(),
-                causal_ancestry: vec!["resolved-graph-mapping".into()],
                 commands: vec![UniverseCommand::PutRelation {
                     relation: RelationRecord {
                         key: relation,
@@ -1953,10 +1949,6 @@ mod tests {
             UniverseWriteSet {
                 base_revision: supervisor.revision(),
                 idempotency_key: "runtime-bond-execution-receipt".into(),
-                causal_ancestry: vec![
-                    compilation.receipt.behavior_hash,
-                    artifact.artifact_hash.clone(),
-                ],
                 commands: vec![UniverseCommand::PutEntity {
                     entity: EntityRecord {
                         key: receipt_entity,
@@ -2426,6 +2418,9 @@ mod tests {
             code: CodeDefinition,
             code_key: EntityKey,
             moment_key: EntityKey,
+            /// The causal tokens composed for the translated Moment, surfaced
+            /// from the driver that builds them rather than echoed by a receipt.
+            translated_ancestry: Vec<String>,
         }
         impl TriggerTickDriver for WakeDriver {
             fn resolve_code(
@@ -2468,10 +2463,10 @@ mod tests {
                         "wake program did not propose exactly one command".into(),
                     ));
                 }
+                self.translated_ancestry = request.descendant_causal_tokens();
                 Ok(Some(UniverseWriteSet {
                     base_revision: snapshot.revision,
                     idempotency_key: format!("wake-moment:{}", request.request_id),
-                    causal_ancestry: request.descendant_causal_tokens(),
                     commands: vec![UniverseCommand::PutEntity {
                         entity: EntityRecord {
                             key: self.moment_key,
@@ -2627,6 +2622,7 @@ mod tests {
             code,
             code_key,
             moment_key,
+            translated_ancestry: Vec::new(),
         };
 
         let tick_before = supervisor.tick();
@@ -2681,14 +2677,11 @@ mod tests {
             1,
             "the drained request committed exactly one Moment"
         );
-        let (commit_tick, ancestry) = match &out_n1.commits[0] {
-            CommitReceipt::Committed {
-                tick,
-                causal_ancestry,
-                ..
-            } => (*tick, causal_ancestry.clone()),
+        let commit_tick = match &out_n1.commits[0] {
+            CommitReceipt::Committed { tick, .. } => *tick,
             other => panic!("expected a committed Moment, got {other:?}"),
         };
+        let ancestry = driver.translated_ancestry.clone();
         assert_eq!(
             commit_tick,
             Tick(tick_before.0 + 1),

@@ -1327,6 +1327,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "universe-inference"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "tempfile",
+ "universe-capabilities",
+ "universe-core",
+ "universe-store",
+ "universe-transactions",
+]
+
+[[package]]
 name = "universe-ir"
 version = "0.1.0"
 dependencies = [
@@ -1387,6 +1402,24 @@ dependencies = [
  "universe-physics",
  "universe-store",
  "universe-testkit",
+]
+
+[[package]]
+name = "universe-runtime"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tempfile",
+ "universe-compiler",
+ "universe-core",
+ "universe-e2e",
+ "universe-ir",
+ "universe-physics",
+ "universe-store",
+ "universe-supervisor",
+ "universe-transactions",
+ "universe-vm",
 ]
 
 [[package]]

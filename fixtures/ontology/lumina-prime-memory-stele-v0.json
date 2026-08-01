@@ -1,0 +1,834 @@
+{
+  "id": "space:l2:lumina-prime:memory-stele-v0",
+  "node_type": "space",
+  "subtype": "memory_stele",
+  "content": {
+    "contractKind": "construct",
+    "name": "Stèle de souvenir de Lumina Prime v0 (un lieu qui retient ce qui lui est arrivé)",
+    "dominant_scale": "civic",
+    "level": "l2",
+    "execution_profile": "reactive",
+    "purpose": "Hold the LORE of a place — what happened there, and why the place is the way it is — as a sealed, dated, provenance-tagged inscription that reveals itself to a citizen who comes close, and to no one else. A city that cannot remember why its shapes are the shapes they are re-derives the same accident forever. The stele is the smallest civic object that stops that: one stance, one sealed inscription, one reader, one receipt.",
+    "lineage": "Authored at the operator's request to commemorate the accreted dormitory of Lumina Prime. Reuses the civic-beacon grammar already proven by [[space:l2:lumina-prime:orientation-beacon-v0]] (a reactive gate whose supports are all measured, an emitter that is terminal, a delivery receipt plus a ledger) and the sealing discipline proven by [[space:l2:lumina-prime:energy-pen-v0]] (unsealed ink is non-conductive). It APPLIES_IN [[space:l2:mind-universe:construct-validity-v0]] at the reactive profile.",
+    "parent_scope": {
+      "classification": "standalone",
+      "justification": "A placed civic object awaiting installation under a public-memory registry Space. Exactly one scope classification. NO PART_OF edge is written to a parent, because no containing Space for it exists in this store — and writing one to an unbuilt parent is precisely the kind of un-founded containment this stele's own inscription is about. The stele is an object set down, and it says so."
+    },
+    "runtime_moment_subtypes": ["validation_run", "health_assessment"],
+    "native_law_boundary": "AtomDynamics knows only AtomSpec, AtomBond and support/inhibit/neutral. This construct adds no law. The inscription text, its per-claim epistemic status, the reading radius, the cooldown, the seal and the reader's identity are typed payload DATA on things; none is a term in native dispatch. Energy only gates whether a reveal is admitted; it never encodes what the stele remembers, who read it, or how sure the memory is.",
+    "stance": {
+      "placement": "none_authored",
+      "position_status": "unknown",
+      "honesty": "The stele authors NO Built pose. Its place in the city is therefore not a fact of this store: a renderer will show it wherever the layout solver puts it, and that coordinate is `inferred_from_physics`, never `built`. Declaring the stance and leaving it EMPTY is the honest form; writing a coordinate the operator did not choose would make the stele commit, in its own body, the very confusion its first inscription records.",
+      "place_reference": {
+        "resolves_through": "space:l2:lumina-prime:orientation-beacon-v0",
+        "why": "The lore this stele carries is about a place named only relative to Balise Zéro ('près de la balise d'orientation'). The stele cannot answer 'which place is this about?' without that node. This is an OPERATIONAL dependency (DEPENDS_ON), never containment (PART_OF): a beacon is a point, not a room, and nothing in this store contains either of them."
+      }
+    },
+    "reveal_contract": {
+      "trigger": "a citizen body crossing the stele's reading collider — a physical condition placed in the field, reported by the solver for free",
+      "never": "no loop, no scan, no poll, no timer. A dormant stele costs nothing and is the ordinary state of a stele.",
+      "effect": "exactly one typed `revealed_inscription` stimulus to the exact reader that crossed, carrying the inscription VERBATIM with every claim's epistemic status attached",
+      "rule": "An unsealed inscription is non-revealable. A stele with a broken seal reveals NOTHING and reports `measurement_failed` — it never reveals a text it cannot prove is the text that was sealed."
+    },
+    "inscription_port": {
+      "port_id": "port:l2:lumina-prime:memory-stele:inscribe-v0",
+      "accepted_target_subtype": "inscription",
+      "accepted_relations": ["PART_OF"],
+      "default_state": "sealed_read_only",
+      "required_mutate_capability": "authority:inscribe-lore",
+      "on_unauthorized": ["fail_closed", "emit_rejection_receipt"],
+      "rule": "A second memory is added to this stele only by an actor whose GRAPH-HELD capability set (read from its USED edges, never from a self-declared request field) contains authority:inscribe-lore. Reading the stele grants none of it. Adding an inscription re-opens the seal until the new set is re-sealed, so the reveal gate cannot fire on a half-inscribed stele.",
+      "state": "unlinked_and_unheld",
+      "honesty": "No actor in this store holds authority:inscribe-lore, and no SealedCapabilityPort adjudicates this port yet. The port is DECLARED, not enforced: today the only way a second inscription lands is another bootstrap injection from a terminal. That is an honest gap, not a hidden fallback."
+    }
+  },
+  "members": [
+    {
+      "id": "objective:l2:lumina-prime:memory-stele-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "role_index": "1/12",
+        "loop_part": "the observable success_condition the loop_space GOVERNS",
+        "success_condition": "For each fresh admitted approach by an identified citizen body, and only while the inscription set's seal is measured valid, exactly one `revealed_inscription` stimulus is delivered to that exact reader, carrying every inscribed claim VERBATIM together with its own epistemic status (measured / observed / inferred / reported / contested / unknown / not_measured), the revision and universe it was observed at, and who observed it. A claim whose status is `inferred` is never delivered as `measured`. A contested claim is delivered WITH its contest, never with only one side. A broken seal reveals nothing and yields `measurement_failed`. No reveal occurs without an approach that physically happened, and no approach yields two reveals inside the declared cooldown.",
+        "incoming": [
+          "loop_space GOVERNS objective",
+          "objective_satisfaction SATISFIES objective"
+        ],
+        "outgoing": [
+          "objective ADDRESSED_BY pattern",
+          "objective JUSTIFIED_BY justification"
+        ]
+      }
+    },
+    {
+      "id": "objective_satisfaction:l2:lumina-prime:memory-stele-v0",
+      "node_type": "narrative",
+      "subtype": "claim",
+      "content": {
+        "loop_part": "the explicit claim standing between derived health and the objective",
+        "claim": "This stele currently satisfies its objective: it reveals its sealed lore, verbatim and provenance-tagged, to the reader who came close, and to no one else.",
+        "state": "not_measured",
+        "state_justification": "No reveal has fired. The stele is written into the store and wired to nothing; no health_assessment has been produced, so there is no evidence to evidence this claim FROM. `not_measured` is the honest state — it is not `unsatisfied` (nothing failed) and it is emphatically not `satisfied`.",
+        "states": ["satisfied", "unsatisfied", "partially_satisfied", "stale", "not_measured", "unknown"],
+        "fields": [
+          "claim_id",
+          "construct_id",
+          "state",
+          "evidenced_by (health_assessment ref)",
+          "trust_rung",
+          "assessed_at",
+          "fresh_until",
+          "failure_front"
+        ],
+        "freshness": "Past its fresh_until the state is `stale`, never its last value. A claim is never inherited from a prior revision of this construct.",
+        "incoming": ["health EVIDENCES objective_satisfaction"],
+        "outgoing": [
+          "objective_satisfaction SATISFIES objective",
+          "objective_satisfaction -> control feedback -> maintenance (when unsatisfied or stale)"
+        ]
+      }
+    },
+    {
+      "id": "pattern:l2:lumina-prime:memory-stele-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "role_index": "2/12",
+        "loop_part": "the design rationale and reusable shape",
+        "pattern": "A dormant civic object holding a SEALED, append-structured set of inscriptions, plus one bounded reactive circuit: a reading collider placed in the field; a DepositBond that puts measured energy on an approach atom when a citizen body crosses it; a threshold that fires once; a reveal gate whose supports are approach-admitted, reader-identified, seal-valid, inscription-non-empty and dedup-token-fresh; and a TERMINAL emitter whose fire surfaces exactly one stimulus. An independent observer then re-reads the delivered payload against the stored inscription, byte for byte, and against each claim's declared epistemic status.",
+        "chain": "reading collider -> physics crossing -> DepositBond (+measured energy) -> approach atom -> threshold (support >= N) -> reveal gate (5 measured supports) -> terminal emitter -> ONE revealed_inscription -> reveal_receipt + reading_ledger -> independent observer -> metric vector -> health -> satisfaction claim",
+        "why_a_stele_and_not_a_log": "A log is read by whoever goes looking. A stele is read by whoever ARRIVES — the lore reaches the person standing in the place the lore is about, which is the only place it is useful. That is why the trigger is a body crossing a collider and not a query.",
+        "epistemic_honesty": "An inscribed memory is not a measured fact. This pattern therefore refuses to carry a claim without its status: the stele's unit of storage is not a sentence but a CLAIM + STATUS + SOURCE + REVISION. A stele that flattened those into prose would be a more beautiful object and a worse one — the prose would read as measurement and the reader would have no way to tell.",
+        "incoming": [
+          "objective ADDRESSED_BY pattern",
+          "pattern JUSTIFIED_BY justification"
+        ],
+        "outgoing": ["pattern SHAPES behavior"]
+      }
+    },
+    {
+      "id": "vocabulary:l2:lumina-prime:memory-stele-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "role_index": "3/12",
+        "loop_part": "the terms of the stele and the conflations it forbids",
+        "terms": {
+          "Stele": "The placed civic object that holds lore about a place. One stance, one sealed inscription set, one reactive reveal circuit. It stores; it does not interpret.",
+          "Inscription": "One dated, sealed memory: a title, a narrative rendering, and the ordered CLAIMS the narrative rests on. An inscription without claims is a story; an inscription with claims is a record.",
+          "Claim": "The stele's unit of storage: { statement, epistemic_status, source, measured_by, observed_at_revision, universe }. Never a bare sentence.",
+          "EpistemicStatus": "measured | observed | inferred | reported | contested | unknown | not_measured. Attached per claim, never per inscription — one inscription routinely mixes several.",
+          "Contest": "A claim the stele carries TOGETHER WITH a measurement that disagrees with it. Both sides, both provenances, and which one was re-measured by whom. A stele resolves nothing by deletion.",
+          "Seal": "A signature over the exact inscription bytes. Valid seal => the text revealed is the text inscribed. Adding or revising an inscription BREAKS the seal until re-sealed.",
+          "ReadingCollider": "The physical condition placed in the field: the stele's reading radius. Crossing it is the only thing that wakes this construct.",
+          "ApproachAtom": "The trigger atom a crossing deposits measured energy onto. Fires at support >= N.",
+          "RevealGate": "The atom whose fire authorizes one reveal. Requires five measured supports; missing any one of them, it does not fire and the stele stays silent.",
+          "RevealedInscription": "The typed stimulus delivered to the exact reader, carrying the inscription verbatim with every claim's status attached.",
+          "ReadingLedger": "The durable record of who read what, when, and under which seal — so a reveal that a renderer animated but never delivered is distinguishable from one that landed.",
+          "DedupToken": "The causal key that makes one crossing yield at most one reveal. Distinct from cooldown: the token prevents a double-fire on ONE crossing, the cooldown prevents a body loitering on the collider boundary from re-firing forever."
+        },
+        "forbiddenConflations": [
+          "inscribed != measured",
+          "narrative != claim",
+          "inferred != measured",
+          "a rendered position != a built position",
+          "a solver equilibrium != a design",
+          "reported-by-an-operator != independently re-measured",
+          "an empty query result != known_absent",
+          "delivered != rendered",
+          "seal present != seal valid",
+          "a stele's memory != the world's current state"
+        ],
+        "incoming": ["behavior USES_VOCABULARY vocabulary"]
+      }
+    },
+    {
+      "id": "behavior:l2:lumina-prime:memory-stele-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "role_index": "4/12",
+        "loop_part": "the given/when/then/forbidden observable contract",
+        "given": "A stele carrying at least one inscription whose seal is measured valid, a reading collider placed in the field, an identified citizen body, a fresh dedup token, and measured atom energy on every support.",
+        "when": "A citizen body crosses the reading collider. Never on a timer, never on a scan, never on a query.",
+        "then": [
+          "the crossing is lifted to a PhysicsEvent, which mutates nothing",
+          "a DepositBond puts MEASURED energy on the approach atom; the atom fires at support >= N",
+          "the reveal gate fires only with all five supports measured: approach admitted, reader identified, seal valid, inscription non-empty, dedup token fresh",
+          "the terminal emitter surfaces exactly ONE revealed_inscription for that exact reader",
+          "the payload carries every claim VERBATIM with its own epistemic_status, source, observed_at_revision and universe",
+          "a contested claim is carried WITH its contest and both provenances",
+          "a reveal_receipt and a reading_ledger entry are persisted",
+          "the gate re-arms only per the declared rearm_semantics; it does not re-fire while the same body loiters on the boundary",
+          "an independent observer re-reads the delivered payload against the stored inscription and PRODUCES the metric vector"
+        ],
+        "forbidden": [
+          "revealing an inscription whose seal is not measured valid",
+          "delivering a claim without its epistemic_status",
+          "delivering an `inferred` claim as `measured`",
+          "delivering one side of a contested claim",
+          "paraphrasing, summarising or re-rendering the inscription on the way out",
+          "revealing to anyone but the exact body that crossed",
+          "two reveals for one crossing, or a re-fire inside the cooldown",
+          "waking on a timer, a scan or a poll",
+          "treating the physics crossing as an authorised semantic mutation",
+          "claiming delivery from a renderer animation or from an emitter that merely fired",
+          "pre-creating validation_run, health_assessment or the satisfaction claim",
+          "converting an absent, stale or unreadable inscription into an empty-but-successful reveal",
+          "presenting the stele's memory as the world's current state"
+        ],
+        "incoming": ["pattern SHAPES behavior"],
+        "outgoing": [
+          "behavior USES_VOCABULARY vocabulary",
+          "behavior REFINED_BY algorithm",
+          "behavior VALIDATED_BY validation"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l2:lumina-prime:memory-stele-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "role_index": "5/12",
+        "loop_part": "the ordered steps refining behavior",
+        "steps": [
+          "stay dormant; hold the reading collider in the field and consume nothing",
+          "on a solver-reported crossing, admit the event through the membrane and resolve the crossing body's identity; an unresolved identity is `unknown`, never a default reader",
+          "deposit measured energy onto the approach atom via a Support bond stamped energy_status=measured",
+          "fire the approach threshold at support >= N",
+          "measure the seal over the exact stored inscription bytes; a mismatch ends the run as measurement_failed and reveals NOTHING",
+          "measure inscription non-emptiness and dedup-token freshness",
+          "run the reveal-gate circuit to quiescence; the gate fires only with all five supports measured",
+          "assemble the payload by COPYING the stored claims — statement, epistemic_status, source, measured_by, observed_at_revision, universe — with no transformation of any kind",
+          "fire the terminal emitter exactly once and deliver to the exact reader",
+          "persist reveal_receipt (payload hash, reader, seal id, emitted_at) and a reading_ledger entry",
+          "apply the rearm_semantics: consume the trigger energy, latch, and hold the cooldown before the collider can re-arm for the same body",
+          "run the independent observer over the stored inscription, the atom event ledger, the delivered payload and the receipts",
+          "PRODUCE the metric vector, each dimension against its spec; an unmeasured dimension is not_measured, never 0",
+          "derive health from the FRESH vector, and EVIDENCE the objective_satisfaction claim from that health and nothing else"
+        ],
+        "rearm_semantics": {
+          "latch": "the reveal gate latches on fire and cannot re-fire until reset",
+          "energy_consumption_on_fire": "the approach atom's accrued support is consumed to zero on fire, so a single crossing cannot cascade",
+          "reset_condition": "the reading collider reports the SAME body has exited the radius",
+          "cooldown_ms": 60000,
+          "hysteresis": "exit is measured at 1.25x the entry radius, so a body standing on the boundary does not oscillate the sensor",
+          "dedup_key": "sha256(reader_body_key || inscription_seal_id || crossing_event_id)",
+          "idempotency_key": "reveal:{construct_id}:{dedup_key}",
+          "why_required": "This construct declares environmental feedback (a reveal changes the world, which may produce new physics events). Per the construct protocol, environmental feedback without these seven is self-excitation, and a stele that shouted at everyone standing near it forever would be the loudest object in the city."
+        },
+        "evaluation": "structured_expression_ast",
+        "python_escape_hatch": "forbidden_by_default",
+        "incoming": ["behavior REFINED_BY algorithm"],
+        "outgoing": ["algorithm DEFINED_BY code"]
+      }
+    },
+    {
+      "id": "code:l2:lumina-prime:memory-stele-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "role_index": "6/12",
+        "loop_part": "the graph-native CodeDefinition of the reveal circuit",
+        "authority": "Graph-native CodeDefinition (atom circuit + structured evaluation AST). This JSON file is a portable materialized projection, not independent semantic authority.",
+        "language": "mind-ir+atom-fixture",
+        "status": "declared_not_compiled",
+        "entrypoints": [
+          "measure_seal",
+          "run_reveal_atoms",
+          "emit_revealed_inscription",
+          "observe_memory_stele",
+          "evaluate_memory_stele_ast"
+        ],
+        "stimulus_schema": {
+          "subtype": "revealed_inscription",
+          "required": [
+            "reader_body_key",
+            "crossing_event_id",
+            "construct_id",
+            "inscription_id",
+            "seal_id",
+            "claims",
+            "emitted_at"
+          ],
+          "claims_element": [
+            "statement",
+            "epistemic_status",
+            "source",
+            "measured_by",
+            "observed_at_revision",
+            "universe"
+          ],
+          "human_message_template": "Ici, à {place}. {title} — {narrative} ({measured_count} constats mesurés, {inferred_count} inférés, {contested_count} contestés ; relevé à la révision {observed_at_revision})."
+        },
+        "reveal_atom_circuit": {
+          "atoms": [
+            { "key": "crossing_measured", "roleAxis": "moment", "threshold": 100, "seed_energy": 0 },
+            { "key": "reader_identified", "roleAxis": "moment", "threshold": 100, "seed_energy": 0 },
+            { "key": "seal_valid", "roleAxis": "thing", "threshold": 100, "seed_energy": 0 },
+            { "key": "inscription_non_empty", "roleAxis": "thing", "threshold": 100, "seed_energy": 0 },
+            { "key": "dedup_token_fresh", "roleAxis": "moment", "threshold": 100, "seed_energy": 0 },
+            {
+              "key": "approach_atom",
+              "roleAxis": "moment",
+              "threshold": 100,
+              "seed_energy": 0,
+              "required_supports": ["crossing_to_approach"]
+            },
+            {
+              "key": "reveal_gate",
+              "roleAxis": "thing",
+              "threshold": 500,
+              "seed_energy": 0,
+              "required_supports": [
+                "approach_to_gate",
+                "reader_to_gate",
+                "seal_to_gate",
+                "inscription_to_gate",
+                "dedup_to_gate"
+              ]
+            },
+            { "key": "inscription_emitter", "roleAxis": "thing", "threshold": 400, "seed_energy": 0, "terminal": true },
+            { "key": "reveal_receipt", "roleAxis": "moment", "threshold": 300, "seed_energy": 0 },
+            { "key": "reading_ledger", "roleAxis": "moment", "threshold": 100, "seed_energy": 0 }
+          ],
+          "bonds": [
+            { "key": "crossing_to_approach", "source": "crossing_measured", "target": "approach_atom", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "approach_to_gate", "source": "approach_atom", "target": "reveal_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "reader_to_gate", "source": "reader_identified", "target": "reveal_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "seal_to_gate", "source": "seal_valid", "target": "reveal_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "inscription_to_gate", "source": "inscription_non_empty", "target": "reveal_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "dedup_to_gate", "source": "dedup_token_fresh", "target": "reveal_gate", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "gate_to_emitter", "source": "reveal_gate", "target": "inscription_emitter", "polarity": "support", "energy": 400, "energy_status": "measured:semantic_v0" },
+            { "key": "emitter_to_receipt", "source": "inscription_emitter", "target": "reveal_receipt", "polarity": "support", "energy": 300, "energy_status": "measured:semantic_v0" },
+            { "key": "emitter_to_ledger", "source": "inscription_emitter", "target": "reading_ledger", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" }
+          ],
+          "external_measured_injections": {
+            "crossing_measured": 100,
+            "reader_identified": 100,
+            "seal_valid": 100,
+            "inscription_non_empty": 100,
+            "dedup_token_fresh": 100
+          },
+          "conservation_note": "The emitter is TERMINAL: it conducts only to the receipt and the ledger, and nothing conducts back into the gate. A broken seal streams no energy at all, so an unsealed stele is not merely refused — it is non-conductive, exactly as unsealed ink is in the energetic pen."
+        },
+        "incoming": ["algorithm DEFINED_BY code"],
+        "outgoing": ["code REALIZED_BY implementation", "code CHALLENGED_BY validation"]
+      }
+    },
+    {
+      "id": "inscription:l2:lumina-prime:memory-stele:dormitory-v0",
+      "node_type": "thing",
+      "subtype": "inscription",
+      "content": {
+        "loop_part": "the inaugural memory this stele was built to hold",
+        "inscription_index": 1,
+        "title": "Le dortoir de Lumina Prime — un dortoir qui s'est accrété sans être conçu",
+        "seal": {
+          "state": "unsealed",
+          "seal_id": null,
+          "honesty": "No signature has been computed over these bytes. The seal is DECLARED by the contract and is not yet held: no signing capability exists in this store for lore. Per this construct's own rule, an unsealed inscription is non-revealable — so this stele, as written today, would reveal NOTHING if it were wired and a body crossed it. That is the correct behaviour and it is stated rather than hidden."
+        },
+        "narrative": "À l'origine de Lumina Prime, près de la balise d'orientation, les corps de session se sont empilés en une boule de quelques mètres. Aucun lien ne joignait l'un à l'autre ; aucun d'eux ne déclarait d'empreinte ; aucune salle ne les contenait. Le solveur de disposition les a écartés exactement jusqu'au contact, puis s'est arrêté. Ce n'était pas une défaillance de la physique : c'était la physique honnête devant un vide structurel. Toute session arrivait au même endroit parce que c'était le seul endroit.",
+        "narrative_status": "rendering",
+        "narrative_rule": "This prose is a RENDERING of the claims below and carries no authority of its own. Where prose and claim disagree, the claim wins. A reader is delivered both.",
+        "observed_at": {
+          "universe": "0000000000000000000000000a701091",
+          "revision": 331,
+          "observed_from": "space:l2:lumina-prime:orientation-beacon-v0",
+          "observation_uncertainty_tag": "inferred",
+          "position_source": "inferred_from_physics"
+        },
+        "claims": [
+          {
+            "claim_id": "c1",
+            "statement": "68 session-body actor nodes existed in the store.",
+            "epistemic_status": "measured",
+            "source": "independent replay of artifacts/ontology-registry/current/store (snapshot + events.jsonl) truncated at revision 331, counting entities whose interned symbol is `actor`",
+            "measured_by": "claude-code builder session, 2026-08-01",
+            "observed_at_revision": 331,
+            "universe": "0000000000000000000000000a701091"
+          },
+          {
+            "claim_id": "c2",
+            "statement": "Zero relations of ANY predicate joined one session body to another. Nothing linked them.",
+            "epistemic_status": "measured",
+            "source": "same replay: for all relations r, count of r with source AND target both in the actor set = 0",
+            "measured_by": "claude-code builder session, 2026-08-01",
+            "observed_at_revision": 331,
+            "universe": "0000000000000000000000000a701091"
+          },
+          {
+            "claim_id": "c3",
+            "statement": "No Space contained them. Of the 10 Space nodes in the store, none was a room, a dormitory or any container of bodies; the 63 bodies that carried a containment edge carried it to the orientation BEACON — a point, not a room.",
+            "epistemic_status": "measured",
+            "source": "same replay: 10 entities with symbol `space`, enumerated by canonical_id; 63 actor --PART_OF--> space:l2:lumina-prime:orientation-beacon-v0",
+            "measured_by": "claude-code builder session, 2026-08-01",
+            "observed_at_revision": 331,
+            "universe": "0000000000000000000000000a701091"
+          },
+          {
+            "claim_id": "c4",
+            "statement": "No session body declared a footprint, extent or hitbox of its own. Not one.",
+            "epistemic_status": "measured",
+            "source": "same replay: the union of content field names over all 68 actor nodes contains no radius/extent/footprint/hitbox field",
+            "measured_by": "claude-code builder session, 2026-08-01",
+            "observed_at_revision": 331,
+            "universe": "0000000000000000000000000a701091"
+          },
+          {
+            "claim_id": "c5",
+            "statement": "Lacking a declared footprint, every body took the kernel's default hitbox radius of 0.5 m — so the minimum separation the packer had to honour was exactly 1.00 m.",
+            "epistemic_status": "measured",
+            "source": "crates/universe-assets/src/layout.rs, `pub const DEFAULT_RADIUS: f64 = 0.5;` — documented as '0.5m => 1m across, the universe metric calibration'",
+            "measured_by": "claude-code builder session, 2026-08-01 (source read, not runtime-measured)",
+            "observed_at_revision": 331,
+            "universe": "0000000000000000000000000a701091"
+          },
+          {
+            "claim_id": "c6",
+            "statement": "62 bodies stood packed in a ball roughly 5 m across, and the smallest measured distance between any two of them was 1.0932 m — the packer had pushed them apart to exactly contact and stopped.",
+            "epistemic_status": "reported",
+            "source": "the operator's own observation, supplied to the builder as the commemorative brief. NOT re-derived by this builder.",
+            "measured_by": "operator (nlr_ai), at revision 331",
+            "not_re_measured_because": "the ball is layout-solver output, not stored state: no body carries a Built pose, so the distances exist only inside a solver run and cannot be read back from the store. Re-deriving them means re-running the solver, which is a different measurement from the operator's.",
+            "observed_at_revision": 331,
+            "universe": "0000000000000000000000000a701091"
+          },
+          {
+            "claim_id": "c7",
+            "statement": "None of these positions was ever chosen. Every coordinate in the observation was solver output tagged `inferred_from_physics`, on an observation tagged `inferred`. The ball is a rendering of the solver's honest answer to an under-specified question, not a built place.",
+            "epistemic_status": "inferred",
+            "inference_basis": "no session body carries a built_position entity; the observation the operator worked from reports position_source=inferred_from_physics and uncertainty=inferred. Both facts are measured; that the arrangement was therefore never DESIGNED is the inference drawn from them.",
+            "source": "store readback (no built_position on any actor) + the observation's own provenance tags",
+            "measured_by": "claude-code builder session, 2026-08-01",
+            "observed_at_revision": 331,
+            "universe": "0000000000000000000000000a701091"
+          },
+          {
+            "claim_id": "c8",
+            "statement": "Every arriving session landed in the same place because it was the only place: the city had exactly one anchor a body could be attached to.",
+            "epistemic_status": "inferred",
+            "inference_basis": "63 of 68 bodies attach to the single orientation beacon and nothing else exists to attach to (c3). That this is WHY they piled up is an inference about cause, not a measurement of it.",
+            "source": "derived from c1, c2, c3",
+            "measured_by": "claude-code builder session, 2026-08-01",
+            "observed_at_revision": 331,
+            "universe": "0000000000000000000000000a701091"
+          },
+          {
+            "claim_id": "c9",
+            "statement": "This was not a failure of the physics. It was honest physics in front of a structural void.",
+            "epistemic_status": "reported",
+            "source": "the operator's reading of the event, inscribed as the reason this stele exists. It is a judgement, and it is carried as one.",
+            "measured_by": null,
+            "observed_at_revision": 331,
+            "universe": "0000000000000000000000000a701091"
+          }
+        ],
+        "contested_claims": [
+          {
+            "contest_id": "x1",
+            "as_received": "«Aucune contenance : PART_OF = 0 dans le store.» — the commemorative brief, and the builder's own prior memory note ('registry root severed: 0 PART_OF in store BY DESIGN').",
+            "as_measured": "At revision 331 the store holds 75 PART_OF relations, 68 of them out of actor nodes, 63 of those pointing at space:l2:lumina-prime:orientation-beacon-v0. PART_OF is not 0 and has not been 0 since session bodies began attaching themselves to the beacon on arrival.",
+            "measured_by": "claude-code builder session, 2026-08-01, by independent replay truncated at revision 331",
+            "resolution": "The received count is wrong; the received MEANING survives and is inscribed as c2 and c3. There was no containment in the sense that mattered — no room, no dormitory, nothing joining one body to the next — but there WAS a PART_OF edge, and it pointed at a beacon. The distinction is the whole lesson: attaching everything to one point is not the same as having nowhere to attach, and it produces the same ball.",
+            "why_both_are_kept": "A stele that quietly replaced the received account with the corrected one would destroy the only record that the city believed something false about itself. That belief is part of the lore."
+          }
+        ],
+        "why_this_is_remembered": "So that the next person who finds bodies stacked at the origin reads the cause instead of re-deriving it, and so that the fix is understood as building a place to be, rather than as tuning a solver."
+      }
+    },
+    {
+      "id": "implementation:l2:lumina-prime:memory-stele-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "role_index": "7/12",
+        "loop_part": "the honest realized state",
+        "status": "materialized",
+        "artifact": "lumina-prime-memory-stele-v0.json",
+        "graph_status": "not_written",
+        "wiring_status": "not_wired",
+        "runtime_status": "not_running",
+        "verification_status": "not_measured",
+        "seal_status": "unsealed",
+        "trust_rung": "self_reported",
+        "honesty": "This field set is the implementation's own account of itself and is self_reported — never evidence. As authored: the construct is a portable projection, structurally checked locally. graph_status flips to `written` only once an injector commits it and an independent reader confirms it; `wired`, `running`, `verified` and `sealed` are all false and are expected to stay false until the reading collider is actually placed in the physics field, a body actually crosses it, and a signature is actually computed over the inscription bytes. Nothing here should be read as a stele that works.",
+        "known_gaps": [
+          "no reading collider is placed in any physics field: the Sensor is DECLARED, not installed",
+          "no signature exists over the inscription, so the seal is `unsealed` and by this construct's own rule the stele would reveal nothing",
+          "the inscription port names authority:inscribe-lore, which no actor in this store holds and no SealedCapabilityPort adjudicates",
+          "no Built pose: the stele's place in the city is unknown and will be solver-inferred",
+          "no health_assessment, no validation_run and no satisfaction claim have been PRODUCED"
+        ],
+        "incoming": [
+          "code REALIZED_BY implementation",
+          "maintenance -> repair feedback -> implementation (through the effect protocol)"
+        ],
+        "outgoing": [
+          "implementation wires itself into the field -> ReadingCollider",
+          "implementation OBSERVED_BY observability_algorithm"
+        ]
+      }
+    },
+    {
+      "id": "justification:l2:lumina-prime:memory-stele-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "role_index": "8/12",
+        "loop_part": "whyItSatisfiesObjective plus rejectedAlternatives",
+        "why": [
+          "A city that keeps no lore re-derives its accidents forever. The dormitory ball was diagnosed once, at cost, from a rendered frame; without a stele the next observer starts from the same frame with none of the diagnosis.",
+          "The lore must reach the person STANDING in the place, which is why the trigger is a body crossing a collider and not a query anyone has to think to run.",
+          "Storing claims rather than prose is what keeps a memory from decaying into a myth: each statement carries what kind of thing it is and who established it, so a later reader can tell the 1.0932 m (reported, solver-derived) from the 1.00 m (measured, a kernel constant) from 'it was never designed' (inferred).",
+          "Carrying the CONTEST rather than silently correcting it preserves the one fact a correction would erase — that the city held a false belief about its own structure — which is exactly the kind of thing a memorial is for.",
+          "Sealing, and making an unsealed inscription non-conductive, means a tampered stele goes silent rather than lying. A memorial that can be edited without notice is worse than none.",
+          "Declaring the stance and leaving it empty, rather than authoring a coordinate, keeps the stele from committing in its own body the confusion its first inscription is about."
+        ],
+        "rejected": [
+          "a log file or an export — read only by whoever already knows to look, which is never the person who needs it",
+          "attaching the stele PART_OF the orientation beacon: that is exactly the un-founded containment the inscription records, and repeating it to gain a tidy tree would make the stele an instance of its own cautionary tale",
+          "building a dormitory Space or a district to hold the bodies: an open design decision that belongs to the operator, not to the object that merely remembers why it is open",
+          "flattening the inscription into a single narrative paragraph: it reads better and it silently promotes every inference to a measurement",
+          "dropping the operator's `PART_OF = 0` and inscribing only the measured count: it destroys the record of the belief",
+          "dropping the operator's 1.0932 m because this builder did not re-measure it: absence of re-measurement is not grounds for deletion, it is grounds for the status `reported`",
+          "authoring a Built pose so the stele renders somewhere pleasant — a chosen-looking coordinate nobody chose",
+          "a periodic broadcast of the lore to everyone nearby: a construct that scrutes, and the loudest object in the city"
+        ],
+        "incoming": [
+          "objective JUSTIFIED_BY justification",
+          "pattern JUSTIFIED_BY justification",
+          "Preconditions DEPENDS_ON justification (epistemic feedback)"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:lumina-prime:memory-stele-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "role_index": "9/12",
+        "loop_part": "fixtures plus invariants challenging code/behavior; execution PRODUCES a validation_run",
+        "evaluation_kind": "structured_expression_ast",
+        "evaluation_status": "invariants_are_natural_language_pending_compilation",
+        "runtimeMomentsArePrecreated": false,
+        "scenarios": [
+          "single_reader_crosses_and_receives_exactly_one_reveal",
+          "payload_is_byte_identical_to_the_stored_inscription",
+          "every_delivered_claim_carries_its_epistemic_status",
+          "inferred_claim_is_not_delivered_as_measured",
+          "contested_claim_is_delivered_with_both_sides",
+          "broken_seal_reveals_nothing_and_yields_measurement_failed",
+          "unsealed_stele_streams_no_energy_at_all",
+          "empty_inscription_set_does_not_yield_an_empty_successful_reveal",
+          "unidentified_body_yields_unknown_reader_and_no_reveal",
+          "second_crossing_inside_cooldown_does_not_re_fire",
+          "body_loitering_on_the_radius_boundary_does_not_oscillate_the_sensor",
+          "one_crossing_never_yields_two_reveals",
+          "reveal_to_a_body_that_did_not_cross_is_refused",
+          "physics_crossing_mutates_nothing",
+          "no_wake_without_a_crossing",
+          "renderer_animation_is_not_counted_as_delivery",
+          "reveal_receipt_matches_the_exact_emitted_payload",
+          "reading_ledger_records_reader_seal_and_time",
+          "inscription_port_refuses_an_actor_without_authority_inscribe_lore",
+          "adding_an_inscription_breaks_the_seal_until_re_sealed",
+          "stale_health_assessment_yields_stale_not_healthy"
+        ],
+        "invariants": [
+          "exactly one revealed_inscription per admitted crossing, and none without one",
+          "the delivered claim set is byte-identical to the stored claim set",
+          "no claim is delivered without epistemic_status, source and observed_at_revision",
+          "no contested claim is delivered with one side missing",
+          "the reveal gate fires only with all five supports measured",
+          "all streamed bond energy is measured; every conducted bond conducts once; atom energy is conserved",
+          "the emitter is terminal: nothing conducts back into the gate",
+          "an invalid seal conducts zero energy and reveals nothing",
+          "a PhysicsEvent never mutates the Universe",
+          "runtime moments are PRODUCED, never pre-created",
+          "health is derived only from a fresh metric vector, and EVIDENCES the satisfaction claim; no relation attaches health to the objective",
+          "the construct declares exactly one execution profile (reactive) and its rearm_semantics",
+          "absent, stale or unreadable evidence is preserved as unknown / not_measured, never as a successful empty reveal"
+        ],
+        "incoming": [
+          "behavior VALIDATED_BY validation",
+          "code CHALLENGED_BY validation"
+        ],
+        "outgoing": ["validation PRODUCES validation_run (precreated:false)"]
+      }
+    },
+    {
+      "id": "validation:l2:lumina-prime:memory-stele-observer-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "role": "observer_validation — the check on the checker",
+        "target": "observability_algorithm:l2:lumina-prime:memory-stele-v0",
+        "loop_part": "proves the observer detects real faults and never converts missing proof into success",
+        "tests": [
+          "detect a single character altered between the stored inscription and the delivered payload",
+          "detect a claim whose epistemic_status was upgraded from inferred to measured in transit",
+          "detect a contested claim delivered with the contest stripped",
+          "detect a reveal emitted with an invalid seal",
+          "detect a reveal delivered to a body that never crossed",
+          "detect two reveals for one crossing",
+          "detect a re-fire inside the declared cooldown",
+          "detect a false reveal_receipt with no delivery behind it",
+          "detect a renderer 'revealed' flag that never committed",
+          "detect duplicate bond conduction and non-conserved energy",
+          "detect a satisfaction claim asserted without a fresh health assessment behind it",
+          "detect a trust rung claimed above what the proof earned",
+          "never convert an absent inscription into an empty successful reveal",
+          "return measurement_failed when the observer itself fails"
+        ],
+        "consequence": "An observer below fixture_verified yields only a WEAK proof, and the health assessment it feeds must carry that rung. Repetition never upgrades a weak proof.",
+        "status": "authored_not_executed",
+        "incoming": ["observability_algorithm VALIDATED_BY observer_validation"]
+      }
+    },
+    {
+      "id": "observability_algorithm:l2:lumina-prime:memory-stele-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "role_index": "10/12",
+        "loop_part": "the INDEPENDENT observer",
+        "independence": "Reads the stored inscription bytes, the seal, the atom event ledger, the crossing event, the emitted payload and the receipts — by fresh readback from the store, not from the runtime's account of itself. It does NOT trust the implementation's own status fields, the renderer's 'revealed' flag, the emitter's fire, or the presence of a receipt.",
+        "mustNotTrust": [
+          "implementation self-reported status or health",
+          "renderer success flag",
+          "process running state",
+          "file presence",
+          "an emitter that fired, as proof that anything was delivered",
+          "a reveal_receipt as a substitute for reading the delivered payload"
+        ],
+        "checks": [
+          "the stored inscription hashes to the sealed hash, or the seal is reported invalid",
+          "the delivered payload is byte-identical to the stored claim set",
+          "every delivered claim carries status, source and observed_at_revision",
+          "no epistemic_status differs between stored and delivered",
+          "every contested claim carries both sides",
+          "the crossing physically occurred and the reader is the body that crossed",
+          "gate preconditions: all five supports measured before fire",
+          "single bond conduction and integer energy conservation",
+          "quiescence reached",
+          "exactly one reveal per crossing, and none inside the cooldown",
+          "the store is byte-identical across the physics wave (a crossing mutated nothing)",
+          "absence preserved as unknown / not_measured, never as success"
+        ],
+        "trust_rung": "self_reported",
+        "trust_rung_justification": "This observer has never run. It has not read anything back, so it has not earned `observed`; it has not been put in front of the fault-injection fixture in memory-stele-observer-v0, so it is nowhere near `fixture_verified`. Every proof it would feed is WEAK, and it says so before it is asked.",
+        "incoming": [
+          "implementation OBSERVED_BY observability_algorithm",
+          "CommittedDelta independently re-observed as fresh evidence -> observability_algorithm"
+        ],
+        "outgoing": [
+          "observability_algorithm PRODUCES metric",
+          "observability_algorithm VALIDATED_BY observer_validation"
+        ]
+      }
+    },
+    {
+      "id": "metric:l2:lumina-prime:memory-stele-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "role_index": "11/12",
+        "loop_part": "the metric VECTOR the observer PRODUCES, which FEEDS health",
+        "forbidOpaqueAggregate": true,
+        "dimension_specs": {
+          "seal_valid": {
+            "measured_by": "recompute the hash over the stored inscription bytes and compare to the sealed hash",
+            "value_type": "boolean",
+            "provenance_required": "kernel_verified",
+            "freshness_ttl_seconds": 300,
+            "composition": "all_required — an invalid seal is a hard failure, not a degradation"
+          },
+          "payload_fidelity": {
+            "measured_by": "byte-compare the delivered claim set against the stored claim set",
+            "value_type": "boolean_plus_divergence_set",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 300,
+            "composition": "all_required"
+          },
+          "epistemic_status_preservation": {
+            "measured_by": "per claim, compare stored epistemic_status to delivered epistemic_status",
+            "value_type": "ratio_preserved_over_delivered",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 300,
+            "composition": "all_required — one upgraded status caps health at degraded"
+          },
+          "contest_completeness": {
+            "measured_by": "per contested claim, assert both as_received and as_measured are present in the delivered payload",
+            "value_type": "ratio_complete_over_contested",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 300,
+            "composition": "all_required"
+          },
+          "reveal_uniqueness": {
+            "measured_by": "count reveals per crossing_event_id in the reading ledger",
+            "value_type": "count_of_violations",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 300,
+            "composition": "all_required — any value above 0 is a failure"
+          },
+          "reader_correctness": {
+            "measured_by": "the delivered reader_body_key equals the body reported by the crossing event",
+            "value_type": "boolean",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 300,
+            "composition": "all_required"
+          },
+          "cooldown_respected": {
+            "measured_by": "minimum interval between two reveals to the same body in the ledger, against the declared cooldown_ms",
+            "value_type": "milliseconds_minimum",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 300,
+            "composition": "threshold"
+          },
+          "delivery_evidence": {
+            "measured_by": "a delivery record exists for the exact payload hash; an emitter fire alone is not counted",
+            "value_type": "boolean",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 300,
+            "composition": "all_required"
+          },
+          "physics_event_inertness": {
+            "measured_by": "committed store byte-identical across the physics wave containing the crossing",
+            "value_type": "boolean",
+            "provenance_required": "kernel_verified",
+            "freshness_ttl_seconds": 300,
+            "composition": "all_required — a mutating physics event is a hard failure"
+          },
+          "energy_conservation_error": {
+            "measured_by": "sum of deposited minus conducted minus consumed integer energy over the atom ledger",
+            "value_type": "integer",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 300,
+            "composition": "all_required — non-zero is a failure"
+          },
+          "measured_stream_only_rate": {
+            "measured_by": "fraction of conducted bonds whose energy_status is measured",
+            "value_type": "ratio",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 300,
+            "composition": "all_required"
+          },
+          "observer_trust_rung": {
+            "measured_by": "the highest ladder rung this observer's own validation run earned",
+            "value_type": "enum(self_reported|observed|cross_observed|fixture_verified|kernel_verified)",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 86400,
+            "composition": "caps — below fixture_verified every proof it feeds is WEAK"
+          },
+          "not_measured_honesty_rate": {
+            "measured_by": "fraction of unmeasurable dimensions reported as not_measured rather than as 0 or as a pass",
+            "value_type": "ratio",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 3600,
+            "composition": "all_required"
+          },
+          "evidence_freshness_seconds": {
+            "measured_by": "now minus the oldest sample's measured_at in this vector",
+            "value_type": "seconds",
+            "provenance_required": "kernel_verified",
+            "freshness_ttl_seconds": 0,
+            "composition": "gate — a vector past any dimension's TTL derives `stale`, never that dimension's last value"
+          }
+        },
+        "composition_rule": "healthy requires every all_required dimension measured and passing, every applicable dimension fresh within its TTL, and the observer rung at fixture_verified or above. Any dimension not_measured yields not_measured overall — never a lower-confidence `healthy`. Any dimension past TTL yields stale. A failed measurement yields measurement_failed, which is distinct from a measured failure.",
+        "current_sample": {
+          "state": "not_measured",
+          "note": "Zero of the fourteen dimensions have a sample: the stele has never been wired, has never been crossed, and carries no seal. This is `not_measured`, which is not zero and not a failure."
+        },
+        "incoming": ["observability_algorithm PRODUCES metric"],
+        "outgoing": ["metric FEEDS health"]
+      }
+    },
+    {
+      "id": "health:l2:lumina-prime:memory-stele-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "role_index": "12/12",
+        "loop_part": "derived state from a fresh metric vector",
+        "derived_from": "the metric vector only (never self-reported)",
+        "derived_states": ["healthy", "degraded", "stale", "unknown", "not_measured", "measurement_failed"],
+        "current_state": "not_measured",
+        "current_state_justification": "No observer has run, so no metric vector exists, so no health can be derived. `not_measured` is the honest state and it is the state this construct will keep until a body actually crosses a collider that is actually in the field.",
+        "no_healthy_without_fresh_assessment": "No healthy state exists without a FRESH health_assessment; a stale prior reading yields `stale`, never `healthy`.",
+        "produces": "a health_assessment runtime moment (precreated:false): assessment_id, observer_run_ref, trust_rung, metric_samples, derived_state, derived_at, fresh_until, evidence_refs, failure_front",
+        "evidences": "health EVIDENCES objective_satisfaction — it bears on the CONFIDENCE that the stele currently keeps its promise, and on nothing else.",
+        "maintenance": [
+          "re-seal-inscription",
+          "retry-observer",
+          "inspect-atom-event-ledger",
+          "inspect-reading-ledger",
+          "suspend-reveal",
+          "recalibrate-reading-radius",
+          "recalibrate-cooldown",
+          "re-place-reading-collider",
+          "rematerialize-code-projection",
+          "reconcile-universe-physics-runtime",
+          "ask-human"
+        ],
+        "maintenance_path": "Every one of these is an ActionIntent through the ordinary effect protocol: FailureFront -> RepairProposal -> ActionIntent -> validate -> authorize -> EffectIntent -> EffectReceipt -> Moment -> re-observation. None is a direct write to implementation, and none of them may edit an inscription: repairing a stele never means changing what it remembers.",
+        "incoming": ["metric FEEDS health"],
+        "outgoing": [
+          "health PRODUCES health_assessment (precreated:false)",
+          "health EVIDENCES objective_satisfaction",
+          "health REPAIRED_BY maintenance"
+        ]
+      }
+    },
+    {
+      "id": "port:l2:lumina-prime:memory-stele:inscribe-v0",
+      "node_type": "thing",
+      "subtype": "capability_port",
+      "content": {
+        "name": "Inscription port — how a second memory reaches this stele",
+        "state": "sealed_read_only",
+        "accepted_target_subtype": "inscription",
+        "accepted_relations": ["PART_OF"],
+        "required_mutate_capability": "authority:inscribe-lore",
+        "observe_capabilities": ["observe", "read_receipts"],
+        "on_unauthorized": ["fail_closed", "emit_rejection_receipt"],
+        "shape_contract": "title + narrative + claims[] each carrying statement, epistemic_status, source, observed_at_revision, universe",
+        "effect_when_unlinked": "none — the stele reveals the inscriptions it already holds and nothing else",
+        "seal_interaction": "Admitting an inscription BREAKS the stele's seal until the enlarged set is re-sealed. Between the two, the reveal gate cannot fire: a half-inscribed stele is silent, not partial.",
+        "honesty": "DECLARED, not enforced. No SealedCapabilityPort adjudicates this port today and no actor holds authority:inscribe-lore, so the only path for a second inscription is another bootstrap injection run from a terminal — the same chicken-and-egg the underground toolkit and the construct-revision gate both had before their gates were placed."
+      }
+    }
+  ],
+  "relations": [
+    { "source": "space:l2:lumina-prime:memory-stele-v0", "predicate": "GOVERNS", "target": "objective:l2:lumina-prime:memory-stele-v0" },
+    { "source": "objective:l2:lumina-prime:memory-stele-v0", "predicate": "ADDRESSED_BY", "target": "pattern:l2:lumina-prime:memory-stele-v0" },
+    { "source": "objective:l2:lumina-prime:memory-stele-v0", "predicate": "JUSTIFIED_BY", "target": "justification:l2:lumina-prime:memory-stele-v0" },
+    { "source": "pattern:l2:lumina-prime:memory-stele-v0", "predicate": "JUSTIFIED_BY", "target": "justification:l2:lumina-prime:memory-stele-v0" },
+    { "source": "pattern:l2:lumina-prime:memory-stele-v0", "predicate": "SHAPES", "target": "behavior:l2:lumina-prime:memory-stele-v0" },
+    { "source": "behavior:l2:lumina-prime:memory-stele-v0", "predicate": "USES_VOCABULARY", "target": "vocabulary:l2:lumina-prime:memory-stele-v0" },
+    { "source": "behavior:l2:lumina-prime:memory-stele-v0", "predicate": "REFINED_BY", "target": "algorithm:l2:lumina-prime:memory-stele-v0" },
+    { "source": "behavior:l2:lumina-prime:memory-stele-v0", "predicate": "VALIDATED_BY", "target": "validation:l2:lumina-prime:memory-stele-v0" },
+    { "source": "algorithm:l2:lumina-prime:memory-stele-v0", "predicate": "DEFINED_BY", "target": "code:l2:lumina-prime:memory-stele-v0" },
+    { "source": "code:l2:lumina-prime:memory-stele-v0", "predicate": "REALIZED_BY", "target": "implementation:l2:lumina-prime:memory-stele-v0" },
+    { "source": "code:l2:lumina-prime:memory-stele-v0", "predicate": "CHALLENGED_BY", "target": "validation:l2:lumina-prime:memory-stele-v0" },
+    { "source": "space:l2:lumina-prime:memory-stele-v0", "predicate": "DEFINED_BY_CODE", "target": "code:l2:lumina-prime:memory-stele-v0" },
+    { "source": "space:l2:lumina-prime:memory-stele-v0", "predicate": "IMPLEMENTED_IN", "target": "implementation:l2:lumina-prime:memory-stele-v0" },
+    { "source": "implementation:l2:lumina-prime:memory-stele-v0", "predicate": "OBSERVED_BY", "target": "observability_algorithm:l2:lumina-prime:memory-stele-v0" },
+    { "source": "observability_algorithm:l2:lumina-prime:memory-stele-v0", "predicate": "VALIDATED_BY", "target": "validation:l2:lumina-prime:memory-stele-observer-v0" },
+    { "source": "observability_algorithm:l2:lumina-prime:memory-stele-v0", "predicate": "PRODUCES", "target": "metric:l2:lumina-prime:memory-stele-v0" },
+    { "source": "metric:l2:lumina-prime:memory-stele-v0", "predicate": "FEEDS", "target": "health:l2:lumina-prime:memory-stele-v0" },
+    { "source": "health:l2:lumina-prime:memory-stele-v0", "predicate": "EVIDENCES", "target": "objective_satisfaction:l2:lumina-prime:memory-stele-v0" },
+    { "source": "objective_satisfaction:l2:lumina-prime:memory-stele-v0", "predicate": "SATISFIES", "target": "objective:l2:lumina-prime:memory-stele-v0" },
+
+    { "source": "inscription:l2:lumina-prime:memory-stele:dormitory-v0", "predicate": "PART_OF", "target": "space:l2:lumina-prime:memory-stele-v0" },
+    { "source": "port:l2:lumina-prime:memory-stele:inscribe-v0", "predicate": "PART_OF", "target": "space:l2:lumina-prime:memory-stele-v0" },
+
+    { "source": "space:l2:lumina-prime:memory-stele-v0", "predicate": "CONFORMS_TO", "target": "space:l2:mind-universe:construct-validity-v0" },
+    { "source": "space:l2:lumina-prime:memory-stele-v0", "predicate": "DEPENDS_ON", "target": "space:l2:lumina-prime:orientation-beacon-v0" }
+  ]
+}

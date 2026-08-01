@@ -1,0 +1,214 @@
+{
+  "canonical_id": "code:l4:mind-universe:inference-routing-v0",
+  "node_type": "code",
+  "subtype": "provider_routing",
+  "provenance": {
+    "authored_by": "underground toolkit session: collectivized-inference",
+    "intent": "Make provider selection, fallback, budget and admission ordering Universe data, so the native floor only knows how to CALL.",
+    "level": "L4",
+    "why_l4": "Which provider answers a turn is a property of the collective, not of one citizen's inner world; the capability to call outward is universal law."
+  },
+  "content": {
+    "routing_id": "inference-routing-v0",
+    "version": "1",
+    "objective": "Route each L1 actor's turn to a provider chain, with authored fallback and authored bounds. The native floor selects nothing.",
+
+    "providers": [
+      {
+        "provider_id": "local-ollama-qwen3vl-2b",
+        "justification": "A local ~2B model on the citizen's own machine. Cheapest, lowest latency, no credential, no data leaves the host. First link for ordinary turns.",
+        "capability": "infer.local.ollama.generate",
+        "model": "qwen3-vl:2b-instruct",
+        "cost_units": 1,
+        "transport": {
+          "scheme": "http",
+          "endpoint": "http://127.0.0.1:11434/api/generate",
+          "method": "POST",
+          "content_type": "application/json",
+          "timeout_ms": 120000
+        },
+        "auth": { "kind": "none" },
+        "request_template": {
+          "model": "{{model}}",
+          "prompt": "{{prompt}}",
+          "stream": false,
+          "options": { "num_predict": 64, "temperature": 0.1 }
+        },
+        "response": {
+          "completion_pointer": "/response",
+          "model_pointer": "/model",
+          "error_pointer": "/error",
+          "success_statuses": [200]
+        },
+        "limits": {
+          "max_prompt_bytes": 16384,
+          "max_request_bytes": 65536,
+          "max_causal_depth": 4
+        }
+      },
+
+      {
+        "provider_id": "anthropic-claude-opus-5",
+        "justification": "A remote frontier model. Reached only when the local model cannot answer, because it costs money, adds latency, and sends the observation off the host.",
+        "capability": "infer.remote.anthropic.messages",
+        "model": "claude-opus-5",
+        "cost_units": 8,
+        "transport": {
+          "scheme": "https",
+          "endpoint": "https://api.anthropic.com/v1/messages",
+          "method": "POST",
+          "content_type": "application/json",
+          "timeout_ms": 120000
+        },
+        "auth": {
+          "kind": "env_header",
+          "env_var": "ANTHROPIC_API_KEY",
+          "header": "x-api-key"
+        },
+        "extra_headers": {
+          "anthropic-version": "2023-06-01"
+        },
+        "request_template": {
+          "model": "{{model}}",
+          "max_tokens": 256,
+          "system": "You choose exactly one offered verb on exactly one offered target, and give one short justification. Reply with the verb and the target id only.",
+          "messages": [
+            { "role": "user", "content": "{{prompt}}" }
+          ]
+        },
+        "response": {
+          "completion_pointer": "/content/0/text",
+          "model_pointer": "/model",
+          "stop_reason_pointer": "/stop_reason",
+          "refusal_stop_reason": "refusal",
+          "error_pointer": "/error",
+          "success_statuses": [200]
+        },
+        "limits": {
+          "max_prompt_bytes": 262144,
+          "max_request_bytes": 1048576,
+          "max_causal_depth": 4
+        }
+      },
+
+      {
+        "provider_id": "local-ollama-unreachable",
+        "justification": "The same local wire shape pointed at a port nothing listens on. Present so a run can MEASURE a real transport failure and prove the authored fallback fires on measured evidence rather than on a mock.",
+        "capability": "infer.local.ollama.generate.spare",
+        "model": "qwen3-vl:2b-instruct",
+        "cost_units": 1,
+        "transport": {
+          "scheme": "http",
+          "endpoint": "http://127.0.0.1:1/api/generate",
+          "method": "POST",
+          "content_type": "application/json",
+          "timeout_ms": 2000
+        },
+        "auth": { "kind": "none" },
+        "request_template": {
+          "model": "{{model}}",
+          "prompt": "{{prompt}}",
+          "stream": false
+        },
+        "response": {
+          "completion_pointer": "/response",
+          "model_pointer": "/model",
+          "success_statuses": [200]
+        },
+        "limits": {
+          "max_prompt_bytes": 16384,
+          "max_request_bytes": 65536,
+          "max_causal_depth": 4
+        }
+      }
+    ],
+
+    "routes": [
+      {
+        "route_id": "route:l1:captain",
+        "justification": "The captain's ordinary turns run locally. If the local model is DOWN we pay for the frontier model; if it merely REFUSES we do not — a refusal is an answer, and buying a second opinion on a refusal is how a city launders its own policy.",
+        "match": { "actor_id": "actor:l1:mind-universe:captain" },
+        "priority": 100,
+        "chain": [
+          {
+            "provider_id": "local-ollama-qwen3vl-2b",
+            "advance_on": ["measurement_failed", "not_configured", "not_attempted"]
+          },
+          {
+            "provider_id": "anthropic-claude-opus-5",
+            "advance_on": []
+          }
+        ],
+        "budget": {
+          "max_attempts": 2,
+          "max_prompt_bytes": 16384,
+          "deadline_ticks": 4,
+          "cost_units": 12
+        }
+      },
+
+      {
+        "route_id": "route:l1:remote-only",
+        "justification": "An actor with no local model available at all. Proves that an absent credential surfaces as not_configured rather than as a failed call or an empty answer.",
+        "match": { "actor_id": "actor:l1:mind-universe:remote-only" },
+        "priority": 100,
+        "chain": [
+          { "provider_id": "anthropic-claude-opus-5", "advance_on": [] }
+        ],
+        "budget": {
+          "max_attempts": 1,
+          "max_prompt_bytes": 16384,
+          "deadline_ticks": 4,
+          "cost_units": 8
+        }
+      },
+
+      {
+        "route_id": "route:l1:failover-drill",
+        "justification": "First link is deliberately unreachable, so the chain advances on MEASURED transport failure to the working local model.",
+        "match": { "actor_id": "actor:l1:mind-universe:failover-drill" },
+        "priority": 100,
+        "chain": [
+          {
+            "provider_id": "local-ollama-unreachable",
+            "advance_on": ["measurement_failed", "not_configured"]
+          },
+          {
+            "provider_id": "local-ollama-qwen3vl-2b",
+            "advance_on": []
+          }
+        ],
+        "budget": {
+          "max_attempts": 2,
+          "max_prompt_bytes": 16384,
+          "deadline_ticks": 4,
+          "cost_units": 6
+        }
+      },
+
+      {
+        "route_id": "route:default",
+        "justification": "Catch-all. Local only: an unrouted actor never silently spends money.",
+        "match": { "any": true },
+        "priority": 0,
+        "chain": [
+          { "provider_id": "local-ollama-qwen3vl-2b", "advance_on": [] }
+        ],
+        "budget": {
+          "max_attempts": 1,
+          "max_prompt_bytes": 16384,
+          "deadline_ticks": 4,
+          "cost_units": 2
+        }
+      }
+    ],
+
+    "admission": {
+      "order": "wake_queue",
+      "clock": "tick_boundary",
+      "max_in_flight": 4,
+      "stale_policy": "reject_with_receipt",
+      "justification": "Inferences run in parallel because they read and write nothing. Admission is serial and ordered by the physics wake sequence, NOT by which provider answered first, so provider latency can never schedule the city. A turn whose inference has not landed by its deadline tick is admitted as `unknown`, so the loop stays live without letting arrival order leak in."
+    }
+  }
+}

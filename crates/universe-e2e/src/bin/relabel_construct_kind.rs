@@ -1,11 +1,9 @@
 //! Migration: re-label the two constructs already in the LIVE canonical store
 //! from the historical `contractKind: "self_verifying_loop"` to the current
-//! `contractKind: "construct"`, using the kernel's new `SupersedeEntity`
-//! mutation — the ONLY canonical path that revises an entity's content in place.
+//! `contractKind: "construct"`.
 //!
-//! Entity records are append-only by key: `PutEntity` rejects an existing key.
-//! `SupersedeEntity` preserves the stable key, requires a strictly greater
-//! generation, and therefore leaves every relation that references the entity
+//! `PutEntity` over an existing key is an upsert: it preserves the stable key
+//! and therefore leaves every relation that references the entity
 //! intact. This migration does NOT rewrite content-0.jsonl by hand and does NOT
 //! re-seed; it appends one atomic event to the authoritative log and reads the
 //! result back from a fresh reopen.
@@ -54,7 +52,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     );
 
     // Resolve each target entity by its canonical_id (stored inside content),
-    // and build a SupersedeEntity command with the contractKind rewritten.
+    // and build a PutEntity command with the contractKind rewritten.
     let mut commands = Vec::new();
     for cid in TARGETS {
         // Find the entity whose content.canonical_id matches.
@@ -107,7 +105,7 @@ fn run() -> Result<(), Box<dyn Error>> {
             "  RELABEL {cid}  gen {} -> {}  ({OLD_LABEL} -> {NEW_LABEL})",
             entity.generation, next_generation
         );
-        commands.push(UniverseCommand::SupersedeEntity {
+        commands.push(UniverseCommand::PutEntity {
             entity: EntityRecord {
                 key: entity.key,
                 generation: next_generation,
@@ -126,7 +124,6 @@ fn run() -> Result<(), Box<dyn Error>> {
     let write_set = UniverseWriteSet {
         base_revision,
         idempotency_key: "migration:relabel-construct-kind:v0".to_string(),
-        causal_ancestry: vec!["changeset:construct-rename-v0".to_string()],
         commands,
     };
 
@@ -176,7 +173,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     println!(
         "\nRESULT: relabeled {command_count} construct(s) in the LIVE store to contractKind=construct"
     );
-    println!("        via SupersedeEntity (append-only event, generation bumped, keys and relations preserved),");
+    println!("        via PutEntity upsert (generation bumped, keys and relations preserved),");
     println!("        and verified the new label from a fresh reopen. Old content remains in the content log.");
     Ok(())
 }

@@ -26,9 +26,9 @@ import {
 } from "./relation-infrastructure";
 import { ActorControls } from "./ActorControls";
 import type { MotionBounds } from "./actor-control";
-import type { Vector3 as Vec3 } from "./contracts";
+import type { CitizenEnergyEmbodiment, Vector3 as Vec3 } from "./contracts";
 import { Embodiment } from "./EnergyEmbodiment";
-import { validateEmbodimentMapping } from "./embodiment";
+import { isCitizenEnergyEmbodiment } from "./embodiment";
 import { EnergyTransferEffect } from "./EnergyTransfer";
 import { ObserverControls } from "./ObserverControls";
 import { orientationFromLookAt } from "./first-person-look";
@@ -126,14 +126,14 @@ function Atom({
   readonly onHover: (id: string | null) => void;
   readonly synchronized: boolean;
 }) {
-  if (
-    entity.embodiment &&
-    validateEmbodimentMapping(entity.embodiment.mapping)
-  ) {
+  // Only a citizen-energy embodiment goes down the motion-driven humanoid path.
+  // A toolkit's own role-keyed binding is NOT drawn here — it would be wearing a
+  // form family its producing toolkit never declared.
+  if (entity.embodiment && isCitizenEnergyEmbodiment(entity.embodiment)) {
     return (
       <Embodiment
         entity={entity as MaterializedEntity & {
-          readonly embodiment: NonNullable<MaterializedEntity["embodiment"]>;
+          readonly embodiment: CitizenEnergyEmbodiment;
         }}
         synchronized={synchronized}
       />

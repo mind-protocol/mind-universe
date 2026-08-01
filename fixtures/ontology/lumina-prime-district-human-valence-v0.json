@@ -1,0 +1,575 @@
+{
+  "id": "space:l2:lumina-prime:district-human-valence-v0",
+  "node_type": "space",
+  "subtype": "district",
+  "content": {
+    "contractKind": "construct",
+    "name": "Quartier de la Valence Humaine — le Jardin Clos",
+    "dominant_scale": "civic",
+    "structure_kind": "district",
+    "provenance": "built",
+    "portfolio_priority": "P1",
+    "priority_rank": 4,
+    "lifecycle": "design",
+    "lineage": "Un quartier de Lumina Prime bâti par la Construction toolkit v0 (fixtures/ontology/construction-toolkit-v0.json, structure_kind=district, kind_profiles lus depuis le graphe). Sa substance — objectif, gap, dimensions de métrique, compteurs de baseline, critère d'acceptation, prochaine tâche et santé dérivée — est TRANSCRITE du portefeuille Endgame de Mind Protocol, pas inventée ici. Sa forme est authored selon l'Appearance toolkit v0 (schéma affordance-materialization/1, palette de primitives fermée). Sa place n'est écrite nulle part : elle est portée par ses relations — PART_OF la ville, et les voies qui l'atteignent.",
+    "source_endgame": {
+      "endgame_root": "horizon-human-valence-endgame",
+      "endgame_statement": "Des estimateurs progressivement calibrés relient les contributions à leurs effets vécus afin que les prix Mind reflètent mieux la valeur humaine créée, sans prétendre mesurer parfaitement le bonheur.",
+      "project": "project:mind:human-valence-endgame:v0",
+      "source_node_count": 19,
+      "source_relation_count": 23,
+      "source_sha256": "41449962439627021580a75c37136a64f80ba3196ced2e173336fd4fbad22f4c"
+    },
+    "placement_model": "RELATIONNEL, jamais une coordonnée. Ce quartier est PART_OF space:l2:lumina-prime:city-v0 ; son voisinage est porté par les routes qui le rejoignent (COMMUNICATES). Un quartier sans voie inter-quartier est en lisière, et c'est un fait lisible sur le travail, pas un accident de layout.",
+    "canonical_predicate_remap": {
+      "why": "Zéro nouveau symbole : chaque prédicat authored est remappé sur le plus proche prédicat canonique actif du seed (fixtures/ontology/canonical-ontology.json).",
+      "remaps": {
+        "PART_OF": {
+          "canonical": "PART_OF",
+          "swap": false,
+          "note": "quartier PART_OF la ville — la relation de placement primaire"
+        },
+        "PROJECTS_AS": {
+          "canonical": "COMPILES_TO",
+          "swap": false,
+          "note": "le quartier se projette en sa forme : PROJECTS_AS n'est pas canonique, il est remappé sur COMPILES_TO (le binding est la projection compilée du construct, comme code -> implementation). Même convention que sky-toolkit-v0 / appearance-toolkit-v0."
+        }
+      }
+    },
+    "parent_scope": {
+      "classification": "district_of_city",
+      "justification": "Ce quartier appartient à Lumina Prime et à rien d'autre. L'arête PART_OF vers la ville est écrite par la passe de construction, attribuée par un Moment."
+    },
+    "runtime_moment_subtypes": [
+      "validation_run",
+      "health_assessment"
+    ],
+    "native_law_boundary": "Le socle natif ne connaît que les quatre verbes d'écriture fermés et les prédicats canoniques. Ce qu'est un quartier, ce qu'il tient, ce qu'il vaut et à quoi il ressemble sont des données du monde. Aucun endgame n'est un terme du dispatch natif.",
+    "purpose": "Tenir une capacité à FORTS ENJEUX en la gardant petite et fermée : estimer un delta de valence PERSONNEL, local, consenti et corrigible — sans jamais transformer une personne en score, et sans aucun effet sur les prix. Le quartier est une feuille : une seule voie en part, vers le Banc d'Essai, et elle ne porte qu'une dimension facultative."
+  },
+  "members": [
+    {
+      "id": "objective:l2:lumina-prime:district-human-valence-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "Produire une estimation locale, consentie, calibrée et contestable du changement de bien-être, SÉPARÉE de toute décision de prix. Le premier objectif mesurable est scientifique et protecteur : vérifier si une estimation longitudinale personnelle peut être utile et corrigible avant tout effet économique.",
+        "epistemic_status": "design_proposal",
+        "not_yet": "Aucune collecte, aucun recrutement, aucune calibration longitudinale, aucun effet prix. Par construction, pas par retard."
+      }
+    },
+    {
+      "id": "pattern:l2:lumina-prime:district-human-valence-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "Un jardin clos : une enceinte, un cœur petit, une porte de sortie toujours ouverte. Le quartier est délibérément le plus PETIT des cinq, parce qu'à ces enjeux la taille est un risque. La frontière consentie est matérialisée : aucun signal intime brut ne la franchit, et le canal vers les prix est visiblement SECTIONNÉ.",
+        "epistemic_honesty": "Observer une amélioration après une contribution ne prouve pas qu'elle l'a causée, ni que deux scores personnels sont comparables. Une estimation non calibrée reste une estimation. Un score n'est jamais une valeur morale ni un accès vital."
+      }
+    },
+    {
+      "id": "vocabulary:l2:lumina-prime:district-human-valence-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "Valence": "Le changement de bien-être vécu, estimé localement et par la personne concernée — jamais un score social.",
+          "Attribution causale": "Le premier verrou : relier un delta observé à une contribution, contre les causes concurrentes. Non résolu.",
+          "Agrégation interpersonnelle": "Le second verrou : comparer ou sommer deux estimations personnelles. Non résolu, et donc interdit.",
+          "Frontière consentie": "La limite que les signaux intimes bruts ne franchissent pas. Elle est une enceinte, pas une politique de rétention.",
+          "Droit de correction": "La capacité effective de la personne à corriger son estimation. userCorrectionRate en mesure l'exercice réel.",
+          "Opt-out": "La sortie effective, à tout moment, sans coût. La porte reste ouverte dans la forme même du quartier.",
+          "Décote d'incertitude": "L'abattement appliqué à une estimation incertaine ; sans elle, l'incertitude devient silencieusement de la confiance."
+        }
+      }
+    },
+    {
+      "id": "behavior:l2:lumina-prime:district-human-valence-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "Quatre modalités de capteurs définies, deux verrous ouverts (attribution causale, agrégation interpersonnelle), et l'interdiction explicite de tout effet économique.",
+        "when": "Un citoyen conçoit le protocole local de valence humaine dans ce quartier.",
+        "then": [
+          "Définir auto-évaluations, modalités facultatives, calibration personnelle et fenêtres temporelles.",
+          "Nommer les causes concurrentes et la manière dont l'incertitude est décotée.",
+          "Définir droit de correction, minimisation, opt-out, audit et seuils d'arrêt.",
+          "Pré-enregistrer le protocole AVANT toute collecte.",
+          "N'autoriser aucune collecte réelle, aucun recrutement, aucun effet sur les prix depuis cette étape."
+        ],
+        "forbidden": [
+          "toute collecte réelle ou tout recrutement depuis cette étape",
+          "tout effet sur les prix, même expérimental",
+          "agréger deux estimations personnelles",
+          "traiter une corrélation temporelle comme une attribution causale",
+          "faire sortir un signal intime brut de la frontière consentie",
+          "utiliser un score comme valeur morale ou condition d'accès vital"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l2:lumina-prime:district-human-valence-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "définir les auto-évaluations et les modalités facultatives",
+          "définir la calibration personnelle et les fenêtres temporelles",
+          "énumérer les causes concurrentes et la règle de décote d'incertitude",
+          "définir droit de correction, minimisation, opt-out, audit et seuils d'arrêt",
+          "pré-enregistrer le protocole avant toute observation",
+          "vérifier que le canal vers les prix reste sectionné et visible comme tel"
+        ],
+        "python_escape_hatch": "forbidden_by_default",
+        "composition_is_data": "Les étapes du quartier sont des données du graphe : sa prochaine transformation est lue depuis sa tâche, jamais dispatchée en natif.",
+        "scheduler_projection": "tick-boundary/1"
+      }
+    },
+    {
+      "id": "code:l2:lumina-prime:district-human-valence-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "authority": "Projection matérialisée, pas une autorité sémantique indépendante : l'autorité reste le portefeuille Endgame source.",
+        "language": "mind-district/civic",
+        "note": "Le mécanisme du quartier est un protocole pré-enregistré, pas un estimateur en marche. Sa qualité se juge à ses garde-fous autant qu'à sa calibration.",
+        "next_task": {
+          "id": "task:mind:human-valence-endgame:design-local-pilot-protocol-v0",
+          "title": "Concevoir le protocole local de valence humaine",
+          "scope": "protocol_design_only",
+          "reversible": true,
+          "priority": "P1",
+          "high_stakes": true
+        },
+        "source_endgame_root": "horizon-human-valence-endgame",
+        "source_node_count": 19,
+        "source_relation_count": 23,
+        "source_sha256": "41449962439627021580a75c37136a64f80ba3196ced2e173336fd4fbad22f4c"
+      }
+    },
+    {
+      "id": "implementation:l2:lumina-prime:district-human-valence-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "status": "authored",
+        "graph_status": "written_on_injection",
+        "runtime_status": "not_running",
+        "verification_status": "not_measured",
+        "honesty": "Quatre modalités conçues, DEUX verrous ouverts, longitudinal_calibration_run_count = 0, economic_price_effect_enabled = false. Aucune observation empirique n'autorise un usage économique. Ce n'est pas un retard : c'est l'état sain de ce quartier.",
+        "artifact": "lumina-prime-district-human-valence-v0.json",
+        "baseline_imported": {
+          "observed_at": "2026-07-28",
+          "defined_modalities": 4,
+          "open_blocker_count": 2,
+          "longitudinal_calibration_run_count": 0,
+          "economic_price_effect_enabled": false,
+          "note": "Quatre modalités conçues, mais aucun estimateur longitudinal calibré et aucun effet prix activé."
+        }
+      }
+    },
+    {
+      "id": "justification:l2:lumina-prime:district-human-valence-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": [
+          "Le verrou d'attribution causale et d'agrégation interpersonnelle interdit tout effet réel sur les prix tant que baseline, causes concurrentes, décote d'incertitude et règle de gouvernance ne sont pas établies.",
+          "Le projet est SAIN tant qu'il reste en protocole local sans effet prix ; toute activation économique serait prématurée. Le quartier doit donc rendre la retenue visible, pas la cacher.",
+          "La valence attribuable alimente l'amélioration autonome comme une dimension terminale FACULTATIVE — d'où l'unique voie sortante, étroite, vers le Banc d'Essai."
+        ],
+        "rejected": [
+          "un score agrégé interpersonnel, car l'agrégation est un verrou non résolu",
+          "un effet prix pilote, car aucune calibration longitudinale n'existe",
+          "un grand quartier, car à ces enjeux l'échelle est elle-même un risque"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:lumina-prime:district-human-valence-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "structured_expression_ast",
+        "acceptance_criterion": "Le pilote est complet avec résultats longitudinaux reproductibles, opt-out effectif, audit de confidentialité, analyse des biais, correction utilisateur et démonstration qu'aucun score n'est utilisé comme valeur morale ou accès vital. La calibration est meilleure qu'un baseline simple, l'incertitude est honnête, la correction humaine fonctionne et aucun signal intime brut ne sort de la frontière consentie.",
+        "scenarios": [
+          "protocol_preregistered_before_any_collection",
+          "opt_out_effective_at_any_time",
+          "user_correction_actually_changes_the_estimate",
+          "uncertainty_discounted_not_hidden",
+          "no_raw_intimate_signal_crosses_the_boundary",
+          "no_interpersonal_aggregation",
+          "no_price_effect_enabled",
+          "no_score_used_as_moral_worth_or_vital_access"
+        ],
+        "negative_invariants": [
+          "collection before pre-registration — rejected",
+          "temporal correlation reported as causal attribution — rejected",
+          "two personal estimates aggregated — rejected",
+          "price effect enabled without longitudinal calibration — rejected",
+          "opt-out that costs the person something — rejected"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l2:lumina-prime:district-human-valence-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Lit le protocole pré-enregistré, les traces de consentement, les corrections utilisateur, l'audit de confidentialité et l'état du canal prix. Ne fait jamais confiance à une déclaration de conformité.",
+        "checks": [
+          "protocole pré-enregistré antérieur à toute observation",
+          "opt-out exercé sans coût constaté",
+          "correction utilisateur effectivement répercutée",
+          "incertitude décotée, pas dissimulée",
+          "aucun signal brut au-delà de la frontière consentie",
+          "canal prix sectionné et vérifié comme tel",
+          "aucune agrégation interpersonnelle produite"
+        ]
+      }
+    },
+    {
+      "id": "metric:l2:lumina-prime:district-human-valence-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "dimensions": [
+          "calibrationError",
+          "uncertaintyCoverage",
+          "userCorrectionRate",
+          "missingness",
+          "optOutRate",
+          "attributableDeltaSensitivity",
+          "boundary_crossing_count",
+          "evidence_freshness_ms"
+        ],
+        "note": "Aucun score agrégé interpersonnel n'est requis — ni permis — au stade pilote. attributableDeltaSensitivity mesure la robustesse du delta aux causes concurrentes ; sans elle, un delta n'est qu'une coïncidence datée.",
+        "baseline": {
+          "observed_at": "2026-07-28",
+          "defined_modalities": 4,
+          "open_blocker_count": 2,
+          "longitudinal_calibration_run_count": 0,
+          "economic_price_effect_enabled": false,
+          "note": "Quatre modalités conçues, mais aucun estimateur longitudinal calibré et aucun effet prix activé."
+        }
+      }
+    },
+    {
+      "id": "health:l2:lumina-prime:district-human-valence-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "states": [
+          "healthy",
+          "degraded",
+          "stale",
+          "unknown",
+          "not_measured",
+          "measurement_failed"
+        ],
+        "current": "not_measured",
+        "current_why": "0 calibration longitudinale, 2 verrous ouverts. L'absence de mesure est ici conforme au design, non un échec.",
+        "derivation": {
+          "healthy": "Le critère d'acceptation du quartier est satisfait par des preuves fraîches et attribuées, mesurées ICI.",
+          "degraded": "Des preuves fraîches existent mais au moins une dimension viole sa borne.",
+          "stale": "La dernière preuve valide dépasse la fenêtre de fraîcheur.",
+          "unknown": "Les preuves requises ne se résolvent en aucun état connu.",
+          "not_measured": "Aucune exécution fraîche n'a mesuré les dimensions requises dans ce quartier.",
+          "measurement_failed": "L'observateur n'a pas produit de mesure fiable."
+        },
+        "upstream_derived": "Design cohérent mais domaine à forts enjeux. Le projet est sain tant qu'il reste en protocole local sans effet prix. Finalité et garde-fous clairs ; causalité, calibration et gouvernance bloquent tout usage économique.",
+        "maintenance": [
+          "run_next_task",
+          "inspect_baseline",
+          "reissue_capability",
+          "revise_criterion",
+          "ask_human"
+        ]
+      }
+    },
+    {
+      "id": "visual_binding:l2:lumina-prime:district-human-valence-v0",
+      "node_type": "thing",
+      "subtype": "physicalization_binding",
+      "content": {
+        "kind": "physicalization_binding",
+        "schema_version": "affordance-materialization/1",
+        "dominant_scale": "civic",
+        "silhouette": "Le Jardin Clos — une enceinte translucide autour d'un cœur petit, une porte laissée entrouverte, et un conduit vers les prix visiblement sectionné.",
+        "palette": {
+          "core": "#f0e8e6",
+          "emissive": "#c58fa6",
+          "shell": "#5b4f55",
+          "particle": "#ffeef2"
+        },
+        "form_primitive_tuple": {
+          "arity": 8,
+          "fields": [
+            "kind",
+            "part_name",
+            "palette_role",
+            "offset(vec3)",
+            "rotation(vec3)",
+            "scale(vec3>0)",
+            "particle_count",
+            "particle_size"
+          ],
+          "allowed_primitives": [
+            "box",
+            "cylinder",
+            "cone",
+            "torus",
+            "plane",
+            "tube",
+            "capsule",
+            "sphere",
+            "icosphere",
+            "points",
+            "fresnel_shell"
+          ]
+        },
+        "note": "La forme du quartier est l'UNION des matérialisations de ses affordances. Les offsets sont INTERNES à la forme (la disposition de ses propres parties), jamais une position dans la ville : où est le quartier reste une projection de ses relations.",
+        "affordance_materializations": [
+          {
+            "affordance": {
+              "subtype": "design_local_protocol",
+              "kernel_kind": "build",
+              "justification": "le cœur du jardin afforde de concevoir le protocole local — conception seulement, aucune collecte",
+              "cell": "actionable"
+            },
+            "form": [
+              [
+                "sphere",
+                "personal_core",
+                "core",
+                [
+                  0,
+                  0.4,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.35,
+                  0.35,
+                  0.35
+                ],
+                0,
+                0
+              ],
+              [
+                "fresnel_shell",
+                "consent_boundary",
+                "shell",
+                [
+                  0,
+                  0.4,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  1.1,
+                  1.1,
+                  1.1
+                ],
+                0,
+                0
+              ]
+            ],
+            "inverse_mapping": "le cœur PETIT = une estimation personnelle, jamais un score social ; l'enceinte = la frontière consentie qu'aucun signal brut ne franchit"
+          },
+          {
+            "affordance": {
+              "subtype": "exercise_opt_out",
+              "kernel_kind": "open",
+              "justification": "la porte entrouverte afforde de sortir à tout moment, sans coût",
+              "cell": "actionable"
+            },
+            "form": [
+              [
+                "plane",
+                "opt_out_door",
+                "emissive",
+                [
+                  0.95,
+                  0.35,
+                  0.35
+                ],
+                [
+                  0,
+                  0.7854,
+                  0
+                ],
+                [
+                  0.5,
+                  0.8,
+                  1
+                ],
+                0,
+                0
+              ]
+            ],
+            "inverse_mapping": "la porte OUVERTE = opt-out effectif ; si elle se ferme dans la forme, c'est que le garde-fou a cédé"
+          },
+          {
+            "affordance": {
+              "subtype": "price_channel",
+              "kernel_kind": "connect",
+              "justification": "le conduit vers les prix est SECTIONNÉ : economic_price_effect_enabled = false, et l'activer sans calibration est interdit",
+              "cell": "forbidden"
+            },
+            "form": [
+              [
+                "tube",
+                "severed_price_conduit",
+                "shell",
+                [
+                  1.5,
+                  0.1,
+                  -0.6
+                ],
+                [
+                  0,
+                  0,
+                  1.2
+                ],
+                [
+                  0.06,
+                  0.5,
+                  0.06
+                ],
+                0,
+                0
+              ]
+            ],
+            "inverse_mapping": "le conduit COUPÉ = aucun effet économique ; rendu barré, jamais absent, pour que l'interdit reste visible"
+          },
+          {
+            "affordance": {
+              "subtype": "read_calibration",
+              "kernel_kind": "inspect",
+              "justification": "les motes de calibration affordent de lire l'erreur d'estimation — aucune campagne n'a couru",
+              "cell": "fogged"
+            },
+            "form": [
+              [
+                "points",
+                "calibration_motes",
+                "particle",
+                [
+                  0,
+                  0.4,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  1,
+                  1,
+                  1
+                ],
+                0,
+                0.25
+              ]
+            ],
+            "inverse_mapping": "ZÉRO mote = longitudinal_calibration_run_count 0 ; l'incertitude ne se rend pas comme une certitude pâle"
+          }
+        ],
+        "state_sockets": [
+          {
+            "socket": "whole.scale",
+            "channel": "poids",
+            "driven_by": "nombre de constructs PART_OF le quartier",
+            "honesty": "absent -> échelle neutre 1 ; ce quartier reste petit par conception"
+          },
+          {
+            "socket": "calibration_motes.count",
+            "channel": "activation",
+            "driven_by": "longitudinal_calibration_run_count",
+            "honesty": "0 -> aucun mote"
+          },
+          {
+            "socket": "consent_boundary.continuity",
+            "channel": "validite",
+            "driven_by": "boundary_crossing_count",
+            "honesty": "franchissement -> enceinte rompue, visiblement"
+          }
+        ],
+        "fallback": "toute affordance non matérialisée ici retombe sur default_materializations[kernel_kind] de l'Appearance toolkit ; aucune affordance -> point de présence gris",
+        "lod_states": {
+          "hot": "cœur + enceinte + porte + conduit sectionné",
+          "sleeping": "cœur + enceinte",
+          "aggregated": "enceinte seule",
+          "dormant": "point de présence gris"
+        }
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "space:l2:lumina-prime:district-human-valence-v0",
+      "predicate": "IMPLEMENTED_IN",
+      "target": "implementation:l2:lumina-prime:district-human-valence-v0"
+    },
+    {
+      "source": "space:l2:lumina-prime:district-human-valence-v0",
+      "predicate": "DEFINED_BY_CODE",
+      "target": "code:l2:lumina-prime:district-human-valence-v0"
+    },
+    {
+      "source": "code:l2:lumina-prime:district-human-valence-v0",
+      "predicate": "IMPLEMENTED_BY",
+      "target": "implementation:l2:lumina-prime:district-human-valence-v0"
+    },
+    {
+      "source": "pattern:l2:lumina-prime:district-human-valence-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l2:lumina-prime:district-human-valence-v0"
+    },
+    {
+      "source": "behavior:l2:lumina-prime:district-human-valence-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:lumina-prime:district-human-valence-v0"
+    },
+    {
+      "source": "implementation:l2:lumina-prime:district-human-valence-v0",
+      "predicate": "OBSERVED_BY",
+      "target": "observability_algorithm:l2:lumina-prime:district-human-valence-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:lumina-prime:district-human-valence-v0",
+      "predicate": "PRODUCES",
+      "target": "metric:l2:lumina-prime:district-human-valence-v0"
+    },
+    {
+      "source": "metric:l2:lumina-prime:district-human-valence-v0",
+      "predicate": "FEEDS",
+      "target": "health:l2:lumina-prime:district-human-valence-v0"
+    },
+    {
+      "source": "objective:l2:lumina-prime:district-human-valence-v0",
+      "predicate": "SUPPORTS",
+      "target": "space:l2:lumina-prime:district-human-valence-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:lumina-prime:district-human-valence-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:lumina-prime:district-human-valence-v0"
+    },
+    {
+      "source": "space:l2:lumina-prime:district-human-valence-v0",
+      "predicate": "PROJECTS_AS",
+      "target": "visual_binding:l2:lumina-prime:district-human-valence-v0"
+    }
+  ]
+}

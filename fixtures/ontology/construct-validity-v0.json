@@ -4,9 +4,34 @@
   "subtype": "construct_validity",
   "content": {
     "contractKind": "construct",
-    "name": "Construct-validity v0 — the canonical construct self-verifying loop (every construct APPLIES_IN it)",
+    "name": "Construct-validity v0 — the canonical construct protocol (every construct APPLIES_IN it)",
     "dominant_scale": "sensemaking",
-    "lineage": "The shared canonical model of what a construct IS: a self-verifying loop. Its forward anatomy spine (loop_space GOVERNS objective -> ADDRESSED_BY pattern -> SHAPES behavior -> REFINED_BY algorithm -> DEFINED_BY code -> REALIZED_BY implementation), its runtime firing (implementation -> Sensor -> DepositBond -> trigger atom -> Threshold -> IntentProposal/PhysicsEvent -> ActionIntent -> EffectIntent -> EffectReceipt -> Moment) and its verify arc (implementation OBSERVED_BY observability_algorithm PRODUCES metric FEEDS health) are closed into a LOOP by six feedback edges. Consumed by every construct through APPLIES_IN / DEPENDS_ON; owned by no single toolkit. Promoted from the model first authored in [[space:l2:mind-universe:abstraction-toolkit-v0]]. This v0 REPLACES an earlier invented validity decomposition with the complete, faithful loop anatomy: 34 parts, 42 edges, exactly 6 of them feedback.",
+    "execution_profile": "deterministic",
+    "lineage": "The shared canonical model of what a construct IS. Its type-level anatomy spine is materialized as canonical graph relations; its runtime firing is a TRACE verified per Moment, never a static relation; its verify arc ends in an independently observed health assessment that EVIDENCES an explicit objective-satisfaction claim. Consumed by every construct through APPLIES_IN (conformance) and DEPENDS_ON (operational dependency); owned by no single toolkit. Promoted from the model first authored in [[space:l2:mind-universe:abstraction-toolkit-v0]].",
+    "revision_reason": {
+      "why": "The prior revision described one undifferentiated 34-part / 42-edge loop as CONTENT while the graph carried only ten type-level relations. That is not two ontologies; it is one spine with an unstated encoding, plus a runtime trace that was never a graph fact. This revision (a) states the encoding, (b) separates type edges from trace edges, (c) replaces the health->objective energy edge with an explicit satisfaction claim, (d) splits declared from committed effects, (e) types the feedback edges, and (f) stops assuming every construct is an inferring agent.",
+      "changed": [
+        "DELETED the invariant 'the loop has 34 parts and 42 edges, exactly 6 of which are feedback' — a count is a description of one revision, never a conformance rule.",
+        "SPLIT the single edge list into type_edges (materialized as canonical graph relations, traversable and validatable) and trace_edges (the shape of ONE firing; verified per Moment, never stored as a static relation).",
+        "ADDED spine_encoding: the authored spine predicate -> canonical stored predicate map, with direction, so the stored graph provably encodes the spine and interns zero new symbols.",
+        "REPLACED 'health SUPPORTS objective' with 'health EVIDENCES objective_satisfaction SATISFIES objective'. SUPPORTS is the AtomDynamics bond polarity; a semantic claim edge must never share a name with an atom polarity, or derived health would deposit energy onto the objective itself.",
+        "SPLIT the 'Effects' part into ExpectedEffects (declared before the action; a claim) and CommittedDelta (proven after the commit; read back from the node), and DELETED the duplicate EffectIntent -> Effects -> Receipts path.",
+        "TYPED the feedback edges by kind (epistemic / control / state / environmental / invalidation / repair) instead of one boolean.",
+        "ADDED execution_profiles (reactive / deterministic / agentic). The prior Mechanism mandated one local Ollama inference for EVERY construct and called the inference 'the clock'. A gate, a counter, a validator and a projection need no LLM, and an inference-paced clock cannot reach the throughput the Universe needs.",
+        "ADDED trust_provenance: a graded, terminating ladder (self_reported < observed < cross_observed < fixture_verified < kernel_verified) so 'who validates the observer's validation' stops at an inspectable root instead of recursing.",
+        "ADDED metric dimension_specs: per dimension, what measures it, its type, the provenance it requires, its freshness TTL and how it composes into health — the declarations a health derivation must have to be a program rather than a description.",
+        "ROUTED maintenance through the ordinary effect protocol: repair is an ActionIntent like any other, never a privileged direct mutation of implementation.",
+        "GATED revision itself. Added revision_gate: revising any construct that APPLIES_IN this protocol now requires authority:construct-revision, READ from the acting actor's graph-held USED edges and adjudicated by a SealedCapabilityPort. A refusal commits a rejection receipt; an admission commits its EffectReceipt in the SAME transaction as the change. The gate was placed by one last ungated write (store revision 320) and enforced from then on — the same chicken-and-egg bootstrap the underground toolkit had."
+      ],
+      "rejected": [
+        "Materializing all 42 edges as graph relations. Roughly two thirds of them are trace edges (Sensor -> DepositBond -> trigger atom -> Threshold -> ... -> Moment). Storing a firing as a permanent fact would cement exactly the conflation of the three loops that this revision separates.",
+        "Renaming the stored relations to the spine predicates. GOVERNS / ADDRESSED_BY / SHAPES / REFINED_BY / REALIZED_BY are not canonical symbols; minting them is a hard error by design. The spine is ENCODED in canonical predicates and the encoding is now stated, which is traversable where a renamed symbol set would not be.",
+        "Adding ValidationReceipt / AuthorizationReceipt / TransportAttempt as node kinds. Validation and authorization are gates ON the ActionIntent -> EffectIntent step; a transport attempt is what an EffectReceipt records. Three new kinds to disambiguate a naming collision is not worth its cost; naming ExpectedEffects vs CommittedDelta resolves it.",
+        "Keeping a count as an invariant so the model has a memorable closure. Numerology promoted to a conformance rule breaks the moment the protocol splits by execution profile — which it now does."
+      ],
+      "superseded_at_revision": 304,
+      "prior_shape": "34 parts / 42 edges / 6 boolean feedback edges, carried entirely as root content"
+    },
     "parent_scope": {
       "classification": "standalone",
       "justification": "A shared canonical contract awaiting installation under the sensemaking/meta registry Space. Exactly one scope classification; conformed to via APPLIES_IN and consumed via DEPENDS_ON, structurally owned by none."
@@ -15,134 +40,298 @@
       "validation_run",
       "health_assessment"
     ],
-    "native_law_boundary": "AtomDynamics knows only AtomSpec, AtomBond and support/inhibit/neutral. This construct adds no law; it is the canonical DEFINITION of the self-verifying loop every construct conforms to. The 34 parts, 42 edges, runtime moments and maintenance affordances are data, not native dispatch.",
-    "purpose": "Give the Universe one shared, canonical definition of what a construct IS — a self-verifying loop — that every construct APPLIES_IN and conforms to. The loop is a forward anatomy spine, a runtime firing and a verify arc, closed by six feedback edges so that nothing self-certifies without a FRESH, independently-observed health_assessment (a stale healthy reading yields 'stale', never 'healthy'). A construct DEPENDS_ON this definition; this construct is itself an instance of the loop it defines.",
-    "self_verifying_loop": {
-      "note": "The complete, faithful anatomy of the construct self-verifying loop. Every construct APPLIES_IN this loop and reports its validity as the fresh, independently-observed health this loop derives. 34 parts, 42 edges, 6 of them feedback.",
-      "counts": {
-        "nodes": 34,
-        "edges": 42,
-        "feedback_edges": 6
+    "native_law_boundary": "AtomDynamics knows only AtomSpec, AtomBond and support/inhibit/neutral. This construct adds no law; it is the canonical DEFINITION of the protocol every construct conforms to. The parts, edges, profiles, runtime moments and maintenance affordances are data, not native dispatch. Because `support` is a bond polarity in that law, no semantic relation in this protocol is named SUPPORTS.",
+    "purpose": "Give the Universe one shared, canonical protocol every construct APPLIES_IN: a type-level anatomy spine materialized in the graph, a runtime trace verified per firing, and a verify arc whose independently observed health EVIDENCES an explicit satisfaction claim about the objective. A construct is valid only while a FRESH, independently observed health_assessment evidences that claim; a stale reading yields 'stale', never 'healthy'. The protocol is universal; the execution mechanism is not.",
+    "conformance_vocabulary": {
+      "APPLIES_IN": "CONFORMANCE. The construct's structure is claimed to satisfy this protocol. Semantic and validatable: a conformance check can pass or fail it. Every construct carries exactly one.",
+      "DEPENDS_ON": "OPERATIONAL DEPENDENCY. The construct needs the target to do its work. Causal, not structural. Conformance implies nothing about it, and it implies nothing about conformance.",
+      "why_distinct": "The prior revision had eight constructs pointing at this definition with DEPENDS_ON and read that as evidence of conformance. A dependency is not a conformance claim; it says the target is needed, not that the source is shaped correctly."
+    },
+    "execution_profiles": {
+      "note": "The PROOF protocol is universal. The EXECUTION mechanism is not. A construct declares exactly one profile; the conformance check requires the parts and feedback kinds that profile needs, and forbids the rest.",
+      "reactive": {
+        "woken_by": "a physics event crossing an authored threshold, reported by the solver for free (never a scan, never a poll)",
+        "mechanism": "the construct's authored atom circuit: Sensor -> DepositBond -> trigger atom -> Threshold -> Effect",
+        "inference": "none",
+        "required_parts": ["Sensor", "DepositBond", "trigger atom", "Threshold"],
+        "required_feedback_kinds": ["environmental", "invalidation"],
+        "examples": "house alarm, seal gate, entry membrane, orientation beacon"
       },
-      "nodes": {
+      "deterministic": {
+        "woken_by": "invocation by another construct, or by an observer run; it does not self-wake",
+        "mechanism": "the fuel-bounded, mutation-free VM over a graph-native Causal IR CodeDefinition",
+        "inference": "none",
+        "required_parts": ["Preconditions", "Mechanism"],
+        "required_feedback_kinds": ["epistemic", "repair"],
+        "examples": "a validator, a counter, a projection, a conformance check — and this construct itself"
+      },
+      "agentic": {
+        "woken_by": "self-wake on cognitive activity (L1 actors only; L2 and L3 never initiate)",
+        "mechanism": "one local Ollama inference, serial, one call in flight, assembling a bounded WorldObservation and returning a candidate IntentProposal",
+        "inference": "required",
+        "clock_note": "The inference paces THAT ACTOR'S TURN. It is not the Universe's clock: the causal/physics runtime is. An inference-paced world cannot reach the throughput a city needs, and the great majority of constructs never infer at all.",
+        "required_parts": ["Inputs", "Affordances", "Preconditions", "Mechanism"],
+        "required_feedback_kinds": ["state", "epistemic"],
+        "examples": "ollama-inference-probe-v0, a citizen's L1 actor"
+      }
+    },
+    "trust_provenance": {
+      "note": "Terminates the 'who validates the validator' recursion at an inspectable root instead of recursing forever. A proof carries its rung; a construct never reports a rung it did not earn.",
+      "ladder": [
+        "self_reported — the thing's own account of itself. Never evidence. Carried, never derived from.",
+        "observed — read back independently from the store by a party that is not the implementation.",
+        "cross_observed — two independent observers agree, at least one of which did not author the construct.",
+        "fixture_verified — the observer itself passed a deterministic fault-injection fixture (it detected a planted fault and refused a planted missing proof).",
+        "kernel_verified — the claim rests only on trusted-computing-base primitives: atomic write, independent readback, signature check, fuel bound."
+      ],
+      "root": "kernel_verified is the root and does not recurse: it names the small, fixed set of native primitives whose correctness is assumed by everything else. Every other rung states what it assumed.",
+      "rule": "An observer that has not reached fixture_verified yields a WEAK proof, and the health assessment it feeds must say so. A weak proof is never upgraded by repetition."
+    },
+    "effect_protocol": {
+      "note": "The one path from a decision to a proven change. No construct — including maintenance — has a shortcut around it.",
+      "chain": [
+        "ActionIntent — what is being attempted, carrying ExpectedEffects (a declared claim, not a result)",
+        "validate + authorize — gates ON this step; a failure here ends the chain and is itself recorded",
+        "EffectIntent — the authorized request routed to an authorized transport",
+        "EffectReceipt — what the transport actually returned, including a failure or a timeout",
+        "CommitReceipt — the tick-boundary commit of the semantic transaction",
+        "Moment — the committed, inspectable terminal",
+        "CommittedDelta — read back independently from the node itself; this, not the Moment, is what proves the effect"
+      ],
+      "ExpectedEffects": "Declared BEFORE the action, on the ActionIntent. A claim about what should happen. Never evidence.",
+      "CommittedDelta": "Proven AFTER the commit, by reading the thing itself. The authoritative state of a node is the node.",
+      "forbidden": [
+        "reporting ExpectedEffects as if they were a CommittedDelta",
+        "treating an EffectReceipt as proof of a semantic change (it proves a transport result, nothing more)",
+        "treating a Moment as a substitute for reading the node back",
+        "any path from a decision to a change that skips validate + authorize"
+      ]
+    },
+    "revision_gate": {
+      "note": "The door to revising ANY construct that APPLIES_IN this protocol. It is DATA, read from this node at revision time; it is not a constant in a binary. A revision tool that cannot find this gate in the graph must refuse — there is no fallback, because a fallback would silently replace missing Universe state with a native default and that is exactly how an ungated write path is reintroduced.",
+      "port_id": "port:l2:mind-universe:construct-validity:revision-gate-v0",
+      "observe_capabilities": ["observe", "read_receipts"],
+      "required_mutate_capability": "authority:construct-revision",
+      "default_state": "sealed_read_only",
+      "on_unauthorized": ["fail_closed", "emit_rejection_receipt"],
+      "rule": "A construct revision is admitted only when the acting capability set — READ from the actor's graph-held USED edges, never from a self-declared request field — contains authority:construct-revision. Perceiving a construct, depending on it, or conforming to it grants none of it.",
+      "why_a_gate_here": "Revising a construct changes what it promises, what its invariants forbid, and — for this construct — the protocol every other construct conforms to. That is a heavier act than changing a file under the city, and it should be held by an actor with a name, not available to whoever runs a binary. Before this gate, `revise_construct` wrote six transactions attributed to nobody.",
+      "additionally_required": "If the TARGET construct declares its own `capability_gate`, that port must admit as well. Both gates are required; neither substitutes for the other.",
+      "receipt": "An admitted revision commits an EffectReceipt Moment in the SAME atomic transaction as the change, so there is no window in which a canonical construct is revised without an attributable holder behind it. A refused revision commits a REJECTION receipt recording the actor's actually-held set and the required capability, so the refusal is audited rather than silently dropped."
+    },
+    "spine_encoding": {
+      "note": "The type-level spine is authored in spine vocabulary and STORED in canonical predicates. This table is the encoding, carried in the graph so a reader can traverse the stored edges and recover the spine. Interning a new symbol for a spine predicate is a hard error; encoding it is not a compromise but the mechanism by which the spine stays traversable.",
+      "predicate_remap": {
+        "PART_OF": { "canonical": "PART_OF", "swap": false },
+        "GOVERNS": { "canonical": "MOTIVATES", "swap": true },
+        "IMPLEMENTED_IN": { "canonical": "IMPLEMENTS", "swap": true },
+        "DEFINED_BY_CODE": { "canonical": "DEFINES", "swap": true },
+        "IMPLEMENTED_BY": { "canonical": "COMPILES_TO", "swap": false },
+        "REALIZED_BY": { "canonical": "COMPILES_TO", "swap": false },
+        "JUSTIFIED_BY": { "canonical": "GROUNDS", "swap": true },
+        "VALIDATED_BY": { "canonical": "TESTS", "swap": true },
+        "OBSERVED_BY": { "canonical": "OBSERVES", "swap": true },
+        "PRODUCES": { "canonical": "PRODUCES", "swap": false },
+        "FEEDS": { "canonical": "FEEDS", "swap": false },
+        "ADDRESSED_BY": { "canonical": "ADDRESSES", "swap": true },
+        "SHAPES": { "canonical": "DERIVED_FROM", "swap": true },
+        "USES_VOCABULARY": { "canonical": "USED", "swap": false },
+        "REFINED_BY": { "canonical": "REFINES", "swap": true },
+        "DEFINED_BY": { "canonical": "DEFINES", "swap": true },
+        "CHALLENGED_BY": { "canonical": "TESTS", "swap": true },
+        "EVIDENCES": { "canonical": "SUPPORTS_ESTIMATE", "swap": false },
+        "SATISFIES": { "canonical": "MEASURES", "swap": false },
+        "CONFORMS_TO": { "canonical": "APPLIES_IN", "swap": false },
+        "GUARDED_BY": { "canonical": "SAFEGUARDS", "swap": true }
+      },
+      "role_bindings": {
+        "note": "Which entity each type_edge role name resolves to. Data, so a conformance check needs no naming convention baked into native code.",
+        "loop_space": "space:l2:mind-universe:construct-validity-v0",
+        "objective": "objective:l2:mind-universe:construct-validity-v0",
+        "objective_satisfaction": "objective_satisfaction:l2:mind-universe:construct-validity-v0",
+        "pattern": "pattern:l2:mind-universe:construct-validity-v0",
+        "vocabulary": "vocabulary:l2:mind-universe:construct-validity-v0",
+        "behavior": "behavior:l2:mind-universe:construct-validity-v0",
+        "algorithm": "algorithm:l2:mind-universe:construct-validity-v0",
+        "code": "code:l2:mind-universe:construct-validity-v0",
+        "implementation": "implementation:l2:mind-universe:construct-validity-v0",
+        "justification": "justification:l2:mind-universe:construct-validity-v0",
+        "validation": "validation:l2:mind-universe:construct-validity-v0",
+        "observer_validation": "validation:l2:mind-universe:validity-observer-v0",
+        "observability_algorithm": "observability_algorithm:l2:mind-universe:construct-validity-v0",
+        "metric": "metric:l2:mind-universe:construct-validity-v0",
+        "health": "health:l2:mind-universe:construct-validity-v0"
+      },
+      "why_these_canonical_choices": {
+        "EVIDENCES -> SUPPORTS_ESTIMATE": "The canonical predicate for 'this evidence bears on that estimate' is exactly what a health assessment does to a satisfaction claim — and unlike SUPPORTS it is not an atom bond polarity.",
+        "SATISFIES -> MEASURES": "A satisfaction claim is a measurement OF the objective, not a part of it.",
+        "SHAPES -> DERIVED_FROM (swapped)": "Nearest canonical predicate; the behavior is derived from the pattern.",
+        "USES_VOCABULARY -> USED": "The behavior holds and uses the vocabulary. DEPENDS_ON was rejected here: this protocol gives DEPENDS_ON one job — the operational edge BETWEEN constructs, the counterpart of APPLIES_IN — and reusing it for an intra-construct relation would blur exactly the distinction the conformance_vocabulary draws."
+      }
+    },
+    "protocol": {
+      "note": "The construct protocol. Parts and edges are described here as a MODEL; the type edges below are additionally materialized as canonical graph relations, and the trace edges deliberately are not.",
+      "counts": {
+        "type_edges": 16,
+        "trace_edges": 17,
+        "feedback_edges": 6,
+        "counts_are_not_a_conformance_rule": "These describe THIS revision. A construct is never checked against a count. What is checked is: the required parts for its execution profile resolve, the type spine traverses, and the feedback kinds its profile requires are present."
+      },
+      "parts": {
         "roles": {
-          "objective": "Role 1/12: the observable success_condition / semantic promise; GOVERNED by loop_space, JUSTIFIED_BY justification, and (feedback) SUPPORTED by health.",
-          "justification": "Role 8/12: whyItSatisfiesObjective plus rejectedAlternatives (the roads not taken); the objective is JUSTIFIED_BY this, and every gate DEPENDS_ON the same evidence.",
-          "pattern": "Role 2/12: the design rationale / reusable shape (evidence-bearing spine that separates identity, execution, observation, measurement, health, repair); ADDRESSED_BY objective, SHAPES behavior.",
-          "vocabulary": "Role 3/12: the terms plus forbiddenConflations (running!=healthy, empty!=known_absent, missing_value!=0, rendered!=committed, file_exists!=deployed); USED by behavior.",
+          "objective": "Role 1/12: the observable success_condition / semantic promise; GOVERNED by loop_space, JUSTIFIED_BY justification, and MEASURED by objective_satisfaction.",
+          "pattern": "Role 2/12: the design rationale / reusable shape (evidence-bearing spine that separates identity, execution, observation, measurement, health and repair); ADDRESSES objective, SHAPES behavior.",
+          "vocabulary": "Role 3/12: the terms plus forbiddenConflations (running!=healthy, empty!=known_absent, missing_value!=0, rendered!=committed, file_exists!=deployed, expected!=committed, conformance!=dependency); USED by behavior.",
           "behavior": "Role 4/12: the given/when/then/forbidden observable contract; SHAPED by pattern, USES_VOCABULARY, REFINED_BY algorithm, VALIDATED_BY validation.",
-          "algorithm": "Role 5/12: the ordered steps refining behavior (resolve roles/relations, run validation, observe, measure, derive health, render failure front, re-observe); DEFINED_BY code.",
-          "code": "Role 6/12: the graph-native CodeDefinition (causal-expression-ast / health AST / seal atom circuit), no implicit Python; REALIZED_BY implementation, CHALLENGED_BY validation.",
-          "validation": "Role 9/12: fixtures plus invariants challenging code/behavior; its execution PRODUCES a validation_run runtime moment (never pre-created).",
-          "implementation": "Role 7/12: the honest realized state with graph-defined/wired/running/verified kept as distinct fields; REALIZED_BY code, OBSERVED_BY the observer. The thing wired into the field, waiting to be fired.",
-          "observability_algorithm": "Role 10/12: the INDEPENDENT observer; mustNotTrust implementation health claim / renderer success flag / process running state / file presence; OBSERVES implementation via readback, PRODUCES the metric, is itself VERIFIED_BY observer_validation.",
-          "observer_validation": "The check on the checker: proves the observer detects real faults (broken-visible-edge, missing-proof, stale-evidence, renderer-lies) and never converts missing proof into success; observability_algorithm is VERIFIED_BY / VALIDATED_BY it.",
-          "metric": "Role 11/12: the metric VECTOR (forbidOpaqueAggregate; per-dimension provenance and evidence_freshness_seconds, no collapsed scalar score); PRODUCED by the observer, FEEDS health.",
-          "health": "Role 12/12: derived state (healthy/degraded/stale/unknown/not_measured/measurement_failed) from a fresh metric vector; FED by metric, SUPPORTS objective (feedback) and REPAIRED_BY maintenance. No healthy state without a fresh health_assessment."
+          "algorithm": "Role 5/12: the ordered steps refining behavior; DEFINED_BY code.",
+          "code": "Role 6/12: the graph-native CodeDefinition (causal-expression-ast / health AST / atom circuit), no implicit Python; REALIZED_BY implementation, CHALLENGED_BY validation.",
+          "implementation": "Role 7/12: the honest realized state with graph-defined/wired/running/verified kept as DISTINCT fields; REALIZED_BY code, OBSERVED_BY the observer.",
+          "justification": "Role 8/12: whyItSatisfiesObjective plus rejectedAlternatives (the roads not taken); the objective is JUSTIFIED_BY this, and every gate DEPENDS_ON the same evidence.",
+          "validation": "Role 9/12: fixtures plus invariants challenging code/behavior; its execution PRODUCES a validation_run (never pre-created).",
+          "observability_algorithm": "Role 10/12: the INDEPENDENT observer; mustNotTrust implementation health claim / renderer success flag / process running state / file presence; OBSERVES implementation via readback, PRODUCES the metric, is itself VERIFIED_BY observer_validation and carries its own trust_provenance rung.",
+          "metric": "Role 11/12: the metric VECTOR (forbidOpaqueAggregate; per-dimension spec, provenance and freshness, no collapsed scalar); PRODUCED by the observer, FEEDS health.",
+          "health": "Role 12/12: derived state (healthy/degraded/stale/unknown/not_measured/measurement_failed) from a fresh metric vector; FED by metric, EVIDENCES objective_satisfaction, REPAIRED_BY maintenance."
+        },
+        "claim": {
+          "objective_satisfaction": "The explicit claim 'this construct currently satisfies its objective', standing between derived health and the objective itself. Health EVIDENCES it; it MEASURES the objective. Without it, derived health would attach directly to the objective — and since SUPPORTS is an atom bond polarity, that edge would modulate the objective's own energy rather than the confidence in its satisfaction."
         },
         "anatomy": {
-          "loop_space": "The L2 construct spine; roots and GOVERNS the loop and declares reads/writes/forbidden_effects and exactly one parent_scope. A Construct is what a Toolkit produces: the built, self-verifying thing placed in a world (a pen, a house alarm) that proves its own effects.",
-          "Inputs": "What the turn consumes — the WorldObservation prompt: two frames (MindEye L1 + CitizenEye L2) plus context (role, needs and energy, memory, objective, recent receipts).",
+          "loop_space": "The L2 construct spine; roots and GOVERNS the protocol instance and declares reads/writes/forbidden_effects and exactly one parent_scope. A Construct is what a Toolkit produces: the built, self-verifying thing placed in a world.",
+          "Inputs": "AGENTIC profile: what the turn consumes — the WorldObservation prompt (two frames plus context: role, needs and energy, memory, objective, recent receipts).",
           "Affordances": "The reachable action verbs, each with an exact target, precondition and justification; an unproven target is never offered as a verb.",
           "Preconditions": "Measured, all_required, non-compensatory conditions gating the Mechanism (missing_binding -> not_measured_and_inert); each gate DEPENDS_ON independently measured/observed evidence.",
-          "Mechanism": "How it works — the fuel-bounded, mutation-free VM plus the inference (one local Ollama call, serial, one in flight; 'the inference is the clock') that assembles the WorldObservation and returns a candidate.",
-          "Effects": "The committed changes it produces at the tick boundary; the construct proves its own effects (a preview/animation is not a commit).",
-          "Receipts": "The durable proof of what it did; only what commits stays authoritative and inspectable — the receipts and the event log."
+          "Mechanism": "How it works — DISPATCHED BY EXECUTION PROFILE. Reactive: the authored atom circuit. Deterministic: the fuel-bounded, mutation-free VM over graph-native Causal IR. Agentic: one local Ollama inference, serial, one in flight, pacing that actor's turn only. No profile's mechanism is the Universe's clock.",
+          "ExpectedEffects": "What the construct DECLARES it will change, carried on the ActionIntent before validation. A claim. Never evidence, never a receipt.",
+          "CommittedDelta": "What actually changed, read back independently from the node after commit. The authoritative state of a node is the node; this is what proves an effect.",
+          "Receipts": "The durable record of what was asked and what a transport returned. Only what commits stays authoritative — and the record never stands in for looking."
         },
         "trigger": {
-          "Sensor": "Construct pattern part 1: a physical condition (e.g. a collider on an entry membrane) placed in the field. Self-wake, never poll.",
-          "DepositBond": "Construct pattern part 2: on the physics event, +energy onto a trigger atom — a Support bond, stamped energy_status measured (not authored/derived/unknown).",
+          "Sensor": "REACTIVE profile part 1: a physical condition (e.g. a collider on an entry membrane) placed in the field. Self-wake, never poll.",
+          "DepositBond": "REACTIVE part 2: on the physics event, +energy onto a trigger atom — a Support BOND (atom polarity, not a semantic relation), stamped energy_status measured.",
           "trigger atom": "The atom a DepositBond deposits +energy onto; accrues supporting energy and fires once support >= N.",
-          "Threshold": "Construct pattern part 3: the atom fires at support >= N (e.g. seal_gate threshold 1200 = twelve measured supports x100); the moment-to-act is a threshold the solver reports for free, not a scan."
+          "Threshold": "REACTIVE part 3: the atom fires at support >= N; the moment-to-act is a threshold the solver reports for free, not a scan.",
+          "rearm_semantics": "A threshold that fires must state its re-arm discipline, or environmental feedback becomes self-excitation: latch, energy consumption on fire, reset/rearm condition, cooldown, hysteresis, causal de-duplication key, and idempotency key. A construct that declares environmental feedback without these is non-conformant."
         },
         "runtime_moment": {
           "wake-queue": "The physics step fills it; the single continuous serial loop drains it so each construct takes its turn and dormant constructs cost nothing.",
-          "IntentProposal": "The candidate the inference returns: one chosen verb on an exact target with its justification. The model proposes; the world disposes; the inference never touches the store.",
+          "IntentProposal": "AGENTIC only: the candidate the inference returns — one chosen verb on an exact target with its justification. The model proposes; the world disposes; the inference never touches the store.",
           "PhysicsEvent": "The observed sensor intersection / threshold event; it never mutates the Universe directly.",
-          "ActionIntent": "The intent a PhysicsEvent is lifted into (or the IntentProposal that rises to the L3 body and is attempted); validated before any effect.",
-          "EffectIntent": "Construct pattern part 4: after validate, the fire emits a SemanticIntent or EffectIntent{notify} routed to an authorized transport.",
-          "EffectReceipt": "The result returned by the effect's authorized transport (EffectIntent -> transport -> EffectReceipt), reinjected into the Universe.",
-          "Moment": "The committed terminal of the chain: the authoritative, inspectable record (inscription_receipt / CommitReceipt); what re-enters the next turn's context.",
-          "validation_run": "Produced by validation execution (runtimeMomentsArePrecreated:false): run_id, loop_id, validation_id, fixture_results, invariant_results, evidence_refs, execution_status.",
-          "health_assessment": "Produced by health derivation from a FRESH metric vector (precreated:false): assessment_id, observer_run_ref, metric_samples, derived_state, derived_at, fresh_until, evidence_refs, failure_front."
+          "ActionIntent": "The intent a PhysicsEvent is lifted into (or the IntentProposal the L3 body attempts); carries ExpectedEffects; validated and authorized before any effect.",
+          "EffectIntent": "After validate + authorize, the authorized request routed to an authorized transport.",
+          "EffectReceipt": "What the transport actually returned — success, failure or timeout. Proof of a transport result, never of a semantic change.",
+          "Moment": "The committed terminal of the chain: the authoritative, inspectable record (CommitReceipt / inscription_receipt).",
+          "validation_run": "Produced by validation execution (precreated:false): run_id, construct_id, validation_id, fixture_results, invariant_results, evidence_refs, execution_status.",
+          "health_assessment": "Produced by health derivation from a FRESH metric vector (precreated:false): assessment_id, observer_run_ref, trust_rung, metric_samples, derived_state, derived_at, fresh_until, evidence_refs, failure_front."
         },
         "maintenance": {
-          "maintenance": "The 13th loop member: reversible repair affordances keyed to failing health states; the REPAIRED_BY target whose repairs (retry-observer, restore-built-state) re-enter implementation and close the loop."
+          "maintenance": "Reversible repair affordances keyed to failing health states. Repair is an ORDINARY action: FailureFront -> RepairProposal -> ActionIntent -> validate -> authorize -> EffectIntent -> EffectReceipt -> Moment -> re-observation. Maintenance has no privileged write path; a repair system exempt from the guarantees it repairs is the largest hole a construct can have."
         }
       },
-      "edges": [
-        { "from": "loop_space", "predicate": "GOVERNS", "to": "objective", "feedback": false },
-        { "from": "objective", "predicate": "ADDRESSED_BY", "to": "pattern", "feedback": false },
-        { "from": "objective", "predicate": "JUSTIFIED_BY", "to": "justification", "feedback": false },
-        { "from": "pattern", "predicate": "SHAPES", "to": "behavior", "feedback": false },
-        { "from": "behavior", "predicate": "USES_VOCABULARY", "to": "vocabulary", "feedback": false },
-        { "from": "behavior", "predicate": "REFINED_BY", "to": "algorithm", "feedback": false },
-        { "from": "behavior", "predicate": "VALIDATED_BY", "to": "validation", "feedback": false },
-        { "from": "algorithm", "predicate": "DEFINED_BY", "to": "code", "feedback": false },
-        { "from": "code", "predicate": "REALIZED_BY", "to": "implementation", "feedback": false },
-        { "from": "code", "predicate": "CHALLENGED_BY", "to": "validation", "feedback": false },
-        { "from": "implementation", "predicate": "wires itself into the field and waits to be fired", "to": "Sensor", "feedback": false },
-        { "from": "Inputs", "predicate": "consumed as the WorldObservation prompt", "to": "Mechanism", "feedback": false },
-        { "from": "Affordances", "predicate": "offered to the inference (proven targets only)", "to": "IntentProposal", "feedback": false },
-        { "from": "Preconditions", "predicate": "gate the mechanism (all_required, non-compensatory)", "to": "Mechanism", "feedback": false },
-        { "from": "Sensor", "predicate": "physics event fires the sensor", "to": "DepositBond", "feedback": false },
-        { "from": "DepositBond", "predicate": "event -> +energy on (Support bond)", "to": "trigger atom", "feedback": false },
-        { "from": "trigger atom", "predicate": "fires at support >= N", "to": "Threshold", "feedback": false },
-        { "from": "Threshold", "predicate": "the fire enqueues the woken construct onto", "to": "wake-queue", "feedback": false },
-        { "from": "wake-queue", "predicate": "the serial loop drains it, giving each construct its turn", "to": "Mechanism", "feedback": false },
-        { "from": "Mechanism", "predicate": "the inference returns a candidate", "to": "IntentProposal", "feedback": false },
-        { "from": "Sensor", "predicate": "the sensor intersection is observed (never mutates)", "to": "PhysicsEvent", "feedback": false },
-        { "from": "PhysicsEvent", "predicate": "-> (never mutates the Universe)", "to": "ActionIntent", "feedback": false },
-        { "from": "IntentProposal", "predicate": "rises to the L3 body, which attempts it", "to": "ActionIntent", "feedback": false },
-        { "from": "ActionIntent", "predicate": "-> validate -> EffectIntent{notify}", "to": "EffectIntent", "feedback": false },
-        { "from": "EffectIntent", "predicate": "emits the SemanticIntent/EffectIntent; proves its own effects", "to": "Effects", "feedback": false },
-        { "from": "EffectIntent", "predicate": "-> authorized transport -> EffectReceipt", "to": "EffectReceipt", "feedback": false },
-        { "from": "Effects", "predicate": "durable proof of what it did", "to": "Receipts", "feedback": false },
-        { "from": "EffectReceipt", "predicate": "-> committed terminal (tick-boundary commit)", "to": "Moment", "feedback": false },
-        { "from": "validation", "predicate": "PRODUCES (precreated:false)", "to": "validation_run", "feedback": false },
-        { "from": "implementation", "predicate": "OBSERVED_BY", "to": "observability_algorithm", "feedback": false },
-        { "from": "Moment", "predicate": "independently re-observed as fresh evidence (readback, not self-report)", "to": "observability_algorithm", "feedback": false },
-        { "from": "observability_algorithm", "predicate": "VERIFIED_BY", "to": "observer_validation", "feedback": false },
-        { "from": "observability_algorithm", "predicate": "PRODUCES", "to": "metric", "feedback": false },
-        { "from": "metric", "predicate": "FEEDS", "to": "health", "feedback": false },
-        { "from": "health", "predicate": "PRODUCES (precreated:false)", "to": "health_assessment", "feedback": false },
-        { "from": "health", "predicate": "REPAIRED_BY", "to": "maintenance", "feedback": false },
-        { "from": "health", "predicate": "SUPPORTS", "to": "objective", "feedback": true },
-        { "from": "maintenance", "predicate": "feeds_back", "to": "implementation", "feedback": true },
-        { "from": "Moment", "predicate": "feeds_back", "to": "Inputs", "feedback": true },
-        { "from": "Effects", "predicate": "feeds_back", "to": "Sensor", "feedback": true },
-        { "from": "Effects", "predicate": "feeds_back", "to": "Threshold", "feedback": true },
-        { "from": "Preconditions", "predicate": "DEPENDS_ON", "to": "justification", "feedback": true }
+      "type_edges": [
+        { "from": "loop_space", "predicate": "GOVERNS", "to": "objective", "materialized_as": "objective MOTIVATES loop_space" },
+        { "from": "objective", "predicate": "ADDRESSED_BY", "to": "pattern", "materialized_as": "pattern ADDRESSES objective" },
+        { "from": "objective", "predicate": "JUSTIFIED_BY", "to": "justification", "materialized_as": "justification GROUNDS objective" },
+        { "from": "pattern", "predicate": "JUSTIFIED_BY", "to": "justification", "materialized_as": "justification GROUNDS pattern" },
+        { "from": "pattern", "predicate": "SHAPES", "to": "behavior", "materialized_as": "behavior DERIVED_FROM pattern" },
+        { "from": "behavior", "predicate": "USES_VOCABULARY", "to": "vocabulary", "materialized_as": "behavior USED vocabulary" },
+        { "from": "behavior", "predicate": "REFINED_BY", "to": "algorithm", "materialized_as": "algorithm REFINES behavior" },
+        { "from": "behavior", "predicate": "VALIDATED_BY", "to": "validation", "materialized_as": "validation TESTS behavior" },
+        { "from": "algorithm", "predicate": "DEFINED_BY", "to": "code", "materialized_as": "code DEFINES algorithm" },
+        { "from": "code", "predicate": "REALIZED_BY", "to": "implementation", "materialized_as": "code COMPILES_TO implementation" },
+        { "from": "code", "predicate": "CHALLENGED_BY", "to": "validation", "materialized_as": "validation TESTS code" },
+        { "from": "loop_space", "predicate": "DEFINED_BY_CODE", "to": "code", "materialized_as": "code DEFINES loop_space" },
+        { "from": "loop_space", "predicate": "IMPLEMENTED_IN", "to": "implementation", "materialized_as": "implementation IMPLEMENTS loop_space" },
+        { "from": "implementation", "predicate": "OBSERVED_BY", "to": "observability_algorithm", "materialized_as": "observability_algorithm OBSERVES implementation" },
+        { "from": "observability_algorithm", "predicate": "VALIDATED_BY", "to": "observer_validation", "materialized_as": "observer_validation TESTS observability_algorithm" },
+        { "from": "observability_algorithm", "predicate": "PRODUCES", "to": "metric", "materialized_as": "observability_algorithm PRODUCES metric" },
+        { "from": "metric", "predicate": "FEEDS", "to": "health", "materialized_as": "metric FEEDS health" },
+        { "from": "health", "predicate": "EVIDENCES", "to": "objective_satisfaction", "materialized_as": "health SUPPORTS_ESTIMATE objective_satisfaction" },
+        { "from": "objective_satisfaction", "predicate": "SATISFIES", "to": "objective", "materialized_as": "objective_satisfaction MEASURES objective" }
       ],
-      "runtime_moments": [
-        "WorldObservation — the bounded prompt assembled per turn (two frames + action verbs + context); the inference is the clock",
-        "IntentProposal — one chosen verb on an exact target with its justification (candidate; the inference never touches the store)",
-        "wake-queue entry — the physics step fills it; the serial loop drains it (self-wake, never poll)",
-        "PhysicsEvent — the observed sensor intersection / threshold crossing; never mutates the Universe directly",
-        "ActionIntent — a PhysicsEvent lifted, or the IntentProposal attempted by the L3 body",
-        "seal_gate / Threshold fire — the support >= N threshold crossing that emits the effect",
-        "EffectIntent{notify} — emitted after validate, routed to an authorized transport",
-        "EffectReceipt — the transport result, reinjected into the Universe",
-        "Moment — the committed terminal (inscription_receipt / CommitReceipt); the authoritative inspectable record",
-        "validation_run — produced by validation execution (precreated:false)",
-        "health_assessment — produced by health derivation from a fresh metric vector (precreated:false)",
-        "Observer run — reopening the store and running the readback before any Health is marked measured"
+      "trace_edges": {
+        "note": "The shape of ONE firing. These are NOT graph relations and must never be stored as such: a firing is an event, not a permanent fact about the world. A conformance check verifies this shape against a committed Moment chain, per firing, and reports `not_measured` when no firing has occurred.",
+        "reactive_chain": [
+          "implementation -> wired into the field -> Sensor",
+          "Sensor -> physics event fires the sensor -> DepositBond",
+          "DepositBond -> +energy on (Support bond) -> trigger atom",
+          "trigger atom -> fires at support >= N -> Threshold",
+          "Threshold -> enqueues the woken construct -> wake-queue",
+          "Sensor -> the intersection is observed (never mutates) -> PhysicsEvent",
+          "PhysicsEvent -> lifted (never mutates the Universe) -> ActionIntent"
+        ],
+        "agentic_chain": [
+          "Inputs -> consumed as the WorldObservation prompt -> Mechanism",
+          "Affordances -> offered to the inference (proven targets only) -> IntentProposal",
+          "wake-queue -> the serial loop drains it, giving each construct its turn -> Mechanism",
+          "Mechanism -> the inference returns a candidate -> IntentProposal",
+          "IntentProposal -> rises to the L3 body, which attempts it -> ActionIntent"
+        ],
+        "effect_chain": [
+          "Preconditions -> gate the mechanism (all_required, non-compensatory) -> Mechanism",
+          "ActionIntent -> carries what it claims it will change -> ExpectedEffects",
+          "ActionIntent -> validate + authorize -> EffectIntent",
+          "EffectIntent -> authorized transport -> EffectReceipt",
+          "EffectReceipt -> tick-boundary commit -> Moment",
+          "Moment -> read the node back independently -> CommittedDelta"
+        ],
+        "verify_chain": [
+          "validation -> PRODUCES (precreated:false) -> validation_run",
+          "CommittedDelta -> independently re-observed as fresh evidence -> observability_algorithm",
+          "health -> PRODUCES (precreated:false) -> health_assessment"
+        ]
+      },
+      "feedback_edges": [
+        {
+          "kind": "epistemic",
+          "from": "Preconditions",
+          "to": "justification",
+          "materialized_as": "Preconditions DEPENDS_ON justification",
+          "carries": "evidence only",
+          "note": "A dependency of knowledge, not a temporal loop. It re-injects no energy, no state and no action; it says each non-compensatory gate rests on the same independently measured evidence the objective is JUSTIFIED_BY."
+        },
+        {
+          "kind": "control",
+          "from": "objective_satisfaction",
+          "to": "maintenance",
+          "carries": "a failure front",
+          "note": "Replaces the prior 'health SUPPORTS objective'. An unsatisfied or stale satisfaction claim raises a failure front that maintenance answers. This is the edge that actually re-drives the construct; the prior one only looked like it did."
+        },
+        {
+          "kind": "state",
+          "from": "Moment",
+          "to": "Inputs",
+          "carries": "committed state",
+          "profile": "agentic",
+          "note": "Only what commits stays authoritative, and 'recent receipts' re-enter the WorldObservation that drives the next turn. Meaningless for a construct with no Inputs; required for an agentic one."
+        },
+        {
+          "kind": "environmental",
+          "from": "CommittedDelta",
+          "to": "Sensor",
+          "carries": "a changed world",
+          "profile": "reactive",
+          "note": "The changed world may produce new physics events. It does NOT follow that THIS construct re-wakes: the sensor that fires next may belong to another construct entirely. Declaring this edge REQUIRES declaring rearm_semantics (latch, consumption, reset, cooldown, hysteresis, dedup, idempotency); without them it is self-excitation, oscillation and repeated effect."
+        },
+        {
+          "kind": "invalidation",
+          "from": "CommittedDelta",
+          "to": "Threshold",
+          "carries": "a broken signature",
+          "profile": "reactive",
+          "applies_when": "the construct is sealed",
+          "note": "Mutating a claim invalidates its prior signature and re-opens the seal, so the signatures_valid support de-conducts and the gate cannot fire until re-sealed. A rule for SEALED constructs, not a universal law."
+        },
+        {
+          "kind": "repair",
+          "from": "maintenance",
+          "to": "implementation",
+          "carries": "an ActionIntent",
+          "note": "Repair re-enters implementation THROUGH the ordinary effect protocol — FailureFront -> RepairProposal -> ActionIntent -> validate -> authorize -> EffectIntent -> EffectReceipt -> Moment -> re-observation — never as a direct mutation. Maintenance holds no privileged authority."
+        }
       ],
-      "maintenance": [
-        "retry / retry-observer — re-run the observer against the current build without changing semantic state",
-        "inspect-evidence / inspect_atom_event_ledger — open evidence refs, freshness and the first failure front",
-        "suspend-modulation / suspend_seal — remove unproven dynamic modulation while preserving the identity shape",
-        "recalibrate-bounds — recompute bounded visual/energy mappings from measured fixtures (or adjust max_iterations)",
-        "relink-semantic-type / relink — restore a missing binding (also closes a coverage hole / adds the missing operator support)",
-        "rematerialize-catalog — rebuild primitives from the canonical visual-embodiment/1 definitions",
-        "restore-built-state — rollback Derived overwrites and replay valid construction receipts",
-        "revalidate_signatures / relink_broadcast_authorization — re-check signatures against exact atoms/revisions; re-link the broadcast port",
-        "reconcile_universe_physics_runtime — reconcile the graph truth with the solver runtime state",
-        "request-human / ask_human — request a human decision only when evidence cannot safely resolve ambiguity"
-      ],
-      "why_it_is_a_loop": "The forward path is a one-way anatomy SPINE (loop_space GOVERNS objective -> ADDRESSED_BY pattern -> SHAPES behavior -> REFINED_BY algorithm -> DEFINED_BY code -> REALIZED_BY implementation) followed by a runtime firing (implementation wired into the field -> Sensor -> DepositBond -> trigger atom -> Threshold fires -> IntentProposal / PhysicsEvent -> ActionIntent -> validate -> EffectIntent -> EffectReceipt -> Moment) and a verify arc (implementation OBSERVED_BY observability_algorithm PRODUCES metric FEEDS health). By itself that is a CHAIN. It becomes a genuine LOOP through several explicit feedback edges that re-drive the construct, none of which a naive sensor->effect->health pipeline has. (1) health SUPPORTS objective: the derived Health folds back to support the very Objective the loop_space GOVERNS, so the loop cannot self-certify without a FRESH health_assessment (a stale healthy reading yields 'stale', never 'healthy'). (2) health REPAIRED_BY maintenance, and maintenance feeds_back into implementation: retry-observer re-runs the observer against the current build and restore-built-state replays valid construction receipts, re-entering the observe->metric->health arc. (3) Moment feeds_back into Inputs: only what commits stays authoritative, and 'recent receipts' re-enter the WorldObservation context that drives the next inference's IntentProposal. (4) Effects feeds_back into Sensor via the physics-event -> energy-deposit bridge: the effect-world's new physics events re-fire the sensor so the Threshold re-arms and waits again rather than one-shot dead-ending (dormant constructs cost nothing). (5) Effects feeds_back into Threshold: 'mutating any claim invalidates its prior signature and re-opens the seal', so the signatures_valid support de-conducts and the gate can no longer fire until re-sealed. (6) Preconditions DEPENDS_ON justification: each non-compensatory gate re-enters the same independently measured/observed evidence the objective is JUSTIFIED_BY (the gate/evidence diamond). Edges (1) and (6) carry their exact canonical predicates (SUPPORTS, DEPENDS_ON) but are marked feedback:true; edges (2)-(5) are the implicit re-entries carried as the token feeds_back."
+      "closure_rule": "A construct is causally closed when the feedback kinds its execution profile requires are present, each with the semantics its kind demands. Closure is a property of the KIND set, never of a count. A protocol that demanded all six of every construct would demand environmental feedback from a validator and inference from a counter."
     },
-    "applies_to": "every construct in the Universe, present and future — each conforms to (APPLIES_IN) this one self-verifying loop, and its validity is ALWAYS the fresh, independently-observed health this loop derives. Not a capability toolkit (like sky/mechanical); the canonical loop definition itself. This construct is an instance of the loop it defines. Non-construct kernel entities are out of scope."
+    "applies_to": "every construct in the Universe, present and future — each APPLIES_IN this one protocol, declares exactly one execution profile, and reports its validity as the fresh, independently observed health this protocol derives. Not a capability toolkit (like sky/mechanical); the canonical protocol itself. This construct APPLIES_IN the protocol it defines, at the deterministic profile. Non-construct kernel entities are out of scope."
   },
   "members": [
     {
@@ -152,14 +341,43 @@
       "content": {
         "role_index": "1/12",
         "loop_part": "the observable success_condition and semantic promise the loop_space GOVERNS",
-        "success_condition": "Every construct in the Universe conforms to (APPLIES_IN) this one canonical self-verifying loop: a forward anatomy spine (loop_space GOVERNS objective -> ADDRESSED_BY pattern -> SHAPES behavior -> REFINED_BY algorithm -> DEFINED_BY code -> REALIZED_BY implementation), a runtime firing (implementation -> Sensor -> DepositBond -> trigger atom -> Threshold -> IntentProposal/PhysicsEvent -> ActionIntent -> validate -> EffectIntent -> EffectReceipt -> Moment) and a verify arc (implementation OBSERVED_BY observability_algorithm PRODUCES metric FEEDS health), closed by six feedback edges. A construct is valid only while a FRESH, independently-observed health_assessment supports its objective; a stale healthy reading yields 'stale', never 'healthy'. This construct is itself an instance of the loop it defines.",
+        "success_condition": "Every construct in the Universe APPLIES_IN this one canonical protocol: a type-level anatomy spine materialized as canonical graph relations and traversable through the stated spine_encoding; a runtime trace verified per firing and never stored as a static relation; and a verify arc in which an independent observer PRODUCES a metric vector that FEEDS health, whose fresh assessment EVIDENCES an explicit objective_satisfaction claim that MEASURES this objective. Each construct declares exactly one execution profile (reactive / deterministic / agentic) and is checked against the parts and feedback kinds that profile requires — never against a count. A construct is valid only while a FRESH, independently observed health_assessment evidences its satisfaction claim at a stated trust rung; a stale reading yields 'stale', never 'healthy'.",
         "incoming": [
           "loop_space GOVERNS objective",
-          "health SUPPORTS objective (feedback; the loop-closing edge)"
+          "objective_satisfaction SATISFIES objective (the claim health evidences)"
         ],
         "outgoing": [
           "objective ADDRESSED_BY pattern",
           "objective JUSTIFIED_BY justification"
+        ]
+      }
+    },
+    {
+      "id": "objective_satisfaction:l2:mind-universe:construct-validity-v0",
+      "node_type": "narrative",
+      "subtype": "claim",
+      "content": {
+        "loop_part": "the explicit claim standing between derived health and the objective",
+        "claim": "This construct currently satisfies its objective.",
+        "why_it_exists": "Health does not support an objective; an objective exists whether or not the thing pursuing it is healthy. What health bears on is the CONFIDENCE that the objective is currently satisfied. Attaching derived health straight to the objective conflates the two — and because SUPPORTS is the AtomDynamics bond polarity, that edge would modulate the objective's own energy rather than the confidence in its satisfaction.",
+        "states": ["satisfied", "unsatisfied", "partially_satisfied", "stale", "not_measured", "unknown"],
+        "fields": [
+          "claim_id",
+          "construct_id",
+          "state",
+          "evidenced_by (health_assessment ref)",
+          "trust_rung",
+          "assessed_at",
+          "fresh_until",
+          "failure_front (when not satisfied)"
+        ],
+        "freshness": "A satisfaction claim has a fresh_until. Past it the state is 'stale', never its last value. A claim is never inherited from a prior revision of the construct.",
+        "incoming": [
+          "health EVIDENCES objective_satisfaction"
+        ],
+        "outgoing": [
+          "objective_satisfaction SATISFIES objective",
+          "objective_satisfaction -> control feedback -> maintenance (when unsatisfied or stale)"
         ]
       }
     },
@@ -169,11 +387,17 @@
       "subtype": "pattern",
       "content": {
         "role_index": "2/12",
-        "loop_part": "the design rationale / reusable shape of the loop",
-        "pattern": "The evidence-bearing spine that separates identity, execution, observation, measurement, health and repair so that no single 'health' scalar collapses them. ADDRESSED_BY objective; SHAPES behavior.",
-        "why_a_loop_not_a_chain": "The forward path alone is a chain that ends at health. The shape becomes a loop only through the six feedback edges: health SUPPORTS objective; maintenance feeds back into implementation; Moment feeds back into Inputs; Effects feeds back onto Sensor and onto Threshold; and Preconditions DEPENDS_ON justification.",
+        "loop_part": "the design rationale / reusable shape of the protocol",
+        "pattern": "An evidence-bearing spine that separates identity, execution, observation, measurement, health, satisfaction and repair, so no single scalar collapses them — and that separates the LEVELS at which those live: a type-level structure materialized in the graph, a per-firing trace that is never a graph fact, and a proof protocol that is universal over execution mechanisms that are not.",
+        "three_separations": {
+          "type_vs_trace": "Structure is a permanent fact and belongs in the graph. A firing is an event and belongs in a Moment. Storing a firing as a relation makes the world claim something permanent about something that happened once.",
+          "protocol_vs_mechanism": "Every construct must PROVE the same way. Almost none of them must RUN the same way. A gate, a counter, a validator and a projection need no inference; making inference universal both mis-describes them and caps the Universe's throughput at an LLM's.",
+          "claim_vs_evidence": "ExpectedEffects vs CommittedDelta, health vs objective_satisfaction, self_reported vs kernel_verified — in each case a thing that is asserted and a thing that is measured, kept as two objects so no reader can mistake one for the other."
+        },
+        "why_a_loop_not_a_chain": "The forward path alone is a chain that ends at health. It becomes a loop through TYPED feedback: epistemic (Preconditions -> justification), control (objective_satisfaction -> maintenance), state (Moment -> Inputs), environmental (CommittedDelta -> Sensor), invalidation (CommittedDelta -> Threshold), repair (maintenance -> implementation, through the ordinary effect protocol). Which of these a construct needs is decided by its execution profile, not by a count.",
         "incoming": [
-          "objective ADDRESSED_BY pattern"
+          "objective ADDRESSED_BY pattern",
+          "pattern JUSTIFIED_BY justification"
         ],
         "outgoing": [
           "pattern SHAPES behavior"
@@ -186,14 +410,21 @@
       "subtype": "vocabulary",
       "content": {
         "role_index": "3/12",
-        "loop_part": "the terms of the loop and the conflations it forbids",
+        "loop_part": "the terms of the protocol and the conflations it forbids",
         "terms": {
-          "self_verifying_loop": "The canonical construct: a forward anatomy spine plus a runtime firing plus a verify arc, closed by six feedback edges.",
-          "loop_space": "The L2 construct spine that roots and GOVERNS the loop; declares reads/writes/forbidden_effects and exactly one parent_scope.",
-          "trigger": "Sensor -> DepositBond -> trigger atom -> Threshold: a physical condition, a Support bond depositing +energy, the atom accruing it, the fire at support >= N.",
-          "IntentProposal": "One chosen verb on an exact target with its justification; the model proposes, the world disposes; the inference never touches the store.",
+          "construct_protocol": "A type-level anatomy spine, a per-firing runtime trace and a verify arc, closed by the typed feedback kinds the construct's execution profile requires.",
+          "loop_space": "The L2 construct spine that roots and GOVERNS the protocol instance; declares reads/writes/forbidden_effects and exactly one parent_scope.",
+          "type_edge": "A permanent structural fact about the construct. Materialized as a canonical graph relation through spine_encoding; traversable and validatable.",
+          "trace_edge": "The shape of one firing. Verified against a committed Moment chain, per firing. NEVER a graph relation.",
+          "execution_profile": "reactive | deterministic | agentic. Declared exactly once per construct; decides which parts and which feedback kinds conformance requires.",
+          "trigger": "REACTIVE only: Sensor -> DepositBond -> trigger atom -> Threshold, plus the rearm_semantics that keep it from self-exciting.",
+          "IntentProposal": "AGENTIC only: one chosen verb on an exact target with its justification; the model proposes, the world disposes; the inference never touches the store.",
+          "ExpectedEffects": "What was DECLARED before the action. A claim.",
+          "CommittedDelta": "What was PROVEN after the commit, by reading the node. Evidence.",
+          "objective_satisfaction": "The explicit claim that the construct currently satisfies its objective; what health evidences, and what the objective is measured by.",
+          "trust_rung": "self_reported | observed | cross_observed | fixture_verified | kernel_verified. Every proof carries the rung it earned.",
           "health_assessment": "The runtime moment health derivation PRODUCES from a fresh metric vector; never pre-created.",
-          "maintenance": "The reversible repair affordances keyed to failing health states; the REPAIRED_BY target that re-enters implementation and closes the loop."
+          "maintenance": "Reversible repair affordances keyed to failing health states, reaching implementation through the ordinary effect protocol and no other way."
         },
         "forbiddenConflations": [
           "running != healthy",
@@ -201,7 +432,13 @@
           "missing_value != 0",
           "rendered != committed",
           "file_exists != deployed",
-          "observer_failure != implementation_degraded"
+          "observer_failure != implementation_degraded",
+          "expected != committed",
+          "receipt != readback",
+          "conformance (APPLIES_IN) != dependency (DEPENDS_ON)",
+          "health != objective satisfaction",
+          "type edge != trace edge",
+          "SUPPORTS (atom bond polarity) != any semantic relation"
         ],
         "incoming": [
           "behavior USES_VOCABULARY vocabulary"
@@ -214,23 +451,34 @@
       "subtype": "behavior",
       "content": {
         "role_index": "4/12",
-        "loop_part": "the given/when/then/forbidden observable contract of the loop",
-        "given": "A construct with its forward spine (pattern/behavior/algorithm), its trigger (Sensor/DepositBond/trigger atom/Threshold), its implementation wired into the field, and its verify arc (observer, metric, health).",
-        "when": "The construct is woken from the wake-queue and takes its turn, or an observer inspects the construct's loop.",
+        "loop_part": "the given/when/then/forbidden observable contract of the protocol",
+        "given": "A construct declaring exactly one execution profile, with its type spine materialized through spine_encoding, the parts its profile requires, its implementation in a stated realized state, and its verify arc (observer, metric, health, satisfaction claim).",
+        "when": "The construct fires (reactive), is invoked (deterministic) or takes its turn (agentic) — or an observer runs a conformance check over it.",
         "then": [
-          "the forward spine resolves in order: loop_space GOVERNS objective, ADDRESSED_BY pattern, SHAPES behavior, REFINED_BY algorithm, DEFINED_BY code, REALIZED_BY implementation",
-          "the trigger fires only at support >= N accumulated by measured Support bonds, never on a single unmeasured event",
-          "a PhysicsEvent never mutates: it is lifted to an ActionIntent, validated, then an EffectIntent is emitted to an authorized transport",
-          "implementation is OBSERVED_BY an independent observer that PRODUCES a metric vector that FEEDS health",
-          "the six feedback edges re-drive the loop; no construct is reported healthy without a fresh health_assessment"
+          "the type spine resolves by traversing CANONICAL stored relations through spine_encoding: loop_space GOVERNS objective, ADDRESSED_BY pattern, SHAPES behavior, REFINED_BY algorithm, DEFINED_BY code, REALIZED_BY implementation",
+          "the parts required by the declared execution profile are present, and parts belonging to other profiles are not claimed",
+          "a reactive construct fires only at support >= N accumulated by measured Support bonds, and declares its rearm_semantics",
+          "a PhysicsEvent never mutates: it is lifted to an ActionIntent, validated, authorized, then an EffectIntent goes to an authorized transport",
+          "ExpectedEffects are carried before the action and never reported as a result; the effect is proven by reading the node back as a CommittedDelta",
+          "implementation is OBSERVED_BY an independent observer that PRODUCES a metric vector, at a stated trust rung, that FEEDS health",
+          "health EVIDENCES an objective_satisfaction claim with its own freshness; the objective is never modulated by health directly",
+          "the feedback kinds the profile requires are present, and repair reaches implementation only through the ordinary effect protocol"
         ],
         "forbidden": [
           "collapsing the metric vector into one opaque scalar",
           "letting the implementation self-report its own health",
           "treating a PhysicsEvent as a semantic mutation",
-          "pre-creating validation_run or health_assessment",
-          "reusing a stale health_assessment as 'healthy'",
-          "offering an unproven target as an affordance verb"
+          "pre-creating validation_run, health_assessment or objective_satisfaction",
+          "reusing a stale health_assessment or satisfaction claim as current",
+          "offering an unproven target as an affordance verb",
+          "storing a trace edge as a graph relation",
+          "reporting ExpectedEffects as a CommittedDelta",
+          "declaring environmental feedback without rearm_semantics",
+          "repairing implementation outside the effect protocol",
+          "requiring an inference from a construct whose profile is not agentic",
+          "checking conformance against a part or edge count",
+          "reading a DEPENDS_ON edge as evidence of conformance",
+          "reporting a trust rung the proof did not earn"
         ],
         "incoming": [
           "pattern SHAPES behavior"
@@ -250,13 +498,17 @@
         "role_index": "5/12",
         "loop_part": "the ordered steps refining behavior",
         "steps": [
-          "resolve the construct's roles and relations (the forward spine)",
+          "read the construct's declared execution_profile; resolve the required part set and required feedback kinds from it",
+          "traverse the type spine over CANONICAL stored relations, decoding each through spine_encoding; a spine edge that does not resolve is a conformance failure, not a missing symbol",
+          "verify no trace edge has been stored as a graph relation",
           "run validation, which PRODUCES a validation_run (never pre-created)",
-          "wait to be woken from the wake-queue on a physics event; never poll",
-          "observe implementation independently by readback (not self-report)",
-          "measure: PRODUCE the metric vector with per-dimension provenance and freshness",
-          "derive health from the FRESH metric vector and render the failure front",
-          "re-observe: fold Moment back into Inputs and Effects back onto Sensor/Threshold so the loop re-arms"
+          "wait: fire on a threshold (reactive), be invoked (deterministic), or be woken from the wake-queue (agentic). Never poll.",
+          "observe implementation independently by readback, and record the trust rung the observation earned",
+          "measure: PRODUCE the metric vector, each dimension against its dimension_spec, with provenance and freshness; a dimension without fresh evidence is not_measured, never 0",
+          "derive health from the FRESH metric vector by the declared composition rule, and render the failure front",
+          "EVIDENCE the objective_satisfaction claim from that health, with its own fresh_until; never write the claim from anything else",
+          "if the claim is unsatisfied or stale, raise the failure front to maintenance (control feedback) — which repairs through the ordinary effect protocol, never directly",
+          "re-observe: fold Moment back into Inputs (agentic) and CommittedDelta back onto Sensor/Threshold (reactive, under the declared rearm_semantics) so the construct re-arms rather than self-excites"
         ],
         "python_escape_hatch": "forbidden_by_default",
         "incoming": [
@@ -273,10 +525,17 @@
       "subtype": "code",
       "content": {
         "role_index": "6/12",
-        "loop_part": "the graph-native CodeDefinition of the loop",
-        "authority": "Graph-native CodeDefinition (causal-expression-ast / health AST / seal atom circuit); no implicit Python. This JSON file is a materialized projection, not independent semantic authority.",
+        "loop_part": "the graph-native CodeDefinition of the protocol",
+        "authority": "Graph-native CodeDefinition (causal-expression-ast / health AST / atom circuit); no implicit Python. This JSON file is a materialized projection, not independent semantic authority.",
         "language": "mind-ir+atom-fixture",
-        "model_note": "This construct carries no atom circuit of its own; it is the canonical loop definition consumed by other constructs via APPLIES_IN / DEPENDS_ON. Each consuming construct's own health face reports the fresh, independently-observed health this loop derives.",
+        "model_note": "This construct carries no atom circuit of its own; it is the canonical protocol definition consumed by other constructs via APPLIES_IN (conformance) and DEPENDS_ON (operational). Each conforming construct's own health face reports the fresh, independently observed health this protocol derives.",
+        "required_procedures": {
+          "note": "The three procedures a conformance check needs to be a PROGRAM rather than a description. Named and typed here; not yet compiled. Their absence is an honest gap, not a hidden fallback.",
+          "check_conformance": "(construct_id, profile) -> ValidationRun. Resolves the type spine through spine_encoding, asserts the profile's required parts and feedback kinds, asserts no trace edge was stored as a relation, and asserts no forbidden claim.",
+          "observe_implementation": "(construct_id, freshness_policy) -> MetricVector. Independent readback per dimension_spec, each sample carrying provenance, trust rung and measured_at; an unmeasured dimension is not_measured, never 0.",
+          "derive_health": "(MetricVector, freshness_policy) -> HealthAssessment -> ObjectiveSatisfaction. Composes by the declared rule, refuses to derive from a stale vector, and emits a satisfaction claim with its own fresh_until."
+        },
+        "status": "declared_not_compiled",
         "incoming": [
           "algorithm DEFINED_BY code"
         ],
@@ -299,13 +558,22 @@
         "wiring_status": "not_wired",
         "runtime_status": "not_running",
         "verification_status": "not_measured",
-        "honesty": "The canonical loop model is written into the live store as a construct, but no construct's validity is DERIVED by wiring to this model at runtime yet. graph-defined/wired/running/verified are kept as distinct fields: written is true; wired, running and verified are false. This describes the loop faithfully; it does not yet execute it.",
+        "trust_rung": "self_reported",
+        "honesty": "The protocol is written into the live store as a construct, and its type spine is now materialized as canonical relations that a reader can traverse. No construct's validity is DERIVED by executing this protocol yet: the three required_procedures are declared and not compiled. graph-defined / wired / running / verified are kept as distinct fields: written is true; wired, running and verified are false. This describes the protocol faithfully; it does not yet execute it. These fields are this implementation's own account of itself and are self_reported, never evidence.",
+        "revision_is_gated": {
+          "state": "enforced",
+          "gate": "port:l2:mind-universe:construct-validity:revision-gate-v0",
+          "what_changed": "Revisions of this construct — and of every construct that APPLIES_IN it — are now admitted only against an actor's GRAPH-HELD capability set, and commit their EffectReceipt in the same transaction as the change. Before this, the tool wrote whatever the person running it asked for, attributed to nobody.",
+          "measured_refusal": "An embodied session body (actor:l1:mind:claude-…, a sponsored visitor holding an empty capability set, read status Complete) was refused at store revision 320 and the refusal committed a rejection receipt at entity 0xd00140. That is a measured fail-closed decision over a resolved actor, not an unknown-actor artifact.",
+          "still_true": "This is admission control on a bootstrap binary, not an affordance a citizen can reach. There is still no verb in the world that invokes a revision: an actor cannot yet propose one from inside the city, and the tool is still started from a terminal. What the gate establishes is that the terminal no longer confers the authority — the graph does."
+        },
+        "known_gap": "A health assessment IS produced today for house-alarm-v0 by native Rust (crates/universe-e2e/src/bin/construct_live_run.rs), honestly reporting 4 measured / 14 not_measured. That is per-construct native code, not this protocol executing. Generalizing it into the three graph-authored required_procedures is the next increment.",
         "incoming": [
           "code REALIZED_BY implementation",
-          "maintenance feeds back into implementation (feedback)"
+          "maintenance -> repair feedback -> implementation (through the effect protocol)"
         ],
         "outgoing": [
-          "implementation wires itself into the field -> Sensor",
+          "implementation wires itself into the field -> Sensor (reactive)",
           "implementation OBSERVED_BY observability_algorithm"
         ]
       }
@@ -318,23 +586,32 @@
         "role_index": "8/12",
         "loop_part": "whyItSatisfiesObjective plus rejectedAlternatives; the objective is JUSTIFIED_BY this, and every gate DEPENDS_ON the same evidence",
         "why": [
-          "A one-way sensor->effect->health pipeline ENDS at health and can never re-drive itself; the six feedback edges are exactly what turn the anatomy spine into a genuine loop.",
-          "An INDEPENDENT observer that mustNotTrust the implementation's health claim, the renderer's success flag, the process running-state or file presence keeps 'running != healthy' and 'rendered != committed' honest.",
-          "Runtime moments (validation_run, health_assessment) are PRODUCED by execution and never pre-created, so no construct self-certifies from a seeded value.",
-          "Freshness gating: a stale prior healthy assessment yields 'stale', never 'healthy' — there is no healthy state without a fresh runtime health_assessment.",
-          "The metric is a VECTOR with per-dimension provenance and freshness (forbidOpaqueAggregate); a single red/green scalar is an explicitly rejected alternative.",
-          "Maintenance is a first-class set of reversible repair affordances keyed to failing health states — it IS the feedback path (REPAIRED_BY) that re-enters implementation and closes the loop."
+          "A one-way sensor->effect->health pipeline ENDS at health and can never re-drive itself; the typed feedback edges are exactly what turn the anatomy spine into a genuine loop — and typing them stops six unlike things being counted as one.",
+          "Separating type edges from trace edges is what makes conformance CHECKABLE: a runtime can traverse a stored relation, and cannot traverse a sentence describing one. Storing the trace instead would make the world assert permanently something that happened once.",
+          "The spine_encoding table is what makes the stored canonical predicates and the authored spine ONE ontology with a stated mapping, rather than two that happen to describe the same thing. It also keeps the injection at zero new symbols, which is the rule that stops the canonical vocabulary from drifting per fixture.",
+          "An INDEPENDENT observer that mustNotTrust the implementation's health claim, the renderer's success flag, the process running-state or file presence keeps 'running != healthy' and 'rendered != committed' honest — and the trust ladder terminates the 'who checks the checker' recursion at kernel_verified instead of recursing.",
+          "Runtime moments (validation_run, health_assessment, objective_satisfaction) are PRODUCED by execution and never pre-created, so no construct self-certifies from a seeded value.",
+          "Freshness gating at BOTH the assessment and the satisfaction claim: a stale reading yields 'stale', never its last value.",
+          "The metric is a VECTOR with per-dimension spec, provenance and freshness (forbidOpaqueAggregate); a single red/green scalar is an explicitly rejected alternative.",
+          "Profiles keep the proof protocol universal without making the execution mechanism universal — a validator that had to infer, or a Universe clocked by an LLM, would be both false to what these things are and incapable of the throughput a city needs.",
+          "Maintenance goes through the ordinary effect protocol because a repair system exempt from the guarantees it repairs is the largest hole a construct can have."
         ],
         "rejected": [
-          "a one-way build->receipt chain that never invalidates itself (mutating any claim must re-open the seal so the gate can no longer fire until re-sealed)",
+          "materializing every modelled edge as a graph relation (it would store firings as permanent facts and cement the conflation of the three loops)",
+          "minting GOVERNS / ADDRESSED_BY / SHAPES / REFINED_BY / REALIZED_BY as canonical symbols instead of encoding them (per-fixture symbol drift is exactly what the zero-new-symbols rule exists to prevent)",
+          "adding ValidationReceipt / AuthorizationReceipt / TransportAttempt node kinds (validation and authorization are gates on a step; a transport attempt is what an EffectReceipt records)",
+          "a one-way build->receipt chain that never invalidates itself (mutating a claim must re-open the seal so the gate cannot fire until re-sealed)",
           "an implementation self-reporting its own health without an independent observer",
-          "an unproven observer (one not itself VERIFIED_BY observer_validation yields only a WEAK proof)",
+          "an unproven observer (one below fixture_verified yields only a WEAK proof, and repetition never upgrades it)",
           "one opaque overall health scalar that hides a per-dimension defect",
+          "attaching derived health straight to the objective (SUPPORTS is an atom bond polarity; that edge modulates energy, not confidence)",
+          "a fixed part/edge count as a conformance rule",
           "pre-seeding or inferring runtime moments instead of PRODUCING them"
         ],
         "incoming": [
           "objective JUSTIFIED_BY justification",
-          "Preconditions DEPENDS_ON justification (feedback; the gate/evidence diamond)"
+          "pattern JUSTIFIED_BY justification",
+          "Preconditions DEPENDS_ON justification (epistemic feedback; the gate/evidence diamond)"
         ]
       }
     },
@@ -346,26 +623,50 @@
         "role_index": "9/12",
         "loop_part": "fixtures plus invariants challenging code/behavior; its execution PRODUCES a validation_run (never pre-created)",
         "evaluation_kind": "structured_expression_ast",
+        "evaluation_status": "invariants_are_natural_language_pending_compilation",
         "runtimeMomentsArePrecreated": false,
         "scenarios": [
-          "forward_spine_resolves_in_order",
-          "trigger_fires_only_at_support_ge_N",
+          "type_spine_resolves_over_canonical_relations_through_spine_encoding",
+          "no_trace_edge_is_stored_as_a_graph_relation",
+          "declared_execution_profile_matches_the_parts_present",
+          "reactive_trigger_fires_only_at_support_ge_N",
+          "reactive_construct_declares_rearm_semantics",
           "physics_event_never_mutates_directly",
+          "expected_effects_are_never_reported_as_committed_delta",
+          "effect_is_proven_by_node_readback_not_by_receipt",
           "implementation_observed_independently_not_self_reported",
           "metric_is_a_vector_not_an_opaque_scalar",
-          "no_healthy_state_without_a_fresh_health_assessment",
-          "six_feedback_edges_close_the_loop",
-          "maintenance_re_enters_implementation",
+          "every_metric_dimension_has_a_spec_and_a_freshness_ttl",
+          "no_health_state_without_a_fresh_metric_vector",
+          "satisfaction_claim_is_evidenced_by_health_not_asserted",
+          "stale_satisfaction_claim_reports_stale_not_its_last_value",
+          "causal_closure_matches_the_declared_execution_profile",
+          "maintenance_re_enters_implementation_through_the_effect_protocol",
+          "trust_rung_is_earned_not_declared",
+          "conformance_edge_is_not_read_off_a_dependency_edge",
+          "revision_is_refused_for_an_actor_without_the_held_capability",
+          "refused_revision_commits_a_rejection_receipt_and_changes_nothing",
+          "admitted_revision_commits_its_effect_receipt_in_the_same_transaction",
           "unproven_target_never_offered_as_a_verb"
         ],
         "invariants": [
-          "the loop has 34 parts and 42 edges, exactly 6 of which are feedback",
-          "runtime moments (validation_run, health_assessment) are produced, never pre-created",
-          "the observer does not trust the implementation's health claim, renderer flag, running state or file presence",
-          "health is derived only from a fresh metric vector",
-          "health SUPPORTS objective, so the loop cannot self-certify while stale",
-          "this construct is an instance of the loop it defines (every construct APPLIES_IN it)"
+          "every type edge in the protocol resolves to a canonical stored relation through spine_encoding, and interning a new symbol to make one resolve is a failure, not a fix",
+          "no trace edge appears as a graph relation",
+          "each construct declares exactly one execution_profile, and carries the parts and feedback kinds that profile requires and no parts claimed from another",
+          "runtime moments (validation_run, health_assessment, objective_satisfaction) are produced, never pre-created",
+          "the observer does not trust the implementation's health claim, renderer flag, running state or file presence, and states the trust rung it earned",
+          "health is derived only from a fresh metric vector, and every dimension has a spec, provenance and a freshness TTL",
+          "health EVIDENCES objective_satisfaction; no relation attaches health to the objective directly, and no semantic relation is named SUPPORTS",
+          "an effect is proven by independent node readback, never by a receipt or a Moment alone",
+          "maintenance reaches implementation only through the ordinary effect protocol",
+          "conformance (APPLIES_IN) is never inferred from dependency (DEPENDS_ON)",
+          "no construct is revised except by an actor whose GRAPH-HELD capability set contains the revision_gate's required_mutate_capability; a self-declared capability field is audited, never adjudicated",
+          "an admitted revision and its EffectReceipt commit in ONE transaction, so no revised construct exists without an attributable holder behind it",
+          "this construct APPLIES_IN the protocol it defines, at the deterministic profile"
         ],
+        "deleted_invariants": {
+          "the loop has 34 parts and 42 edges, exactly 6 of which are feedback": "A count describes one revision; it is not a property a construct can be right or wrong about. It also could not survive the split by execution profile, under which different constructs correctly have different parts and different feedback kinds."
+        },
         "incoming": [
           "behavior VALIDATED_BY validation",
           "code CHALLENGED_BY validation"
@@ -382,18 +683,24 @@
       "content": {
         "role": "observer_validation — the check on the checker",
         "target": "observability_algorithm:l2:mind-universe:construct-validity-v0",
-        "loop_part": "proves the observer detects real faults and never converts missing proof into success; observability_algorithm is VERIFIED_BY / VALIDATED_BY it",
+        "loop_part": "proves the observer detects real faults and never converts missing proof into success; observability_algorithm is VALIDATED_BY it",
         "tests": [
           "detect a broken-but-visible edge the implementation reported as fine",
           "detect a missing proof presented as success",
           "detect stale evidence reused as fresh",
           "detect a renderer 'success' flag that never committed (rendered != committed)",
           "detect the implementation self-reporting health the observer never measured",
+          "detect ExpectedEffects presented as a CommittedDelta",
+          "detect a trace edge stored as a graph relation",
+          "detect a satisfaction claim asserted without a fresh health assessment behind it",
+          "detect a trust rung claimed above what the proof earned",
           "never convert missing proof into an overall pass"
         ],
-        "consequence": "An observer that is not itself proven yields only a WEAK proof; the checker must be checked.",
+        "consequence": "An observer below fixture_verified yields only a WEAK proof, and the health assessment it feeds must carry that rung. Repetition never upgrades a weak proof.",
+        "recursion_terminates_at": "kernel_verified — the fixed set of trusted-computing-base primitives (atomic write, independent readback, signature check, fuel bound) whose correctness is assumed rather than proven here. The ladder is finite by construction; what each rung assumed is stated, so the assumption is inspectable rather than hidden.",
+        "status": "authored_not_executed",
         "incoming": [
-          "observability_algorithm VERIFIED_BY observer_validation"
+          "observability_algorithm VALIDATED_BY observer_validation"
         ]
       }
     },
@@ -403,27 +710,34 @@
       "subtype": "observability_algorithm",
       "content": {
         "role_index": "10/12",
-        "loop_part": "the INDEPENDENT observer of the loop",
-        "independence": "Reads implementation by fresh readback and re-observes the committed Moment as fresh evidence; does NOT trust the implementation's health claim, the renderer's success flag, the process running-state, or file presence.",
+        "loop_part": "the INDEPENDENT observer of the protocol",
+        "independence": "Reads implementation by fresh readback and re-observes the CommittedDelta — the node itself, not the Moment about it — as fresh evidence; does NOT trust the implementation's health claim, the renderer's success flag, the process running-state, or file presence.",
         "mustNotTrust": [
           "implementation self-reported health",
           "renderer success flag",
           "process running state",
-          "file presence"
+          "file presence",
+          "an EffectReceipt as proof of a semantic change",
+          "a Moment as a substitute for reading the node"
         ],
         "checks": [
+          "the type spine resolves over canonical stored relations through spine_encoding",
+          "no trace edge was stored as a graph relation",
+          "the declared execution profile matches the parts present",
           "implementation is realized as code claims (REALIZED_BY holds)",
-          "the committed Moment independently reads back (not self-report)",
-          "the metric it PRODUCES is a vector with per-dimension provenance and freshness",
+          "the committed change independently reads back from the node",
+          "the metric it PRODUCES is a vector with per-dimension spec, provenance and freshness",
           "no missing proof is converted into success"
         ],
+        "trust_rung": "observed",
+        "trust_rung_justification": "This observer reads back independently, which earns 'observed'. It has NOT been run against the fault-injection fixture in validity-observer-v0, so it has not earned 'fixture_verified' and every proof it feeds is WEAK until it does.",
         "incoming": [
           "implementation OBSERVED_BY observability_algorithm",
-          "Moment independently re-observed as fresh evidence -> observability_algorithm"
+          "CommittedDelta independently re-observed as fresh evidence -> observability_algorithm"
         ],
         "outgoing": [
           "observability_algorithm PRODUCES metric",
-          "observability_algorithm VERIFIED_BY observer_validation"
+          "observability_algorithm VALIDATED_BY observer_validation"
         ]
       }
     },
@@ -435,17 +749,96 @@
         "role_index": "11/12",
         "loop_part": "the metric VECTOR the observer PRODUCES, which FEEDS health",
         "forbidOpaqueAggregate": true,
-        "note": "A vector with per-dimension provenance and evidence_freshness_seconds; no collapsed scalar score.",
-        "dimensions": [
-          "forward_spine_resolves",
-          "trigger_support_measured",
-          "physics_event_inertness",
-          "observer_independence",
-          "moment_readback_ok",
-          "feedback_edges_present",
-          "runtime_moments_produced_not_precreated",
-          "evidence_freshness_seconds"
-        ],
+        "note": "A vector with per-dimension spec, provenance and freshness; no collapsed scalar score. Each dimension states what measures it, its type, the provenance it requires and how long a sample stays fresh — without which health derivation is a description, not a program.",
+        "dimension_specs": {
+          "type_spine_resolves": {
+            "measured_by": "traverse each protocol.type_edges entry over stored canonical relations, decoding through spine_encoding",
+            "value_type": "ratio_resolved_over_declared",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 3600,
+            "composition": "all_required — any unresolved spine edge caps health at degraded"
+          },
+          "no_trace_edge_materialized": {
+            "measured_by": "assert no stored relation encodes a protocol.trace_edges step between the construct's members",
+            "value_type": "boolean",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 3600,
+            "composition": "all_required — a materialized trace edge caps health at degraded"
+          },
+          "profile_parts_present": {
+            "measured_by": "resolve execution_profiles[declared].required_parts against the construct's members and content",
+            "value_type": "ratio_present_over_required",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 3600,
+            "composition": "all_required"
+          },
+          "feedback_kinds_present": {
+            "measured_by": "resolve execution_profiles[declared].required_feedback_kinds against protocol.feedback_edges kinds",
+            "value_type": "ratio_present_over_required",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 3600,
+            "composition": "all_required"
+          },
+          "trigger_support_measured": {
+            "measured_by": "read the trigger atom's accrued support and each DepositBond's energy_status from the atom event ledger",
+            "value_type": "ratio_measured_over_total_bonds",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 300,
+            "composition": "reactive_profile_only — not_measured for other profiles, never 0",
+            "applies_to_profiles": ["reactive"]
+          },
+          "physics_event_inertness": {
+            "measured_by": "committed store byte-identical across the physics wave",
+            "value_type": "boolean",
+            "provenance_required": "kernel_verified",
+            "freshness_ttl_seconds": 300,
+            "composition": "all_required — a mutating physics event is a hard failure, not a degradation",
+            "applies_to_profiles": ["reactive"]
+          },
+          "committed_delta_readback_ok": {
+            "measured_by": "re-open the store and read the changed node itself; compare against the ActionIntent's ExpectedEffects",
+            "value_type": "boolean_plus_divergence_set",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 300,
+            "composition": "all_required"
+          },
+          "expected_vs_committed_divergence": {
+            "measured_by": "set difference between ExpectedEffects and CommittedDelta for the last firing",
+            "value_type": "count",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 300,
+            "composition": "threshold — any divergence is reported, never silently reconciled"
+          },
+          "observer_independence": {
+            "measured_by": "the observer's identity is not the implementation's, and its inputs contain no self-reported field",
+            "value_type": "boolean",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 3600,
+            "composition": "all_required"
+          },
+          "observer_trust_rung": {
+            "measured_by": "the highest ladder rung the observer's own validation run earned",
+            "value_type": "enum(self_reported|observed|cross_observed|fixture_verified|kernel_verified)",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 86400,
+            "composition": "caps — health can never exceed what the observer's rung supports; below fixture_verified every proof is WEAK"
+          },
+          "runtime_moments_produced_not_precreated": {
+            "measured_by": "each runtime moment carries precreated:false and a produced_at inside the run's window",
+            "value_type": "boolean",
+            "provenance_required": "observed",
+            "freshness_ttl_seconds": 300,
+            "composition": "all_required"
+          },
+          "evidence_freshness_seconds": {
+            "measured_by": "now minus the oldest sample's measured_at in this vector",
+            "value_type": "seconds",
+            "provenance_required": "kernel_verified",
+            "freshness_ttl_seconds": 0,
+            "composition": "gate — a vector past any dimension's TTL derives 'stale', never that dimension's last value"
+          }
+        },
+        "composition_rule": "healthy requires: every all_required dimension measured and passing, every applicable dimension fresh within its TTL, and the observer rung at fixture_verified or above. Any dimension not_measured yields not_measured overall — never a lower-confidence 'healthy'. Any dimension past TTL yields stale. A failed measurement yields measurement_failed, which is distinct from a measured failure.",
         "incoming": [
           "observability_algorithm PRODUCES metric"
         ],
@@ -460,7 +853,7 @@
       "subtype": "health",
       "content": {
         "role_index": "12/12",
-        "loop_part": "derived state from a fresh metric vector; FED by metric, PRODUCES health_assessment, REPAIRED_BY maintenance, and SUPPORTS objective (the loop-closing feedback)",
+        "loop_part": "derived state from a fresh metric vector; FED by metric, PRODUCES health_assessment, EVIDENCES objective_satisfaction, REPAIRED_BY maintenance",
         "derived_from": "the metric vector only (never self-reported)",
         "derived_states": [
           "healthy",
@@ -471,8 +864,9 @@
           "measurement_failed"
         ],
         "no_healthy_without_fresh_assessment": "No healthy state exists without a FRESH runtime health_assessment; a stale prior reading yields 'stale', never 'healthy'.",
-        "produces": "a health_assessment runtime moment (precreated:false): assessment_id, observer_run_ref, metric_samples, derived_state, derived_at, fresh_until, evidence_refs, failure_front.",
-        "feedback": "health SUPPORTS objective — the loop-closing feedback edge that folds derived Health back onto the very objective loop_space GOVERNS.",
+        "produces": "a health_assessment runtime moment (precreated:false): assessment_id, observer_run_ref, trust_rung, metric_samples, derived_state, derived_at, fresh_until, evidence_refs, failure_front.",
+        "evidences": "health EVIDENCES objective_satisfaction — derived health bears on the CONFIDENCE that the objective is currently satisfied, and on nothing else. It does not attach to the objective, whose existence and energy are independent of it.",
+        "what_changed": "The prior revision carried 'health SUPPORTS objective' as the loop-closing feedback. It was not a feedback at all — an objective is not re-driven by the health of the thing pursuing it — and SUPPORTS is the AtomDynamics bond polarity, so the edge would have modulated the objective's energy. The real control feedback runs objective_satisfaction -> maintenance.",
         "maintenance": [
           "retry-observer",
           "inspect-evidence",
@@ -485,13 +879,14 @@
           "reconcile_universe_physics_runtime",
           "request-human"
         ],
+        "maintenance_path": "Every one of these is an ActionIntent through the ordinary effect protocol: FailureFront -> RepairProposal -> ActionIntent -> validate -> authorize -> EffectIntent -> EffectReceipt -> Moment -> re-observation. None is a direct write to implementation.",
         "incoming": [
           "metric FEEDS health"
         ],
         "outgoing": [
           "health PRODUCES health_assessment (precreated:false)",
-          "health REPAIRED_BY maintenance",
-          "health SUPPORTS objective (feedback)"
+          "health EVIDENCES objective_satisfaction",
+          "health REPAIRED_BY maintenance"
         ]
       }
     }
@@ -538,14 +933,60 @@
       "target": "health:l2:mind-universe:construct-validity-v0"
     },
     {
-      "source": "objective:l2:mind-universe:construct-validity-v0",
-      "predicate": "SUPPORTS",
-      "target": "space:l2:mind-universe:construct-validity-v0"
+      "source": "space:l2:mind-universe:construct-validity-v0",
+      "predicate": "GOVERNS",
+      "target": "objective:l2:mind-universe:construct-validity-v0"
     },
     {
       "source": "observability_algorithm:l2:mind-universe:construct-validity-v0",
       "predicate": "VALIDATED_BY",
       "target": "validation:l2:mind-universe:validity-observer-v0"
+    },
+
+    {
+      "source": "objective:l2:mind-universe:construct-validity-v0",
+      "predicate": "ADDRESSED_BY",
+      "target": "pattern:l2:mind-universe:construct-validity-v0"
+    },
+    {
+      "source": "objective:l2:mind-universe:construct-validity-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l2:mind-universe:construct-validity-v0"
+    },
+    {
+      "source": "pattern:l2:mind-universe:construct-validity-v0",
+      "predicate": "SHAPES",
+      "target": "behavior:l2:mind-universe:construct-validity-v0"
+    },
+    {
+      "source": "behavior:l2:mind-universe:construct-validity-v0",
+      "predicate": "USES_VOCABULARY",
+      "target": "vocabulary:l2:mind-universe:construct-validity-v0"
+    },
+    {
+      "source": "behavior:l2:mind-universe:construct-validity-v0",
+      "predicate": "REFINED_BY",
+      "target": "algorithm:l2:mind-universe:construct-validity-v0"
+    },
+    {
+      "source": "algorithm:l2:mind-universe:construct-validity-v0",
+      "predicate": "DEFINED_BY",
+      "target": "code:l2:mind-universe:construct-validity-v0"
+    },
+    {
+      "source": "code:l2:mind-universe:construct-validity-v0",
+      "predicate": "CHALLENGED_BY",
+      "target": "validation:l2:mind-universe:construct-validity-v0"
+    },
+    {
+      "source": "health:l2:mind-universe:construct-validity-v0",
+      "predicate": "EVIDENCES",
+      "target": "objective_satisfaction:l2:mind-universe:construct-validity-v0"
+    },
+    {
+      "source": "objective_satisfaction:l2:mind-universe:construct-validity-v0",
+      "predicate": "SATISFIES",
+      "target": "objective:l2:mind-universe:construct-validity-v0"
     }
   ]
 }

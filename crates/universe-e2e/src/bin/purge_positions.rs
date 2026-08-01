@@ -91,7 +91,6 @@ fn run() -> Result<(), Box<dyn Error>> {
     let write_set = UniverseWriteSet {
         base_revision,
         idempotency_key: "mutation:purge-has-position:v0".to_string(),
-        causal_ancestry: vec!["changeset:purge-authored-coordinates-v0".to_string()],
         commands,
     };
 

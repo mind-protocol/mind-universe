@@ -10,6 +10,7 @@ pub mod canonical;
 pub mod canonical_ride;
 pub mod canonical_seed_energy;
 pub mod cluster;
+pub mod construct_export;
 pub mod construct_registry;
 pub mod construct_resolver;
 pub mod conversation_ride;
@@ -475,7 +476,6 @@ fn translate_fixture_proposal(
     Ok(Some(UniverseWriteSet {
         base_revision: snapshot.revision,
         idempotency_key: format!("{}:put_entity", correlation.0),
-        causal_ancestry: vec![correlation.0.clone(), receipt.code_hash.clone()],
         commands: vec![UniverseCommand::PutEntity {
             entity: EntityRecord {
                 key: *key,

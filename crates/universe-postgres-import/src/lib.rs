@@ -860,7 +860,6 @@ pub fn run_identity_pilot(
         UniverseWriteSet {
             base_revision: independent.revision,
             idempotency_key: format!("{}:readback-receipt", manifest.batch.batch_id),
-            causal_ancestry: vec![manifest.batch.batch_id.clone()],
             commands: vec![
                 UniverseCommand::PutEntity {
                     entity: EntityRecord {

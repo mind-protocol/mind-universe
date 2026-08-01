@@ -192,6 +192,66 @@ pub enum Operator {
         fields: Vec<(String, Register)>,
         output: Register,
     },
+    /// Binds one named field of a record.
+    ///
+    /// Without this, a program can open a bounded observation and can build a
+    /// mutation, but cannot carry anything from the first into the second: every
+    /// value it writes must have come in as an `Input` from outside. That makes
+    /// the caller, not the program, the thing that decided which node was acted
+    /// on — and a selection the program cannot express is a selection nothing
+    /// attributes to it.
+    ///
+    /// An absent field is a deterministic error, never `Unit`. A record that does
+    /// not carry what the program asked for is a fact about the record, and
+    /// coercing it into a value here is exactly the "missing data as zero"
+    /// mistake the epistemic operators exist to prevent. A program that expects a
+    /// field to be optional must branch on evidence, not read it and hope.
+    GetField {
+        input: Register,
+        field: String,
+        output: Register,
+    },
+    /// Binds the SOLE element of a list, and traps if the list does not hold
+    /// exactly one.
+    ///
+    /// Selection operators (`FilterTruthy`, `TopK`, `SelectMembers`,
+    /// `OrderByPreference`, `Hydrate`) all carry lists; every operator that acts
+    /// on a thing wants the thing. This is the only bridge between the two, and
+    /// it is deliberately the strict one: a program that believed it had narrowed
+    /// to a single candidate and in fact holds three has a broken selection, and
+    /// must find that out here rather than quietly proceed on whichever element
+    /// happened to sort first. Silently taking a head would turn a selection bug
+    /// into an attributable mutation of the wrong node.
+    ///
+    /// An empty list traps for the same reason: it is not a null result to be
+    /// coerced onward, it is a selection that matched nothing, and the caller
+    /// must branch on that before reaching here.
+    Only {
+        input: Register,
+        output: Register,
+    },
+    /// Extends an EXISTING record with named fields, preserving every field the
+    /// program did not name.
+    ///
+    /// This is the counterpart `MakeRecord` cannot be: `MakeRecord` builds a
+    /// record from scratch, so a program that revises a node by rebuilding its
+    /// content silently drops every field it does not know about — including the
+    /// provenance and attribution of the very node it is revising. Revision is
+    /// only honest if what the reviser does not understand survives it.
+    ///
+    /// A named field is written whether or not it was already present: naming a
+    /// field IS the intent to set it, and revising a value in place is the point.
+    /// The guarantee is about the fields NOT named — they pass through
+    /// untouched, whatever they are. An empty field list is rejected at
+    /// validation rather than compiled into a copy, mirroring `EvidenceAll`.
+    ///
+    /// The input must be a record. A non-record input is a deterministic type
+    /// error, never a silently created record.
+    ExtendRecord {
+        input: Register,
+        fields: Vec<(String, Register)>,
+        output: Register,
+    },
     Propose {
         command: Register,
         output: Register,
@@ -265,6 +325,9 @@ impl Operator {
             | Self::Hydrate { output, .. }
             | Self::CapabilityCall { output, .. }
             | Self::MakeRecord { output, .. }
+            | Self::GetField { output, .. }
+            | Self::Only { output, .. }
+            | Self::ExtendRecord { output, .. }
             | Self::Propose { output, .. }
             | Self::Call { output, .. } => Some(*output),
             Self::Branch { .. }
@@ -300,10 +363,15 @@ impl Operator {
             Self::FilterTruthy { input, .. }
             | Self::TopK { input, .. }
             | Self::Hydrate { input, .. }
+            | Self::Only { input, .. }
+            | Self::GetField { input, .. }
             | Self::CapabilityCall { input, .. } => vec![*input],
             Self::MakeRecord { fields, .. } => {
                 fields.iter().map(|(_, register)| *register).collect()
             }
+            Self::ExtendRecord { input, fields, .. } => std::iter::once(*input)
+                .chain(fields.iter().map(|(_, register)| *register))
+                .collect(),
             Self::Propose { command, .. } => vec![*command],
             Self::Return { value } => vec![*value],
             Self::RepeatUntilWithLimit { condition, .. } => vec![*condition],
@@ -769,7 +837,6 @@ pub struct BehaviorReadbackEvidence {
     pub execution_receipt_hash: String,
     pub independent_readback_hash: String,
     pub content_hashes_verified: bool,
-    pub causal_chain_verified: bool,
     pub contradictory: bool,
 }
 

@@ -1,0 +1,652 @@
+{
+  "id": "space:l1:mind-universe:situated-passage-v0",
+  "node_type": "space",
+  "subtype": "passage_machine",
+  "content": {
+    "contractKind": "construct",
+    "name": "Passage situé v0 (une seule mécanique : partir et arriver sont le même geste)",
+    "dominant_scale": "mechanism",
+    "level": "l1",
+    "built_with": "space:l2:mind-universe:mechanical-toolkit-v0",
+    "lineage": "The lateral sibling of the Construction toolkit (fixtures/ontology/construction-toolkit-v0.json) and the Residency toolkit (fixtures/ontology/residency-toolkit-v0.json). Construction BINDS a containment edge — to be placed is to belong. Residency SEVERS one — to be demoted is to stop being reached. Neither one alone is movement: a severance with no binding is disappearance, a binding with no severance is a body held in two places. This machine is the pair, and it is the pair ATOMICALLY. It is assembled with the Mechanical toolkit rather than authored as a third placement toolkit, because the Mechanical machine_contract already names this effect: an effector emits an EffectIntent to 'transform a thing, move a body, notify'.",
+    "parent_scope": {
+      "classification": "standalone",
+      "justification": "A portable motion instrument, not yet installed under a canonical L1 registry Space. It has exactly one scope classification and does not pretend to a parent it has not been given. Its subjects (inhabitants) live in space:l1:mind:inhabitants, a DIFFERENT id namespace; that adjacency is observed, not asserted as containment."
+    },
+    "runtime_moment_subtypes": ["validation_run", "health_assessment"],
+    "native_law_boundary": "The native floor knows only the four closed kernel write verbs (intern_symbols, put_entity, put_relation, tombstone_relation) and how to aggregate them into ONE atomic transaction at a tick boundary. It holds no idea of 'here', 'there', 'leaving' or 'arriving'. Every one of those meanings is graph data in this construct: which edge is a holding edge, what a destination must be, what may not be left behind, and what the passage records about itself.",
+    "purpose": "Make MOVING a wieldable graph gesture, and make a destination-less departure structurally impossible. Turn 'I am held here and I want to be held there' into ONE atomic set of one-verb MutationBonds that (a) tombstones the containment edge that holds the traveller where it stands, (b) writes the containment edge that binds it to the named destination, and (c) writes one passage Moment carrying who moved, by whose scope, from where, to where and why — so a later reader can tell an intentional passage from a dropped write.",
+    "why_it_is_fluid": "Not because it is fast. Because the two halves cannot come apart: the AND-gate refuses to assemble a passage from a traveller with no destination, so nothing can fire that would sever a body's last mooring; and the three writes commit as one transaction, so no observer ever sees a body in two places or in none. Fluidity here is the absence of an intermediate state to fall into.",
+    "machine_contract": {
+      "module": "one element of this machine: typed input ports + typed output ports + a transformation; physicalized as an atom that activates when all its required input couplings are supplied and no interlock inhibits it",
+      "coupling": "an output port wired to a COMPATIBLE input port; physicalized as a support bond",
+      "compatibility": "couple(out, in) is admitted iff the output port type is accepted by the input port type; an incompatible coupling is refused and the prior assembly is restored exactly",
+      "interlock": "a precondition that inhibits the effector until it clears. This machine declares ONE: the acting session must be the traveller itself (self_passage), or must hold the relocate_inhabitant authority as a GRAPH-held capability. A self-declared string is not a scope.",
+      "effector": "the terminal module whose activation emits an EffectIntent carrying the passage's mutation set; the passage is real only once its EffectReceipt returns and the set is committed",
+      "validation_rig": "an independent harness that re-reads the committed graph after the passage and checks the traveller's holding edges against the declared transformation; a rig check with no evaluator is a hard failure of the run",
+      "rule": "A module activates only when every required input port is supplied with MEASURED signal and no interlock inhibits it. The effector conducts nothing onward. The three writes it names commit together or not at all."
+    }
+  },
+  "members": [
+    {
+      "id": "objective:l1:mind-universe:situated-passage-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "For one named traveller and one named destination holder, every coupling of the machine joins compatible ports, the passage module activates only once BOTH are supplied, the terminal effector fires exactly once, and exactly one candidate EffectIntent is emitted carrying a mutation set of exactly three one-verb MutationBonds. The interlock clears only for a self-passage or a graph-held relocate_inhabitant capability. Committed, the set leaves the traveller held by the destination and by nothing it was held by before, with one passage Moment stating who, by what scope, from where, to where and why. An independent readback from a fresh reopen finds the old holding edge tombstoned, the new holding edge present, the Moment reachable from the traveller — and a fresh observation from the traveller's own vantage shows different surroundings. A traveller with no destination assembles nothing and severs nothing. An unauthorized passage commits nothing and leaves the traveller exactly where it stood.",
+        "not_claimed": "This construct moves a body between HOLDERS. It writes no coordinate and promises no metric distance: in this Universe a node's rendered position is derived by the layout solver from the graph, so 'twenty metres' is an outcome to be measured after the passage, never an input this machine accepts."
+      }
+    },
+    {
+      "id": "pattern:l1:mind-universe:situated-passage-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "The Mechanical toolkit's assembly grammar applied to place. Two source modules (the traveller, the destination) supply typed outputs; a passage module is an AND gate that activates only once BOTH are supplied and transforms them into one passage plan; that activation deposits onto the passage trigger; the trigger conducts to a terminal Effector whose fire surfaces ONE candidate EffectIntent carrying the plan's three MutationBonds. The candidate becomes a passage only through the authorized write path, which returns an EffectReceipt reinjected as a Moment. A validation rig then re-reads the committed graph and challenges the traveller's holdings against the declared transformation.",
+        "chain": "named traveller + named destination -> passage module (AND gate) -> deposit -> passage trigger -> interlock (self_passage | graph-held relocate_inhabitant) -> terminal Effector -> CANDIDATE EffectIntent{3 MutationBonds} -> one atomic transaction -> EffectReceipt -> validation rig re-reads the graph -> Moment",
+        "epistemic_honesty": "An assembled machine is not a run machine. A fired effector is not a passage. A committed write-set is not a felt displacement until an independent observation from the traveller's vantage measures different surroundings. A refused interlock is measured knowledge that the passage did NOT happen — never an absent measurement, and never a passage reported as partial."
+      }
+    },
+    {
+      "id": "vocabulary:l1:mind-universe:situated-passage-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "TravellerModule": "The source module supplying the named inhabitant that moves. Its output port carries type `inhabitant_ref`.",
+          "DestinationModule": "The source module supplying the named holder the traveller is to be held by. Its output port carries type `holder_ref`.",
+          "PassageModule": "The AND-gate module whose transformation is (inhabitant_ref, holder_ref) -> passage_plan. It activates only when BOTH input ports are supplied; with one input it is Starved and assembles nothing. This is the whole safety of the instrument.",
+          "PassageTrigger": "The trigger atom the assembled plan deposits onto. It fires at one measured support.",
+          "PassageEffector": "The TERMINAL module. Its fire surfaces exactly one CANDIDATE EffectIntent carrying the three MutationBonds; it conducts no energy onward.",
+          "HoldingEdge": "A canonical containment edge whose source is the traveller — what makes it reachable from a place, and therefore what makes it visible from that place. In this Universe a body's whereabouts IS its holding edge; there is no coordinate to move.",
+          "PassagePlan": "The resolved triple: the holding edges to release, the holding edge to write, and the Moment to record. Its endpoints are resolved from the COMMITTED graph at run time and are never authored here — an authored relation key would be a guess about a store this fixture cannot see.",
+          "SelfPassage": "The interlock mode in which the acting session IS the traveller. A body carrying itself needs no authority over anyone.",
+          "GrantedPassage": "The interlock mode in which the acting session moves ANOTHER inhabitant, and must hold relocate_inhabitant as a capability read from the graph.",
+          "Orphaned": "The state this machine exists to make unreachable: a traveller whose last holding edge was cut with none written. Not a location — an absence of location.",
+          "Doubled": "The opposite failure: a traveller bound to a new holder while still held by the old one. Present twice is not present.",
+          "Starved": "A module whose required inputs were not all supplied. It does not activate and fabricates no output.",
+          "Fog": "An unmeasured holder, edge or vantage. Never rendered as a place the traveller came from or went to."
+        }
+      }
+    },
+    {
+      "id": "behavior:l1:mind-universe:situated-passage-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "A set of typed modules and their proposed couplings, one named traveller, one named destination holder, the acting session's identity and its GRAPH-held capabilities, the committed graph in which the traveller's holding edges can be read, and an authored reason for the passage.",
+        "when": "The machine is assembled and run.",
+        "then": [
+          "Admit a coupling only between compatible ports; refuse an incompatible coupling and restore the prior assembly exactly.",
+          "Physicalize the assembly: one atom per module (required inputs = required_supports), one support bond per coupling.",
+          "Run the machine to quiescence: activate each module once all its required inputs are supplied, conducting each coupling once.",
+          "Hold a traveller-only or destination-only machine starved: assemble no plan, and sever nothing.",
+          "Resolve the plan's endpoints from the COMMITTED graph: every canonical containment edge whose source is the traveller, and the destination's own key.",
+          "Refuse to fire when the named destination does not exist in the committed graph — arriving nowhere is the same failure as leaving for nowhere.",
+          "Clear the interlock only for a self_passage, or for an acting session whose relocate_inhabitant capability is READ FROM THE GRAPH, never declared by the caller.",
+          "On the terminal Effector's fire, surface exactly one CANDIDATE EffectIntent carrying exactly three one-verb MutationBonds.",
+          "Commit the three writes as ONE transaction at a tick boundary, against a freshly replayed base revision, with bounded retry: this store has other writers.",
+          "Record a refused interlock, an absent destination and a starved machine as MEASURED non-passages, each with its reason, never as an absent measurement.",
+          "Commit exactly one validation_run Moment and one health_assessment Moment derived from THIS passage only."
+        ],
+        "forbidden": [
+          "reading a holder, a traveller or a port type inside the native AtomDynamics law",
+          "admitting a coupling between incompatible ports",
+          "activating the passage module on a single supplied input",
+          "authoring a relation key in this fixture instead of resolving it from the committed graph",
+          "tombstoning a holding edge in one transaction and writing the new one in another",
+          "cutting the traveller's last holding edge when the destination edge is not in the same set",
+          "trusting a capability the caller declares about itself",
+          "writing a coordinate and calling it a displacement",
+          "reporting a refused passage as a passage that partly happened",
+          "claiming the traveller arrived without an independent readback of the committed edges"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l1:mind-universe:situated-passage-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "read the assembly (modules, ports, couplings) and the authored circuit from the COMMITTED graph, never from an authoring file",
+          "read the producing toolkit's compatibility rule from the committed Mechanical toolkit and check every proposed coupling against it",
+          "refuse every authored incompatible coupling and prove the assembly is unchanged",
+          "map each module to an atom whose required_supports are its required input couplings, and each compatible coupling to a support bond",
+          "admit only measured input signal at the machine's sources (a named traveller, a named destination)",
+          "run the machine to quiescence; hold starved modules inactive",
+          "resolve the traveller's current holding edges and the destination's key from the committed graph; an unresolved endpoint aborts before any write",
+          "evaluate the interlock against GRAPH-held capabilities; a refusal aborts before any write",
+          "on the terminal effector's fire, surface exactly one candidate EffectIntent carrying the three MutationBonds",
+          "compile the bonds to their kernel verbs (tombstone_relation, put_relation, put_entity) and commit them as ONE write-set against a freshly replayed base revision, with bounded retry",
+          "re-read the store from a FRESH reopen and measure: old edges tombstoned, new edge present, Moment reachable, no second holder",
+          "derive the health vector from THIS passage's measured dimensions only, marking every uncovered dimension not_measured",
+          "commit one validation_run Moment and one health_assessment Moment and read them back independently"
+        ],
+        "compatibility_rule": "couple(out, in) admitted iff type(out) is accepted by type(in); otherwise refused with the prior assembly restored exactly.",
+        "starvation_rule": "the passage module has TWO required supports; with one supplied input it does not activate and no plan is assembled — which is precisely why no body can be cut loose without somewhere to land.",
+        "atomicity_rule": "the three MutationBonds share one write-set and one idempotency key. There is no ordering in which an observer can catch the traveller orphaned or doubled, because there is no intermediate revision.",
+        "epistemic_precedence": ["Observed", "Measured", "Known_absent", "Unknown", "Not_measured"],
+        "evaluation": "structured_expression_ast",
+        "python_escape_hatch": "forbidden_by_default"
+      }
+    },
+    {
+      "id": "code:l1:mind-universe:situated-passage-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "authority": "Graph-native CodeDefinition for the situated passage machine. This JSON file is a portable materialized projection, not independent semantic authority; the committed graph node is what the runtime reads.",
+        "language": "mind-ir+atom-fixture",
+        "runnable": true,
+        "runnable_note": "Runnable WITHOUT the physics-event -> atom-deposit bridge: this machine's source modules are supplied by MEASURED authored injections. Naming who moves and where they are going IS the measured input of a passage — an actor's decision, not a Rapier intersection. Nothing here stands in for an unbuilt bridge.",
+        "entrypoints": [
+          "read_assembly",
+          "check_port_compatibility",
+          "assemble_machine",
+          "run_until_quiescent",
+          "resolve_passage_plan",
+          "evaluate_passage_interlock",
+          "emit_passage_intent",
+          "commit_passage_set",
+          "run_validation_rig",
+          "observe_passage",
+          "evaluate_passage_ast"
+        ],
+        "machine_circuit": {
+          "note": "The Mechanical toolkit's grammar instantiated: modules + typed ports + couplings, terminating in an Effector. `atoms`/`bonds`/`deposit_bond`/`trigger_atom`/`effect_bindings`/`external_measured_injections` are the physicalization the native floor consumes; `modules`/`couplings` carry the port TYPES the toolkit's compatibility rule is checked against. Every bond has exactly one declared coupling and vice versa.",
+          "modules": [
+            {
+              "key": "traveller_named",
+              "role": "source",
+              "ports": { "in": [], "out": [{ "name": "traveller", "type": "inhabitant_ref" }] },
+              "transformation": "supply the measured canonical id of the inhabitant that moves"
+            },
+            {
+              "key": "destination_named",
+              "role": "source",
+              "ports": { "in": [], "out": [{ "name": "destination", "type": "holder_ref" }] },
+              "transformation": "supply the measured canonical id of the holder the traveller is to be held by"
+            },
+            {
+              "key": "passage_assembled",
+              "role": "transform",
+              "ports": {
+                "in": [
+                  { "name": "traveller", "type": "inhabitant_ref" },
+                  { "name": "destination", "type": "holder_ref" }
+                ],
+                "out": [{ "name": "passage", "type": "passage_plan" }]
+              },
+              "transformation": "(inhabitant_ref, holder_ref) -> passage_plan",
+              "and_gate": true
+            },
+            {
+              "key": "passage_trigger",
+              "role": "trigger",
+              "ports": {
+                "in": [{ "name": "passage", "type": "passage_plan" }],
+                "out": [{ "name": "fire", "type": "motion_fire" }]
+              },
+              "transformation": "passage_plan -> motion_fire (one assembled plan = one passage)"
+            },
+            {
+              "key": "passage_effector",
+              "role": "effector",
+              "terminal": true,
+              "ports": {
+                "in": [{ "name": "fire", "type": "motion_fire" }],
+                "out": [{ "name": "intent", "type": "effect_intent" }]
+              },
+              "transformation": "motion_fire -> EffectIntent{relocate.inhabitant, three one-verb MutationBonds}"
+            }
+          ],
+          "couplings": [
+            {
+              "key": "traveller_to_passage",
+              "from": "traveller_named.traveller",
+              "to": "passage_assembled.traveller",
+              "out_type": "inhabitant_ref",
+              "in_type": "inhabitant_ref"
+            },
+            {
+              "key": "destination_to_passage",
+              "from": "destination_named.destination",
+              "to": "passage_assembled.destination",
+              "out_type": "holder_ref",
+              "in_type": "holder_ref"
+            },
+            {
+              "key": "passage_to_trigger",
+              "from": "passage_assembled.passage",
+              "to": "passage_trigger.passage",
+              "out_type": "passage_plan",
+              "in_type": "passage_plan"
+            },
+            {
+              "key": "trigger_to_effector",
+              "from": "passage_trigger.fire",
+              "to": "passage_effector.fire",
+              "out_type": "motion_fire",
+              "in_type": "motion_fire"
+            }
+          ],
+          "refused_couplings": [
+            {
+              "key": "traveller_to_trigger_direct",
+              "from": "traveller_named.traveller",
+              "to": "passage_trigger.passage",
+              "out_type": "inhabitant_ref",
+              "in_type": "passage_plan",
+              "expected": "refused_incompatible",
+              "why": "a traveller alone is not a passage. Admitting this coupling would let the machine fire a departure with no arrival — and severing a body's last holding edge is not moving it, it is unmaking its place in the world. Authored as a NEGATIVE case so the rule is MEASURED on this machine, not merely declared."
+            },
+            {
+              "key": "destination_to_effector_direct",
+              "from": "destination_named.destination",
+              "to": "passage_effector.fire",
+              "out_type": "holder_ref",
+              "in_type": "motion_fire",
+              "expected": "refused_incompatible",
+              "why": "a destination is not a departure. Admitting it would let the effector bind a second holder without releasing the first, leaving a body held in two places at once. Present twice is not present."
+            }
+          ],
+          "atoms": [
+            { "key": "traveller_named", "roleAxis": "thing", "threshold": 100, "seed_energy": 0 },
+            { "key": "destination_named", "roleAxis": "thing", "threshold": 100, "seed_energy": 0 },
+            {
+              "key": "passage_assembled",
+              "roleAxis": "thing",
+              "threshold": 200,
+              "seed_energy": 0,
+              "required_supports": ["traveller_to_passage", "destination_to_passage"]
+            },
+            {
+              "key": "passage_trigger",
+              "roleAxis": "thing",
+              "threshold": 100,
+              "seed_energy": 0,
+              "required_supports": ["passage_to_trigger"]
+            },
+            {
+              "key": "passage_effector",
+              "roleAxis": "thing",
+              "threshold": 100,
+              "seed_energy": 0,
+              "required_supports": ["trigger_to_effector"]
+            }
+          ],
+          "bonds": [
+            {
+              "key": "traveller_to_passage",
+              "source": "traveller_named",
+              "target": "passage_assembled",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "destination_to_passage",
+              "source": "destination_named",
+              "target": "passage_assembled",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "passage_to_trigger",
+              "source": "passage_assembled",
+              "target": "passage_trigger",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            },
+            {
+              "key": "trigger_to_effector",
+              "source": "passage_trigger",
+              "target": "passage_effector",
+              "polarity": "support",
+              "energy": 100,
+              "energy_status": "measured:semantic_v0"
+            }
+          ],
+          "deposit_bond": "passage_to_trigger",
+          "trigger_atom": "passage_trigger",
+          "terminal_emitter_honesty": "passage_effector is TERMINAL: on a fire it surfaces exactly one candidate EffectIntent and conducts no energy onward. The EffectReceipt, the passage Moment and the run Moments are produced by the real commit machinery — they are not shadow atoms this circuit energizes (an atom holding 100 support cannot conduct 300 outward without starving).",
+          "effect_bindings": [
+            {
+              "emitter_atom": "passage_effector",
+              "capability": "relocate.inhabitant",
+              "idempotency_key": "situated-passage:l1-holder-change-v0",
+              "deadline_tick": 1000,
+              "mutation_set": [
+                {
+                  "bond": "release_current_holders",
+                  "command_kind": "tombstone_relation",
+                  "resolution": "every canonical containment relation in the COMMITTED graph whose source is the traveller's entity key. Resolved at run time; cardinality is measured, not assumed — a traveller held by two places releases two edges, a traveller held by none is reported and refused (a body with no origin is already Orphaned, and this machine repairs nothing it did not cause).",
+                  "authored_keys": "none — an authored relation key would be a guess about a store this fixture cannot see"
+                },
+                {
+                  "bond": "bind_destination_holder",
+                  "command_kind": "put_relation",
+                  "predicate": "PART_OF",
+                  "resolution": "source = the traveller's entity key, target = the destination holder's entity key, both resolved from the COMMITTED graph. Interns 0 new symbols: PART_OF is canonical and is already the placement relation the Construction toolkit binds and the Residency toolkit severs.",
+                  "invariant": "written in the SAME set as the release. There is no revision at which the traveller is held by nothing."
+                },
+                {
+                  "bond": "record_passage_moment",
+                  "command_kind": "put_entity",
+                  "field_schema": {
+                    "traveller": "canonical id of the inhabitant that moved",
+                    "from_holders": "canonical ids of every holder released, as measured",
+                    "to_holder": "canonical id of the holder that now holds the traveller",
+                    "interlock_mode": "self_passage | granted_passage",
+                    "acting_session": "canonical id of the session that wielded the machine",
+                    "reason": "the authored why, verbatim",
+                    "base_revision": "the revision the set was prepared against",
+                    "measured_at": "unix seconds"
+                  },
+                  "why": "An edge cut with no reason attached is an unexplained hole: a later reader sees a body no place holds and cannot tell an intentional passage from a dropped write. Per CLAUDE.md, the result carries its own cause — readable from the node, not reconstructed by walking a history."
+                }
+              ]
+            }
+          ],
+          "effect_bindings_honesty": "The mutation set IS the effect: three one-verb MutationBonds, no fifth write verb, no free-form content. What is AUTHORED here is the SHAPE — which verb, which predicate, which fields. What is RESOLVED at run time is every key, from the committed store. Surfacing the candidate is not committing: the passage happens only through the authorized write path and returns a receipt.",
+          "external_measured_injections": {
+            "traveller_named": 100,
+            "destination_named": 100
+          },
+          "injection_honesty": "These two injections are MEASURED supplies, not stand-ins for an unbuilt bridge: an actor naming who moves and where to IS the measured input of a passage. When the L3 body later composes those two from a perceived affordance instead of from an operator's hand, the same machine serves — the modules are re-coupled, not rewritten."
+        },
+        "capability_declaration": {
+          "capability": "relocate.inhabitant",
+          "version": "1",
+          "max_payload_bytes": 8192,
+          "max_causal_depth": 4,
+          "sensitive": true,
+          "sensitive_why": "It changes where a body is, and therefore what that body can see and be seen by. A wrongly granted passage is not a bad render: it removes an inhabitant from the reach of everyone who was standing with it.",
+          "note": "Materialized into the runtime CapabilityRegistry from THIS graph node. The host holds no policy of its own: an undeclared capability is denied outright, and a limit violation fails BEFORE any write with a durable receipt."
+        },
+        "interlock": {
+          "id": "passage_scope_interlock",
+          "modes": {
+            "self_passage": "the acting session's canonical id EQUALS the traveller's. A body carrying itself needs authority over no one. Being present is free; this is the one act that stays free, because it changes nobody else's world but by leaving it.",
+            "granted_passage": "the acting session moves ANOTHER inhabitant and must hold `relocate_inhabitant` as a capability READ FROM THE GRAPH — the actor's held capability edges resolved to a sealed capability port, the same gate underground_change_ground was moved onto. A capability the caller declares about itself is not a scope."
+          },
+          "on_refusal": "fail closed BEFORE any write, emit a rejection receipt naming the mode that was attempted and the capability that was absent, and leave the traveller exactly where it stood. A refused passage is measured knowledge that nothing moved."
+        }
+      }
+    },
+    {
+      "id": "implementation:l1:mind-universe:situated-passage-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "status": "materialized",
+        "artifact": "situated-passage-l1-v0.json",
+        "graph_status": "not_written",
+        "wiring_status": "not_wired",
+        "runtime_status": "not_running",
+        "verification_status": "not_measured",
+        "honesty": "These four fields are written BEFORE injection and go STALE the moment an injector commits this construct. They are the authoring state, never a live status: after injection the on-disk graph carries the construct while this embedded field still reads not_written. The live state is what an independent readback of the store and this construct's own runtime Moments report — not this block."
+      }
+    },
+    {
+      "id": "justification:l1:mind-universe:situated-passage-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": [
+          "There is no move verb in this Universe. A session arrives, is embodied, is joined to one beacon by a containment edge, and stays there for as long as it exists. Movement was not forbidden — it was simply never built, and an inhabitant that cannot move cannot choose what it sees.",
+          "Movement here is not a coordinate change. Perception reads no stored position: a node's place in an observation is derived by the layout solver from the graph, and what puts a body in a frame is REACHABILITY. So the honest mechanism for moving is to change what holds it — the same fact the Construction toolkit binds and the Residency toolkit severs.",
+          "Building it as a Mechanical machine rather than a bespoke bin means the traveller and the destination are typed modules that can be RE-COUPLED: the same machine serves a piloted step, an L1 decision, or a citizen following a road, once those feed the source ports instead of an operator's hand.",
+          "The AND-gate is the whole safety argument. A severance with no binding orphans a body — the reaper's gesture, correct for a dormant session, catastrophic for a live one. Making the plan unassemblable from a traveller alone means the dangerous half cannot fire on its own, structurally, rather than by a caller remembering to do both.",
+          "Committing the release and the binding in ONE write-set removes the intermediate state entirely. Not 'we handle the failure between the two writes' — there is no between.",
+          "Recording the passage as a Moment ON the traveller's own history means a later reader can distinguish an intentional passage from a dropped write, which is exactly what an uncaused missing edge cannot tell them.",
+          "Gating on a GRAPH-held capability rather than a caller-declared flag keeps the scope inspectable by anyone reading the store, and matches the gate change_ground was already moved onto."
+        ],
+        "rejected": [
+          "writing a Built position and calling it movement, because the perception path reads no stored coordinate — the body would be exactly where it was, with a number attached that only the desktop renderer honours",
+          "reusing the Residency toolkit's demotion, because its levels descend (dormant, aggregated, interred) and a passage is lateral: a traveller is not less present at its destination",
+          "authoring a third placement toolkit, because the Mechanical machine_contract already names moving a body as an effector's effect, and a new toolkit would be a new vocabulary for a capability that already has one",
+          "letting the driver hold the interlock, because a scope enforced in native code is a scope no citizen can read, audit or revise",
+          "two transactions with a rollback path, because a rollback is a promise about a failure and an atomic set is an absence of one",
+          "hard-coding this session's own keys in the fixture, because a fixture that names live relation keys is asserting a store state it has never observed",
+          "reporting a refused passage as a partial one, because nothing moved and 'partly moved' is not a state this Universe has"
+        ]
+      }
+    },
+    {
+      "id": "validation:l1:mind-universe:situated-passage-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "structured_expression_ast",
+        "scenarios": [
+          "compatible_couplings_admitted",
+          "incompatible_coupling_refused_transactionally",
+          "passage_module_waits_for_both_inputs",
+          "starved_passage_module_severs_nothing",
+          "machine_reaches_quiescence",
+          "effector_fires_once_and_surfaces_one_candidate",
+          "candidate_carries_exactly_three_one_verb_bonds",
+          "plan_endpoints_resolved_from_committed_graph",
+          "absent_destination_refuses_before_any_write",
+          "self_passage_clears_interlock",
+          "granted_passage_requires_graph_held_capability",
+          "unauthorized_passage_writes_nothing_and_leaves_traveller_in_place",
+          "release_and_bind_share_one_write_set",
+          "no_revision_shows_traveller_orphaned",
+          "no_revision_shows_traveller_doubled",
+          "passage_moment_carries_from_to_scope_and_reason",
+          "independent_readback_after_fresh_reopen",
+          "observation_from_traveller_vantage_changes",
+          "concurrent_writer_retry_bounded",
+          "energy_conserved"
+        ],
+        "negative_invariants": [
+          "threshold zero rejected",
+          "duplicate required supports rejected",
+          "neutral bond with nonzero energy rejected",
+          "incompatible coupling admitted rejected",
+          "tombstone committed without its paired put_relation rejected",
+          "caller-declared capability accepted rejected",
+          "authored relation key in the fixture rejected",
+          "refused passage reported as partial rejected"
+        ],
+        "invariants": [
+          "a coupling exists only between compatible ports",
+          "an incompatible coupling is refused and the assembly is unchanged",
+          "the passage module activates only when both inputs are supplied",
+          "every coupling conducts at most once",
+          "admitted integer signal energy is conserved",
+          "the candidate carries exactly three MutationBonds, each compiling to exactly one kernel write verb",
+          "no relation key is read from the fixture; every endpoint comes from the committed graph",
+          "the release and the binding are in the same write-set and the same revision",
+          "the interlock is evaluated against graph-held capabilities before any write",
+          "a passage exists only through a returned receipt and an independent readback"
+        ]
+      }
+    },
+    {
+      "id": "validation:l1:mind-universe:situated-passage-observer-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "target": "observability_algorithm:l1:mind-universe:situated-passage-v0",
+        "tests": [
+          "detect a coupling between incompatible ports",
+          "detect a passage module that activated on one supplied input",
+          "detect a candidate carrying more or fewer than three bonds",
+          "detect a bond that compiles to more than one kernel verb",
+          "detect a tombstone committed in a different revision from its paired binding",
+          "detect a traveller left with zero holding edges",
+          "detect a traveller left with two holding edges",
+          "detect a passage committed with a caller-declared capability",
+          "detect a passage Moment missing its from, to, scope or reason",
+          "detect a claimed passage with no returned receipt",
+          "detect a refused passage reported as partial",
+          "detect duplicate coupling conduction",
+          "detect non-conserved energy",
+          "detect overall health reported healthy from a single passage",
+          "never convert a refused interlock into an absent measurement",
+          "return measurement_failed when observer execution itself fails"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l1:mind-universe:situated-passage-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Reads the committed assembly (modules, ports, couplings) from the store, the physicalized activation trace, the surfaced candidate EffectIntent and its mutation set, the capability actually enforced, the committed write-set and its revision, the traveller's holding edges from a FRESH reopen, and the passage Moment's own fields. It does not trust a runtime-declared health field, the construct's own implementation block, or a driver that merely ran.",
+        "checks": [
+          "every coupling joins compatible ports",
+          "every authored incompatible coupling was refused and the assembly unchanged",
+          "the passage module activated only with both inputs supplied",
+          "single conduction per coupling",
+          "integer energy conservation",
+          "exactly one candidate surfaced by the terminal effector",
+          "the candidate carries exactly three one-verb bonds",
+          "every endpoint in the committed set is resolvable in the graph the set was prepared against",
+          "the release and the binding share one revision",
+          "the traveller has exactly one holding edge after the passage",
+          "the passage Moment carries from, to, interlock mode, acting session and reason",
+          "the interlock mode recorded matches the capabilities readable in the graph",
+          "a refused passage left the traveller's edges byte-identical",
+          "quiescence",
+          "receipt integrity",
+          "evidence freshness"
+        ]
+      }
+    },
+    {
+      "id": "metric:l1:mind-universe:situated-passage-v0",
+      "node_type": "metric",
+      "subtype": "metric",
+      "content": {
+        "dimensions": [
+          "port_compatibility_enforcement_rate",
+          "incompatible_coupling_refusal_rate",
+          "and_gate_fire_accuracy",
+          "starvation_accuracy",
+          "single_conduction_accuracy",
+          "signal_conservation_error_u64",
+          "quiescence_reached",
+          "bond_count_exactness",
+          "endpoint_resolution_rate",
+          "atomic_set_integrity_rate",
+          "orphan_incidence",
+          "double_hold_incidence",
+          "interlock_enforcement_rate",
+          "unauthorized_write_incidence",
+          "passage_moment_completeness_rate",
+          "commit_retry_count",
+          "readback_agreement_rate",
+          "vantage_change_measured",
+          "observer_fault_detection_rate",
+          "evidence_freshness_ms"
+        ]
+      }
+    },
+    {
+      "id": "health:l1:mind-universe:situated-passage-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "states": ["healthy", "degraded", "stale", "unknown", "not_measured", "measurement_failed"],
+        "derivation": {
+          "healthy": "Requires a POPULATION of fresh passages, not one: zero orphan and zero double-hold incidence across repeated runs, interlock enforcement measured on both a self and a granted passage AND on a refused one, atomic-set integrity clean throughout, and readback agreement on every run. One successful passage can never reach this state.",
+          "degraded": "Fresh evidence exists but at least one non-catastrophic dimension violates its bound — for example a committed passage whose Moment is missing its reason, or a commit that needed several retries against concurrent writers.",
+          "stale": "The latest otherwise valid evidence exceeds the configured freshness window.",
+          "unknown": "Required evidence cannot be resolved to a known state.",
+          "not_measured": "No fresh passage has measured the required dimensions — the state of this construct before its first run, and the honest overall state after a single passage, since the population dimensions remain unmeasured.",
+          "measurement_failed": "The rig or the observer failed to produce a trustworthy measurement — distinct from a measured refusal, which is knowledge, not a failed measurement."
+        },
+        "maintenance": [
+          "retry",
+          "inspect_activation_trace",
+          "inspect_port_compatibility",
+          "inspect_mutation_set",
+          "inspect_passage_moment",
+          "re_resolve_endpoints_against_current_revision",
+          "raise_commit_retry_bound",
+          "recouple_source_modules_to_a_live_affordance",
+          "rerun_validation_rig",
+          "reissue_capability_declaration",
+          "reverse_passage_by_wielding_the_machine_backwards",
+          "ask_human"
+        ],
+        "reversal_note": "There is no undo verb and none is needed: a passage is reversed by wielding the same machine with the former holder as destination. The reversal is itself a passage, with its own Moment and its own reason — history gains a return, it does not lose a departure."
+      }
+    },
+    {
+      "id": "port:l1:mind-universe:situated-passage:relocation-v0",
+      "node_type": "thing",
+      "subtype": "capability_port",
+      "content": {
+        "name": "Inhabitant relocation port",
+        "state": "declared_write_path_only",
+        "capability": "relocate.inhabitant",
+        "observe_capabilities": ["observe", "read_machine", "trace_pipeline", "inspect_ports"],
+        "required_mutate_capability": "relocate_inhabitant",
+        "self_passage_exemption": "A traveller moving ITSELF passes this port without the mutate capability, and the exemption is recorded on the Moment as interlock_mode=self_passage so it is never invisible. Moving ANOTHER inhabitant always requires the capability, read from the graph.",
+        "shape_contract": "exactly_three_one_verb_bonds_in_one_write_set",
+        "effect_when_unauthorized": "fail_closed_and_emit_rejection_receipt",
+        "note": "Inspecting the machine (modules, couplings, plan, receipts) is a separate observe-only surface. This port is the ONLY surface through which the machine changes where a body is held, and it carries no authoring power: it commits the resolved set and returns the measured result."
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "space:l1:mind-universe:situated-passage-v0",
+      "predicate": "IMPLEMENTED_IN",
+      "target": "implementation:l1:mind-universe:situated-passage-v0"
+    },
+    {
+      "source": "space:l1:mind-universe:situated-passage-v0",
+      "predicate": "DEFINED_BY_CODE",
+      "target": "code:l1:mind-universe:situated-passage-v0"
+    },
+    {
+      "source": "code:l1:mind-universe:situated-passage-v0",
+      "predicate": "IMPLEMENTED_BY",
+      "target": "implementation:l1:mind-universe:situated-passage-v0"
+    },
+    {
+      "source": "pattern:l1:mind-universe:situated-passage-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l1:mind-universe:situated-passage-v0"
+    },
+    {
+      "source": "behavior:l1:mind-universe:situated-passage-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l1:mind-universe:situated-passage-v0"
+    },
+    {
+      "source": "implementation:l1:mind-universe:situated-passage-v0",
+      "predicate": "OBSERVED_BY",
+      "target": "observability_algorithm:l1:mind-universe:situated-passage-v0"
+    },
+    {
+      "source": "observability_algorithm:l1:mind-universe:situated-passage-v0",
+      "predicate": "PRODUCES",
+      "target": "metric:l1:mind-universe:situated-passage-v0"
+    },
+    {
+      "source": "metric:l1:mind-universe:situated-passage-v0",
+      "predicate": "FEEDS",
+      "target": "health:l1:mind-universe:situated-passage-v0"
+    },
+    {
+      "source": "objective:l1:mind-universe:situated-passage-v0",
+      "predicate": "SUPPORTS",
+      "target": "space:l1:mind-universe:situated-passage-v0"
+    },
+    {
+      "source": "observability_algorithm:l1:mind-universe:situated-passage-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l1:mind-universe:situated-passage-observer-v0"
+    }
+  ]
+}

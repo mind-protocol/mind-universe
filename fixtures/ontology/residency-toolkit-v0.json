@@ -1,0 +1,435 @@
+{
+  "id": "space:l2:mind-universe:residency-toolkit-v0",
+  "node_type": "space",
+  "subtype": "residency_toolkit",
+  "content": {
+    "contractKind": "construct",
+    "name": "Residency toolkit v0 (modulable — le même mécanisme endort, agrège ou inhume ce qu'un espace tient)",
+    "dominant_scale": "energy",
+    "lineage": "The write-side inverse of the Construction toolkit (fixtures/ontology/construction-toolkit-v0.json). Construction BINDS a PART_OF — to be placed is to belong. Residency SEVERS one — and marks the severed node with the reason it was severed. Both compose the same proven MutationBond write-path (crates/universe-e2e/src/mutation_translate.rs, four closed kernel verbs) into ONE atomic UniverseWriteSet; both read their modular parameter from the graph. The severance move itself is the one sever_registry_root and reap_session_bodies already make on the live store; this toolkit is that move authored as data instead of compiled as a bin. The four residency levels are not invented here: they are quoted from the L4 law CLAUDE.md states under 'Bounded physical materialization' (Hot / Sleeping / Aggregated / Dormant).",
+    "parent_scope": {
+      "classification": "standalone",
+      "justification": "Portable maintenance toolkit awaiting installation under the canonical infrastructure/civic physicalization registry Space. It has exactly one scope classification and is not structurally owned by one exclusive parent yet; no PART_OF edge is written to an unproven parent. Its first SITE of application is Lumina Prime's orientation beacon, but a site is not a parent: the capability is the city's, not the beacon's."
+    },
+    "purpose": "Make DEMOTION a wieldable graph gesture. Turn 'this space holds more than it can show' into one atomic set of one-verb MutationBonds that (a) revises the held node in place so it reads its new residency_level AND the reason it was demoted, and (b) tombstones the containment edge that made it reachable from the space it crowded. The node is RETAINED entire — identity, provenance, history, content — and stays readable to anyone who goes and looks. What changes is not its existence but its REACHABILITY: perception walks the graph outward over relations, so a node no relation reaches never enters a sphere, is never laid out, and never spends a budget. One generic mechanism serves every residency_level, and only canonical predicates are emitted — zero new symbols.",
+    "modularity": {
+      "parameter": "residency_level",
+      "kinds": ["hot", "sleeping", "aggregated", "dormant"],
+      "rule": "residency_level selects which containment edges are severed, which are kept, and what the demoted node reads back as. It is GRAPH DATA read from the ResidencyBond, never a term in native dispatch. The same generic mechanism is total over every declared level; adding a level is authoring data, not changing code.",
+      "retention_model": "No level deletes anything, ever. The kernel has no entity-delete verb and this toolkit needs none: every level is a statement about REACHABILITY and about what the node reads, not about whether the node is. A demoted node keeps its key, its generation lineage, its canonical_id, its content and its provenance. Re-binding a severed containment edge is a later, separately attributable construction gesture — a promotion is a construction, not an undo.",
+      "level_profiles": {
+        "dormant": {
+          "severs": "every containment edge incident to the node (the edges by which a space reaches it)",
+          "keeps": "nothing incident; the node becomes unreachable from the space that held it",
+          "reads_back_as": "residency=dormant, plus a retained reason naming who, why, on what criterion, and exactly which edges were cut",
+          "exercised": true
+        },
+        "aggregated": {
+          "severs": "the node's individual containment edge",
+          "keeps": "a single containment edge from the aggregate that now stands for it, so the space still reaches ONE node where it reached many",
+          "reads_back_as": "residency=aggregated plus the aggregate it folded into",
+          "exercised": false,
+          "honesty": "DECLARED, not exercised. The aggregate node this level requires is not authored here; furnishing it is a construction gesture this toolkit does not perform. Until it is exercised, this profile is a shape, not a proven path."
+        },
+        "sleeping": {
+          "severs": "nothing",
+          "keeps": "every edge; the node stays reachable and stays perceivable",
+          "reads_back_as": "residency=sleeping — a declaration addressed to the physicalization layer, which may drop it from the active solver",
+          "exercised": false,
+          "honesty": "DECLARED, not exercised. This level writes a field and severs nothing, so on its own it changes no observation. Whether a sleeping node actually leaves the active solver is NOT decided here — see native_law_boundary."
+        },
+        "hot": {
+          "severs": "nothing",
+          "keeps": "every edge",
+          "reads_back_as": "residency=hot — the default state of a node that was never demoted",
+          "exercised": false,
+          "honesty": "DECLARED, not exercised. Promoting a severed node back to hot requires RE-BINDING a containment edge, which is a construction gesture (put_relation), not a demotion. This toolkit does not perform it, and must not be read as able to."
+        }
+      }
+    },
+    "physicalization": {
+      "note": "One way to inhabit this Process, not the Process. Another physicalization of the same mechanism is admissible and must converge on the same committed state.",
+      "condition": "The horizon closes in. An observation sphere self-calibrates its radius to its object budget: the more a space holds, the less far anyone standing in it can see. Measured at Lumina Prime, revision 305: radius 22.49 m, 271 cluster candidates, 64 materialised against a 64-object budget, the remainder crowded out by session bodies moored to the orientation beacon. The condition this toolkit answers is not 'a list is long'; it is 'a beacon meant to orient has gone blind from being frequented'.",
+      "scale_descent": "civic (the plaza, the mast, its moorings) -> open the mast's base -> infrastructure (a maintenance vault, a sealed hatch) -> open the regulator -> energy (a basin, a weir, a gate). The dominant grammar of THIS space is energy: the mechanism that fires is a threshold circuit. The vault and the hatch are a coarser-scale object it exports into.",
+      "sensor": "The basin at the mast's foot. Every mooring that attaches drips into it. Not a counter that increments — a level that rises. The arrival gesture already writes the mooring; the deposit rides that existing edge and asks nothing new of whoever arrives.",
+      "threshold": "The weir. A lip cut at the observation budget itself, so the world reaps exactly when it stops being wholly visible. Nothing watches the level. The level rises, meets the lip, and spills; the spill IS the firing. The lip is a dial in the vault, retunable only through the sealed hatch — policy is adjusted where policy is guarded.",
+      "flow_rate": "The weir passes ONE measure per spill, never a flood. The level falls back under the lip, later arrivals raise it again, it spills again. N crowded nodes become N firings drained by the serial wake-queue — each its own atomic set, its own attribution, its own independent readback — rather than one large transaction that either wholly lands or wholly conflicts against a store with concurrent writers.",
+      "effect": "The mooring is cut and the node descends through the hatch into the sealed layer. It does not vanish and it does not fall: it settles, cold, out of the active working set. The manhole above it stays open. Anyone may go back down and read it.",
+      "epitaph": "Carried ON the demoted node, not in a register beside it: by whom, why, on what criterion, and which moorings were cut. Per CLAUDE.md, the result carries its own cause, readable from the node rather than reconstructed by walking a history.",
+      "resistance": "Opening a manhole has never opened a hatch. An unauthorised demotion does not open the hatch: the intent fails closed, the prior state is restored exactly, and the failure is reported — never silently dropped, never rendered as a completed change.",
+      "felt_proof": "The radius pushes back out. The sphere relaxes, candidates become materialised objects again, and the beacon orients again. That widening is the metric, measurable on both sides of the gesture — radius before, radius after, candidates against materialised.",
+      "must_stay_fog": "A node whose lifetime was never recorded carries NO wear mark — an absent gauge, not a gauge reading zero. Measured on the live store at revision 313: all 50 session bodies then present record no expires_at, so every mooring is unmarked and no lifetime-based criterion can see a single one of them. The physicalization must render that absence AS absence. Painting an unrecorded lifetime as an expired one would make the world lie to whoever looks at it."
+    },
+    "canonical_predicate_remap": {
+      "why": "The authored role edges of a 12-role construct are not all canonical seed predicates (fixtures/ontology/canonical-ontology.json). Each is remapped to the nearest ACTIVE-VOICE canonical predicate by the injector's own table (crates/universe-e2e/src/bin/inject_construct.rs::canonical_predicate), exactly as the orientation-beacon, energy-pen and construction-toolkit fixtures do. A clean injection interns ZERO new symbols; a predicate with no canonical mapping is a hard error rather than a minted symbol.",
+      "emitted_by_the_mechanism": {
+        "PART_OF": "canonical already. The containment edge this toolkit TOMBSTONES. It is never put by this toolkit — binding one is construction's job, severing one is residency's.",
+        "PRODUCES": "canonical already. The demotion Moment PRODUCES the receipt of the gesture (active voice; the Moment is the producer).",
+        "GROUNDS": "canonical already. The retained reason GROUNDS the demotion (authored JUSTIFIED_BY, swapped)."
+      }
+    },
+    "guard_edge_binding": {
+      "purpose": "Make the capability seal legible as GRAPH DATA rather than as a flag the caller sets on itself. The gate that decides whether a demotion may commit must be an edge a bounded reader can discover, not a string supplied on a command line.",
+      "authored_predicate": "GUARDED_BY",
+      "canonical_remap": "GUARDED_BY has no canonical symbol. It remaps to SAFEGUARDS with the direction SWAPPED, so the stored edge reads hatch SAFEGUARDS mechanism. Interns 0 new symbols.",
+      "guarding_port": "port:l2:mind-universe:underground:sealed-hatch-v0",
+      "required_capability": "decommission_mechanism",
+      "capability_source": "fixtures/ontology/underground-toolkit-v0.json — immutability_contract.authority_only_capabilities already declares decommission_mechanism as authority-only, and already forbids commit_any_mutation to a plain citizen. This toolkit adopts that existing seal rather than declaring a second, competing one.",
+      "honesty": "The guard EDGE IS NOT WRITTEN by this fixture's injection. The guarding port is a member of the underground toolkit, not of this one, and inject_construct drops any relation whose endpoint is outside the injected set rather than dangling it. So the binding below is a DECLARATION of which seal applies, readable here, and the cross-construct edge remains a named gap — see implementation.wiring_status. Until that edge exists, no reader can derive the guard from the graph alone, and a demotion path must not be described as graph-gated."
+    },
+    "native_law_boundary": "The native floor knows only the four closed kernel write verbs (intern_symbols, put_entity, put_relation, tombstone_relation) and how to aggregate them into ONE atomic UniverseWriteSet. Everything else here is Universe data: the residency levels, which edges each level severs, the threshold, the criterion, the metaphor of basin and weir and hatch. TWO boundaries are worth stating precisely, because conflating either would be a lie. (1) This toolkit writes a residency FIELD and severs REACHABILITY. It does not move a Rapier body, does not evict a renderer object, and does not itself decide physical residency; a physicalization layer may honour the declared level, and until it does, 'dormant' means unreachable-from-here, not unsimulated. (2) Unreachable is not absent. A severed node is still in the store, still readable by key, still returned by a query that reaches it another way. An observation that no longer contains it reports exactly that and nothing more — never known_absent.",
+    "runtime_moment_subtypes": ["validation_run", "health_assessment"]
+  },
+  "members": [
+    {
+      "id": "objective:l2:mind-universe:residency-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "For any declared residency_level, the SAME toolkit composes a single atomic UniverseWriteSet of one-verb MutationBonds that: revises the held node IN PLACE (put_entity upsert, generation + 1, key and canonical_id unchanged) so it reads its new residency_level together with the reason it was demoted, who demoted it, on what criterion, and which edges were cut; and tombstones exactly the containment edges that level severs. residency_level and the criterion are read from the graph, never dispatched in native code. The demoted node is RETAINED entire — a readback that cannot find it is a failure of the gesture, not a success of it. A demotion that cannot furnish its full set commits nothing (all-or-nothing). Only the four closed kernel verbs are ever emitted, and only canonical predicates — zero new symbols. The proof is not a receipt: it is that the node still reads back whole, that no observation from the space it crowded reaches it, and that the space's observation radius measurably widened."
+      }
+    },
+    {
+      "id": "pattern:l2:mind-universe:residency-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "A demotion is not a deletion and it is not one write: it is a SET of exactly two facts that must be true together — the node now READS its new residency with its reason, and the space no longer REACHES it. Committing them separately admits two lies: a severed node with no explanation (a later reader cannot tell an intentional demotion from a dropped write), or an explained node still crowding the frame it was supposed to leave. The toolkit reifies the gesture as a ResidencyBond: an ordered set of one-verb MutationBonds that the generic mutation translator aggregates into exactly ONE UniverseWriteSet, committed at a tick boundary. The shape of the set is furnished by the graph — the ResidencyBond carries a residency_level, so the same mechanism dormants a crowding body or folds a node into an aggregate purely by varying that data.",
+        "why_reachability_and_not_deletion": "What makes a node occupy a frame is not its existence but its reachability. Perception gathers a cluster by walking outward from the observation origin over relations; a node no relation reaches is never a candidate, is never laid out, and never spends a budget. Severing the edge is therefore the honest analogue of removal — and the node, its identity, its provenance and its whole history survive it. This is the same move sever_registry_root makes on the ontology manifest.",
+        "epistemic_honesty": "The criterion selecting a node is evaluated against that node's OWN data, and a datum the node never recorded is unknown — never zero, never 'long ago'. The IR carries this natively: BranchOnEvidence gives an absent measurement its own named successor instead of coercing it into a boolean or trapping, so a node with no recorded lifetime takes its own path and is left standing. That is not the author's diligence; it is the VM refusing to do otherwise.",
+        "one_at_a_time": "The mechanism demotes ONE node per firing. This is not a limitation worked around — it is the correct granularity against a store with concurrent writers, where a large multi-node set is one revision conflict away from committing nothing at all. N crowded nodes are N firings, each independently attributable and independently readable."
+      }
+    },
+    {
+      "id": "vocabulary:l2:mind-universe:residency-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "ResidencyBond": "The reified demotion gesture: an ordered set of one-verb MutationBonds aggregated into ONE atomic UniverseWriteSet. The write-side aggregator that mirrors, at set granularity, what a single MutationBond does at verb granularity. The residency counterpart of the ConstructionBond.",
+          "ResidencyLevel": "The modular parameter (hot | sleeping | aggregated | dormant) selecting which containment edges are severed and what the node reads back as. Graph data, never native dispatch. Quoted from the L4 law, not invented here.",
+          "DemotedNode": "The node the set revises in place: same key, same canonical_id, same provenance, generation + 1, now carrying its residency level and its retained reason. RETAINED is the operative word — a demotion that cannot read its node back afterwards has failed.",
+          "RetainedReason": "The reason carried ON the demoted node: who demoted it, why, on what criterion, and exactly which edges were cut. Not a log line beside the node — a field of the node, so the result carries its own cause.",
+          "Severance": "The tombstone of a containment edge. What removes a node from a space's frame without removing it from the world.",
+          "Reachability": "Whether a bounded observation walking outward from an origin arrives at a node. The property this toolkit changes. Distinct from existence, which it never changes, and from physical residency, which it does not control.",
+          "Basin": "The physicalization of accumulated support: the level that rises as a space takes on more than it can show.",
+          "Weir": "The physicalization of the threshold: a lip cut at the observation budget, over which the basin spills. The spill is the firing. Nothing polls it.",
+          "SealedLayer": "The physicalization of the dormant level: a read-only underground the demoted node settles into, with the manhole above it left open. Retained and consultable, no longer crowding the living."
+        }
+      }
+    },
+    {
+      "id": "behavior:l2:mind-universe:residency-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "A space holding more nodes than its observation budget can show; a declared residency_level; a criterion evaluated against each held node's OWN data; the acting authority's demotion capability; an attributable reason; and the MutationBond primitive vocabulary.",
+        "when": "The space's trigger atom crosses its threshold in the physics step (AtomFired), or an authority issues an explicit demotion gesture on a named node. Both enter the same mechanism; neither is a scan and neither is a scheduled sweep.",
+        "then": [
+          "Open a BOUNDED observation from the crowded space as origin, with a declared budget — never a scan of the store.",
+          "Filter the held nodes to the candidates by a field they carry themselves; a node lacking the discriminating field is not a candidate and is not judged.",
+          "Hydrate only the surviving candidates, after filtering, never before.",
+          "Branch on the criterion's evidence state: a node whose criterion datum was never recorded takes the unknown path and is LEFT STANDING, reported as unknown.",
+          "Select ONE node, ordered by the criterion.",
+          "Extend that node's existing content with its new residency_level and its retained reason, PRESERVING every field the program does not understand.",
+          "Furnish the ordered one-verb set: put_entity (upsert, generation + 1) then tombstone_relation for each edge this level severs.",
+          "Translate each step through the generic mutation translator into exactly one UniverseCommand, aggregate into ONE UniverseWriteSet, prepare and commit atomically at the boundary tick.",
+          "Read the node back from a FRESH reopen: it must be PRESENT, carry its canonical_id, read its new residency, carry its reason, and have no remaining incident edge of the severed kind.",
+          "Re-observe the space and record the radius delta; emit the demotion Moment and run the independent observer."
+        ],
+        "forbidden": [
+          "deleting an entity, or reporting a demotion whose node cannot be read back",
+          "rebuilding the node's content from scratch instead of extending it",
+          "reading a datum the node never recorded as zero, as expired, or as any measured value",
+          "scanning the whole store to find candidates",
+          "hydrating content before filtering",
+          "committing the revision and the severance as two separate write-sets",
+          "polling for the moment to act",
+          "reporting an observation that no longer reaches a node as that node being absent",
+          "demoting without a retained reason or without an attributable authority"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l2:mind-universe:residency-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "resolve the ResidencyBond: read residency_level, the criterion and the severance profile from this toolkit's level_profiles",
+          "QueryOpen / QueryAwait a bounded local observation with the crowded space as origin and a declared budget (bounded traversal, never a store scan)",
+          "FilterTruthy on the discriminating field the candidate nodes carry themselves — the discriminator is graph-shaped and field-shaped, not a string match on an identifier",
+          "Hydrate the surviving candidates, bounded by max_items and max_bytes, strictly AFTER the filter",
+          "BranchOnEvidence on the criterion datum: observed/measured proceed; unknown / known_absent / not_measured / measurement_failed each take their own named successor and the node is LEFT, reported honestly",
+          "OrderByPreference on the criterion and take ONE node",
+          "ExtendRecord the node's hydrated content with residency_level and the retained reason, preserving unknown fields verbatim",
+          "furnish the ordered one-verb step template for that residency_level: put_entity {key unchanged, generation + 1, extended content} -> tombstone_relation for each edge the level severs",
+          "translate each step through the generic mutation translator (translate_mutation_proposal / translate_mutation_receipt) into exactly one UniverseCommand",
+          "aggregate the commands into ONE UniverseWriteSet and commit atomically at the boundary tick",
+          "read the node back from a fresh reopen: PRESENT, same canonical_id, new residency, reason retained, no remaining incident edge of the severed kind",
+          "re-observe the origin space and record the observation radius before and after; emit the demotion receipt and run the independent observer and the structured evaluation AST"
+        ],
+        "composition_is_data": "The ordered step template per residency_level lives in the graph (the ResidencyBond + the level_profiles above), not in native code. Adding a level is authoring data; the runtime hardcodes no level, no threshold, no criterion and no metaphor.",
+        "set_atomicity": "The UniverseWriteSet is the atomicity and identity unit. UniverseTransaction::prepare validates the whole set before any command is published; a single invalid step publishes no valid prefix — there is no state in which a node is severed but unexplained.",
+        "concurrency": "The store has other writers. Each commit attempt re-reads the committed state and re-prepares against THAT revision, bounded by an explicit attempt budget; the base revision is never widened and no other writer's state is replayed over. Measured during authoring: the live store advanced from revision 305 to 324 within a single working session. One node per firing keeps a conflict cheap — it costs one retry, not the whole set.",
+        "trigger_model": "Sensor -> DepositBond -> Threshold -> Effect. The deposit rides the containment edge the arriving node already writes; the threshold is a lip cut at the observation budget; the firing emits the demotion intent. A dormant construct costs nothing because nothing polls it.",
+        "python_escape_hatch": "forbidden_by_default"
+      }
+    },
+    {
+      "id": "code:l2:mind-universe:residency-toolkit-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "authority": "Graph-native CodeDefinition projection composing the proven MutationBond write-path into a SET aggregator. This JSON file is a materialized projection, not independent semantic authority.",
+        "language": "mind-ir+mutation-set",
+        "entrypoints": [
+          "resolve_residency_bond",
+          "observe_bounded_occupancy",
+          "filter_candidates_by_own_field",
+          "branch_on_criterion_evidence",
+          "select_one_node",
+          "extend_node_record",
+          "furnish_residency_set",
+          "translate_step_to_command",
+          "commit_residency_set",
+          "readback_retained_and_unreachable",
+          "measure_horizon_delta"
+        ],
+        "composes_primitive": {
+          "primitive": "mutation_bond",
+          "primitive_authority": "fixtures/ontology/mutation-bond-authority.json",
+          "translator": "crates/universe-e2e/src/mutation_translate.rs::translate_mutation_receipt",
+          "kernel_verbs": ["intern_symbols", "put_entity", "put_relation", "tombstone_relation"],
+          "verbs_this_toolkit_emits": ["put_entity", "tombstone_relation"],
+          "set_model": "the UniverseWriteSet is the atomic + identity unit; a demotion = a set of one-verb bonds that commit together",
+          "no_fifth_write_verb": true,
+          "upsert_contract": "put_entity over an existing key is an upsert that preserves the key: identity is untouched and the node reads back as the same node, demoted. Generation is incremented explicitly; it is never allowed to wrap."
+        },
+        "ir_operators_available": {
+          "note": "Verified present in crates/universe-ir/src/lib.rs at authoring time. Named so a reader can check the claim rather than trust it.",
+          "bounded_observation": "QueryOpen / QueryAwait with a declared QueryBudget and timeout",
+          "filter": "FilterTruthy { field, max_items } — CORRECTION, measured: it keeps an item only when the field holds exactly Bool(true), not merely a non-empty value. So the discriminator cannot be a stored string like `embodied_session` read directly; the bounded observation must PROJECT it as a boolean. Which field decides it stays program data (it is named in the selector); whether that field is present is the store's answer.",
+          "narrowing": "Only { input } — binds the sole element of a selection, and traps rather than choosing when the selection did not narrow to one",
+          "field_access": "GetField { input, field } — binds a named field, and traps rather than reading an absent one as Unit. This is what lets a program act on what it observed instead of on what its caller handed it.",
+          "hydrate_after_filter": "Hydrate { max_items, max_bytes }",
+          "epistemic_branch": "BranchOnEvidence — six named successors including an explicit unknown_next; it refuses to coerce an absent measurement",
+          "ordering": "OrderByPreference / TopK",
+          "emit": "Propose",
+          "bounded_loop": "RepeatUntilWithLimit with a required iteration budget"
+        },
+        "missing_primitive": {
+          "name": "ExtendRecord",
+          "signature_sketch": "ExtendRecord { input: Register, fields: Vec<(String, Register)>, output: Register }",
+          "why_needed": "The mechanism must add residency_level and the retained reason to a node's EXISTING content while preserving every field it does not understand. MakeRecord builds a record from scratch; using it would silently drop provenance from the very node whose provenance the toolkit exists to preserve. There is no merge or extend operator in the IR at authoring time.",
+          "why_it_cannot_be_dodged": "Putting the reason on a separate Moment node instead would satisfy attribution but violate the stronger rule: the result must carry its own cause, readable FROM the node rather than reconstructed by walking a history. So residency and its reason must land on the node itself.",
+          "why_it_is_legitimately_native": "Generic mechanism, zero variable policy: it merges named fields into a record and preserves the rest. No threshold, metaphor or mapping can vary inside it. By this repository's own test that makes it trusted-computing-base work, unlike the demotion policy above it.",
+          "status": "IMPLEMENTED. Operator::ExtendRecord { input, fields, output } exists in crates/universe-ir/src/lib.rs, is evaluated in crates/universe-vm/src/lib.rs, and an empty field list is rejected as CompileError::ZeroBound in crates/universe-compiler/src/lib.rs rather than compiled into a copy. A non-record input is a deterministic VmError::Type, never a silently created record; naming an existing field sets it, which is what revision means.",
+          "proven_by": [
+            "universe-vm tests::extend_record_preserves_every_field_the_program_did_not_name — the load-bearing property: fields the program never named, including two whose meaning it does not know, survive the extension untouched",
+            "universe-vm tests::extend_record_writes_a_named_field_that_already_existed",
+            "universe-vm tests::extend_record_rejects_a_non_record_input",
+            "universe-vm tests::an_extension_that_names_no_field_is_rejected_at_validation"
+          ],
+          "what_this_does_NOT_prove": "That this toolkit runs. The operator is proven in isolation on the VM; no residency program has been authored, compiled or executed, and nothing has been read back from a store as a result of one. The blocker moved — it did not disappear. See implementation.honesty."
+        }
+      }
+    },
+    {
+      "id": "implementation:l2:mind-universe:residency-toolkit-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "status": "materialized",
+        "artifact": "residency-toolkit-v0.json",
+        "graph_status": "read_the_store_not_this_field",
+        "wiring_status": "not_wired",
+        "runtime_status": "executed_on_scratch_store",
+        "verification_status": "measured",
+        "proven_by": "crates/universe-e2e/src/bin/wield_residency.rs",
+        "self_report_warning": "graph_status above deliberately refuses to answer whether this construct is in a store, because a self-report about graph presence is a lie waiting to happen: it is written once and is wrong from the next injection onward. The orientation-beacon fixture carries exactly that stale field today. The authoritative answer is the store — replay it and look for this space's canonical_id.",
+        "honesty": "The Residency toolkit is MATERIALIZED and shaped as a 12-role self-verifying construct. What that means precisely, and what it does not mean: (1) The ANATOMY is authored and injected — the mechanism, its modular parameter, its trigger model, its physicalization and its honesty constraints are readable as graph data. (2) The MECHANISM RUNS, on a scratch store, and what it proves is bounded. A demotion program was authored, compiled and EXECUTED ON THE VM; its single proposal was translated through the generic mutation translator, aggregated with the severance bond into ONE atomic write set, committed at a tick boundary, and read back from a FRESH REOPEN. The demoted body is present under the same key and canonical_id at generation 1, reads residency=dormant with its retained reason, has ZERO incident edges, and — the load-bearing measurement — still carries `sponsor` and `arrival_note`, two fields the program never named and does not understand. The SAME program, handed a criterion datum that was never recorded, took BranchOnEvidence's own `unknown` exit, proposed NOTHING, and left that body standing with its edge intact. 0 symbols interned. The program SELECTS ITS OWN TARGET: it opens a bounded observation from the crowded space, walks inward over the selector's predicate, discriminates a session body from a notice board sharing that same space, ranks, refuses to proceed unless exactly one candidate survived, and carries that node's own identity into the mutation. The binary reads the target back OUT of the proposal rather than deciding it, and the notice board is verified untouched. Nothing the observation projected leaked into the stored content. What this does NOT cover: only the `dormant` level was exercised; the run was entered as an operator request, not by self-wake; the write plan's generation and symbol are still supplied by the binary, because the IR has no arithmetic with which to compute `generation + 1`. The store was a throwaway scratch store — nothing has been demoted in any live world. (3) The TRIGGER IS NOT LIVE. The physics-event -> energy-deposit bridge is half built: TriggerEventKind::AtomFired and atom_run_to_wake_events exist, but live ingest from a Rapier crossing into the wake queue is not wired. So the self-wake described in algorithm.trigger_model is a DESIGN, not a behaviour; on any first run the gesture would be entered by OperatorRequest. (4) The GUARD EDGE IS NOT WRITTEN — see guard_edge_binding.honesty. Until it is, the demotion path is not graph-gated and must not be described as such. (5) A bootstrap bin, crates/universe-e2e/src/bin/reap_session_bodies.rs, already performs the dormant-level gesture correctly (upsert + tombstone as one atomic set, retained reason, independent readback, bounded retry under concurrency). This toolkit is that bin's policy authored as data. The bin remains the only PROVEN path; this fixture does not inherit its evidence.",
+        "measured_context_at_authoring": {
+          "store": "artifacts/ontology-registry/current/store",
+          "observed_revisions": "305 -> 324 within one working session (concurrent writers present)",
+          "session_bodies_present": "50 at revision 313, 56 at revision 324",
+          "bodies_with_a_recorded_lifetime": 0,
+          "sphere_at_revision_305": "radius 22.49 m, 271 cluster candidates, 64 materialised against a 64-object budget",
+          "note": "These are observations at a revision from a vantage, not properties of the world. They are recorded so a later reader can tell what the toolkit was authored against, not as standing truth."
+        }
+      }
+    },
+    {
+      "id": "justification:l2:mind-universe:residency-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": [
+          "A city that only ever accumulates becomes unobservable. Every arrival is correct on arrival and wrong forever; without a demotion gesture the only remedies are deletion (which the kernel rightly refuses) or a growing budget (which pushes the wall back without moving it).",
+          "Demotion must be a CONSTRUCT and not a bin, by this repository's own test: every part of it that can vary — the level, the criterion, the threshold, which edges are cut, what the metaphor is — is policy. A bin can only export policy as far as argv; a construct exports it into the graph, where a bounded reader can discover it.",
+          "The two facts must be ONE set. A severed node with no explanation is an unexplained hole, and a later reader cannot distinguish an intentional demotion from a dropped write — precisely the misreporting this world refuses to accept even while accepting occasional dropped writes.",
+          "Retention is not sentiment. The reason a demoted node survives entire is that an honest history is the only thing standing in for reproducibility in a world whose loop is non-deterministic: when you cannot re-run a situation to check it, you must be able to go and read what happened.",
+          "One node per firing is the right granularity against concurrent writers, and it also happens to remove the need for a collection-cursor operator the IR does not have. The correct design and the available primitives agreed; that agreement is evidence, not luck.",
+          "The four levels are quoted from existing L4 law rather than invented, so this toolkit adds vocabulary to nothing — it makes a law that was already written into something a citizen can wield."
+        ],
+        "rejected": [
+          "A new structure_kind inside the Construction toolkit — rejected: construction BINDS containment, residency SEVERS it. Same floor, opposite direction. Folding an inverse into a kind parameter would make the kind mean two incompatible things.",
+          "A kernel DeleteEntity verb — rejected: it would destroy the provenance that makes the world auditable, and it is unnecessary, since reachability already does everything the frame needs.",
+          "A TTL sweep or a scheduled reaper — rejected: it polls, it holds a threshold in code, and it acts at a time unrelated to the condition. The crowding is a physical fact with a moment of its own.",
+          "Recording the reason on a separate Moment node only — rejected: the result must carry its own cause readable from the node. The Moment is emitted as well, but it does not substitute for the field.",
+          "A string-comparison IR operator to identify candidates by identifier prefix — rejected as unnecessary once the discriminator became graph-shaped and field-shaped. Reaching for it would have added an opcode to work around a design that was wrong anyway.",
+          "Widening the observation budget instead of demoting — rejected: it hides the condition rather than answering it, and every widened budget is paid on every observation forever."
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:mind-universe:residency-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "structured_expression_ast",
+        "scenarios": [
+          "same_toolkit_demotes_at_two_levels_from_graph_data",
+          "residency_level_read_from_graph_not_dispatched",
+          "demotion_commits_as_one_atomic_set",
+          "partial_set_commits_nothing",
+          "demoted_node_is_present_on_independent_readback",
+          "demoted_node_keeps_its_canonical_id_and_key",
+          "demoted_node_keeps_every_content_field_it_had",
+          "demoted_node_reads_its_new_residency_level",
+          "demoted_node_carries_its_retained_reason",
+          "severed_node_has_no_remaining_incident_containment_edge",
+          "unknown_criterion_datum_leaves_the_node_standing",
+          "protected_node_keeps_its_edges",
+          "already_demoted_node_commits_nothing_on_a_second_run",
+          "candidate_selection_is_a_bounded_observation_not_a_scan",
+          "hydration_happens_after_filtering",
+          "observation_radius_widens_after_demotion",
+          "concurrent_writer_conflict_retries_and_does_not_widen_base_revision",
+          "no_fifth_write_verb",
+          "zero_new_symbols_interned",
+          "only_canonical_predicates_emitted"
+        ],
+        "negative_invariants": [
+          "a demotion whose node cannot be read back afterwards is a FAILURE, never a success",
+          "content rebuilt from scratch instead of extended is rejected",
+          "an unrecorded criterion datum read as zero or as expired is rejected",
+          "a full-store scan for candidates is rejected",
+          "hydration before filtering is rejected",
+          "revision and severance committed as two write-sets is rejected",
+          "a demotion with no retained reason is rejected",
+          "a demotion with no attributable authority is rejected",
+          "an authority asserted by the caller rather than held in the graph is rejected",
+          "a fifth write verb is rejected",
+          "an observation that no longer reaches a node reported as known_absent is rejected",
+          "a declared but unexercised residency level reported as proven is rejected"
+        ],
+        "invariants": [
+          "one demotion commits exactly one UniverseWriteSet",
+          "the set is all-or-nothing: there is no state in which a node is severed but unexplained",
+          "every demoted node is RETAINED entire — key, canonical_id, provenance, and every prior content field",
+          "every demoted node carries who demoted it, why, on what criterion, and which edges were cut",
+          "residency_level and the criterion are read from the graph",
+          "a node the criterion cannot judge is left standing and reported as unknown",
+          "only the four closed kernel verbs are emitted, and only canonical predicates — zero new symbols"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l2:mind-universe:residency-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Reads the source ResidencyBond, the emitted UniverseWriteSet, the demoted node and its incident edges from a FRESH reopen of the store, the observation sphere before and after, the acting capability, and the commit receipt. It does not trust a runtime-declared success flag, a renderer preview, the commit receipt alone, or the implementation node's self-report of graph_status, wiring_status or runtime_status.",
+        "checks": [
+          "exactly one write-set per demotion",
+          "atomic all-or-nothing commit (no valid prefix on a bad step)",
+          "the demoted node is PRESENT on a fresh reopen — absence is a failure, not a success",
+          "key and canonical_id unchanged; generation incremented by exactly one",
+          "every content field present before the demotion is still present after it",
+          "residency_level reads back as the level the bond declared",
+          "the retained reason is present and names an authority, a why, and a criterion",
+          "zero remaining incident edges of the severed kind",
+          "a node left standing by the unknown path still has its edges",
+          "a node protected by the bond still has its edges",
+          "the observation radius from the origin space, measured before and after, with candidates against materialised",
+          "zero symbols interned by the demotion",
+          "the store revision advanced by the commit and by nothing the observer did"
+        ],
+        "honesty": "The observer reports the radius delta as a MEASUREMENT from one vantage at one revision, not as a global property. A widened radius is evidence that this space became more observable; it is not evidence about any other space, and it is not evidence that the demoted node stopped existing."
+      }
+    },
+    {
+      "id": "metric:l2:mind-universe:residency-toolkit-v0",
+      "node_type": "metric",
+      "subtype": "metric",
+      "content": {
+        "dimensions": [
+          "one_write_set_per_demotion_rate",
+          "atomic_commit_accuracy",
+          "partial_set_rejection_rate",
+          "node_retained_on_readback_rate",
+          "canonical_id_preserved_rate",
+          "content_fields_preserved_rate",
+          "residency_level_readback_accuracy",
+          "retained_reason_presence_rate",
+          "severed_edge_zero_remaining_rate",
+          "unknown_criterion_left_standing_rate",
+          "protected_node_untouched_rate",
+          "bounded_observation_compliance",
+          "hydration_after_filter_rate",
+          "observation_radius_delta_m",
+          "candidates_versus_materialised_delta",
+          "concurrent_conflict_retry_count",
+          "closed_verb_compliance",
+          "zero_new_symbols_rate",
+          "receipt_integrity",
+          "independent_readback_match_rate",
+          "evidence_freshness_ms"
+        ]
+      }
+    },
+    {
+      "id": "health:l2:mind-universe:residency-toolkit-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "states": ["healthy", "degraded", "stale", "unknown", "not_measured", "measurement_failed"],
+        "derivation": {
+          "healthy": "All required fresh scenarios pass: the SAME toolkit demoted at more than one residency_level from graph data, each as one atomic set; every demoted node read back PRESENT from a fresh reopen with its canonical_id, every prior content field, its new level and its retained reason; no severed node kept an incident edge of the severed kind; a node whose criterion datum was unrecorded was left standing and reported unknown; a protected node was untouched; the origin space's observation radius measurably widened; no fifth verb and zero symbols were emitted.",
+          "degraded": "Fresh evidence exists but at least one non-catastrophic dimension violates its bound.",
+          "stale": "The latest otherwise valid evidence exceeds the configured freshness window.",
+          "unknown": "Required evidence cannot be resolved to a known state.",
+          "not_measured": "No fresh demotion run has measured the required dimensions.",
+          "measurement_failed": "The observer ran and could not complete its checks — distinct from the checks failing."
+        },
+        "current_state": "degraded",
+        "current_state_reason": "Fresh evidence exists and every dimension it covers passed: one demotion, one atomic set, node retained entire with the unnamed fields intact, zero incident edges after severance, unknown criterion left standing, a non-body sharing the same space never offered as a candidate, bounded observation rather than a scan, hydration strictly after filtering, zero symbols interned (crates/universe-e2e/src/bin/wield_residency.rs). It is NOT healthy, because healthy requires the same toolkit to demote at more than one residency_level and only `dormant` has been exercised — and because observation_radius_delta_m has no fresh measurement at all: the scratch spaces are not observed through a physics sphere, so the widening this toolkit exists to produce has never been measured on either side of the gesture. That dimension is not_measured, and a not_measured dimension is never counted as a pass.",
+        "maintenance": [
+          "DONE: the ExtendRecord IR operator is implemented with the record-preservation property under test",
+          "DONE: a demotion program runs on the VM and commits through the generic translator, proven by independent readback on a scratch store",
+          "DONE: the bounded-observation front end runs — the program selects its own target and the binary reads that target out of the proposal. Two further IR primitives were needed and are implemented with tests: `Only` (binds the sole element of a selection and traps rather than choosing when it did not narrow) and `GetField` (binds a named field, and traps rather than reading an absent one as Unit)",
+          "exercise a second residency_level, without which health cannot pass beyond degraded",
+          "give the IR arithmetic, or a generation-aware write plan, so `generation + 1` is proposed by the program rather than supplied by the caller — today the mechanism chooses WHICH node to revise but not WHICH generation",
+          "the copy of this construct committed at store revision 334 still reads missing_primitive.status = NOT IMPLEMENTED. It is STALE, and the fixture is the source. Revising the stored copy needs revise_construct, which requires a spine_encoding block here and an actor holding the revision capability through its own USED edges — neither is invented",
+          "wire the physics-event to energy-deposit bridge, after which the trigger model can be measured rather than described",
+          "write the guard edge to the sealed hatch so the required capability is derivable from the graph rather than declared in prose",
+          "revise runtime_status and verification_status ONLY from an independently read-back run, never from a green build",
+          "re-measure the observation radius periodically: the condition this toolkit answers is a moving one, since arrivals continue"
+        ]
+      }
+    }
+  ],
+  "relations": [
+    { "source": "space:l2:mind-universe:residency-toolkit-v0", "predicate": "IMPLEMENTED_IN", "target": "implementation:l2:mind-universe:residency-toolkit-v0" },
+    { "source": "space:l2:mind-universe:residency-toolkit-v0", "predicate": "DEFINED_BY_CODE", "target": "code:l2:mind-universe:residency-toolkit-v0" },
+    { "source": "code:l2:mind-universe:residency-toolkit-v0", "predicate": "IMPLEMENTED_BY", "target": "implementation:l2:mind-universe:residency-toolkit-v0" },
+    { "source": "pattern:l2:mind-universe:residency-toolkit-v0", "predicate": "JUSTIFIED_BY", "target": "justification:l2:mind-universe:residency-toolkit-v0" },
+    { "source": "behavior:l2:mind-universe:residency-toolkit-v0", "predicate": "VALIDATED_BY", "target": "validation:l2:mind-universe:residency-toolkit-v0" },
+    { "source": "implementation:l2:mind-universe:residency-toolkit-v0", "predicate": "OBSERVED_BY", "target": "observability_algorithm:l2:mind-universe:residency-toolkit-v0" },
+    { "source": "observability_algorithm:l2:mind-universe:residency-toolkit-v0", "predicate": "PRODUCES", "target": "metric:l2:mind-universe:residency-toolkit-v0" },
+    { "source": "metric:l2:mind-universe:residency-toolkit-v0", "predicate": "FEEDS", "target": "health:l2:mind-universe:residency-toolkit-v0" },
+    { "source": "objective:l2:mind-universe:residency-toolkit-v0", "predicate": "SUPPORTS", "target": "space:l2:mind-universe:residency-toolkit-v0" },
+    { "source": "observability_algorithm:l2:mind-universe:residency-toolkit-v0", "predicate": "VALIDATED_BY", "target": "validation:l2:mind-universe:residency-toolkit-v0" }
+  ]
+}

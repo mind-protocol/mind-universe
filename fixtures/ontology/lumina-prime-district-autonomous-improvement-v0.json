@@ -1,0 +1,549 @@
+{
+  "id": "space:l2:lumina-prime:district-autonomous-improvement-v0",
+  "node_type": "space",
+  "subtype": "district",
+  "content": {
+    "contractKind": "construct",
+    "name": "Quartier de l'Amélioration Autonome — le Banc d'Essai",
+    "dominant_scale": "civic",
+    "structure_kind": "district",
+    "provenance": "built",
+    "portfolio_priority": "P0",
+    "priority_rank": 1,
+    "lifecycle": "implementation_and_validation",
+    "lineage": "Un quartier de Lumina Prime bâti par la Construction toolkit v0 (fixtures/ontology/construction-toolkit-v0.json, structure_kind=district, kind_profiles lus depuis le graphe). Sa substance — objectif, gap, dimensions de métrique, compteurs de baseline, critère d'acceptation, prochaine tâche et santé dérivée — est TRANSCRITE du portefeuille Endgame de Mind Protocol, pas inventée ici. Sa forme est authored selon l'Appearance toolkit v0 (schéma affordance-materialization/1, palette de primitives fermée). Sa place n'est écrite nulle part : elle est portée par ses relations — PART_OF la ville, et les voies qui l'atteignent.",
+    "source_endgame": {
+      "endgame_root": "state-goal-directed-autonomous-improvement",
+      "endgame_statement": "Le citoyen améliore le graphe vers ses objectifs mesurables : l'amélioration est réussie lorsque les objectifs ont des indicateurs, que leur écart active une propagation intentionnée et que les changements réduisent cet écart par unité d'énergie sans confondre activité et progrès.",
+      "project": "project:mind:autonomous-improvement-endgame:v0",
+      "source_node_count": 77,
+      "source_relation_count": 156,
+      "source_sha256": "f544b4764f4455794597687b0256b611cfa0352bc585098ac68f00eeafcdb370"
+    },
+    "placement_model": "RELATIONNEL, jamais une coordonnée. Ce quartier est PART_OF space:l2:lumina-prime:city-v0 ; son voisinage est porté par les routes qui le rejoignent (COMMUNICATES). Un quartier sans voie inter-quartier est en lisière, et c'est un fait lisible sur le travail, pas un accident de layout.",
+    "canonical_predicate_remap": {
+      "why": "Zéro nouveau symbole : chaque prédicat authored est remappé sur le plus proche prédicat canonique actif du seed (fixtures/ontology/canonical-ontology.json).",
+      "remaps": {
+        "PART_OF": {
+          "canonical": "PART_OF",
+          "swap": false,
+          "note": "quartier PART_OF la ville — la relation de placement primaire"
+        },
+        "PROJECTS_AS": {
+          "canonical": "COMPILES_TO",
+          "swap": false,
+          "note": "le quartier se projette en sa forme : PROJECTS_AS n'est pas canonique, il est remappé sur COMPILES_TO (le binding est la projection compilée du construct, comme code -> implementation). Même convention que sky-toolkit-v0 / appearance-toolkit-v0."
+        }
+      }
+    },
+    "parent_scope": {
+      "classification": "district_of_city",
+      "justification": "Ce quartier appartient à Lumina Prime et à rien d'autre. L'arête PART_OF vers la ville est écrite par la passe de construction, attribuée par un Moment."
+    },
+    "runtime_moment_subtypes": [
+      "validation_run",
+      "health_assessment"
+    ],
+    "native_law_boundary": "Le socle natif ne connaît que les quatre verbes d'écriture fermés et les prédicats canoniques. Ce qu'est un quartier, ce qu'il tient, ce qu'il vaut et à quoi il ressemble sont des données du monde. Aucun endgame n'est un terme du dispatch natif.",
+    "purpose": "Tenir, en un seul endroit de la ville, la capacité de PROUVER qu'une boucle autonome améliore réellement le graphe — et pas seulement qu'elle s'exécute. Le quartier existe parce que la mécanique est verte (465/465) alors que l'uplift sémantique reste non démontré : c'est un banc d'essai, pas une vitrine."
+  },
+  "members": [
+    {
+      "id": "objective:l2:lumina-prime:district-autonomous-improvement-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "À contexte et budget comparables, le routage, les questions et le renforcement améliorent réellement la progression vers des objectifs, pas seulement les tests mécaniques. Passer des invariants logiciels réussis à une preuve comportementale sur des tâches réelles du graphe, avec contrôle neutralisé.",
+        "epistemic_status": "test_target",
+        "not_yet": "Aucune exécution du banc contrôlé n'a encore eu lieu dans ce quartier ; l'objectif est posé, non atteint."
+      }
+    },
+    {
+      "id": "pattern:l2:lumina-prime:district-autonomous-improvement-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "Un quartier de preuve comparative : deux variantes du même citoyen courent sur les mêmes objectifs, snapshots, budgets et seeds — l'une avec guidage complet, l'autre neutralisée (weight-only, momentWeight=1) — et seule la DIFFÉRENCE mesurée entre elles compte. Rien dans ce quartier ne conclut depuis une exécution isolée.",
+        "epistemic_honesty": "Une suite verte n'est pas un uplift. Une activité énergétique n'est pas un progrès. Un effet corpus faible ou négatif se rapporte tel quel, avec ses intervalles d'incertitude, jamais lissé."
+      }
+    },
+    {
+      "id": "vocabulary:l2:lumina-prime:district-autonomous-improvement-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "Contrôle neutralisé": "La variante privée de guidage (weight-only, momentWeight=1) contre laquelle l'uplift se mesure. Sans elle, il n'y a pas de mesure, seulement une observation.",
+          "goalGapReductionPerEnergy": "La métrique primaire : réduction de l'écart à l'objectif par unité d'énergie dépensée. Le dénominateur est ce qui empêche de confondre activité et progrès.",
+          "energyWithoutProgress": "L'énergie dépensée qui ne réduit aucun écart — la mesure de l'agitation.",
+          "crossIntentEnergyShare": "La contamination inter-intention ; la cible est 0. Une intention qui finance une autre invalide l'attribution.",
+          "usefulNovelPathRate": "La part des chemins nouveaux qui servent réellement — la diversité utile, distincte de la diversité tout court.",
+          "Banc contrôlé": "Le dispositif : plusieurs objectifs réels, snapshots stables, budgets et seeds fixés, échecs publiés."
+        }
+      }
+    },
+    {
+      "id": "behavior:l2:lumina-prime:district-autonomous-improvement-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "Plusieurs objectifs réels du graphe, des snapshots stables, des budgets et seeds fixés, et au moins deux variantes du runtime (guidage complet et contrôles neutralisés).",
+        "when": "Un citoyen lance le banc contrôlé d'amélioration autonome sur ce quartier.",
+        "then": [
+          "Exécuter chaque variante sur les MÊMES objectifs, snapshots, budgets, seeds et capacités.",
+          "Mesurer goalGapReductionPerEnergy comme métrique primaire, sur plusieurs familles de tâches.",
+          "Rapporter usefulNovelPathRate, energyWithoutProgress, crossIntentEnergyShare et humanValenceDelta lorsqu'observable — séparément, jamais agrégés en un score unique.",
+          "Publier les échecs et les intervalles d'incertitude au même titre que les réussites.",
+          "Conclure à un uplift SEULEMENT si la variante autonome dépasse le contrôle sur la métrique primaire et plusieurs familles de tâches."
+        ],
+        "forbidden": [
+          "conclure à un uplift depuis une suite de tests verte",
+          "comparer des variantes sur des objectifs, budgets ou seeds différents",
+          "agréger les dimensions humaines dans le score primaire",
+          "masquer une baisse de valence derrière un gain d'écart",
+          "présenter l'énergie dépensée comme un progrès"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l2:lumina-prime:district-autonomous-improvement-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "sélectionner plusieurs objectifs réels et des snapshots stables (hors fixture)",
+          "définir les contrôles : weight-only, momentWeight=1, guidage complet",
+          "fixer budgets et seeds, identiques entre variantes",
+          "exécuter chaque variante, en conservant les traces d'attribution d'énergie",
+          "mesurer goalGapReductionPerEnergy, usefulNovelPathRate, energyWithoutProgress, crossIntentEnergyShare",
+          "mesurer humanValenceDelta lorsqu'il est observable ; sinon le rapporter not_measured, jamais 0",
+          "comparer variante et contrôle avec intervalles d'incertitude et analyse des échecs",
+          "écrire un Moment daté portant la comparaison, ses échecs et ses incertitudes"
+        ],
+        "python_escape_hatch": "forbidden_by_default",
+        "composition_is_data": "Les étapes du quartier sont des données du graphe : sa prochaine transformation est lue depuis sa tâche, jamais dispatchée en natif.",
+        "scheduler_projection": "tick-boundary/1"
+      }
+    },
+    {
+      "id": "code:l2:lumina-prime:district-autonomous-improvement-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "authority": "Projection matérialisée, pas une autorité sémantique indépendante : l'autorité reste le portefeuille Endgame source.",
+        "language": "mind-district/civic",
+        "note": "Le mécanisme du quartier est le banc contrôlé lui-même : une composition d'exécutions bornées comparées deux à deux. Il n'a pas encore de projection exécutable dans ce monde.",
+        "next_task": {
+          "id": "task:mind:autonomous-improvement-endgame:build-controlled-benchmark-v0",
+          "title": "Construire le benchmark contrôlé d'amélioration autonome",
+          "scope": "bounded_benchmark_design_and_execution",
+          "reversible": true,
+          "priority": "P0"
+        },
+        "source_endgame_root": "state-goal-directed-autonomous-improvement",
+        "source_node_count": 77,
+        "source_relation_count": 156,
+        "source_sha256": "f544b4764f4455794597687b0256b611cfa0352bc585098ac68f00eeafcdb370"
+      }
+    },
+    {
+      "id": "implementation:l2:lumina-prime:district-autonomous-improvement-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "status": "authored",
+        "graph_status": "written_on_injection",
+        "runtime_status": "not_running",
+        "verification_status": "not_measured",
+        "honesty": "Le quartier est bâti et son anatomie est complète, mais AUCUN banc contrôlé n'y a encore couru. La baseline importée le dit : 465/465 tests couverts et passants, real_world_uplift_observed = false, cross_intention_energy_target = 0 non vérifié ici. La santé de ce quartier est not_measured, pas healthy.",
+        "artifact": "lumina-prime-district-autonomous-improvement-v0.json",
+        "baseline_imported": {
+          "observed_at": "2026-07-23",
+          "covered_test_count": 465,
+          "passing_test_count": 465,
+          "real_world_uplift_observed": false,
+          "cross_intention_energy_target": 0,
+          "note": "Les invariants mécaniques réussissent, mais aucun uplift sémantique global ou futur n'est encore démontré."
+        }
+      }
+    },
+    {
+      "id": "justification:l2:lumina-prime:district-autonomous-improvement-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": [
+          "Le gap central de cet endgame est expérimental, pas structurel : le cluster autonome classé quatrième et l'effet corpus quasi nul interdisent de conclure que l'embedder ou le renforcement améliore déjà le citoyen en situation réelle.",
+          "Un quartier dédié empêche la preuve d'être diluée : le banc a besoin d'un endroit stable où ses snapshots, ses contrôles et ses échecs s'accumulent.",
+          "C'est le P0 du portefeuille avec le runtime de question : les deux peuvent améliorer et auditer les autres quartiers, donc ils sont bâtis les premiers et au plus près du forum."
+        ],
+        "rejected": [
+          "déclarer l'uplift depuis les smokes corpus, car ils montrent un effet global faible ou négatif selon la mesure",
+          "un quartier vitrine montrant les 465 tests verts, car une suite verte n'est pas une amélioration"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:lumina-prime:district-autonomous-improvement-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "structured_expression_ast",
+        "acceptance_criterion": "Le jalon est atteint lorsque la variante autonome surpasse le contrôle sur la métrique primaire ET sur plusieurs familles de tâches, avec intervalles d'incertitude, analyse des échecs et absence de dégradation critique. L'uplift est reproductible sur objectifs hors fixture, sans contamination d'intention, sans explosion d'énergie et sans baisse masquée de valence.",
+        "scenarios": [
+          "variant_beats_control_on_primary_metric",
+          "uplift_holds_across_task_families",
+          "uncertainty_intervals_reported",
+          "failure_analysis_published",
+          "no_cross_intention_contamination",
+          "no_energy_explosion",
+          "no_masked_valence_drop",
+          "reproducible_on_out_of_fixture_goals"
+        ],
+        "negative_invariants": [
+          "green test suite reported as uplift — rejected",
+          "variants compared on different budgets or seeds — rejected",
+          "single task family generalized to an uplift claim — rejected",
+          "valence drop hidden inside an aggregate score — rejected"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l2:lumina-prime:district-autonomous-improvement-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Lit les traces d'exécution des DEUX variantes, leurs snapshots d'entrée, leurs budgets, l'attribution d'énergie par intention et les Moments datés. Ne fait jamais confiance à un drapeau de succès auto-déclaré ni à un compte de tests.",
+        "checks": [
+          "les variantes ont partagé objectifs, snapshots, budgets, seeds et capacités",
+          "goalGapReductionPerEnergy calculé sur les deux variantes",
+          "part d'énergie inter-intention mesurée et comparée à la cible 0",
+          "dimensions humaines rapportées séparément, jamais fondues dans le primaire",
+          "échecs et incertitudes présents dans le Moment",
+          "aucune conclusion d'uplift sans plusieurs familles de tâches"
+        ]
+      }
+    },
+    {
+      "id": "metric:l2:lumina-prime:district-autonomous-improvement-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "dimensions": [
+          "goalGapReductionPerEnergy",
+          "usefulNovelPathRate",
+          "energyWithoutProgress",
+          "crossIntentEnergyShare",
+          "humanValenceDelta",
+          "task_family_coverage",
+          "uncertainty_interval_reported_rate",
+          "evidence_freshness_ms"
+        ],
+        "note": "Comparer goalGapReductionPerEnergy avec routage complet versus contrôle weight-only/momentWeight=1, sur mêmes objectifs, snapshots, budgets et capacités. humanValenceDelta n'est rapporté que lorsqu'il est observable ; absent, il reste not_measured.",
+        "baseline": {
+          "observed_at": "2026-07-23",
+          "covered_test_count": 465,
+          "passing_test_count": 465,
+          "real_world_uplift_observed": false,
+          "cross_intention_energy_target": 0,
+          "note": "Les invariants mécaniques réussissent, mais aucun uplift sémantique global ou futur n'est encore démontré."
+        }
+      }
+    },
+    {
+      "id": "health:l2:lumina-prime:district-autonomous-improvement-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "states": [
+          "healthy",
+          "degraded",
+          "stale",
+          "unknown",
+          "not_measured",
+          "measurement_failed"
+        ],
+        "current": "not_measured",
+        "current_why": "Aucun banc contrôlé n'a couru DANS ce quartier. La baseline importée (2026-07-23) est une observation d'ailleurs, pas une mesure d'ici.",
+        "derivation": {
+          "healthy": "Le critère d'acceptation du quartier est satisfait par des preuves fraîches et attribuées, mesurées ICI.",
+          "degraded": "Des preuves fraîches existent mais au moins une dimension viole sa borne.",
+          "stale": "La dernière preuve valide dépasse la fenêtre de fraîcheur.",
+          "unknown": "Les preuves requises ne se résolvent en aucun état connu.",
+          "not_measured": "Aucune exécution fraîche n'a mesuré les dimensions requises dans ce quartier.",
+          "measurement_failed": "L'observateur n'a pas produit de mesure fiable."
+        },
+        "upstream_derived": "Excellente couverture des invariants, preuve comportementale insuffisante. L'écart central est expérimental, non structurel. Runtime mécaniquement robuste, mais bénéfice réel non démontré hors fixtures.",
+        "maintenance": [
+          "run_next_task",
+          "inspect_baseline",
+          "reissue_capability",
+          "revise_criterion",
+          "ask_human"
+        ]
+      }
+    },
+    {
+      "id": "visual_binding:l2:lumina-prime:district-autonomous-improvement-v0",
+      "node_type": "thing",
+      "subtype": "physicalization_binding",
+      "content": {
+        "kind": "physicalization_binding",
+        "schema_version": "affordance-materialization/1",
+        "dominant_scale": "civic",
+        "silhouette": "Le Banc d'Essai — deux fûts jumeaux sur une même piste annulaire, sous une poutre de mesure.",
+        "palette": {
+          "core": "#dfe6ef",
+          "emissive": "#7fc7a8",
+          "shell": "#46566d",
+          "particle": "#eaf6ff"
+        },
+        "form_primitive_tuple": {
+          "arity": 8,
+          "fields": [
+            "kind",
+            "part_name",
+            "palette_role",
+            "offset(vec3)",
+            "rotation(vec3)",
+            "scale(vec3>0)",
+            "particle_count",
+            "particle_size"
+          ],
+          "allowed_primitives": [
+            "box",
+            "cylinder",
+            "cone",
+            "torus",
+            "plane",
+            "tube",
+            "capsule",
+            "sphere",
+            "icosphere",
+            "points",
+            "fresnel_shell"
+          ]
+        },
+        "note": "La forme du quartier est l'UNION des matérialisations de ses affordances. Les offsets sont INTERNES à la forme (la disposition de ses propres parties), jamais une position dans la ville : où est le quartier reste une projection de ses relations.",
+        "affordance_materializations": [
+          {
+            "affordance": {
+              "subtype": "run_controlled_benchmark",
+              "kernel_kind": "test",
+              "justification": "les deux fûts jumeaux affordent de lancer variante contre contrôle sur la même piste",
+              "cell": "actionable"
+            },
+            "form": [
+              [
+                "cylinder",
+                "variant_column",
+                "core",
+                [
+                  -0.9,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.5,
+                  1.4,
+                  0.5
+                ],
+                0,
+                0
+              ],
+              [
+                "cylinder",
+                "control_column",
+                "shell",
+                [
+                  0.9,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.5,
+                  1.4,
+                  0.5
+                ],
+                0,
+                0
+              ],
+              [
+                "torus",
+                "shared_track",
+                "shell",
+                [
+                  0,
+                  -0.7,
+                  0
+                ],
+                [
+                  1.5708,
+                  0,
+                  0
+                ],
+                [
+                  1.7,
+                  1.7,
+                  0.12
+                ],
+                0,
+                0
+              ]
+            ],
+            "inverse_mapping": "les deux fûts = variante et contrôle ; la piste unique = mêmes objectifs, budgets et seeds"
+          },
+          {
+            "affordance": {
+              "subtype": "read_uplift",
+              "kernel_kind": "inspect",
+              "justification": "la poutre de mesure afforde de lire l'écart — mais rien n'a encore été mesuré ici",
+              "cell": "fogged"
+            },
+            "form": [
+              [
+                "box",
+                "measuring_beam",
+                "emissive",
+                [
+                  0,
+                  1.2,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  2.4,
+                  0.08,
+                  0.2
+                ],
+                0,
+                0
+              ],
+              [
+                "points",
+                "uplift_motes",
+                "particle",
+                [
+                  0,
+                  1.35,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  1,
+                  1,
+                  1
+                ],
+                0,
+                0.35
+              ]
+            ],
+            "inverse_mapping": "la poutre = la métrique primaire ; ZÉRO mote = aucun uplift mesuré (Fog, jamais un zéro fabriqué)"
+          }
+        ],
+        "state_sockets": [
+          {
+            "socket": "whole.scale",
+            "channel": "poids",
+            "driven_by": "nombre de constructs PART_OF le quartier",
+            "honesty": "absent -> échelle neutre 1"
+          },
+          {
+            "socket": "uplift_motes.count + measuring_beam.emissive",
+            "channel": "activation",
+            "driven_by": "goalGapReductionPerEnergy mesuré contre contrôle",
+            "honesty": "non mesuré -> 0 mote, poutre éteinte (Fog) — jamais une poutre allumée par défaut"
+          },
+          {
+            "socket": "shared_track.continuity",
+            "channel": "validite",
+            "driven_by": "satisfaction du critère d'acceptation",
+            "honesty": "critère non satisfait -> piste rompue"
+          }
+        ],
+        "fallback": "toute affordance non matérialisée ici retombe sur default_materializations[kernel_kind] de l'Appearance toolkit ; aucune affordance -> point de présence gris",
+        "lod_states": {
+          "hot": "fûts + piste + poutre + motes",
+          "sleeping": "fûts + piste",
+          "aggregated": "piste seule",
+          "dormant": "point de présence gris"
+        }
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "space:l2:lumina-prime:district-autonomous-improvement-v0",
+      "predicate": "IMPLEMENTED_IN",
+      "target": "implementation:l2:lumina-prime:district-autonomous-improvement-v0"
+    },
+    {
+      "source": "space:l2:lumina-prime:district-autonomous-improvement-v0",
+      "predicate": "DEFINED_BY_CODE",
+      "target": "code:l2:lumina-prime:district-autonomous-improvement-v0"
+    },
+    {
+      "source": "code:l2:lumina-prime:district-autonomous-improvement-v0",
+      "predicate": "IMPLEMENTED_BY",
+      "target": "implementation:l2:lumina-prime:district-autonomous-improvement-v0"
+    },
+    {
+      "source": "pattern:l2:lumina-prime:district-autonomous-improvement-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l2:lumina-prime:district-autonomous-improvement-v0"
+    },
+    {
+      "source": "behavior:l2:lumina-prime:district-autonomous-improvement-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:lumina-prime:district-autonomous-improvement-v0"
+    },
+    {
+      "source": "implementation:l2:lumina-prime:district-autonomous-improvement-v0",
+      "predicate": "OBSERVED_BY",
+      "target": "observability_algorithm:l2:lumina-prime:district-autonomous-improvement-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:lumina-prime:district-autonomous-improvement-v0",
+      "predicate": "PRODUCES",
+      "target": "metric:l2:lumina-prime:district-autonomous-improvement-v0"
+    },
+    {
+      "source": "metric:l2:lumina-prime:district-autonomous-improvement-v0",
+      "predicate": "FEEDS",
+      "target": "health:l2:lumina-prime:district-autonomous-improvement-v0"
+    },
+    {
+      "source": "objective:l2:lumina-prime:district-autonomous-improvement-v0",
+      "predicate": "SUPPORTS",
+      "target": "space:l2:lumina-prime:district-autonomous-improvement-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:lumina-prime:district-autonomous-improvement-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:lumina-prime:district-autonomous-improvement-v0"
+    },
+    {
+      "source": "space:l2:lumina-prime:district-autonomous-improvement-v0",
+      "predicate": "PROJECTS_AS",
+      "target": "visual_binding:l2:lumina-prime:district-autonomous-improvement-v0"
+    }
+  ]
+}

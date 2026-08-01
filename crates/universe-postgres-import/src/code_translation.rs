@@ -395,7 +395,6 @@ pub fn run_translation(
             UniverseWriteSet {
                 base_revision: independent.revision,
                 idempotency_key: activate_key,
-                causal_ancestry: vec![manifest.batch.batch_id.clone()],
                 commands,
             },
         )?;

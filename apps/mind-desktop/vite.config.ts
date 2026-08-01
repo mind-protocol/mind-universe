@@ -1,8 +1,11 @@
 import { defineConfig, configDefaults } from "vitest/config";
 import react from "@vitejs/plugin-react";
+// Dev-only SSE transport for the live city. It routes the frames the Rust
+// projector writes; it decides nothing about the world (see the plugin header).
+import universeStream from "./scripts/vite-plugin-universe-stream.mjs";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), universeStream()],
   clearScreen: false,
   server: {
     host: "127.0.0.1",

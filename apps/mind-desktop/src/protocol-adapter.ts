@@ -7,6 +7,7 @@ import {
   type EntityDynamicSignals,
   type EntityEmbodiment,
   type EntityProvenance,
+  type PlacementProvenance,
   type EntityMotionPrimitive,
   type EntityVisualPrimitive,
   type EpistemicState,
@@ -15,10 +16,11 @@ import {
   type PhysicalResidency,
   type UniverseEvent,
   type Vector3,
+  type RoleKeyedEmbodimentMapping,
   type VisualEmbodimentMapping,
   type VisualMaterial
 } from "./contracts";
-import { validateEmbodimentMapping } from "./embodiment";
+import { validateAnyEmbodimentMapping } from "./embodiment";
 import { withDefaultDynamics } from "./entity-dynamics";
 
 const VISUAL_MICROUNITS = 1_000_000;
@@ -102,15 +104,26 @@ function embodimentFromFrame(value: unknown): EntityEmbodiment | undefined {
   const sampledAtMs = safeInteger(raw.sampled_at_ms);
   const motionProfile = object(raw.motion_profile);
   const mapping = object(raw.mapping);
-  if (!sourceMappingId || !residency || sampledAtMs === null || !motionProfile || !mapping) {
+  if (!sourceMappingId || !residency || sampledAtMs === null || !mapping) {
     return undefined;
   }
-  const typedMapping = mapping as unknown as VisualEmbodimentMapping;
-  if (!validateEmbodimentMapping(typedMapping)) return undefined;
+  // Either authored shape is accepted here: the LOD-keyed citizen-energy catalog
+  // and a toolkit's own role-keyed binding. Accepting only the first dropped every
+  // toolkit binding on arrival. Which renderer draws it is decided downstream, on
+  // the schema — accepting a mapping is not choosing a form family for it.
+  const typedMapping = mapping as unknown as
+    | VisualEmbodimentMapping
+    | RoleKeyedEmbodimentMapping;
+  if (!validateAnyEmbodimentMapping(typedMapping)) return undefined;
   return {
     source_mapping_id: sourceMappingId,
     mapping: typedMapping,
-    motion_profile: motionProfile as unknown as EmbodimentMotionProfile,
+    // Carried only when the binding declares one. A role-keyed binding declares
+    // no motion, and an invented empty profile would be read as authority by the
+    // motion-driven renderer.
+    ...(motionProfile
+      ? { motion_profile: motionProfile as unknown as EmbodimentMotionProfile }
+      : {}),
     residency,
     sampled_at_ms: sampledAtMs
   };
@@ -194,6 +207,19 @@ function provenanceFromFrame(value: unknown): EntityProvenance | undefined {
   };
 }
 
+const placementProvenances = new Set<PlacementProvenance>(["built", "scaffold"]);
+
+/**
+ * Reads `placement.provenance`. A frame that omits it, or declares a value this
+ * client does not know, yields undefined — an honest "the projection did not say",
+ * never a defaulted `scaffold` (which would assert that nobody built the node).
+ */
+function placementFromFrame(value: unknown): PlacementProvenance | undefined {
+  const raw = object(value);
+  if (!raw) return undefined;
+  return oneOf(raw.provenance, placementProvenances) ?? undefined;
+}
+
 function vector3FromMicro(value: unknown): Vector3 | null {
   if (!Array.isArray(value) || value.length !== 3) return null;
   const components = value.map(signedInteger);
@@ -265,11 +291,13 @@ export function universeEventFromServerFrame(
     const embodiment = embodimentFromFrame(raw.embodiment);
     const audio = audioFromFrame(raw.audio);
     const provenance = provenanceFromFrame(raw.provenance);
+    const placement = placementFromFrame(raw.placement);
     const dynamics = dynamicsFromFrame(id, raw.dynamics);
     const entity: MaterializedEntity = {
       id,
       generation,
       position,
+      ...(placement ? { placement } : {}),
       visual: { primitive, motion, material },
       ...(embodiment ? { embodiment } : {}),
       ...(audio ? { audio } : {}),

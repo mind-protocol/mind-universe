@@ -1,0 +1,744 @@
+{
+  "id": "space:l2:lumina-prime:district-civilization-v0",
+  "node_type": "space",
+  "subtype": "district",
+  "content": {
+    "contractKind": "construct",
+    "name": "Quartier de la Civilisation — les Dix Fondations",
+    "dominant_scale": "civic",
+    "structure_kind": "district",
+    "provenance": "built",
+    "portfolio_priority": "P1",
+    "priority_rank": 3,
+    "lifecycle": "strategic_design",
+    "lineage": "Un quartier de Lumina Prime bâti par la Construction toolkit v0 (fixtures/ontology/construction-toolkit-v0.json, structure_kind=district, kind_profiles lus depuis le graphe). Sa substance — objectif, gap, dimensions de métrique, compteurs de baseline, critère d'acceptation, prochaine tâche et santé dérivée — est TRANSCRITE du portefeuille Endgame de Mind Protocol, pas inventée ici. Sa forme est authored selon l'Appearance toolkit v0 (schéma affordance-materialization/1, palette de primitives fermée). Sa place n'est écrite nulle part : elle est portée par ses relations — PART_OF la ville, et les voies qui l'atteignent.",
+    "source_endgame": {
+      "endgame_root": "thesis-civilization-substrate",
+      "endgame_statement": "Une IA citoyenne souveraine par humain, des graphes vivants, un financement programmable, une gouvernance ouverte et la souveraineté humaine forment l'état final recherché. Les institutions deviennent continues, personnalisées, agentiques et gouvernables.",
+      "project": "project:mind:civilization-endgame:v0",
+      "source_node_count": 35,
+      "source_relation_count": 89,
+      "source_sha256": "03c6bfae7a2526c61c2544b6ae1ba92351cc620d1f142bef0acdf97a710f8727",
+      "domains": [
+        "science",
+        "mind",
+        "éducation",
+        "santé mentale",
+        "démocratie",
+        "paix",
+        "droit",
+        "logistique",
+        "médias",
+        "travail"
+      ]
+    },
+    "placement_model": "RELATIONNEL, jamais une coordonnée. Ce quartier est PART_OF space:l2:lumina-prime:city-v0 ; son voisinage est porté par les routes qui le rejoignent (COMMUNICATES). Un quartier sans voie inter-quartier est en lisière, et c'est un fait lisible sur le travail, pas un accident de layout.",
+    "canonical_predicate_remap": {
+      "why": "Zéro nouveau symbole : chaque prédicat authored est remappé sur le plus proche prédicat canonique actif du seed (fixtures/ontology/canonical-ontology.json).",
+      "remaps": {
+        "PART_OF": {
+          "canonical": "PART_OF",
+          "swap": false,
+          "note": "quartier PART_OF la ville — la relation de placement primaire"
+        },
+        "PROJECTS_AS": {
+          "canonical": "COMPILES_TO",
+          "swap": false,
+          "note": "le quartier se projette en sa forme : PROJECTS_AS n'est pas canonique, il est remappé sur COMPILES_TO (le binding est la projection compilée du construct, comme code -> implementation). Même convention que sky-toolkit-v0 / appearance-toolkit-v0."
+        }
+      }
+    },
+    "parent_scope": {
+      "classification": "district_of_city",
+      "justification": "Ce quartier appartient à Lumina Prime et à rien d'autre. L'arête PART_OF vers la ville est écrite par la passe de construction, attribuée par un Moment."
+    },
+    "runtime_moment_subtypes": [
+      "validation_run",
+      "health_assessment"
+    ],
+    "native_law_boundary": "Le socle natif ne connaît que les quatre verbes d'écriture fermés et les prédicats canoniques. Ce qu'est un quartier, ce qu'il tient, ce qu'il vaut et à quoi il ressemble sont des données du monde. Aucun endgame n'est un terme du dispatch natif.",
+    "purpose": "Tenir la thèse civilisationnelle SANS la laisser rester une thèse : dix domaines institutionnels, dix wedges décrits, et l'obligation d'en exécuter UN avec baseline, delta, garde-fous vérifiés et transférabilité démontrée. Le quartier est un terminus : deux voies y arrivent (le Banc d'Essai, la Halle des Réponses) et aucune n'en repart — c'est ici que les preuves des autres quartiers doivent atterrir."
+  },
+  "members": [
+    {
+      "id": "objective:l2:lumina-prime:district-civilization-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "Chaque domaine institutionnel possède un premier wedge, une baseline, un garde-fou, un responsable et une dépendance au substrat commun. L'objectif n'est pas de déclarer dix institutions futures, mais de rendre chacune testable et de choisir un ordre de pilotes qui prouve réellement les primitives partagées.",
+        "epistemic_status": "design_proposal",
+        "not_yet": "0/10 domaines disposent ici d'une exécution datée ; aucun wedge n'a produit de delta contre baseline."
+      }
+    },
+    {
+      "id": "pattern:l2:lumina-prime:district-civilization-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "Dix fondations posées, aucune bâtie. Le quartier rend visible l'écart entre DÉCRIT et EXÉCUTÉ : chaque domaine a sa dalle, et une dalle ne s'allume qu'avec un wedge exécuté portant observation datée, delta contre baseline, garde-fous vérifiés et analyse de transférabilité. Le risque nommé est la dispersion sur dix fronts ; le remède est un socle vide pour LE premier wedge.",
+        "epistemic_honesty": "Une proposition de wedge n'est pas un wedge. Dix wedges décrits et zéro exécuté se lisent comme dix dalles éteintes — jamais comme dix institutions en marche. Une architecture commune postulée n'est pas une architecture commune démontrée."
+      }
+    },
+    {
+      "id": "vocabulary:l2:lumina-prime:district-civilization-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "Wedge": "Le premier pilote transversal d'un domaine institutionnel : le plus petit engagement qui produit une preuve réutilisable ailleurs.",
+          "Décrit vs exécuté": "La distinction structurante du quartier. described_wedge_count = 10, executed_wedge_with_baseline_count = 0.",
+          "institutionalWedgeCoverage": "Domaines satisfaisant les CINQ conditions (wedge, baseline, indicateur de résultat, garde-fou, dépendances explicites) divisé par 10.",
+          "Transférabilité": "La démonstration qu'une primitive prouvée dans un domaine tient dans un second. Sans elle, un pilote réussi reste une anecdote.",
+          "Garde-fou": "La limite vérifiée d'un pilote institutionnel — vérifiée, pas déclarée.",
+          "Substrat commun": "Les primitives partagées entre domaines ; c'est ce que les voies entrantes (amélioration autonome, question située) sont censées prouver."
+        }
+      }
+    },
+    {
+      "id": "behavior:l2:lumina-prime:district-civilization-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "Dix domaines institutionnels, dix propositions de wedge, les critères de sélection (accès à une baseline, délai de preuve, garde-fous, coût, partenaire disponible, réutilisation de graphes vivants, Answer auditée, boucle adaptative).",
+        "when": "Un citoyen sélectionne le premier wedge civilisationnel transversal depuis ce quartier.",
+        "then": [
+          "Évaluer les dix wedges selon les huit critères déclarés.",
+          "Produire une décision versionnée nommant UN wedge et disant pourquoi les neuf autres attendent.",
+          "Instrumenter un protocole de mesure : baseline, indicateur de résultat, garde-fous vérifiables.",
+          "Produire une analyse de transférabilité vers au moins un second domaine.",
+          "NE PAS lancer le pilote externe depuis cette étape — la sélection et l'instrumentation seulement."
+        ],
+        "forbidden": [
+          "lancer un pilote externe depuis cette étape",
+          "compter un wedge décrit comme un wedge exécuté",
+          "déduire une architecture commune de sa description",
+          "disperser l'effort sur plusieurs domaines avant une première preuve",
+          "présenter un garde-fou déclaré comme un garde-fou vérifié"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l2:lumina-prime:district-civilization-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "énumérer les dix domaines et leur wedge proposé",
+          "évaluer chacun : baseline accessible, délai de preuve, garde-fous, coût, partenaire, réutilisation de graphes vivants, Answer auditée, boucle adaptative",
+          "sélectionner UN wedge et écrire la décision versionnée avec son motif",
+          "instrumenter baseline + indicateur de résultat + garde-fous vérifiables",
+          "écrire l'analyse de transférabilité vers un second domaine",
+          "laisser les neuf autres dalles explicitement éteintes, non pas oubliées"
+        ],
+        "python_escape_hatch": "forbidden_by_default",
+        "composition_is_data": "Les étapes du quartier sont des données du graphe : sa prochaine transformation est lue depuis sa tâche, jamais dispatchée en natif.",
+        "scheduler_projection": "tick-boundary/1"
+      }
+    },
+    {
+      "id": "code:l2:lumina-prime:district-civilization-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "authority": "Projection matérialisée, pas une autorité sémantique indépendante : l'autorité reste le portefeuille Endgame source.",
+        "language": "mind-district/civic",
+        "note": "Le mécanisme du quartier est une sélection instrumentée, pas une exécution : il produit une décision, un protocole de mesure et une analyse de transférabilité.",
+        "next_task": {
+          "id": "task:mind:civilization-endgame:select-first-wedge-v0",
+          "title": "Sélectionner le premier wedge civilisationnel transversal",
+          "scope": "selection_and_instrumentation_only",
+          "reversible": true,
+          "priority": "P1"
+        },
+        "source_endgame_root": "thesis-civilization-substrate",
+        "source_node_count": 35,
+        "source_relation_count": 89,
+        "source_sha256": "03c6bfae7a2526c61c2544b6ae1ba92351cc620d1f142bef0acdf97a710f8727"
+      }
+    },
+    {
+      "id": "implementation:l2:lumina-prime:district-civilization-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "status": "authored",
+        "graph_status": "written_on_injection",
+        "runtime_status": "not_running",
+        "verification_status": "not_measured",
+        "honesty": "Structure stratégique forte, exécution faible. 10/10 domaines ont une proposition de wedge ; 0/10 ont une exécution datée avec baseline, résultat, garde-fou vérifié et transférabilité démontrée. transferability_proof_count = 0. Le premier wedge n'est PAS sélectionné.",
+        "artifact": "lumina-prime-district-civilization-v0.json",
+        "baseline_imported": {
+          "observed_at": "2026-07-28",
+          "described_domain_count": 10,
+          "described_wedge_count": 10,
+          "executed_wedge_with_baseline_count": 0,
+          "transferability_proof_count": 0,
+          "note": "Dix domaines et dix wedges sont décrits ; aucun wedge n'a encore produit de delta observé contre baseline."
+        }
+      }
+    },
+    {
+      "id": "justification:l2:lumina-prime:district-civilization-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": [
+          "Sans priorisation, le projet risque de disperser l'effort entre dix fronts et de prendre une architecture commune postulée pour une architecture commune démontrée.",
+          "Ce quartier est un terminus assumé : les deux voies P0 y arrivent parce que leurs preuves (boucle adaptative mesurée, Answer sourcée et contestable) sont exactement les primitives que le substrat civilisationnel prétend partager.",
+          "Dix dalles éteintes disent la vérité de l'état d'avancement mieux qu'un récit ; la ville se lit à son aspect."
+        ],
+        "rejected": [
+          "bâtir les dix domaines en parallèle, car la dispersion empêche la preuve de transférabilité",
+          "présenter les dix wedges décrits comme un portefeuille en exécution"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:lumina-prime:district-civilization-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "structured_expression_ast",
+        "acceptance_criterion": "La première étape est complète SEULEMENT lorsqu'un wedge exécuté produit une observation datée, un delta contre baseline, une vérification des garde-fous et une analyse de transférabilité vers au moins un second domaine. Un pilote réel améliore un indicateur contre baseline, respecte les garde-fous et réutilise au moins deux primitives transversales.",
+        "scenarios": [
+          "one_wedge_selected_with_versioned_decision",
+          "baseline_instrumented_before_pilot",
+          "guardrails_verified_not_declared",
+          "delta_against_baseline_observed",
+          "transferability_to_second_domain_analyzed",
+          "at_least_two_shared_primitives_reused",
+          "nine_remaining_domains_explicitly_pending"
+        ],
+        "negative_invariants": [
+          "described wedge counted as executed — rejected",
+          "external pilot launched from the selection step — rejected",
+          "declared guardrail accepted as verified — rejected",
+          "common architecture inferred from description — rejected"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l2:lumina-prime:district-civilization-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Lit les dix propositions, la décision de sélection versionnée, le protocole de mesure, la baseline instrumentée et l'analyse de transférabilité. Ne fait jamais confiance à un domaine déclaré couvert.",
+        "checks": [
+          "nombre de wedges DÉCRITS et EXÉCUTÉS rapportés séparément",
+          "décision de sélection versionnée et motivée présente",
+          "baseline instrumentée avant tout pilote",
+          "garde-fous vérifiés, pas seulement déclarés",
+          "analyse de transférabilité vers un second domaine présente",
+          "les neuf domaines restants sont explicitement en attente, pas silencieux"
+        ]
+      }
+    },
+    {
+      "id": "metric:l2:lumina-prime:district-civilization-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "dimensions": [
+          "institutionalWedgeCoverage",
+          "described_wedge_count",
+          "executed_wedge_with_baseline_count",
+          "transferability_proof_count",
+          "guardrail_verification_rate",
+          "shared_primitive_reuse_count",
+          "evidence_freshness_ms"
+        ],
+        "note": "institutionalWedgeCoverage = domaines satisfaisant les cinq conditions / 10. Les wedges exécutés et les wedges seulement décrits se rapportent SÉPARÉMENT — la confusion des deux est l'erreur que ce quartier existe pour empêcher.",
+        "baseline": {
+          "observed_at": "2026-07-28",
+          "described_domain_count": 10,
+          "described_wedge_count": 10,
+          "executed_wedge_with_baseline_count": 0,
+          "transferability_proof_count": 0,
+          "note": "Dix domaines et dix wedges sont décrits ; aucun wedge n'a encore produit de delta observé contre baseline."
+        }
+      }
+    },
+    {
+      "id": "health:l2:lumina-prime:district-civilization-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "states": [
+          "healthy",
+          "degraded",
+          "stale",
+          "unknown",
+          "not_measured",
+          "measurement_failed"
+        ],
+        "current": "not_measured",
+        "current_why": "0 wedge exécuté, 0 preuve de transférabilité, aucun premier wedge sélectionné. Rien à mesurer encore.",
+        "derivation": {
+          "healthy": "Le critère d'acceptation du quartier est satisfait par des preuves fraîches et attribuées, mesurées ICI.",
+          "degraded": "Des preuves fraîches existent mais au moins une dimension viole sa borne.",
+          "stale": "La dernière preuve valide dépasse la fenêtre de fraîcheur.",
+          "unknown": "Les preuves requises ne se résolvent en aucun état connu.",
+          "not_measured": "Aucune exécution fraîche n'a mesuré les dimensions requises dans ce quartier.",
+          "measurement_failed": "L'observateur n'a pas produit de mesure fiable."
+        },
+        "upstream_derived": "Structure stratégique forte ; exécution faible. Le risque principal est la dispersion sur dix domaines. La santé s'améliore avec une décision de wedge et une baseline instrumentée.",
+        "maintenance": [
+          "run_next_task",
+          "inspect_baseline",
+          "reissue_capability",
+          "revise_criterion",
+          "ask_human"
+        ]
+      }
+    },
+    {
+      "id": "visual_binding:l2:lumina-prime:district-civilization-v0",
+      "node_type": "thing",
+      "subtype": "physicalization_binding",
+      "content": {
+        "kind": "physicalization_binding",
+        "schema_version": "affordance-materialization/1",
+        "dominant_scale": "civic",
+        "silhouette": "Les Dix Fondations — dix dalles basses en couronne sur un parvis, toutes éteintes, et un socle vide au centre pour le premier wedge.",
+        "palette": {
+          "core": "#e9e3d6",
+          "emissive": "#d9a441",
+          "shell": "#59544a",
+          "particle": "#fff0cf"
+        },
+        "form_primitive_tuple": {
+          "arity": 8,
+          "fields": [
+            "kind",
+            "part_name",
+            "palette_role",
+            "offset(vec3)",
+            "rotation(vec3)",
+            "scale(vec3>0)",
+            "particle_count",
+            "particle_size"
+          ],
+          "allowed_primitives": [
+            "box",
+            "cylinder",
+            "cone",
+            "torus",
+            "plane",
+            "tube",
+            "capsule",
+            "sphere",
+            "icosphere",
+            "points",
+            "fresnel_shell"
+          ]
+        },
+        "note": "La forme du quartier est l'UNION des matérialisations de ses affordances. Les offsets sont INTERNES à la forme (la disposition de ses propres parties), jamais une position dans la ville : où est le quartier reste une projection de ses relations.",
+        "affordance_materializations": [
+          {
+            "affordance": {
+              "subtype": "select_first_wedge",
+              "kernel_kind": "place",
+              "justification": "le socle vide au centre afforde d'y poser LE premier wedge sélectionné",
+              "cell": "actionable"
+            },
+            "form": [
+              [
+                "cylinder",
+                "empty_plinth",
+                "core",
+                [
+                  0,
+                  0.15,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.45,
+                  0.3,
+                  0.45
+                ],
+                0,
+                0
+              ],
+              [
+                "plane",
+                "forecourt",
+                "shell",
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  1.5708,
+                  0,
+                  0
+                ],
+                [
+                  3.2,
+                  3.2,
+                  1
+                ],
+                0,
+                0
+              ]
+            ],
+            "inverse_mapping": "le socle VIDE = le premier wedge n'est pas choisi ; le parvis = les dix domaines partagent un même sol"
+          },
+          {
+            "affordance": {
+              "subtype": "inspect_domain_coverage",
+              "kernel_kind": "inspect",
+              "justification": "les dix dalles affordent de lire quelle institution est couverte — aucune ne l'est",
+              "cell": "fogged"
+            },
+            "form": [
+              [
+                "box",
+                "foundation_slab",
+                "shell",
+                [
+                  1.4,
+                  0.05,
+                  0.0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.5,
+                  0.1,
+                  0.5
+                ],
+                0,
+                0
+              ],
+              [
+                "box",
+                "foundation_slab",
+                "shell",
+                [
+                  1.13,
+                  0.05,
+                  0.82
+                ],
+                [
+                  0,
+                  0.628,
+                  0
+                ],
+                [
+                  0.5,
+                  0.1,
+                  0.5
+                ],
+                0,
+                0
+              ],
+              [
+                "box",
+                "foundation_slab",
+                "shell",
+                [
+                  0.43,
+                  0.05,
+                  1.33
+                ],
+                [
+                  0,
+                  1.257,
+                  0
+                ],
+                [
+                  0.5,
+                  0.1,
+                  0.5
+                ],
+                0,
+                0
+              ],
+              [
+                "box",
+                "foundation_slab",
+                "shell",
+                [
+                  -0.43,
+                  0.05,
+                  1.33
+                ],
+                [
+                  0,
+                  1.885,
+                  0
+                ],
+                [
+                  0.5,
+                  0.1,
+                  0.5
+                ],
+                0,
+                0
+              ],
+              [
+                "box",
+                "foundation_slab",
+                "shell",
+                [
+                  -1.13,
+                  0.05,
+                  0.82
+                ],
+                [
+                  0,
+                  2.513,
+                  0
+                ],
+                [
+                  0.5,
+                  0.1,
+                  0.5
+                ],
+                0,
+                0
+              ],
+              [
+                "box",
+                "foundation_slab",
+                "shell",
+                [
+                  -1.4,
+                  0.05,
+                  0.0
+                ],
+                [
+                  0,
+                  3.142,
+                  0
+                ],
+                [
+                  0.5,
+                  0.1,
+                  0.5
+                ],
+                0,
+                0
+              ],
+              [
+                "box",
+                "foundation_slab",
+                "shell",
+                [
+                  -1.13,
+                  0.05,
+                  -0.82
+                ],
+                [
+                  0,
+                  3.77,
+                  0
+                ],
+                [
+                  0.5,
+                  0.1,
+                  0.5
+                ],
+                0,
+                0
+              ],
+              [
+                "box",
+                "foundation_slab",
+                "shell",
+                [
+                  -0.43,
+                  0.05,
+                  -1.33
+                ],
+                [
+                  0,
+                  4.398,
+                  0
+                ],
+                [
+                  0.5,
+                  0.1,
+                  0.5
+                ],
+                0,
+                0
+              ],
+              [
+                "box",
+                "foundation_slab",
+                "shell",
+                [
+                  0.43,
+                  0.05,
+                  -1.33
+                ],
+                [
+                  0,
+                  5.027,
+                  0
+                ],
+                [
+                  0.5,
+                  0.1,
+                  0.5
+                ],
+                0,
+                0
+              ],
+              [
+                "box",
+                "foundation_slab",
+                "shell",
+                [
+                  1.13,
+                  0.05,
+                  -0.82
+                ],
+                [
+                  0,
+                  5.655,
+                  0
+                ],
+                [
+                  0.5,
+                  0.1,
+                  0.5
+                ],
+                0,
+                0
+              ]
+            ],
+            "inverse_mapping": "une dalle par domaine institutionnel (science, mind, éducation, santé mentale, démocratie, paix, droit, logistique, médias, travail) ; DIX dalles éteintes = executed_wedge_with_baseline_count 0. Elles s'allument une par une, par wedge exécuté"
+          },
+          {
+            "affordance": {
+              "subtype": "connect_transferability",
+              "kernel_kind": "connect",
+              "justification": "l'arc de transférabilité afforde de relier une primitive prouvée à un second domaine — il n'existe encore aucune preuve à relier",
+              "cell": "empty"
+            },
+            "form": [
+              [
+                "torus",
+                "transfer_arc",
+                "emissive",
+                [
+                  0,
+                  0.8,
+                  0
+                ],
+                [
+                  1.5708,
+                  0,
+                  0
+                ],
+                [
+                  1.0,
+                  1.0,
+                  0.05
+                ],
+                0,
+                0
+              ]
+            ],
+            "inverse_mapping": "l'arc = la transférabilité d'une primitive vers un second domaine ; ABSENT tant que transferability_proof_count = 0"
+          }
+        ],
+        "state_sockets": [
+          {
+            "socket": "whole.scale",
+            "channel": "poids",
+            "driven_by": "nombre de constructs PART_OF le quartier",
+            "honesty": "absent -> échelle neutre 1"
+          },
+          {
+            "socket": "foundation_slab[i].emissive",
+            "channel": "activation",
+            "driven_by": "wedge exécuté par domaine i",
+            "honesty": "décrit mais non exécuté -> dalle éteinte ; jamais une dalle allumée par description"
+          },
+          {
+            "socket": "transfer_arc.presence",
+            "channel": "validite",
+            "driven_by": "transferability_proof_count",
+            "honesty": "0 -> arc absent (empty), jamais un arc fantôme"
+          }
+        ],
+        "fallback": "toute affordance non matérialisée ici retombe sur default_materializations[kernel_kind] de l'Appearance toolkit ; aucune affordance -> point de présence gris",
+        "lod_states": {
+          "hot": "parvis + dix dalles + socle",
+          "sleeping": "parvis + socle",
+          "aggregated": "parvis seul",
+          "dormant": "point de présence gris"
+        }
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "space:l2:lumina-prime:district-civilization-v0",
+      "predicate": "IMPLEMENTED_IN",
+      "target": "implementation:l2:lumina-prime:district-civilization-v0"
+    },
+    {
+      "source": "space:l2:lumina-prime:district-civilization-v0",
+      "predicate": "DEFINED_BY_CODE",
+      "target": "code:l2:lumina-prime:district-civilization-v0"
+    },
+    {
+      "source": "code:l2:lumina-prime:district-civilization-v0",
+      "predicate": "IMPLEMENTED_BY",
+      "target": "implementation:l2:lumina-prime:district-civilization-v0"
+    },
+    {
+      "source": "pattern:l2:lumina-prime:district-civilization-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l2:lumina-prime:district-civilization-v0"
+    },
+    {
+      "source": "behavior:l2:lumina-prime:district-civilization-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:lumina-prime:district-civilization-v0"
+    },
+    {
+      "source": "implementation:l2:lumina-prime:district-civilization-v0",
+      "predicate": "OBSERVED_BY",
+      "target": "observability_algorithm:l2:lumina-prime:district-civilization-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:lumina-prime:district-civilization-v0",
+      "predicate": "PRODUCES",
+      "target": "metric:l2:lumina-prime:district-civilization-v0"
+    },
+    {
+      "source": "metric:l2:lumina-prime:district-civilization-v0",
+      "predicate": "FEEDS",
+      "target": "health:l2:lumina-prime:district-civilization-v0"
+    },
+    {
+      "source": "objective:l2:lumina-prime:district-civilization-v0",
+      "predicate": "SUPPORTS",
+      "target": "space:l2:lumina-prime:district-civilization-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:lumina-prime:district-civilization-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:lumina-prime:district-civilization-v0"
+    },
+    {
+      "source": "space:l2:lumina-prime:district-civilization-v0",
+      "predicate": "PROJECTS_AS",
+      "target": "visual_binding:l2:lumina-prime:district-civilization-v0"
+    }
+  ]
+}

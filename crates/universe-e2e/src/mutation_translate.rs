@@ -110,7 +110,6 @@ pub fn translate_mutation_proposal(
     store: &UniverseStore,
     base_revision: Revision,
     idempotency_key: String,
-    causal_ancestry: Vec<String>,
 ) -> Result<UniverseWriteSet, UniverseError> {
     if idempotency_key.trim().is_empty() {
         return Err(validation("mutation idempotency key is empty"));
@@ -171,7 +170,6 @@ pub fn translate_mutation_proposal(
     Ok(UniverseWriteSet {
         base_revision,
         idempotency_key,
-        causal_ancestry,
         commands: vec![command],
     })
 }
@@ -210,7 +208,6 @@ pub fn translate_mutation_receipt(
     store: &UniverseStore,
     base_revision: Revision,
     idempotency_key: String,
-    causal_ancestry: Vec<String>,
 ) -> Result<Option<UniverseWriteSet>, UniverseError> {
     if receipt.proposals.len() != 1 {
         return Err(validation(format!(
@@ -225,7 +222,6 @@ pub fn translate_mutation_receipt(
         store,
         base_revision,
         idempotency_key,
-        causal_ancestry,
     )
     .map(Some)
 }
@@ -403,7 +399,6 @@ mod tests {
             &store,
             Revision(0),
             "mutation:test:v0".into(),
-            vec!["changeset:test".into()],
         )
         .unwrap();
         assert_eq!(ws.commands.len(), 1);
@@ -425,7 +420,6 @@ mod tests {
             &store,
             Revision(3),
             "mutation:test:v0".into(),
-            vec![],
         )
         .unwrap();
         match &ws.commands[0] {
@@ -458,7 +452,6 @@ mod tests {
             &store,
             Revision(0),
             "mutation:test:v0".into(),
-            vec![],
         )
         .unwrap();
         match &ws.commands[0] {
@@ -489,7 +482,6 @@ mod tests {
             &store,
             Revision(0),
             "mutation:test:v0".into(),
-            vec![],
         )
         .unwrap();
         match &ws.commands[0] {
@@ -515,7 +507,6 @@ mod tests {
             &store,
             Revision(0),
             "mutation:test:v0".into(),
-            vec![],
         )
         .unwrap();
         assert!(matches!(
@@ -543,7 +534,6 @@ mod tests {
             &store,
             Revision(0),
             "mutation:test:v0".into(),
-            vec![],
         )
         .unwrap_err();
         assert!(matches!(err, UniverseError::Validation(_)));
@@ -564,7 +554,6 @@ mod tests {
             &store,
             Revision(0),
             "mutation:test:v0".into(),
-            vec![],
         )
         .unwrap_err();
         assert!(matches!(err, UniverseError::Validation(_)));
@@ -583,7 +572,6 @@ mod tests {
             &store,
             Revision(0),
             "   ".into(),
-            vec![],
         )
         .unwrap_err();
         assert!(matches!(err, UniverseError::Validation(_)));
@@ -642,7 +630,6 @@ mod tests {
             &store,
             Revision(0),
             "mutation:receipt:v0".into(),
-            vec![],
         )
         .unwrap()
         .unwrap();

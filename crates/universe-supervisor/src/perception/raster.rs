@@ -9,8 +9,8 @@
 //! font and a from-scratch baseline JPEG encoder (4:4:4, standard quantisation +
 //! Huffman tables, naïve FDCT). JPEG so the frame stays small on the wire.
 
-use crate::frame::{self, HEIGHT, WIDTH};
-use universe_supervisor::perception::{Pov, SphereSighting};
+use super::frame::{self, HEIGHT, WIDTH};
+use super::{Pov, SphereSighting};
 
 type Rgb = [u8; 3];
 
@@ -135,7 +135,7 @@ pub fn render_jpeg(pov: &Pov, sightings: &[SphereSighting], caption: &str) -> Ve
         let shade = d.shade as u8;
         let fill: Rgb = [shade, shade, (d.shade + 40).min(255) as u8];
         canvas.disc(d.x, d.y, d.r, fill, 217); // ~0.85 opacity, as the SVG
-        if d.r >= 8.0 {
+        if d.r >= 5.0 {
             let label = ascii_fold(&d.label);
             let lx = (d.x as i64) - text_width(&label) / 2;
             let ly = (d.y - d.r - 3.0) as i64 - 7;
@@ -146,7 +146,12 @@ pub fn render_jpeg(pov: &Pov, sightings: &[SphereSighting], caption: &str) -> Ve
     // Crosshair at the look direction, and the honesty caption.
     canvas.segment(cx as i64 - 6, cy as i64, cx as i64 + 6, cy as i64, HAIR);
     canvas.segment(cx as i64, cy as i64 - 6, cx as i64, cy as i64 + 6, HAIR);
-    canvas.text(8, 8, &ascii_fold(caption), HAIR);
+    // The caption is the frame's own epistemic status; it wraps at the frame width
+    // rather than being eaten by the right edge (the font advances 6 px per glyph,
+    // 8 px of margin each side, and 9 px of leading between rows).
+    for (row, text) in frame::wrap(&ascii_fold(caption), (w - 16) / 6).iter().enumerate() {
+        canvas.text(8, 8 + (row as i64) * 9, text, HAIR);
+    }
 
     encode_jpeg(w, h, &canvas.px, 82)
 }
@@ -566,7 +571,7 @@ mod tests {
             label: label.into(),
             primitive: "sphere",
             position,
-            distance_m: universe_supervisor::perception::pov::distance([0.0, 0.0, 0.0], position),
+            distance_m: crate::perception::pov::distance([0.0, 0.0, 0.0], position),
             bearing: "ahead",
         }
     }
@@ -610,7 +615,7 @@ mod tests {
         // A JFIF APP0 marker follows the SOI.
         assert_eq!(&jpg[2..4], &[0xff, 0xe0]);
         assert_eq!(&jpg[6..11], b"JFIF\0");
-        // Far smaller than the raw 640x360x3 pixels: it really compresses.
+        // Far smaller than the raw WIDTH x HEIGHT x 3 pixels: it really compresses.
         assert!(jpg.len() < WIDTH as usize * HEIGHT as usize * 3);
     }
 

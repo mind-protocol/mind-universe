@@ -99,7 +99,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             UniverseWriteSet {
                 base_revision: snapshot.revision,
                 idempotency_key: CHANGE_ID.to_owned(),
-                causal_ancestry: vec![CHANGE_ID.to_owned()],
                 commands,
             },
         )?;

@@ -333,7 +333,6 @@ pub fn execute_neighborhood(
         UniverseWriteSet {
             base_revision: snapshot.revision,
             idempotency_key: "neighborhood-arc:v0".into(),
-            causal_ancestry: vec!["changeset:behavior-bond-authority-v1".into()],
             commands,
         },
     )?;

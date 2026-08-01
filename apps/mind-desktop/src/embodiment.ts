@@ -1,7 +1,10 @@
 import type {
+  CitizenEnergyEmbodiment,
   EmbodimentMotionProfile,
   EmbodimentPrimitiveTuple,
+  EntityEmbodiment,
   PhysicalResidency,
+  RoleKeyedEmbodimentMapping,
   Vector3,
   VisualEmbodimentMapping
 } from "./contracts";
@@ -62,6 +65,120 @@ export function validateEmbodimentMapping(
     }
     return particles <= mapping.particle_budget;
   });
+}
+
+/**
+ * Validates a toolkit's OWN role-keyed binding under the same native budgets. A
+ * role-keyed mapping declares forms per archetype instead of per LOD, so the
+ * LOD-keyed validator above rejects it — correctly, since that validator is also
+ * the gate for the citizen-energy renderer. Without this second validator the
+ * wire dropped every toolkit binding before it reached the renderer that knows
+ * how to draw it, which is why the one real binding in the store dressed nothing.
+ */
+export function validateRoleKeyedMapping(
+  mapping: RoleKeyedEmbodimentMapping
+): boolean {
+  if (
+    mapping.schema_version !== "visual-embodiment/1-role-keyed" ||
+    mapping.primitive_budget < 1 ||
+    mapping.primitive_budget > NATIVE_MAX_PRIMITIVES ||
+    mapping.particle_budget < 0 ||
+    mapping.particle_budget > NATIVE_MAX_PARTICLES ||
+    !mapping.archetypes ||
+    Object.keys(mapping.archetypes).length === 0
+  ) {
+    return false;
+  }
+  const forms = [
+    ...Object.values(mapping.archetypes).flatMap((archetype) =>
+      Object.values(archetype.forms ?? {})
+    ),
+    ...Object.values(mapping.dormant_form ?? {})
+  ];
+  if (forms.length === 0) return false;
+  return forms.every((form) =>
+    formWithinBudgets(form, mapping.primitive_budget, mapping.particle_budget)
+  );
+}
+
+/**
+ * Either authored shape, for callers that only need to know the binding is
+ * trustworthy — never for deciding WHICH renderer draws it.
+ */
+export function validateAnyEmbodimentMapping(
+  mapping: VisualEmbodimentMapping | RoleKeyedEmbodimentMapping
+): boolean {
+  return mapping.schema_version === "visual-embodiment/1-role-keyed"
+    ? validateRoleKeyedMapping(mapping)
+    : validateEmbodimentMapping(mapping as VisualEmbodimentMapping);
+}
+
+/**
+ * Whether the citizen-energy renderer may draw this embodiment: it needs the
+ * LOD-keyed mapping AND the motion profile that drives it. A toolkit's own
+ * role-keyed binding fails here and is drawn by the role-keyed path instead —
+ * unbound is a correct outcome, a borrowed humanoid is not.
+ */
+export function isCitizenEnergyEmbodiment(
+  embodiment: EntityEmbodiment
+): embodiment is CitizenEnergyEmbodiment {
+  return (
+    embodiment.motion_profile !== undefined &&
+    embodiment.mapping.schema_version === "visual-embodiment/1" &&
+    validateEmbodimentMapping(embodiment.mapping as VisualEmbodimentMapping)
+  );
+}
+
+/**
+ * Narrows an embodiment to the LOD-keyed citizen-energy mapping, throwing when it
+ * is not one. A caller that reads `mapping_id` or the `dynamics` envelope is
+ * asserting a form family, and must establish it rather than assume it.
+ */
+export function citizenEnergyMapping(
+  embodiment: EntityEmbodiment
+): VisualEmbodimentMapping {
+  if (embodiment.mapping.schema_version !== "visual-embodiment/1") {
+    throw new Error(
+      `not a citizen-energy mapping: ${embodiment.mapping.schema_version}`
+    );
+  }
+  return embodiment.mapping as VisualEmbodimentMapping;
+}
+
+/**
+ * The per-node modulation envelope, which only the LOD-keyed catalog declares.
+ * A role-keyed toolkit binding has none — `undefined` here means "this authority
+ * declared no envelope", so the renderer draws at identity instead of deriving
+ * within bounds nobody authored.
+ */
+export function embodimentDynamicsEnvelope(
+  embodiment: EntityEmbodiment | undefined
+): VisualEmbodimentMapping["dynamics"] {
+  const mapping = embodiment?.mapping;
+  return mapping?.schema_version === "visual-embodiment/1"
+    ? (mapping as VisualEmbodimentMapping).dynamics
+    : undefined;
+}
+
+function formWithinBudgets(
+  form: readonly EmbodimentPrimitiveTuple[],
+  primitiveBudget: number,
+  particleBudget: number
+): boolean {
+  if (form.length > primitiveBudget) return false;
+  let particles = 0;
+  for (const primitive of form) {
+    if (!ALLOWED_PRIMITIVES.has(primitive[0])) return false;
+    if (
+      !validVector(primitive[3]) ||
+      !validVector(primitive[4]) ||
+      !validScale(primitive[5])
+    ) {
+      return false;
+    }
+    if (primitive[0] === "points") particles += primitive[6];
+  }
+  return particles <= particleBudget;
 }
 
 export function resolveEmbodimentForm(

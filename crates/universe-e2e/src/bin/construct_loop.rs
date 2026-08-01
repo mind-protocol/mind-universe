@@ -485,7 +485,6 @@ fn inject_house_alarm_into(
     let write_set = UniverseWriteSet {
         base_revision,
         idempotency_key: "mutation:lumina-house-alarm:v0".to_string(),
-        causal_ancestry: vec!["changeset:lumina-house-alarm-v0".to_string()],
         commands,
     };
     let boundary_tick = Tick(snapshot.tick.0 + 1);

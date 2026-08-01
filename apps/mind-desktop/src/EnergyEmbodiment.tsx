@@ -8,8 +8,8 @@ import {
   Vector3 as ThreeVector3
 } from "three";
 import type {
+  CitizenEnergyEmbodiment,
   EmbodimentPrimitiveTuple,
-  EntityEmbodiment,
   MaterializedEntity,
   Vector3
 } from "./contracts";
@@ -44,8 +44,10 @@ void main() {
   gl_FragColor = vec4(uColor * rim, rim * uOpacity);
 }`;
 
+// The motion-driven path only ever receives a citizen-energy embodiment: the
+// LOD-keyed mapping plus the motion profile it reads its bounds from.
 type EmbodiedEntity = MaterializedEntity & {
-  readonly embodiment: EntityEmbodiment;
+  readonly embodiment: CitizenEnergyEmbodiment;
 };
 
 export function Embodiment({

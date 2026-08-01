@@ -835,7 +835,6 @@ pub const BEHAVIOR_LOOP_HEALTH_INPUT_NAMES: &[&str] = &[
     "readback_execution_hash",
     "readback_independent_hash_valid",
     "readback_content_hashes_verified",
-    "readback_causal_chain_verified",
     "readback_contradictory",
 ];
 
@@ -1093,14 +1092,11 @@ pub fn behavior_loop_health_graph_inputs(
             |evidence| Value::Bool(is_content_hash(&evidence.independent_readback_hash)),
         ),
     );
-    let readback_flags: [NamedProjection<BehaviorReadbackEvidence, bool>; 3] = [
+    let readback_flags: [NamedProjection<BehaviorReadbackEvidence, bool>; 2] = [
         (
             "readback_content_hashes_verified",
             |evidence: &BehaviorReadbackEvidence| evidence.content_hashes_verified,
         ),
-        ("readback_causal_chain_verified", |evidence| {
-            evidence.causal_chain_verified
-        }),
         ("readback_contradictory", |evidence| evidence.contradictory),
     ];
     for (name, project) in readback_flags {
@@ -1836,6 +1832,13 @@ pub fn validate(code: &CodeDefinition) -> Result<(), CompileError> {
                 return Err(CompileError::ZeroBound(index));
             }
             Operator::EvidenceAll { inputs, .. } if inputs.is_empty() => {
+                return Err(CompileError::ZeroBound(index));
+            }
+            // An extension that names no field is a copy wearing the costume of
+            // a revision: it would advance a generation and retain nothing. It
+            // is rejected here rather than executed, exactly as an empty
+            // `EvidenceAll` is.
+            Operator::ExtendRecord { fields, .. } if fields.is_empty() => {
                 return Err(CompileError::ZeroBound(index));
             }
             Operator::CapabilityCall { capability, .. }
@@ -2731,7 +2734,7 @@ mod tests {
             .operators
             .iter()
             .any(|operator| matches!(operator, Operator::EvidenceAll { .. })));
-        assert_eq!(artifact.instructions.len(), 39);
+        assert_eq!(artifact.instructions.len(), 38);
     }
 
     #[test]

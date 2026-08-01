@@ -118,7 +118,6 @@ fn commit_moment(
     let write_set = UniverseWriteSet {
         base_revision,
         idempotency_key,
-        causal_ancestry: vec![format!("changeset:{UNDERGROUND_SPACE_ID}")],
         commands,
     };
     let transaction = UniverseTransaction::prepare(snapshot, write_set)?;

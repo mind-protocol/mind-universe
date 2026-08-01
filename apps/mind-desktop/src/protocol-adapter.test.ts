@@ -128,6 +128,34 @@ const baseEntity = {
   }
 };
 
+describe("placement provenance", () => {
+  const placementOf = (entity: Record<string, unknown>) => {
+    const event = universeEventFromServerFrame(entityFrame(entity));
+    return event?.kind === "entity_materialized"
+      ? event.entity.placement
+      : undefined;
+  };
+
+  it("carries a citizen's construction and the layout kernel's proposal apart", () => {
+    expect(
+      placementOf({ ...baseEntity, placement: { provenance: "built" } })
+    ).toBe("built");
+    expect(
+      placementOf({ ...baseEntity, placement: { provenance: "scaffold" } })
+    ).toBe("scaffold");
+  });
+
+  it("leaves an undeclared placement unknown rather than calling it a scaffold", () => {
+    // Saying "scaffold" here would assert that nobody built the node — a claim the
+    // frame never made. Absent stays absent.
+    expect(placementOf({ ...baseEntity })).toBeUndefined();
+    expect(placementOf({ ...baseEntity, placement: {} })).toBeUndefined();
+    expect(
+      placementOf({ ...baseEntity, placement: { provenance: "settled" } })
+    ).toBeUndefined();
+  });
+});
+
 describe("entity audio facet", () => {
   it("parses a graph-declared audio pointer into a loop with clamped gain", () => {
     const event = universeEventFromServerFrame(

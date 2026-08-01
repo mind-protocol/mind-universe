@@ -3,6 +3,7 @@ import citizenFrames from "../../../fixtures/desktop-world-snapshot/citizen/worl
 import deltaFrames from "../../../fixtures/desktop-world-snapshot/citizen/delta-batch2-frames.json";
 import { universeEventFromServerFrame } from "./protocol-adapter";
 import { applyUniverseEvent, emptyUniverseView, type UniverseView } from "./universe-state";
+import { citizenEnergyMapping } from "./embodiment";
 
 // Progressive visibility (G3 item 4): a new authoritative batch is streamed as a
 // BOUNDED delta — only the batch's own write-set — and folds onto the existing
@@ -40,7 +41,7 @@ describe("progressive batch delta", () => {
     // The newly committed actor is now visible, with its authority-resolved form.
     const vega = afterBatch2.entities.get(VEGA);
     expect(vega).toBeDefined();
-    expect(vega!.embodiment?.mapping.mapping_id).toBe(
+    expect(citizenEnergyMapping(vega!.embodiment!).mapping_id).toBe(
       "citizen-energy-semi-humanoid-v1"
     );
     expect(afterBatch2.relations.get(VEGA_OBSERVES_LEDGER)).toBeDefined();

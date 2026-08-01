@@ -283,7 +283,6 @@ pub fn run_activation(
             UniverseWriteSet {
                 base_revision: snapshot.revision,
                 idempotency_key: activate_key,
-                causal_ancestry: vec![CHANGE_ID.to_owned()],
                 commands,
             },
         )?;

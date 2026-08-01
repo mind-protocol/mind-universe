@@ -1,0 +1,28 @@
+[package]
+name = "universe-runtime"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# The resident Universe: a process that boots the store ONCE and then holds the
+# authoritative state in memory, advancing the serial loop until it is stopped.
+#
+# The LIBRARY depends only on the kernel crates. `universe-e2e` is a
+# BIN-ONLY dependency: `src/bin/resident_universe.rs` needs the existing
+# graph-native construct resolver + wake-queue selector to drive a real
+# construct. Nothing in `src/*.rs` (the library) references it.
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+universe-core = { path = "../universe-core" }
+universe-store = { path = "../universe-store" }
+universe-supervisor = { path = "../universe-supervisor" }
+universe-physics = { path = "../universe-physics" }
+universe-ir = { path = "../universe-ir" }
+universe-transactions = { path = "../universe-transactions" }
+universe-vm = { path = "../universe-vm" }
+universe-compiler = { path = "../universe-compiler" }
+universe-e2e = { path = "../universe-e2e" }
+
+[dev-dependencies]
+tempfile = "3"

@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Boots the `mind-mcp` sense/act adapter, bridges its stdio JSON-RPC to
+    Boots the `mind-mcp` arrive/sense adapter, bridges its stdio JSON-RPC to
     streamable HTTP, and publishes it through a reserved ngrok domain.
 
 .DESCRIPTION
@@ -34,7 +34,15 @@ param(
     [string]$Transport = 'streamableHttp',
     [string]$Store   = 'artifacts/ontology-registry/current/store',
     [string]$Genesis = 'fixtures/genesis/minimal-genesis.json',
-    [switch]$Release
+    [switch]$Release,
+    # Serve the binary that is already on disk instead of rebuilding it. Needed
+    # when another mind-mcp process (e.g. a live Claude Code MCP session) holds
+    # the exe open: cargo cannot replace a locked file and the build fails with
+    # os error 5. The trade-off is explicit and yours: the served binary may be
+    # older than the working tree, so what it reports is the world as of THAT
+    # build. The script prints the binary's timestamp so the staleness is
+    # visible rather than assumed.
+    [switch]$SkipBuild
 )
 
 $ErrorActionPreference = 'Stop'
@@ -53,6 +61,15 @@ $GenesisPath = Resolve-RepoPath $Genesis
 $Manifest    = Join-Path $RepoRoot 'mcp\Cargo.toml'
 $Profile     = if ($Release) { 'release' } else { 'debug' }
 $BinPath     = Join-Path $RepoRoot "mcp\target\$Profile\mind-mcp.exe"
+
+# Fallback build tree. The shared `mcp\target` exe is routinely held open by
+# another long-lived mind-mcp (a Claude Code MCP session spawns one and keeps it
+# for the whole session), and cargo cannot replace a locked file: it aborts with
+# "Access is denied. (os error 5)". Rather than kill someone else's live server,
+# we rebuild into a private target dir that nothing else holds. Same source, same
+# profile — only the output path differs.
+$ServeTargetDir = Join-Path $RepoRoot 'mcp\target\serve'
+$ServeBinPath   = Join-Path $ServeTargetDir "$Profile\mind-mcp.exe"
 
 # The client-facing path depends on the transport: SSE clients connect to /sse
 # (and POST replies to /message), streamable-HTTP clients use /mcp.
@@ -86,12 +103,36 @@ if (-not (Test-Path $StorePath))   { Write-Warning "Store not found at $StorePat
 if (-not (Test-Path $GenesisPath)) { Write-Warning "Genesis not found at $GenesisPath -> MCP will serve UNMOUNTED (honest 'unknown')." }
 
 # --- build the adapter -------------------------------------------------------
-Write-Host "[build] cargo build ($Profile) mind-mcp ..." -ForegroundColor Yellow
-$buildArgs = @('build', '--manifest-path', $Manifest)
-if ($Release) { $buildArgs += '--release' }
-& cargo @buildArgs
-if ($LASTEXITCODE -ne 0) { Write-Error "cargo build failed ($LASTEXITCODE)."; exit 1 }
-if (-not (Test-Path $BinPath)) { Write-Error "Built binary not found at $BinPath."; exit 1 }
+if ($SkipBuild) {
+    if (-not (Test-Path $BinPath)) { Write-Error "-SkipBuild given but no binary at $BinPath. Run once without it."; exit 1 }
+    $built = (Get-Item $BinPath).LastWriteTime
+    Write-Warning "[build] SKIPPED -> serving the binary built $built. It may be older than the working tree."
+} else {
+    # A held exe is detectable before cargo tries to overwrite it: opening the
+    # file for write throws while any process has it mapped. Cheaper and clearer
+    # than parsing cargo's error text.
+    $locked = $false
+    if (Test-Path $BinPath) {
+        try { $fs = [System.IO.File]::Open($BinPath, 'Open', 'Write', 'None'); $fs.Close() }
+        catch { $locked = $true }
+    }
+
+    $buildArgs = @('build', '--manifest-path', $Manifest)
+    if ($Release) { $buildArgs += '--release' }
+    if ($locked) {
+        Write-Warning "[build] $BinPath is held by another process -> building into $ServeTargetDir instead (nobody else's server gets killed)."
+        $buildArgs += @('--target-dir', $ServeTargetDir)
+        $BinPath = $ServeBinPath
+    }
+
+    Write-Host "[build] cargo build ($Profile) mind-mcp -> $BinPath ..." -ForegroundColor Yellow
+    & cargo @buildArgs
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "cargo build failed ($LASTEXITCODE)."
+        exit 1
+    }
+    if (-not (Test-Path $BinPath)) { Write-Error "Built binary not found at $BinPath."; exit 1 }
+}
 
 # The stdio child inherits these from our process env.
 $env:UNIVERSE_STORE   = $StorePath
@@ -144,8 +185,11 @@ if ($Transport -eq 'sse') {
 # so the public URL that speaks MCP is https://$Domain$Path.
 $NgrokCmd = "ngrok http $Port --domain=$Domain --log=stdout"
 
-# Ctrl+C -> clean teardown.
-[Console]::TreatControlCAsInput = $false
+# Ctrl+C -> clean teardown. Non-fatal when there is no console handle (the
+# script launched headless / with redirected stdio, e.g. as a background
+# service): there is no Ctrl+C to trap in that case, and the supervisor below
+# must still run.
+try { [Console]::TreatControlCAsInput = $false } catch { }
 $null = Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action { Stop-All }
 try {
     Start-Child 'supergateway' $SgCmd    | Out-Null

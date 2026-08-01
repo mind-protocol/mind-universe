@@ -547,7 +547,6 @@ pub fn derive_ride_from_canonical_measured(
             UniverseWriteSet {
                 base_revision: snapshot.revision,
                 idempotency_key,
-                causal_ancestry: vec![overlay.overlay.clone()],
                 commands,
             },
         )?;

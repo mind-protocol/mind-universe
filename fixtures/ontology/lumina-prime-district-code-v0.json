@@ -1,0 +1,653 @@
+{
+  "id": "space:l2:lumina-prime:district-code-v0",
+  "node_type": "space",
+  "subtype": "district",
+  "content": {
+    "contractKind": "construct",
+    "name": "Quartier du Code — la Halle Gelée",
+    "dominant_scale": "civic",
+    "structure_kind": "district",
+    "provenance": "built",
+    "portfolio_priority": "P2",
+    "priority_rank": 5,
+    "lifecycle": "design_only",
+    "lineage": "Un quartier de Lumina Prime bâti par la Construction toolkit v0 (fixtures/ontology/construction-toolkit-v0.json, structure_kind=district, kind_profiles lus depuis le graphe). Sa substance — objectif, gap, dimensions de métrique, compteurs de baseline, critère d'acceptation, prochaine tâche et santé dérivée — est TRANSCRITE du portefeuille Endgame de Mind Protocol, pas inventée ici. Sa forme est authored selon l'Appearance toolkit v0 (schéma affordance-materialization/1, palette de primitives fermée). Sa place n'est écrite nulle part : elle est portée par ses relations — PART_OF la ville, et les voies qui l'atteignent.",
+    "source_endgame": {
+      "endgame_root": "horizon-causal-world-governance",
+      "endgame_statement": "Le programme devient un delta entre état actuel et état souhaité, accompagné de contraintes, délégations, tests et preuves attendues. Le système construit, exécute et vérifie le chemin sur un substrat déterministe.",
+      "project": "project:mind:code-endgame:v0",
+      "source_node_count": 126,
+      "source_relation_count": 255,
+      "source_sha256": "929be71aaff0f7f537a5eb9d6c0ea12654046499f6b8621f3468e8895b6c3492",
+      "implementation_status": "deferred",
+      "do_not_implement_now": true
+    },
+    "placement_model": "RELATIONNEL, jamais une coordonnée. Ce quartier est PART_OF space:l2:lumina-prime:city-v0 ; son voisinage est porté par les routes qui le rejoignent (COMMUNICATES). Un quartier sans voie inter-quartier est en lisière, et c'est un fait lisible sur le travail, pas un accident de layout.",
+    "canonical_predicate_remap": {
+      "why": "Zéro nouveau symbole : chaque prédicat authored est remappé sur le plus proche prédicat canonique actif du seed (fixtures/ontology/canonical-ontology.json).",
+      "remaps": {
+        "PART_OF": {
+          "canonical": "PART_OF",
+          "swap": false,
+          "note": "quartier PART_OF la ville — la relation de placement primaire"
+        },
+        "PROJECTS_AS": {
+          "canonical": "COMPILES_TO",
+          "swap": false,
+          "note": "le quartier se projette en sa forme : PROJECTS_AS n'est pas canonique, il est remappé sur COMPILES_TO (le binding est la projection compilée du construct, comme code -> implementation). Même convention que sky-toolkit-v0 / appearance-toolkit-v0."
+        }
+      }
+    },
+    "parent_scope": {
+      "classification": "district_of_city",
+      "justification": "Ce quartier appartient à Lumina Prime et à rien d'autre. L'arête PART_OF vers la ville est écrite par la passe de construction, attribuée par un Moment."
+    },
+    "runtime_moment_subtypes": [
+      "validation_run",
+      "health_assessment"
+    ],
+    "native_law_boundary": "Le socle natif ne connaît que les quatre verbes d'écriture fermés et les prédicats canoniques. Ce qu'est un quartier, ce qu'il tient, ce qu'il vaut et à quoi il ressemble sont des données du monde. Aucun endgame n'est un terme du dispatch natif.",
+    "purpose": "Tenir un endgame GELÉ sans le laisser pourrir : faire du graphe d'intentions, de contrats et de preuves la source canonique du programme est une ambition différée, et le seul travail légitime ici est de rendre ses quatre preuves de dégel TESTABLES. Le quartier est en lisière : aucune voie ne le relie à un autre quartier, parce qu'aucun autre travail n'en dépend."
+  },
+  "members": [
+    {
+      "id": "objective:l2:lumina-prime:district-code-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "Rendre falsifiables les conditions permettant un jour de passer du design-only à un pilote non critique, SANS lancer cette migration. L'objectif actuel est uniquement de spécifier et relier les preuves nécessaires : round-trip fidèle, rollback réel, revue sémantique humaine praticable et noyau de confiance borné.",
+        "epistemic_status": "design_proposal",
+        "not_yet": "0 des 4 preuves de dégel est observée. C'est conforme au design, pas un échec d'exécution."
+      }
+    },
+    {
+      "id": "pattern:l2:lumina-prime:district-code-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "Une halle gelée à quatre piliers de porte, tous éteints. Le quartier tient un interdit ACTIF : doNotImplementNow. Sa forme doit donc rendre l'interdit lisible — l'affordance de construire y est barrée, pas absente. Un quartier gelé qui aurait l'air disponible serait le mensonge le plus coûteux de la ville.",
+        "epistemic_honesty": "Un test passant isolé ou une matérialisation partielle ne satisfait pas les gates de dégel. La satisfaction future du gate autorise SEULEMENT une décision de pilote ; elle ne transforme pas automatiquement le graphe en source d'autorité. L'absence de dégel n'est pas une dette."
+      }
+    },
+    {
+      "id": "vocabulary:l2:lumina-prime:district-code-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "Dégel": "Le franchissement conditionnel du gel : quatre preuves observées comme Moments datés. Il autorise une DÉCISION de pilote, rien de plus.",
+          "Round-trip fidèle": "Première preuve : l'aller-retour graphe↔artefact préserve build et comportement (artifactParity, buildParity, behavioralParity).",
+          "Rollback réel": "Deuxième preuve : un retour arrière démontré, pas décrit.",
+          "Revue sémantique praticable": "Troisième preuve : un humain peut relire un changement sémantique en un temps tenable (semanticReviewCompletionTime).",
+          "Noyau de confiance borné": "Quatrième preuve : le Trusted Kernel déterministe demeure sous le graphe, et sa frontière est établie.",
+          "doNotImplementNow": "L'interdit porté par le projet lui-même. Il est DONNÉE du monde, pas une opinion de passage.",
+          "Zone pilote non critique": "Le seul terrain où une migration pourrait un jour commencer — non désigné à ce jour."
+        }
+      }
+    },
+    {
+      "id": "behavior:l2:lumina-prime:district-code-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "Un projet explicitement design-only et différé, quatre preuves de dégel non observées, et un Trusted Kernel déterministe existant sous le graphe.",
+        "when": "Un citoyen conçoit le plan de preuve du Code Endgame depuis ce quartier.",
+        "then": [
+          "Définir une zone pilote non critique, des snapshots et un export ouvert.",
+          "Spécifier round-trip, build et comportement attendus, ainsi que le rollback.",
+          "Spécifier des source maps minimales et la revue humaine.",
+          "Définir les critères d'abandon et la racine de confiance.",
+          "NE matérialiser, NE migrer et NE promouvoir AUCUNE zone graph-authoritative."
+        ],
+        "forbidden": [
+          "matérialiser, migrer ou promouvoir une zone graph-authoritative",
+          "traiter un test passant isolé comme une preuve de dégel",
+          "déduire du gate satisfait que le graphe devient source d'autorité",
+          "lancer un pilote depuis cette étape",
+          "présenter l'état gelé comme un retard à rattraper"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l2:lumina-prime:district-code-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "désigner une zone pilote non critique et ses snapshots",
+          "spécifier l'export ouvert et le round-trip attendu",
+          "spécifier build parity, behavioral parity et rollback",
+          "spécifier des source maps minimales (frameToAtomCoverage)",
+          "spécifier la revue humaine et son temps tenable",
+          "écrire les critères d'abandon et la racine de confiance",
+          "laisser les quatre piliers éteints tant qu'aucun Moment daté ne les allume"
+        ],
+        "python_escape_hatch": "forbidden_by_default",
+        "composition_is_data": "Les étapes du quartier sont des données du graphe : sa prochaine transformation est lue depuis sa tâche, jamais dispatchée en natif.",
+        "scheduler_projection": "tick-boundary/1"
+      }
+    },
+    {
+      "id": "code:l2:lumina-prime:district-code-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "authority": "Projection matérialisée, pas une autorité sémantique indépendante : l'autorité reste le portefeuille Endgame source.",
+        "language": "mind-district/civic",
+        "note": "Le mécanisme du quartier est un PLAN DE PREUVE, design-only. Il ne produit aucun artefact exécutable et n'a pas vocation à en produire dans cet état.",
+        "next_task": {
+          "id": "task:mind:code-endgame:design-proof-plan-v0",
+          "title": "Concevoir le plan de preuve du Code Endgame",
+          "scope": "design_only",
+          "reversible": true,
+          "priority": "P2",
+          "do_not_implement_now": true
+        },
+        "source_endgame_root": "horizon-causal-world-governance",
+        "source_node_count": 126,
+        "source_relation_count": 255,
+        "source_sha256": "929be71aaff0f7f537a5eb9d6c0ea12654046499f6b8621f3468e8895b6c3492"
+      }
+    },
+    {
+      "id": "implementation:l2:lumina-prime:district-code-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "status": "authored",
+        "graph_status": "written_on_injection",
+        "runtime_status": "frozen_by_design",
+        "verification_status": "not_measured",
+        "do_not_implement_now": true,
+        "implementation_status_upstream": "deferred",
+        "honesty": "deferred/design_only est l'état ATTENDU de ce quartier. observed_unfreeze_proofs = 0 sur required_unfreeze_proofs = 4. Aucun signal ne justifie une migration. Le seul progrès valide consiste à rendre les gates testables.",
+        "artifact": "lumina-prime-district-code-v0.json",
+        "baseline_imported": {
+          "observed_at": "2026-07-28",
+          "observed_unfreeze_proofs": 0,
+          "required_unfreeze_proofs": 4,
+          "implementation_status": "deferred",
+          "do_not_implement_now": true,
+          "note": "Aucun Moment ne démontre simultanément round-trip fidèle, rollback réel, revue sémantique praticable et stabilisation des priorités. L'absence de dégel est conforme au design."
+        }
+      }
+    },
+    {
+      "id": "justification:l2:lumina-prime:district-code-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": [
+          "La vision est riche, mais la représentation canonique, le noyau minimal, les source maps, le merge et l'édition graph-native ne sont pas validés ensemble : ce gap maintient implementationStatus = deferred.",
+          "Le Code Endgame décrit un substrat futur possible pour les autres quartiers, mais reste design_only/deferred et ne conditionne pas leur travail actuel — c'est pourquoi AUCUNE voie inter-quartier ne le relie, et c'est un fait lisible, pas un oubli.",
+          "Un quartier gelé doit AVOIR L'AIR gelé : rendre l'affordance de construire barrée plutôt qu'absente empêche qu'on l'ouvre par inadvertance."
+        ],
+        "rejected": [
+          "dégeler partiellement sur la foi d'un test isolé, car les quatre preuves valent ensemble ou pas du tout",
+          "cacher le quartier, car un interdit invisible ne protège rien",
+          "le relier aux autres quartiers par courtoisie, car aucun travail actuel n'en dépend"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:lumina-prime:district-code-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "structured_expression_ast",
+        "acceptance_criterion": "GATE — Le Code Endgame reste deferred tant qu'UNE SEULE des quatre preuves manque. Round-trip fidèle, rollback démontré, revue humaine praticable et priorités courantes stabilisées doivent TOUS être observés comme Moments datés. La satisfaction future du gate autorise seulement une décision de pilote.",
+        "scenarios": [
+          "roundtrip_fidelity_observed_as_dated_moment",
+          "rollback_demonstrated_not_described",
+          "human_semantic_review_practicable",
+          "current_priorities_stabilized",
+          "all_four_proofs_present_together",
+          "gate_satisfaction_grants_only_a_pilot_decision"
+        ],
+        "negative_invariants": [
+          "isolated passing test counted as an unfreeze proof — rejected",
+          "partial materialization counted as round-trip — rejected",
+          "graph promoted to authority on gate satisfaction alone — rejected",
+          "migration started from the design step — rejected",
+          "frozen state presented as a delivery delay — rejected"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l2:lumina-prime:district-code-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Lit les quatre preuves comme des Moments datés distincts, l'état du gel (doNotImplementNow), la zone pilote désignée et la racine de confiance. Ne fait jamais confiance à un compte de tests ni à une matérialisation partielle.",
+        "checks": [
+          "nombre de preuves de dégel OBSERVÉES rapporté contre les 4 requises",
+          "chaque preuve est un Moment daté distinct, pas un agrégat",
+          "aucune zone graph-authoritative promue",
+          "doNotImplementNow toujours porté et respecté",
+          "affordance de construction rendue comme interdite, pas comme absente"
+        ]
+      }
+    },
+    {
+      "id": "metric:l2:lumina-prime:district-code-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "dimensions": [
+          "artifactParity",
+          "buildParity",
+          "behavioralParity",
+          "rollbackSuccess",
+          "frameToAtomCoverage",
+          "semanticReviewCompletionTime",
+          "divergenceCount",
+          "observed_unfreeze_proofs",
+          "evidence_freshness_ms"
+        ],
+        "note": "Ces mesures restent SPÉCIFIÉES, non exécutées. observed_unfreeze_proofs = 0 / 4 requises. Une dimension non exécutée se rapporte not_measured, jamais 0.",
+        "baseline": {
+          "observed_at": "2026-07-28",
+          "observed_unfreeze_proofs": 0,
+          "required_unfreeze_proofs": 4,
+          "implementation_status": "deferred",
+          "do_not_implement_now": true,
+          "note": "Aucun Moment ne démontre simultanément round-trip fidèle, rollback réel, revue sémantique praticable et stabilisation des priorités. L'absence de dégel est conforme au design."
+        }
+      }
+    },
+    {
+      "id": "health:l2:lumina-prime:district-code-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "states": [
+          "healthy",
+          "degraded",
+          "stale",
+          "unknown",
+          "not_measured",
+          "measurement_failed"
+        ],
+        "current": "not_measured",
+        "current_why": "0/4 preuves observées. Le quartier respecte son invariant de gel : ne pas mesurer d'exécution ici est correct, pas défaillant.",
+        "derivation": {
+          "healthy": "Le critère d'acceptation du quartier est satisfait par des preuves fraîches et attribuées, mesurées ICI.",
+          "degraded": "Des preuves fraîches existent mais au moins une dimension viole sa borne.",
+          "stale": "La dernière preuve valide dépasse la fenêtre de fraîcheur.",
+          "unknown": "Les preuves requises ne se résolvent en aucun état connu.",
+          "not_measured": "Aucune exécution fraîche n'a mesuré les dimensions requises dans ce quartier.",
+          "measurement_failed": "L'observateur n'a pas produit de mesure fiable."
+        },
+        "upstream_derived": "deferred/design_only est l'état attendu. Aucun signal ne justifie une migration. Le prochain progrès valide consiste uniquement à rendre les gates testables. La santé dépend de la qualité du plan de preuve, pas d'une implémentation immédiate.",
+        "maintenance": [
+          "run_next_task",
+          "inspect_baseline",
+          "reissue_capability",
+          "revise_criterion",
+          "ask_human"
+        ]
+      }
+    },
+    {
+      "id": "visual_binding:l2:lumina-prime:district-code-v0",
+      "node_type": "thing",
+      "subtype": "physicalization_binding",
+      "content": {
+        "kind": "physicalization_binding",
+        "schema_version": "affordance-materialization/1",
+        "dominant_scale": "civic",
+        "silhouette": "La Halle Gelée — quatre piliers de porte éteints sous un linteau, pris dans une gangue de givre ; l'entrée est barrée, pas murée.",
+        "palette": {
+          "core": "#cfd8e0",
+          "emissive": "#7fa8c9",
+          "shell": "#3f4a55",
+          "particle": "#e8f2ff"
+        },
+        "form_primitive_tuple": {
+          "arity": 8,
+          "fields": [
+            "kind",
+            "part_name",
+            "palette_role",
+            "offset(vec3)",
+            "rotation(vec3)",
+            "scale(vec3>0)",
+            "particle_count",
+            "particle_size"
+          ],
+          "allowed_primitives": [
+            "box",
+            "cylinder",
+            "cone",
+            "torus",
+            "plane",
+            "tube",
+            "capsule",
+            "sphere",
+            "icosphere",
+            "points",
+            "fresnel_shell"
+          ]
+        },
+        "note": "La forme du quartier est l'UNION des matérialisations de ses affordances. Les offsets sont INTERNES à la forme (la disposition de ses propres parties), jamais une position dans la ville : où est le quartier reste une projection de ses relations.",
+        "affordance_materializations": [
+          {
+            "affordance": {
+              "subtype": "specify_unfreeze_proof",
+              "kernel_kind": "test",
+              "justification": "les quatre piliers affordent de SPÉCIFIER chaque preuve de dégel — spécifier est le seul travail permis ici",
+              "cell": "actionable"
+            },
+            "form": [
+              [
+                "box",
+                "gate_pillar_roundtrip",
+                "shell",
+                [
+                  -1.05,
+                  0.9,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.22,
+                  1.8,
+                  0.22
+                ],
+                0,
+                0
+              ],
+              [
+                "box",
+                "gate_pillar_rollback",
+                "shell",
+                [
+                  -0.35,
+                  0.9,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.22,
+                  1.8,
+                  0.22
+                ],
+                0,
+                0
+              ],
+              [
+                "box",
+                "gate_pillar_review",
+                "shell",
+                [
+                  0.35,
+                  0.9,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.22,
+                  1.8,
+                  0.22
+                ],
+                0,
+                0
+              ],
+              [
+                "box",
+                "gate_pillar_trustroot",
+                "shell",
+                [
+                  1.05,
+                  0.9,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.22,
+                  1.8,
+                  0.22
+                ],
+                0,
+                0
+              ],
+              [
+                "box",
+                "lintel",
+                "shell",
+                [
+                  0,
+                  1.9,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  2.6,
+                  0.18,
+                  0.3
+                ],
+                0,
+                0
+              ]
+            ],
+            "inverse_mapping": "un pilier par preuve de dégel — round-trip, rollback, revue humaine, racine de confiance. QUATRE piliers éteints = observed_unfreeze_proofs 0/4 ; ils s'allument un par un, par Moment daté"
+          },
+          {
+            "affordance": {
+              "subtype": "migrate_authority",
+              "kernel_kind": "build",
+              "justification": "doNotImplementNow : migrer l'autorité du code est INTERDIT tant que les quatre preuves manquent — l'interdit se voit, il ne se cache pas",
+              "cell": "forbidden"
+            },
+            "form": [
+              [
+                "plane",
+                "struck_threshold",
+                "emissive",
+                [
+                  0,
+                  0.45,
+                  0.45
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  2.2,
+                  0.9,
+                  1
+                ],
+                0,
+                0
+              ],
+              [
+                "tube",
+                "bar_across",
+                "core",
+                [
+                  0,
+                  0.9,
+                  0.5
+                ],
+                [
+                  0,
+                  0,
+                  0.6
+                ],
+                [
+                  0.05,
+                  2.6,
+                  0.05
+                ],
+                0,
+                0
+              ]
+            ],
+            "inverse_mapping": "le seuil BARRÉ = doNotImplementNow. Rendu comme interdit (barre en travers), jamais comme absent — un interdit invisible ne protège rien"
+          },
+          {
+            "affordance": {
+              "subtype": "inspect_freeze_state",
+              "kernel_kind": "inspect",
+              "justification": "la gangue de givre afforde de lire que le gel est l'état attendu, pas une panne",
+              "cell": "actionable"
+            },
+            "form": [
+              [
+                "fresnel_shell",
+                "frost_shell",
+                "shell",
+                [
+                  0,
+                  0.9,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  1.7,
+                  1.7,
+                  1.4
+                ],
+                0,
+                0
+              ],
+              [
+                "points",
+                "frost_motes",
+                "particle",
+                [
+                  0,
+                  0.9,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  1,
+                  1,
+                  1
+                ],
+                14,
+                0.2
+              ]
+            ],
+            "inverse_mapping": "le givre = design_only/deferred, l'état SAIN de ce quartier ; il n'est pas une avarie à réparer"
+          }
+        ],
+        "state_sockets": [
+          {
+            "socket": "whole.scale",
+            "channel": "poids",
+            "driven_by": "nombre de constructs PART_OF le quartier",
+            "honesty": "absent -> échelle neutre 1"
+          },
+          {
+            "socket": "gate_pillar_*.emissive",
+            "channel": "activation",
+            "driven_by": "observed_unfreeze_proofs (Moments datés)",
+            "honesty": "0/4 -> les quatre piliers éteints ; un test isolé n'en allume aucun"
+          },
+          {
+            "socket": "struck_threshold.strike",
+            "channel": "validite",
+            "driven_by": "doNotImplementNow",
+            "honesty": "interdit actif -> seuil barré en permanence ; il ne se lève que par les quatre preuves ensemble"
+          }
+        ],
+        "fallback": "toute affordance non matérialisée ici retombe sur default_materializations[kernel_kind] de l'Appearance toolkit ; aucune affordance -> point de présence gris",
+        "lod_states": {
+          "hot": "piliers + linteau + seuil barré + givre",
+          "sleeping": "piliers + seuil barré",
+          "aggregated": "seuil barré seul",
+          "dormant": "point de présence gris (le seuil barré reste)"
+        }
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "space:l2:lumina-prime:district-code-v0",
+      "predicate": "IMPLEMENTED_IN",
+      "target": "implementation:l2:lumina-prime:district-code-v0"
+    },
+    {
+      "source": "space:l2:lumina-prime:district-code-v0",
+      "predicate": "DEFINED_BY_CODE",
+      "target": "code:l2:lumina-prime:district-code-v0"
+    },
+    {
+      "source": "code:l2:lumina-prime:district-code-v0",
+      "predicate": "IMPLEMENTED_BY",
+      "target": "implementation:l2:lumina-prime:district-code-v0"
+    },
+    {
+      "source": "pattern:l2:lumina-prime:district-code-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l2:lumina-prime:district-code-v0"
+    },
+    {
+      "source": "behavior:l2:lumina-prime:district-code-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:lumina-prime:district-code-v0"
+    },
+    {
+      "source": "implementation:l2:lumina-prime:district-code-v0",
+      "predicate": "OBSERVED_BY",
+      "target": "observability_algorithm:l2:lumina-prime:district-code-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:lumina-prime:district-code-v0",
+      "predicate": "PRODUCES",
+      "target": "metric:l2:lumina-prime:district-code-v0"
+    },
+    {
+      "source": "metric:l2:lumina-prime:district-code-v0",
+      "predicate": "FEEDS",
+      "target": "health:l2:lumina-prime:district-code-v0"
+    },
+    {
+      "source": "objective:l2:lumina-prime:district-code-v0",
+      "predicate": "SUPPORTS",
+      "target": "space:l2:lumina-prime:district-code-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:lumina-prime:district-code-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:lumina-prime:district-code-v0"
+    },
+    {
+      "source": "space:l2:lumina-prime:district-code-v0",
+      "predicate": "PROJECTS_AS",
+      "target": "visual_binding:l2:lumina-prime:district-code-v0"
+    }
+  ]
+}

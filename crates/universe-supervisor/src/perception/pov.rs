@@ -94,12 +94,19 @@ pub fn distance(a: [f64; 3], b: [f64; 3]) -> f64 {
     (d[0] * d[0] + d[1] * d[1] + d[2] * d[2]).sqrt()
 }
 
-/// One perceived node as a line of the human render: a readable name plus its
-/// per-node action phrases, humanised generically from its affordance verbs (empty
-/// when the node carries none — then only the name is shown). The `observe`-builder
-/// fills this from `objects` + `affordances`, deriving both name and verbs from the
-/// store's own data; the text stays a projection of the structured fields, never a
-/// second source of truth.
+/// One line of the human render: a readable name plus its action phrases,
+/// humanised generically from its affordance verbs (empty when the line carries
+/// none — then only the name is shown). The `observe`-builder fills this from
+/// `objects` + `affordances`, deriving both name and verbs from the store's own
+/// data; the text stays a projection of the structured fields, never a second
+/// source of truth.
+///
+/// A line is not always ONE entity. The builder collapses siblings — a construct's
+/// anatomy faces, a moment stream, the accumulated session bodies — into a single
+/// line and unions their actions, and a line standing for several carries its own
+/// COUNT in its `name` (the builder's job, never this renderer's). So this
+/// renderer must never phrase a line as a singular thing, and never count lines
+/// as if they were entities: the un-collapsed set lives in `objects`/`affordances`.
 #[derive(Clone, Debug)]
 pub struct NodeLine {
     pub name: String,
@@ -123,6 +130,10 @@ pub const TEXT_BUDGET: usize = 2500;
 /// line and unions their actions), with names and verbs already derived from the
 /// store's data; this renderer only lays it out within the budget.
 ///
+/// `origin_is_perceiver` says whether the named origin IS the embodied actor —
+/// the caller's fact, since only it resolved both. It decides between being
+/// somewhere and being NEAR something: the renderer cannot infer it from the name.
+///
 /// The budget favours breadth: every node NAME always renders, and the grouped
 /// actions fill whatever budget remains (stopping once the next bullet would
 /// overflow) so a long action list never crowds out node names.
@@ -130,15 +141,20 @@ pub fn render_text(
     place: Option<&str>,
     revision: u64,
     situated: bool,
+    origin_is_perceiver: bool,
     origin_name: &str,
     nodes: &[NodeLine],
 ) -> String {
     // The place clause is added only when a place could be derived from the data.
     let at = place.map(|p| format!(", à {p}")).unwrap_or_default();
-    let prose = if situated {
-        format!("Tu es près de {origin_name}{at} (rev {revision}).")
-    } else {
-        format!("Tu observes {origin_name}{at} (rev {revision}).")
+    // The origin is what the prose NAMES; the perceiver is who reads it. They
+    // coincide on the default `sense` path (no `where` -> the origin falls back to
+    // the embodied actor), and there "près de" would place the reader beside
+    // itself. Proximity is only sayable about someone ELSE.
+    let prose = match (situated, origin_is_perceiver) {
+        (true, true) => format!("Tu es {origin_name}{at} (rev {revision})."),
+        (true, false) => format!("Tu es près de {origin_name}{at} (rev {revision})."),
+        (false, _) => format!("Tu observes {origin_name}{at} (rev {revision})."),
     };
     if nodes.is_empty() {
         return format!("{prose}\n\nRien n'est à portée dans ton champ perceptif.\n");
@@ -208,7 +224,7 @@ mod tests {
             },
             NodeLine { name: "Underground toolkit".into(), actions: Vec::new() },
         ];
-        let text = render_text(Some("Mind Universe"), 42, true, "Sky toolkit v0", &nodes);
+        let text = render_text(Some("Mind Universe"), 42, true, false, "Sky toolkit v0", &nodes);
         assert!(
             text.starts_with("Tu es près de Sky toolkit v0, à Mind Universe (rev 42)."),
             "situated prose: {text}"
@@ -224,12 +240,131 @@ mod tests {
     }
 
     #[test]
+    fn collapsing_sibling_lines_frees_breadth_budget_for_real_actions() {
+        // The renderer reserves every NAME first and spends what is left on action
+        // bullets, so a wall of sibling name lines starves the real constructs.
+        // This is the layout half of the fix: hand it the SAME world once as 30
+        // sibling lines and once as the caller's single collapsed line, and the
+        // freed bytes must land on action bullets. The renderer does no grouping —
+        // it only shows that grouping pays.
+        let construct = |i: usize| NodeLine {
+            name: format!("Toolkit v{i} (a real construct with a long authored display name)"),
+            actions: (0..8).map(|a| format!("action verbe numero {a} de ce toolkit")).collect(),
+        };
+        let constructs: Vec<NodeLine> = (0..4).map(construct).collect();
+
+        let mut sprawled = vec![NodeLine {
+            name: "Balise".into(),
+            actions: vec!["resolve spatial fix".into()],
+        }];
+        for i in 0..30 {
+            sprawled.push(NodeLine {
+                name: format!("Claude 0761f8bb e96d 418a b324 2cc135cb9a{i:02}"),
+                actions: Vec::new(),
+            });
+        }
+        sprawled.extend(constructs.iter().cloned());
+
+        let mut collapsed = vec![sprawled[0].clone()];
+        collapsed.push(NodeLine {
+            name: "30 corps de session (repliés en une ligne — chacun reste listé dans objects)"
+                .into(),
+            actions: Vec::new(),
+        });
+        collapsed.extend(constructs.iter().cloned());
+
+        let before = render_text(Some("Lumina Prime"), 291, true, false, "Balise", &sprawled);
+        let after = render_text(Some("Lumina Prime"), 291, true, false, "Balise", &collapsed);
+
+        // Both renders honour the same budget — collapsing frees room, it never
+        // buys extra room. (The budget bounds the ACTION spend; names always
+        // render, so a world of nothing but names could still exceed it.)
+        assert!(before.len() <= TEXT_BUDGET, "before within budget: {}", before.len());
+        assert!(after.len() <= TEXT_BUDGET, "after within budget: {}", after.len());
+        assert!(after.len() < before.len(), "the collapsed render is the shorter one");
+
+        let bullets = |t: &str| t.matches("\n  · ").count();
+        assert!(
+            bullets(&after) > bullets(&before),
+            "the freed name budget must land on action bullets: {} -> {}",
+            bullets(&before),
+            bullets(&after)
+        );
+        // Concretely: the LAST construct's actions were starved before and render
+        // after — the whole point of freeing the budget.
+        let last = "Toolkit v3";
+        assert!(after.contains(last) && before.contains(last), "names always render");
+        let tail = |t: &str| t.split(last).nth(1).unwrap_or("").to_owned();
+        assert_eq!(bullets(&tail(&before)), 0, "starved before: {}", tail(&before));
+        assert!(bullets(&tail(&after)) > 0, "fed after: {}", tail(&after));
+    }
+
+    #[test]
+    fn a_collapsed_line_renders_its_count_verbatim_and_never_as_one_thing() {
+        // The renderer lays out what it is handed and does not re-word it: a line
+        // standing for a crowd keeps its COUNT, so the reader cannot take it for a
+        // single inhabitant. The renderer must not silently singularise it, and
+        // must not add a bullet the caller did not union onto it.
+        let nodes = vec![
+            NodeLine {
+                name: "31 corps de session (repliés en une ligne — chacun reste listé dans objects)"
+                    .into(),
+                actions: Vec::new(),
+            },
+            NodeLine { name: "Energy pen v0".into(), actions: vec!["capture gesture".into()] },
+        ];
+        let text = render_text(Some("Lumina Prime"), 291, true, false, "Balise", &nodes);
+        assert!(
+            text.contains(
+                "\n31 corps de session (repliés en une ligne — chacun reste listé dans objects)"
+            ),
+            "the count renders verbatim on its own line: {text}"
+        );
+        // One line, not 31 — and the crowd never grows a bullet of its own.
+        assert_eq!(text.matches("corps de session").count(), 1, "exactly one line: {text}");
+        assert!(text.contains("\nEnergy pen v0\n  · capture gesture"), "real construct: {text}");
+    }
+
+    #[test]
     fn render_text_omits_place_when_none_and_reads_external() {
         // No derivable place -> the place clause is omitted entirely (never a
         // hardcoded default), and the external vantage reads as observing.
-        let text = render_text(None, 3, false, "Root", &[]);
+        let text = render_text(None, 3, false, false, "Root", &[]);
         assert!(text.starts_with("Tu observes Root (rev 3)."), "no place clause: {text}");
         assert!(!text.contains(", à "), "place clause omitted: {text}");
         assert!(text.contains("Rien n'est à portée dans ton champ perceptif."));
+    }
+
+    #[test]
+    fn the_perceiver_is_never_rendered_as_standing_near_itself() {
+        // The DEFAULT `sense` call names no `where`, so the origin falls back to
+        // the embodied actor and the prose names the reader. "Près de" asserts a
+        // proximity relation, and nothing is near itself: being somewhere is the
+        // only thing sayable there. Same origin, same world — only the predicate
+        // the CALLER resolved differs.
+        let nodes = vec![NodeLine {
+            name: "Energy pen v0".into(),
+            actions: vec!["capture gesture".into()],
+        }];
+        let me = "Claude 68a7630b a6dd 4846 bbe0 5a285238011e";
+
+        let own = render_text(Some("Mind"), 302, true, true, me, &nodes);
+        assert!(own.starts_with(&format!("Tu es {me}, à Mind (rev 302).")), "self prose: {own}");
+        assert!(!own.contains("près de"), "nothing is near itself: {own}");
+
+        // A NAMED `where` still reads as proximity: the fix must not flatten the
+        // distinction, only stop misapplying it.
+        let other = render_text(Some("Mind"), 302, true, false, "Energy pen v0", &nodes);
+        assert!(other.starts_with("Tu es près de Energy pen v0, à Mind (rev 302)."), "{other}");
+
+        // An unplaced perceiver observes from outside; that vantage wins over the
+        // identity, because an external observer is beside nothing at all.
+        let outside = render_text(Some("Mind"), 302, false, true, me, &nodes);
+        assert!(outside.starts_with(&format!("Tu observes {me}, à Mind")), "{outside}");
+        assert!(!outside.contains("près de"), "{outside}");
+
+        // The rest of the render is untouched by the predicate.
+        assert!(own.contains("\n\nAutour de toi :"), "{own}");
+        assert!(own.contains("\nEnergy pen v0\n  · capture gesture"), "{own}");
     }
 }

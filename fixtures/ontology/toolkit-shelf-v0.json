@@ -1,0 +1,313 @@
+{
+  "id": "space:l2:mind-universe:toolkit-shelf-v0",
+  "node_type": "space",
+  "subtype": "toolkit_shelf",
+  "content": {
+    "contractKind": "construct",
+    "name": "Étagère à toolkits v0 (chaque nouvel habitant tient un exemplaire VIVANT de chaque recette)",
+    "dominant_scale": "civic",
+    "execution_profile": "deterministic",
+    "purpose": "Give every actor who appears in the city the whole set of the city's toolkits, in a form that follows the blueprint instead of drifting from it. The shelf is one civic object: the toolkits stand ON it (canonical PART_OF), an access capability opens it, and an arriving inhabitant is granted that one capability. What the inhabitant then holds is not a duplicate of a recipe but a BEARING onto the recipe itself, so a revised blueprint is held revised, with nothing to synchronise.",
+    "lineage": "Answers an operator request: 'donner une copie de chaque toolkit aux nouveaux acteurs quand ils apparaissent — idéalement une copie qui se mette à jour si le blueprint change.' A copy that updates is not a copy; it is a reference read at the current revision. Measured ground at revision 330 of the ontology-registry store: 68 actor nodes, 5 toolkit spaces, and ZERO edges from any actor to any toolkit — nobody in the city held a recipe. Reuses the grant vocabulary already proven by underground-maintenance-grant.json (authored HOLDS_CAPABILITY stored as canonical USED, read by universe_query::read_actor_capability_set) and the runtime canonical_id resolution already proven by the orientation-beacon anchor in mcp/src/world.rs (identity read from store DATA, never a baked hex key).",
+    "parent_scope": {
+      "classification": "standalone",
+      "justification": "A civic institution awaiting installation under a public-services registry Space. Exactly one scope classification; conformed to via APPLIES_IN and consumed via DEPENDS_ON, structurally owned by none. No PART_OF edge is written to an unbuilt parent."
+    },
+    "native_law_boundary": "The kernel gains nothing. Membership is PART_OF edges, the grant is a USED edge, and both predicates are canonical. Which toolkits stand on the shelf, which capability opens it and what that capability is called are GRAPH DATA read from this node — never a term in native dispatch. The only native touch is the arrival write in mcp/src/world.rs adding ONE more relation to a write-set it already composes.",
+    "runtime_moment_subtypes": ["shelf_binding_run", "health_assessment"],
+    "bearing_model": {
+      "held": "bearing",
+      "not": "copy",
+      "why": "A copy is a snapshot. The instant a blueprint is revised in place (SupersedeEntity, same key), every copy is stale and there is no reconciliation path: 68 inhabitants x 5 toolkits would be 340 nodes to chase, each a second authority on what the recipe says. A bearing is an edge; reading THROUGH it reaches the definition node at the current revision. 'Se met à jour' is therefore not a synchronisation mechanism — it is the absence of a second authority.",
+      "read_path": "actor --USED--> access capability --APPLIES_IN--> shelf <--PART_OF-- toolkit (xN)",
+      "two_freshnesses": {
+        "blueprint_revised": "zero writes anywhere. The edge names the node; the node carries the new content.",
+        "toolkit_added_to_the_city": "ONE PART_OF edge onto the shelf. Every inhabitant, present and future, holds it from that revision on — no per-actor write, ever.",
+        "actor_arrives": "ONE USED edge, in the same atomic write as the body."
+      },
+      "subset_holding": "The shelf grant is the DEFAULT bearing, not the only one. An actor may additionally hold a single toolkit through its own USED edge; a reader unions the two. Nothing here forbids a narrower or a wider hand."
+    },
+    "authority_boundary": {
+      "is": "a library card",
+      "is_not": "a master key",
+      "statement": "Holding the shelf confers reading the recipes. It confers NO authority to wield one. A mutate still fails closed at the SealedCapabilityPort, which adjudicates the actor's held set against the capability the port requires (universe-capabilities). The access capability is class `observe` precisely so this stays true: observation never widens toward mutation.",
+      "measured_consequence": "An inhabitant holding observe:toolkit-shelf and nothing else, fed to the underground sealed hatch, is refused and a REJECTION receipt is committed — the same fail-closed path the plain citizen already proves."
+    },
+    "access_capability": {
+      "canonical_id": "capability:l2:mind-universe:toolkit-shelf-access",
+      "capability": "observe:toolkit-shelf",
+      "class": "observe",
+      "kind": "capability",
+      "note": "The one capability an arriving inhabitant is granted. Its content is written VERBATIM with `capability` at the TOP level, because that is the field universe_query::read_actor_capability_set resolves from a USED target; a capability nested one level down would make that bounded read fail rather than return a set. Minted from THIS block by the shelve_toolkits bin, so the capability's name and class are Universe data, not a constant in a binary."
+    },
+    "shelved": [
+      "space:l2:mind-universe:abstraction-toolkit-v0",
+      "space:l2:mind-universe:mechanical-toolkit-v0",
+      "space:l2:mind-universe:sky-toolkit-v0",
+      "space:l2:mind-universe:telecom-toolkit-v0",
+      "space:l2:mind-universe:underground-toolkit-v0",
+      "space:l2:mind-universe:construction-toolkit-v0",
+      "space:l2:mind-universe:appearance-toolkit-v0"
+    ],
+    "shelved_note": "The authored list of what SHOULD stand on the shelf, by canonical identity — never by key. It is deliberately longer than what any one store holds: the Construction and Appearance toolkits are authored as fixtures but have never been injected into the ontology-registry store, so on that store they resolve to nothing. The binder reports each one bound or UNRESOLVED and never invents a member; a declared-but-absent toolkit is a visible gap in the city, not a silent omission. Adding a toolkit to the city is: inject it, add its id here (a revision of this node), re-run the binder.",
+    "membership_is_the_discriminator": "Nothing in the store's data says 'this space is a Toolkit' — the toolkits are distinguished today only by a subtype that happens to end in _toolkit, which is a naming habit and not a fact a reader can trust. Standing on this shelf IS the answer: one authored, attributable, revisable decision per toolkit."
+  },
+  "members": [
+    {
+      "id": "objective:l2:mind-universe:toolkit-shelf-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "Every actor materialized in this Universe holds, from the moment it appears, a bearing that resolves to the current revision of every toolkit standing on the shelf — and holds it without any per-actor write when a blueprint is revised or a new toolkit is shelved.",
+        "observable": "Read an arbitrary inhabitant's outgoing USED edges from a FRESH store reopen, walk to the shelf, and enumerate its PART_OF members. The enumeration must equal the shelf's bound set at the current revision, and must change when a toolkit is added or revised WITHOUT the inhabitant being touched.",
+        "not_claimed": "That the inhabitant can WIELD any of them. Reach is not authority (see authority_boundary)."
+      }
+    },
+    {
+      "id": "pattern:l2:mind-universe:living-bearing-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "LIVING BEARING. When many holders need the same definition, do not hand out matter — hand out reach. One authored definition node, N edges to it, and every read resolves at the reader's current revision. Freshness stops being a process (copy, detect drift, reconcile) and becomes a structural property (there is only one place the answer lives).",
+        "shape": "holder --grant--> access --scope--> collection <--membership-- definition (xN). Three hops, each a canonical predicate, each independently readable, none of them a duplicate of anything.",
+        "epistemic_honesty": "A bearing that resolves to nothing is reported UNRESOLVED, never as an empty shelf. An inhabitant with no grant edge is `unknown` to this construct, never 'holds zero toolkits' — 68 inhabitants predate this shelf and holding nothing is exactly what they measurably do until they are bound or re-arrive.",
+        "cost": "The pattern trades a local read (one node) for a bounded walk (three hops). That is the price of never being stale, and it is paid by the reader, once, on demand."
+      }
+    },
+    {
+      "id": "vocabulary:l2:mind-universe:toolkit-shelf-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "shelf": "The civic object the toolkits stand on. A Space, not a container of matter: standing on it is an edge, so a toolkit is on the shelf and in the city at once.",
+          "bearing": "An edge a holder reads THROUGH to reach a definition at the current revision. What an inhabitant is given.",
+          "access capability": "The single capability that opens the shelf. Class observe.",
+          "shelved": "Authored membership, by canonical identity, carried on the shelf node.",
+          "bound": "A shelved id that RESOLVED to a node in this store and carries a committed PART_OF edge.",
+          "unresolved": "A shelved id that names no node in this store. Honest absence, not an error, and never a silently dropped member."
+        },
+        "forbiddenConflations": {
+          "copy != bearing": "A copy is matter that drifts; a bearing is reach that cannot.",
+          "reach != authority": "Holding the shelf lets an actor READ every recipe. Wielding one is adjudicated elsewhere, against a different capability, and fails closed.",
+          "unresolved != absent_from_the_universe": "A shelved id that does not resolve HERE may resolve in another store, at another revision. This construct reports what it measured, over the store it opened.",
+          "no_grant_edge != holds_nothing": "An actor this construct never bound is unknown to it, not empty.",
+          "shelved != bound": "The authored list is an intention; the committed edges are the fact. The metric carries both, separately, and never collapses them into one number."
+        }
+      }
+    },
+    {
+      "id": "behavior:l2:mind-universe:toolkit-shelf-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "A live store carrying the shelf, its access capability, and N toolkits bound to it by PART_OF.",
+        "when": "A sponsored session is embodied as a durable L1 inhabitant (mcp arrive -> World::materialize_actor).",
+        "then": "The SAME atomic write that puts the actor node and its PART_OF edge to the orientation beacon also puts ONE canonical USED edge from the actor to the access capability; the arrive receipt reports the capability it reached, the shelf behind it, and the toolkits standing on that shelf READ AT THE CURRENT REVISION; and a fresh store reopen finds the edge.",
+        "and_then": "Revising any bound toolkit changes what that same inhabitant holds, with no write touching the inhabitant. Binding a new toolkit to the shelf adds it to what every inhabitant holds, with no write touching any inhabitant.",
+        "forbidden": [
+          "Copying any toolkit's content onto the actor, or into a per-actor node.",
+          "Dangling the grant: if the access capability does not resolve in this store, the actor node is still written and the grant is reported DROPPED, exactly as the beacon edge already is.",
+          "Widening authority: the granted capability is class observe and must never admit a mutate at any sealed port.",
+          "Minting a symbol: the arrival grant rides canonical USED; a clean run interns zero.",
+          "Inventing a shelf member that did not resolve."
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l2:mind-universe:toolkit-shelf-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "1. BIND (shelve_toolkits, run whenever the shelf's authored membership changes): resolve the shelf by canonical identity from store DATA; read `shelved` and `access_capability` from the shelf node itself.",
+          "2. Mint the access capability if it is not already present, writing its content VERBATIM so `capability` sits at the top level where the bounded capability read resolves it; bind it to the shelf with APPLIES_IN.",
+          "3. For each shelved canonical id, resolve it to a key. Bound already? skip. Resolves? plan ONE PART_OF edge toolkit -> shelf. Resolves to nothing? record UNRESOLVED and plan nothing.",
+          "4. Commit every planned edge as ONE atomic transaction at a tick boundary, then read the whole binding back from a FRESH reopen. A second run with no membership change commits nothing.",
+          "5. GRANT (mcp arrive, per arriving inhabitant): resolve the access capability by canonical identity; append ONE USED plan to the write-set that already carries the actor node and the beacon edge; commit as one set.",
+          "6. REPORT: walk capability -> shelf -> members at the post-commit revision and fold the enumeration into the arrive receipt, so the inhabitant is told what it can now reach and the claim is checkable on the spot."
+        ],
+        "why_two_verbs": "Binding is a civic act performed on the shelf, once per membership change. Granting is a personal act performed at a body's arrival. Fusing them would make every arrival re-derive the whole city's toolkit list and write it per actor — which is the copy model wearing a different hat.",
+        "epistemic_precedence": "Resolution is by canonical identity read from committed content, never by a baked key. A miss is a reported drop, never a dangling edge and never a fabricated target."
+      }
+    },
+    {
+      "id": "code:l2:mind-universe:toolkit-shelf-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "language": "graph-native (canonical predicates + bounded traversal); the two host bins carry no policy of their own",
+        "entrypoints": {
+          "bind": "crates/universe-e2e/src/bin/shelve_toolkits.rs — reads `shelved` + `access_capability` from the shelf node in the graph, resolves by canonical_id, commits the missing edges atomically, reads back from a fresh reopen. Idempotent.",
+          "grant": "mcp/src/world.rs :: World::materialize_actor — one extra MutationPlan::PutRelation (canonical USED) inside the existing atomic embodiment write-set.",
+          "read": "actor's outgoing USED edges -> the target carrying top-level `capability` -> APPLIES_IN -> shelf -> incoming PART_OF -> the toolkits."
+        },
+        "predicates": {
+          "grant": "USED (canonical; the same predicate underground-maintenance-grant.json's authored HOLDS_CAPABILITY is stored as)",
+          "scope": "APPLIES_IN (canonical; the access capability applies in the shelf space)",
+          "membership": "PART_OF (canonical; a toolkit stands on the shelf)"
+        },
+        "symbol_budget": 0,
+        "compatibility_note": "universe_query::read_actor_capability_set ERRORS on a USED target that carries no top-level string `capability` — it does not skip it. The access capability therefore MUST be a real capability entity, not a bare pointer at the shelf. This is why the grant hangs off a capability node instead of hanging straight off the shelf Space: a USED edge to a Space would break the underground authority read for every inhabitant that holds it."
+      }
+    },
+    {
+      "id": "implementation:l2:mind-universe:toolkit-shelf-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "graph_status": "unknown_until_injected",
+        "wiring_status": "unknown_until_bound",
+        "runtime_status": "unknown_until_an_actor_arrives",
+        "verification_status": "unknown_until_read_back",
+        "honesty": "These four are DISTINCT fields and are never collapsed. Injected is not bound; bound is not granted; granted is not read back. Each is set only by an independent readback that actually observed it, and a field this node has not earned stays `unknown` rather than inheriting its neighbour's success.",
+        "artifact": {
+          "fixture": "fixtures/ontology/toolkit-shelf-v0.json",
+          "binder": "crates/universe-e2e/src/bin/shelve_toolkits.rs",
+          "grant_site": "mcp/src/world.rs"
+        },
+        "measured_ground_before": {
+          "store": "artifacts/ontology-registry/current/store",
+          "revision": 330,
+          "actor_nodes": 68,
+          "toolkit_spaces_present": 5,
+          "actor_to_toolkit_edges": 0,
+          "epistemic": "measured — replayed from snapshot.json + events.jsonl and counted, not estimated"
+        }
+      }
+    },
+    {
+      "id": "justification:l2:mind-universe:toolkit-shelf-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": "The operator asked for a copy that updates when the blueprint changes. That requirement is self-cancelling for a copy and free for a bearing: an edge always reads the current node. Routing every inhabitant through ONE shelf rather than N direct edges buys the second freshness too — a toolkit authored after an inhabitant arrived is held by it immediately, which per-toolkit edges written at arrival could never deliver. And because standing on the shelf is an authored decision, the city finally has a fact that says what a Toolkit IS, instead of a subtype suffix.",
+        "rejected": [
+          {
+            "alternative": "Materialise a per-actor copy of each toolkit's content at arrival.",
+            "why_not": "It answers the literal words and breaks the actual requirement. 68 inhabitants x 5 toolkits = 340 nodes, each a second authority on what a recipe says, all stale the moment a blueprint is revised, with no reconciliation path in the kernel."
+          },
+          {
+            "alternative": "One USED edge from the actor straight to each toolkit at arrival.",
+            "why_not": "Blueprints stay fresh, but the SET freezes at arrival: a toolkit authored tomorrow is held by nobody who arrived today, and a backfill would have to sweep every inhabitant. It also multiplies the arrival write by the size of the city's catalogue."
+          },
+          {
+            "alternative": "Hang the grant straight off the shelf Space (actor USED shelf), skipping the capability node.",
+            "why_not": "MEASURED blocker, not taste: universe_query::read_actor_capability_set hard-errors on a USED target with no top-level `capability` field. Every inhabitant holding that edge would break the underground sealed-hatch authority read. Loosening that reader to skip unknown targets would quietly widen a gate that currently fails loudly."
+          },
+          {
+            "alternative": "Re-hang everything under a registry root, as the ontology_manifest once did.",
+            "why_not": "That root was deliberately severed (sever_registry_root) because it wrapped the whole world in one space. A shelf holds toolkits and nothing else; it is a civic object with a stated membership, not a universal wrapper, and it re-encapsulates nothing that was freed."
+          }
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:mind-universe:toolkit-shelf-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "fixtures + invariants, executed",
+        "invariants": [
+          "ZERO new symbols interned by binding or by granting (USED, APPLIES_IN and PART_OF are all canonical).",
+          "The binder is idempotent: a second run over an unchanged membership commits nothing.",
+          "A shelved id that does not resolve produces NO edge and IS reported.",
+          "The grant is atomic with the body: either the actor node, the beacon edge and the grant are all committed, or none is.",
+          "A missing access capability drops the grant and still writes the body (never a dangling edge).",
+          "An actor holding only observe:toolkit-shelf is still refused by the underground sealed hatch.",
+          "A revision of a bound toolkit changes what an untouched inhabitant reaches."
+        ],
+        "scenarios": [
+          "bind over a store with 5 of 7 shelved toolkits present -> 5 bound, 2 UNRESOLVED, both reported",
+          "re-run the binder -> 0 commands committed",
+          "arrive with the shelf present -> 3 committed effects (actor, beacon edge, grant) and the members enumerated in the receipt",
+          "arrive with NO shelf in the store -> actor + beacon edge only, grant reported dropped, no error",
+          "re-arrive with the same session id -> AlreadyCommitted, no duplicate grant"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:mind-universe:toolkit-shelf-observer-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "target": "observability_algorithm:l2:mind-universe:toolkit-shelf-v0",
+        "tests": [
+          "The observer must read from a FRESH store reopen, never from the snapshot that committed.",
+          "The observer must count bound members by traversing committed PART_OF edges, never by trusting the shelf node's authored `shelved` list.",
+          "The observer must report `shelved` and `bound` as separate dimensions, so a declared-but-absent toolkit can never be counted as reachable."
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l2:mind-universe:toolkit-shelf-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Every check reopens the store from disk and replays it. Nothing is read from the committing snapshot, and no claim made by the binder or by the arrive path is trusted — each is re-derived from committed edges.",
+        "checks": [
+          "the shelf node resolves by canonical identity, and carries `shelved` + `access_capability`",
+          "the access capability entity exists and carries a top-level string `capability`",
+          "capability --APPLIES_IN--> shelf is committed",
+          "count the toolkits with a committed PART_OF edge to the shelf (bound)",
+          "count the authored `shelved` ids that resolved to nothing (unresolved)",
+          "for a named inhabitant: its outgoing USED edge to the access capability is committed, and the three-hop walk enumerates the bound set"
+        ],
+        "mustNotTrust": [
+          "the binder's own printed summary",
+          "the arrive receipt's own embodiment block",
+          "the shelf node's authored `shelved` list as evidence of reachability"
+        ],
+        "trust_provenance": "observed — read back independently from the store by a party that is not the implementation."
+      }
+    },
+    {
+      "id": "metric:l2:mind-universe:toolkit-shelf-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "forbidOpaqueAggregate": true,
+        "dimensions": [
+          {"name": "shelved_declared", "spec": "count of canonical ids in the shelf node's `shelved`", "provenance": "committed shelf content"},
+          {"name": "shelved_bound", "spec": "count of committed PART_OF edges onto the shelf", "provenance": "independent readback"},
+          {"name": "shelved_unresolved", "spec": "declared ids resolving to no node in this store", "provenance": "independent readback", "epistemic": "known_absent from THIS store; unknown elsewhere"},
+          {"name": "access_capability_present", "spec": "the capability entity exists and carries a top-level `capability` string", "provenance": "independent readback"},
+          {"name": "inhabitants_granted", "spec": "actors with a committed USED edge to the access capability", "provenance": "independent readback"},
+          {"name": "inhabitants_ungranted", "spec": "actor nodes with no such edge", "provenance": "independent readback", "epistemic": "unknown to this construct, NOT 'holds nothing'"}
+        ],
+        "freshness": "each dimension carries the revision it was read at; a dimension read at an older revision than the store's current one is reported stale, never silently reused"
+      }
+    },
+    {
+      "id": "health:l2:mind-universe:toolkit-shelf-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "states": ["healthy", "degraded", "stale", "unknown", "not_measured", "measurement_failed"],
+        "derivation": {
+          "healthy": "access_capability_present AND shelved_bound == shelved_declared AND every inhabitant materialized since the shelf was bound is granted",
+          "degraded": "access_capability_present AND shelved_bound > 0 AND shelved_unresolved > 0 — the shelf works and is visibly incomplete (today's expected state: the Construction and Appearance toolkits are authored but not injected)",
+          "unknown": "the shelf or its capability does not resolve in this store; nothing is claimed about what anyone holds",
+          "measurement_failed": "the readback itself could not complete — never reported as `unknown` and never as zero"
+        },
+        "maintenance": [
+          "a shelved id reads UNRESOLVED -> inject that toolkit, then re-run the binder",
+          "a new toolkit joins the city -> revise this shelf node's `shelved` (with its reason retained), re-run the binder; no inhabitant is touched",
+          "inhabitants predating the shelf read ungranted -> they hold nothing until they re-arrive or are bound; a backfill is a separate, attributable act, never an implicit side effect of this construct"
+        ]
+      }
+    }
+  ],
+  "relations": [
+    {"source": "space:l2:mind-universe:toolkit-shelf-v0", "predicate": "IMPLEMENTED_IN", "target": "implementation:l2:mind-universe:toolkit-shelf-v0"},
+    {"source": "space:l2:mind-universe:toolkit-shelf-v0", "predicate": "DEFINED_BY_CODE", "target": "code:l2:mind-universe:toolkit-shelf-v0"},
+    {"source": "code:l2:mind-universe:toolkit-shelf-v0", "predicate": "IMPLEMENTED_BY", "target": "implementation:l2:mind-universe:toolkit-shelf-v0"},
+    {"source": "pattern:l2:mind-universe:living-bearing-v0", "predicate": "JUSTIFIED_BY", "target": "justification:l2:mind-universe:toolkit-shelf-v0"},
+    {"source": "behavior:l2:mind-universe:toolkit-shelf-v0", "predicate": "VALIDATED_BY", "target": "validation:l2:mind-universe:toolkit-shelf-v0"},
+    {"source": "implementation:l2:mind-universe:toolkit-shelf-v0", "predicate": "OBSERVED_BY", "target": "observability_algorithm:l2:mind-universe:toolkit-shelf-v0"},
+    {"source": "observability_algorithm:l2:mind-universe:toolkit-shelf-v0", "predicate": "PRODUCES", "target": "metric:l2:mind-universe:toolkit-shelf-v0"},
+    {"source": "observability_algorithm:l2:mind-universe:toolkit-shelf-v0", "predicate": "VALIDATED_BY", "target": "validation:l2:mind-universe:toolkit-shelf-observer-v0"},
+    {"source": "metric:l2:mind-universe:toolkit-shelf-v0", "predicate": "FEEDS", "target": "health:l2:mind-universe:toolkit-shelf-v0"},
+    {"source": "objective:l2:mind-universe:toolkit-shelf-v0", "predicate": "SUPPORTS", "target": "space:l2:mind-universe:toolkit-shelf-v0"}
+  ]
+}

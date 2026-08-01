@@ -1,12 +1,12 @@
 //! Re-sync an already-injected construct's authored content into the LIVE store
-//! when its fixture changed, using the kernel's `SupersedeEntity` mutation.
+//! when its fixture changed.
 //!
-//! `inject_construct` refuses to touch existing keys (append-only PutEntity). When
-//! a construct's fixture is revised in place — same ids, new content — this bin
-//! is the update path: it derives the SAME deterministic key block as
+//! When a construct's fixture is revised in place — same ids, new content — this
+//! bin is the update path: it derives the SAME deterministic key block as
 //! `inject_construct` (from the root id), and for every fixture node already in
-//! the store whose content differs, it commits ONE `SupersedeEntity` (generation
-//! bumped, key preserved, so every relation survives). Nodes not yet present are
+//! the store whose content differs, it commits ONE `PutEntity` over the existing
+//! key (an upsert; generation bumped, key preserved, so every relation
+//! survives). Nodes not yet present are
 //! reported (run `inject_construct` first for a brand-new construct). Relations
 //! are unchanged. Independent readback confirms the new content landed.
 //!
@@ -129,8 +129,8 @@ fn run() -> Result<(), Box<dyn Error>> {
             continue;
         }
         let next_generation = existing.generation.checked_add(1).ok_or("generation overflow")?;
-        println!("  SUPERSEDE {}  gen {} -> {}", node.id, existing.generation, next_generation);
-        commands.push(UniverseCommand::SupersedeEntity {
+        println!("  REWRITE {}  gen {} -> {}", node.id, existing.generation, next_generation);
+        commands.push(UniverseCommand::PutEntity {
             entity: EntityRecord {
                 key,
                 generation: next_generation,
@@ -154,7 +154,6 @@ fn run() -> Result<(), Box<dyn Error>> {
     let write_set = UniverseWriteSet {
         base_revision,
         idempotency_key: format!("resync-construct:{root_id}:{}", snapshot.tick.0),
-        causal_ancestry: vec![format!("changeset:{root_id}")],
         commands,
     };
     let boundary_tick = Tick(snapshot.tick.0 + 1);
@@ -178,6 +177,6 @@ fn run() -> Result<(), Box<dyn Error>> {
         }
     }
     println!("revision advanced: {} -> {}", base_revision.0, after.revision.0);
-    println!("RESULT: resynced {command_count} node(s) of {root_id} via SupersedeEntity; readback OK.");
+    println!("RESULT: resynced {command_count} node(s) of {root_id}; readback OK.");
     Ok(())
 }

@@ -543,7 +543,6 @@ fn commit_prepared_batch(
         store,
         &mut snapshot,
         prepare_idempotency_key(batch),
-        vec![batch.batch_id.clone(), "cursor_prepare".into()],
         commands,
     )
 }
@@ -636,7 +635,6 @@ fn finalize_prepared_batch(
         &store,
         &mut prepared,
         finalize_idempotency_key(batch),
-        vec![batch.batch_id.clone(), "cursor_finalize".into()],
         commands,
     )?;
 
@@ -723,7 +721,6 @@ fn record_cursor_conflict(
             &store,
             &mut snapshot,
             idempotency_key,
-            vec![batch.batch_id.clone(), "cursor_conflict".into()],
             commands,
         )?;
         let independent_store = UniverseStore::open(output)?;
@@ -987,7 +984,6 @@ fn commit_commands(
     store: &UniverseStore,
     snapshot: &mut UniverseSnapshot,
     idempotency_key: String,
-    causal_ancestry: Vec<String>,
     commands: Vec<UniverseCommand>,
 ) -> Result<CommitReceipt, UniverseError> {
     let transaction = UniverseTransaction::prepare(
@@ -995,7 +991,6 @@ fn commit_commands(
         UniverseWriteSet {
             base_revision: snapshot.revision,
             idempotency_key,
-            causal_ancestry,
             commands,
         },
     )?;

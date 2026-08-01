@@ -283,18 +283,11 @@ pub fn run(config: &BehaviorRuntimeConfig) -> Result<BehaviorRuntimeManifest, E2
             },
         },
     ]);
-    let receipt_ancestry = vec![
-        materialization.receipt.projection_hash.clone(),
-        expected_compilation_hash.clone(),
-        artifact.artifact_hash.clone(),
-        execution_content.sha256.clone(),
-    ];
     supervisor.enqueue(UniverseTransaction::prepare(
         supervisor.snapshot(),
         UniverseWriteSet {
             base_revision: supervisor.revision(),
             idempotency_key: format!("{correlation}:runtime-receipts"),
-            causal_ancestry: receipt_ancestry.clone(),
             commands: receipt_commands,
         },
     )?);
@@ -315,13 +308,6 @@ pub fn run(config: &BehaviorRuntimeConfig) -> Result<BehaviorRuntimeManifest, E2
             "independent runtime/code readback differs from committed content",
         ));
     }
-    let causal_chain_verified = matches!(
-        &receipt_commit,
-        CommitReceipt::Committed {
-            causal_ancestry,
-            ..
-        } if causal_ancestry == &receipt_ancestry
-    );
     let receipt_readback_hash = receipt_readback.canonical_hash()?;
     let physical = behavior_physical_evidence(
         keys.behavior_bond,
@@ -341,7 +327,6 @@ pub fn run(config: &BehaviorRuntimeConfig) -> Result<BehaviorRuntimeManifest, E2
         execution_receipt_hash: execution_content.sha256.clone(),
         independent_readback_hash: receipt_readback_hash.clone(),
         content_hashes_verified: true,
-        causal_chain_verified,
         contradictory: behavior.gates.iter().any(|gate| gate.contradictory),
     };
     let health_input = BehaviorLoopHealthInput {
@@ -394,16 +379,6 @@ pub fn run(config: &BehaviorRuntimeConfig) -> Result<BehaviorRuntimeManifest, E2
         UniverseWriteSet {
             base_revision: supervisor.revision(),
             idempotency_key: format!("{correlation}:loop-health"),
-            causal_ancestry: vec![
-                expected_compilation_hash.clone(),
-                execution_content.sha256.clone(),
-                health_code_content.sha256.clone(),
-                health_execution_content.sha256.clone(),
-                loop_health
-                    .independent_readback_hash
-                    .clone()
-                    .ok_or_else(|| contract("closed health has no readback hash"))?,
-            ],
             commands: vec![
                 UniverseCommand::PutEntity {
                     entity: EntityRecord {

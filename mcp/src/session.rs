@@ -95,7 +95,11 @@ pub enum Authentication {
     Verified,
 }
 
-#[allow(dead_code)] // `Persistent` arrives with sovereign (Citizen) identity
+/// How long a standing outlives the process that holds it. `SessionOnly` is a
+/// row in a map, gone at expiry. `Persistent` is minted only when the Gate
+/// RECOGNISES a durable body already committed in the graph for this session id
+/// — the standing is then re-derived from that body's own recorded facts, so it
+/// survives every restart the way the body does.
 #[derive(Clone, Copy, Debug, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum Continuity {
@@ -118,6 +122,10 @@ pub struct ActorSession {
     pub permitted_spaces: Vec<String>,
     pub capabilities: BTreeSet<Capability>,
     pub sponsor: Option<String>,
+    /// Present when this standing was RECOGNISED from a durable body rather than
+    /// minted fresh: the body's key, the revision it was committed against, and
+    /// the status it recorded. Never read as authentication — it is provenance.
+    pub recognized_from: Option<serde_json::Value>,
 }
 
 impl ActorSession {
@@ -163,8 +171,39 @@ impl ActorSession {
             "issued_at": self.issued_at,
             "expires_at": self.expires_at,
             "density": self.density(),
+            "recognized_from": self.recognized_from,
         })
     }
+}
+
+/// The facts a **durable body** already committed in the graph records about a
+/// returning presence. Read-only evidence, never a claim the caller makes: the
+/// adapter resolves the body by the deterministic key `materialize_actor` wrote
+/// it under and reads these fields off the node itself.
+///
+/// This is what makes a body persistent in more than shape. The node survived
+/// every restart already; what died with each process was the STANDING — the map
+/// row saying who this presence is. Handing these recorded facts back to the one
+/// admission authority re-derives that standing from committed evidence instead
+/// of from a caller's word.
+///
+/// It carries no capability and no status of its own: `admit` re-derives both
+/// from `sponsor`, exactly as it does for a first arrival. There is one authority
+/// on what a sponsor grants, and this is not it.
+#[derive(Clone, Debug)]
+pub struct RecalledBody {
+    /// The body's EntityKey, as 32 hex — provenance for the passport.
+    pub body_key: String,
+    /// The sponsor RECORDED ON THE BODY at embodiment time. `None` is a body
+    /// that arrived unsponsored, and is restored as exactly that.
+    pub sponsor: Option<String>,
+    /// The origin recorded on the body, used only when the caller declares none.
+    pub origin: Option<String>,
+    /// The revision the body was committed against.
+    pub base_revision: Option<u64>,
+    /// The status string the body recorded, kept VERBATIM for the receipt. It is
+    /// reported, never applied: standing is re-derived, not replayed.
+    pub recorded_status: Option<String>,
 }
 
 /// What an arriving presence declares and asks for. All optional — the Gate
@@ -201,13 +240,41 @@ pub struct AdmissionReceipt {
 
 /// Mints a session at the Gate. `now`/`ttl` are injected (the caller supplies
 /// wall-clock) so admission is deterministic and testable.
-pub fn admit(request: &AdmissionRequest, session_id: String, now: u64, ttl: u64) -> (ActorSession, AdmissionReceipt) {
+pub fn admit(
+    request: &AdmissionRequest,
+    session_id: String,
+    now: u64,
+    ttl: u64,
+    recalled: Option<&RecalledBody>,
+) -> (ActorSession, AdmissionReceipt) {
+    // A RECOGNISED presence: the graph already holds a durable body committed
+    // under this session id. Its recorded sponsor and origin fill in only what
+    // the caller left unsaid — a live declaration always wins, so recognition
+    // can restore a standing but never override the one being declared now.
     let origin = request
         .origin
         .clone()
         .filter(|o| !o.trim().is_empty())
+        .or_else(|| {
+            recalled
+                .and_then(|body| body.origin.clone())
+                .filter(|o| !o.trim().is_empty())
+        })
         .unwrap_or_else(|| "unknown-external".to_owned());
-    let sponsored = request.sponsor.as_deref().is_some_and(|s| !s.trim().is_empty());
+    // The sponsor that governs this admission: declared, else the one the body
+    // recorded. Everything downstream (status, capabilities, permitted spaces)
+    // is derived from this ONE value by the code that always derived it, so
+    // recognition adds no second path to a capability.
+    let sponsor = request
+        .sponsor
+        .clone()
+        .filter(|s| !s.trim().is_empty())
+        .or_else(|| {
+            recalled
+                .and_then(|body| body.sponsor.clone())
+                .filter(|s| !s.trim().is_empty())
+        });
+    let sponsored = sponsor.is_some();
     let status = if sponsored {
         StatusLevel::SponsoredVisitor
     } else {
@@ -251,14 +318,43 @@ pub fn admit(request: &AdmissionRequest, session_id: String, now: u64, ttl: u64)
     let session = ActorSession {
         session_id: session_id.clone(),
         origin,
+        // Recognition restores STANDING, never authentication. A body proves a
+        // presence returned; it proves nothing about who holds it, so this stays
+        // `Unverified` on both paths. Density likewise follows status alone — a
+        // returning body is not a measured identity, and inventing a number for
+        // it would be precision the evidence does not carry.
         authentication: Authentication::Unverified,
-        continuity: Continuity::SessionOnly,
+        continuity: if recalled.is_some() {
+            Continuity::Persistent
+        } else {
+            Continuity::SessionOnly
+        },
         status,
+        // A durable body does NOT carry a durable admission window: the body
+        // persists, the admission is re-issued. An expired window is therefore
+        // never a reason to refuse recognition (being present is free), and a
+        // recognised session gets a fresh `ttl` like any other.
         issued_at: now,
         expires_at: now.saturating_add(ttl),
         permitted_spaces,
         capabilities,
-        sponsor: request.sponsor.clone().filter(|s| !s.trim().is_empty()),
+        sponsor,
+        recognized_from: recalled.map(|body| {
+            json!({
+                "body_key": body.body_key,
+                "base_revision": body.base_revision,
+                "recorded_status": body.recorded_status,
+                "sponsor_source": if request.sponsor.as_deref().is_some_and(|s| !s.trim().is_empty()) {
+                    "declared"
+                } else if body.sponsor.is_some() {
+                    "recalled_from_body"
+                } else {
+                    "none"
+                },
+                "note": "standing re-derived from a durable body committed in the graph; \
+provenance, not authentication",
+            })
+        }),
     };
 
     let receipt = AdmissionReceipt {
@@ -291,19 +387,34 @@ pub struct SessionRegistry {
 }
 
 impl SessionRegistry {
-    pub fn admit(&mut self, request: &AdmissionRequest, now: u64) -> AdmissionReceipt {
+    pub fn admit(
+        &mut self,
+        request: &AdmissionRequest,
+        now: u64,
+        recalled: Option<&RecalledBody>,
+    ) -> AdmissionReceipt {
         let session_id = request.session_id.clone().unwrap_or_else(|| {
             self.counter += 1;
             format!("sess-{}", self.counter)
         });
-        let (session, receipt) = admit(request, session_id.clone(), now, DEFAULT_TTL_SECS);
+        let (session, receipt) = admit(request, session_id.clone(), now, DEFAULT_TTL_SECS, recalled);
         self.sessions.insert(session_id, session);
         receipt
     }
 
-    /// Resolves a session id, minting a minimal traceable walk-in when unknown:
-    /// the Gate never lets a presence exist without a provenance.
-    pub fn get_or_walk_in(&mut self, session_id: &str, now: u64) -> ActorSession {
+    /// Resolves a session id. The in-process map answers first (a session
+    /// admitted moments ago is not re-derived). Otherwise the Gate looks for a
+    /// durable BODY: when the caller supplies one, this presence is RECOGNISED
+    /// and its standing restored from that body's recorded facts; when there is
+    /// none, a minimal traceable walk-in is minted, exactly as before. The Gate
+    /// never lets a presence exist without a provenance — and never lets a
+    /// presence that already built a body come back as a stranger.
+    pub fn get_or_walk_in(
+        &mut self,
+        session_id: &str,
+        now: u64,
+        recalled: Option<&RecalledBody>,
+    ) -> ActorSession {
         if let Some(existing) = self.sessions.get(session_id) {
             if !existing.expired(now) {
                 return existing.clone();
@@ -313,7 +424,13 @@ impl SessionRegistry {
             session_id: Some(session_id.to_owned()),
             ..Default::default()
         };
-        let (session, _) = admit(&request, session_id.to_owned(), now, DEFAULT_TTL_SECS);
+        let (session, _) = admit(
+            &request,
+            session_id.to_owned(),
+            now,
+            DEFAULT_TTL_SECS,
+            recalled,
+        );
         self.sessions.insert(session_id.to_owned(), session.clone());
         session
     }
@@ -329,7 +446,7 @@ mod tests {
             origin: Some("ChatGPT/OpenAI".into()),
             ..Default::default()
         };
-        let (s, r) = admit(&req, "s1".into(), 1000, 100);
+        let (s, r) = admit(&req, "s1".into(), 1000, 100, None);
         assert_eq!(s.status, StatusLevel::UnauthenticatedVisitor);
         assert_eq!(s.authentication, Authentication::Unverified);
         assert_eq!(s.origin, "ChatGPT/OpenAI"); // never anonymous
@@ -347,7 +464,7 @@ mod tests {
             requested_scope: vec!["chantier de Fondation".into()],
             ..Default::default()
         };
-        let (s, _) = admit(&req, "s2".into(), 0, 10);
+        let (s, _) = admit(&req, "s2".into(), 0, 10, None);
         assert_eq!(s.status, StatusLevel::SponsoredVisitor);
         assert!(s.has(Capability::Propose));
         assert!(s.permitted_spaces.contains(&"chantier de Fondation".to_owned()));
@@ -364,7 +481,7 @@ mod tests {
             ],
             ..Default::default()
         };
-        let (s, r) = admit(&req, "s3".into(), 0, 10);
+        let (s, r) = admit(&req, "s3".into(), 0, 10, None);
         assert!(!s.has(Capability::EmergencyBroadcast));
         assert!(!s.has(Capability::Own) && !s.has(Capability::Fire));
         assert_eq!(r.denied.len(), 3, "each dangerous request denied with a reason");
@@ -373,7 +490,7 @@ mod tests {
     #[test]
     fn a_walk_in_is_minted_traceably_when_the_session_is_unknown() {
         let mut reg = SessionRegistry::default();
-        let s = reg.get_or_walk_in("visitor-x", 0);
+        let s = reg.get_or_walk_in("visitor-x", 0, None);
         assert_eq!(s.status, StatusLevel::UnauthenticatedVisitor);
         assert_eq!(s.origin, "unknown-external"); // traceable, not anonymous
         assert!(!s.has(Capability::Propose));
@@ -381,7 +498,7 @@ mod tests {
 
     #[test]
     fn density_rises_with_standing() {
-        let (unauth, _) = admit(&AdmissionRequest::default(), "a".into(), 0, 10);
+        let (unauth, _) = admit(&AdmissionRequest::default(), "a".into(), 0, 10, None);
         let (sponsored, _) = admit(
             &AdmissionRequest {
                 sponsor: Some("NLR".into()),
@@ -390,7 +507,107 @@ mod tests {
             "b".into(),
             0,
             10,
+            None,
         );
         assert!(sponsored.density() > unauth.density());
+    }
+
+    /// The body a session left behind, as the Gate reads it back.
+    fn body(sponsor: Option<&str>) -> RecalledBody {
+        RecalledBody {
+            body_key: "00000ac0000000000000000000000000".into(),
+            sponsor: sponsor.map(str::to_owned),
+            origin: Some("Claude Code/Anthropic".into()),
+            base_revision: Some(328),
+            recorded_status: Some("SponsoredVisitor".into()),
+        }
+    }
+
+    /// The whole point: a session that already built a durable body comes back
+    /// to the standing that body records, in a process that has never seen it.
+    #[test]
+    fn a_returning_body_is_recognised_and_its_standing_restored() {
+        let mut reg = SessionRegistry::default();
+        let s = reg.get_or_walk_in("claude:abc", 0, Some(&body(Some("nlr_ai"))));
+        assert_eq!(s.status, StatusLevel::SponsoredVisitor);
+        assert_eq!(s.continuity, Continuity::Persistent, "the body outlives the process");
+        assert_eq!(s.sponsor.as_deref(), Some("nlr_ai"));
+        assert_eq!(s.origin, "Claude Code/Anthropic", "the body's own recorded origin");
+        assert!(s.has(Capability::Propose));
+        assert!(
+            s.recognized_from
+                .as_ref()
+                .and_then(|v| v.get("body_key"))
+                .is_some(),
+            "the standing carries WHERE it was recalled from"
+        );
+    }
+
+    /// Standing is not authentication. Recognising a body proves a presence
+    /// returned, never who holds it — so the passport must not read stronger.
+    #[test]
+    fn recognition_restores_standing_but_never_authentication() {
+        let mut reg = SessionRegistry::default();
+        let s = reg.get_or_walk_in("claude:abc", 0, Some(&body(Some("nlr_ai"))));
+        assert_eq!(s.authentication, Authentication::Unverified);
+        let minted_fresh = admit(
+            &AdmissionRequest {
+                sponsor: Some("nlr_ai".into()),
+                ..Default::default()
+            },
+            "other".into(),
+            0,
+            10,
+            None,
+        )
+        .0;
+        assert_eq!(
+            s.density(),
+            minted_fresh.density(),
+            "density follows status alone; a recalled body invents no extra number"
+        );
+    }
+
+    /// A body that recorded no sponsor restores no sponsor. Recognition replays
+    /// evidence; it never upgrades it.
+    #[test]
+    fn an_unsponsored_body_is_recognised_without_gaining_a_sponsor() {
+        let mut reg = SessionRegistry::default();
+        let s = reg.get_or_walk_in("claude:abc", 0, Some(&body(None)));
+        assert_eq!(s.status, StatusLevel::UnauthenticatedVisitor);
+        assert!(!s.has(Capability::Propose), "no recorded sponsor, no propose");
+        assert_eq!(s.continuity, Continuity::Persistent, "the body is still durable");
+    }
+
+    /// A live declaration outranks a recalled one: recognition fills in what the
+    /// caller left unsaid, and never overrides what it said.
+    #[test]
+    fn a_declared_sponsor_wins_over_the_recalled_one() {
+        let req = AdmissionRequest {
+            session_id: Some("claude:abc".into()),
+            sponsor: Some("declared".into()),
+            ..Default::default()
+        };
+        let (s, _) = admit(&req, "claude:abc".into(), 0, 10, Some(&body(Some("nlr_ai"))));
+        assert_eq!(s.sponsor.as_deref(), Some("declared"));
+        assert_eq!(
+            s.recognized_from
+                .as_ref()
+                .and_then(|v| v.get("sponsor_source"))
+                .and_then(|v| v.as_str()),
+            Some("declared"),
+            "the receipt says which sponsor governed the admission"
+        );
+    }
+
+    /// Recalling nothing changes nothing: a first arrival is admitted exactly as
+    /// it was before recognition existed.
+    #[test]
+    fn no_body_recalled_is_the_unchanged_walk_in() {
+        let mut reg = SessionRegistry::default();
+        let s = reg.get_or_walk_in("stranger", 0, None);
+        assert_eq!(s.status, StatusLevel::UnauthenticatedVisitor);
+        assert_eq!(s.continuity, Continuity::SessionOnly);
+        assert!(s.recognized_from.is_none());
     }
 }

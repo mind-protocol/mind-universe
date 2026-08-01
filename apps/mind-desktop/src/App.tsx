@@ -20,7 +20,7 @@ import type { Vector3 as Vec3 } from "./contracts";
 import { World } from "./World";
 import { postgresPilotProjection } from "./postgres-pilot-fixture";
 import { neighborhoodFixtureUniverse } from "./neighborhood-fixture";
-import { magicCupFixtureUniverse, withMagicCup } from "./appearance-fixture";
+import { magicCupFixtureUniverse } from "./appearance-fixture";
 import { emptyUniverseView } from "./universe-state";
 import { startSseStream, type LiveStore } from "./sse-stream";
 import type { EntityPresentation, RelationPresentation } from "./postgres-pilot-fixture";
@@ -34,16 +34,19 @@ const sceneReducer = (scene: ActorScene, action: SceneAction): ActorScene =>
 const NO_ENTITY_PRESENTATION: ReadonlyMap<string, EntityPresentation> = new Map();
 const NO_RELATION_PRESENTATION: ReadonlyMap<string, RelationPresentation> = new Map();
 
-// The default ontology view has NO baked offline source any more: the JS sunflower
-// materializer (materialize-city + companions) was deleted as an anti-world-first
-// projection (position = f(kind, arrival-index), ignoring topology). Position is a
-// construction now — a construct is where the citizen built it — so the view is fed
-// ONLY by the live store stream. Until a world-first placement source re-serves it,
-// the offline fallback is honestly EMPTY, not a decorative rosette.
-const EMPTY_ONTOLOGY = {
-  title: "Ontologie 3D — registre canonique",
-  subtitle: "en attente du placement construit (source hors-ligne supprimée)",
-  source: "live store — aucune projection hors-ligne",
+// The city view has NO baked offline source: the JS sunflower materializer
+// (materialize-city + companions) was deleted as an anti-world-first projection
+// (position = f(kind, arrival-index), ignoring topology). Position is a
+// construction — a construct is where the citizen built it — so the view is fed
+// ONLY by the live store stream, projected by the Rust bin `desktop_world_snapshot`
+// (built placements win; the layout kernel only scaffolds what nothing has placed).
+// When that stream serves nothing, the fallback is honestly EMPTY. It is NEVER a
+// fixture city: a stand-in for a store we could not read would be a lie about the
+// world, not a graceful degradation.
+const NO_CITY = {
+  title: "La ville — registre canonique en direct",
+  subtitle: "aucune observation : le flux ne sert rien (pas de projection hors-ligne)",
+  source: "store en direct — aucune substitution",
   view: emptyUniverseView(),
   entityPresentation: NO_ENTITY_PRESENTATION,
   relationPresentation: NO_RELATION_PRESENTATION
@@ -71,12 +74,21 @@ export default function App() {
   // `?fixture=magic-cup` shows the cup ALONE (a clean one-construct demo). The
   // DEFAULT root view (below) instead places the cup INTO the populated pilot city.
   const magicCupFixture = fixtureParam === "magic-cup";
-  // The DEFAULT view is the WHOLE city, materialized from the graph store
-  // (the ontology-registry projection — 379 nodes / 149 relations). Postgres is
-  // dead: the store is the source of truth, so the former postgres-derived
-  // defaults are gone. The postgres identity pilot survives only behind
-  // ?fixture=pilot for the avatar-piloting demo.
-  const ontologyFixture = fixtureParam === "ontology";
+  // The DEFAULT view is THE CITY, live: the desktop is branched to the store the
+  // citizens actually inhabit, streamed as it changes. Every fixture (the postgres
+  // identity pilot, the cup, the avatar, the audio and neighborhood slices) is now
+  // an explicit `?fixture=` detour. `?fixture=ontology` stays as an alias for the
+  // default, since that is what the city view used to be called.
+  const cityFixture = fixtureParam === "ontology";
+  const liveCity =
+    cityFixture ||
+    !(
+      avatarFixture ||
+      audioFixture ||
+      neighborhoodFixture ||
+      pilotFixture ||
+      magicCupFixture
+    );
   // Piloting (the request/grant handshake + ActorControls) applies to the avatar
   // fixture and the pilot city; every other view is a static observer projection.
   const piloted = avatarFixture || pilotFixture;
@@ -95,27 +107,16 @@ export default function App() {
   const audioUniverse = useMemo(() => audioFixtureUniverse(), []);
   const neighborhoodUniverse = useMemo(() => neighborhoodFixtureUniverse(), []);
   const magicCupUniverse = useMemo(() => magicCupFixtureUniverse(), []);
-  // DEFAULT view: the cup placed on the plaza of the (populated) pilot city, so the
-  // Appearance work stands IN a scene. The offline ontology source is empty and the
-  // live SSE store is dormant, so this is the root view until a world-first placement
-  // source renders the REAL store constructs. Empty ontology is at ?fixture=ontology.
-  const cityWithCup = useMemo(
-    () => withMagicCup(postgresPilotProjection.view, [1.6, 1.2, 2.6]),
-    []
-  );
-
-  // The LIVE store, in real time (dev). For the default ontology view, subscribe
-  // to the SSE endpoint /universe-stream. The old dev bridge that served it (the
-  // JS sunflower materializer + plugin) was deleted as anti-world-first; nothing
-  // serves this endpoint right now, so the subscription stays dormant until a
-  // world-first placement source (built positions from the store) re-serves it.
-  // The tested stream reducer folds each frame; when it is synchronized and
-  // non-empty, its view supersedes the empty ontology stand-in above.
+  // The LIVE city, in real time (dev): subscribe to the SSE endpoint
+  // /universe-stream, served by the dev transport that forwards what the Rust
+  // projector reads from the store. The tested stream reducer folds each frame;
+  // when it is synchronized and non-empty, its view IS the city. Frames stop, or
+  // never start, and the view stays empty — the app never substitutes a fixture.
   const [live, setLive] = useState<LiveStore | null>(null);
   useEffect(() => {
-    if (!ontologyFixture || !IS_DEV) return;
+    if (!liveCity || !IS_DEV) return;
     return startSseStream("/universe-stream", setLive);
-  }, [ontologyFixture]);
+  }, [liveCity]);
   const liveView =
     live && live.state.view.synchronized && live.state.view.entities.size > 0
       ? live.state.view
@@ -141,17 +142,15 @@ export default function App() {
     dispatch({ kind: "move", displacement });
   }, []);
 
-  // Which materialized projection supplies entity/relation presentation. The
-  // ontology-registry city (default) carries its own labels; the postgres pilot
-  // supplies labels for the avatar/audio/neighborhood fixtures (whose ids simply
-  // miss, which is harmless).
-  const registry = ontologyFixture
-    ? EMPTY_ONTOLOGY
-    : postgresPilotProjection;
+  // Which materialized projection supplies entity/relation presentation. The live
+  // city carries its own labels on the wire (the projector emits each node's graph
+  // symbol), so it needs no offline registry; the postgres pilot supplies labels
+  // for the avatar/audio/neighborhood fixtures (whose ids simply miss, harmlessly).
+  const registry = liveCity ? NO_CITY : postgresPilotProjection;
   // Piloted views (avatar fixture, pilot city) read the scene reducer's universe
   // so the avatar's moves persist; the other fixtures are static.
-  // The live store wins whenever the stream is synchronized (ontology view only);
-  // otherwise the per-fixture baked universe stands in.
+  // The live city wins whenever the stream is synchronized; when it is not, the
+  // city view is empty rather than a fixture wearing the city's name.
   const universe =
     liveView ??
     (piloted
@@ -162,9 +161,21 @@ export default function App() {
           ? neighborhoodUniverse
           : magicCupFixture
             ? magicCupUniverse
-            : ontologyFixture
-              ? EMPTY_ONTOLOGY.view
-              : cityWithCup);
+            : NO_CITY.view);
+  // How much of what is on screen is a CONSTRUCTION and how much is a proposal.
+  // Counted, not assumed: a node whose frame declared no placement provenance is
+  // in neither bucket (it is `unknown`), so the two numbers may sum to less than
+  // the node count rather than silently absorbing the undeclared into "scaffold".
+  const placementCensus = useMemo(() => {
+    let built = 0;
+    let scaffold = 0;
+    for (const entity of universe.entities.values()) {
+      if (entity.placement === "built") built += 1;
+      else if (entity.placement === "scaffold") scaffold += 1;
+    }
+    return { built, scaffold };
+  }, [universe]);
+
   const gate = gateIntent(scene.session.control, scene.session.boundActor);
   const piloting = piloted && gate.kind === "granted";
   const hasAudio = [...universe.entities.values()].some(
@@ -186,7 +197,7 @@ export default function App() {
   return (
     <main
       data-fixture={
-        avatarFixture ? "avatar" : ontologyFixture ? "ontology" : undefined
+        avatarFixture ? "avatar" : liveCity ? "ontology" : undefined
       }
     >
       <World
@@ -224,9 +235,9 @@ export default function App() {
               ? "Citizen embodiment"
               : neighborhoodFixture
                 ? "Board neighborhood glide"
-                : ontologyFixture
-                  ? EMPTY_ONTOLOGY.title
-                  : "PostgreSQL identity pilot"}
+                : pilotFixture
+                  ? "PostgreSQL identity pilot"
+                  : NO_CITY.title}
         </p>
         <strong>
           {magicCupFixture
@@ -235,22 +246,22 @@ export default function App() {
               ? "Deterministic graph-mapping projection"
               : neighborhoodFixture
                 ? "Executed neighborhood arc — measured:semantic energy"
-                : ontologyFixture
-                ? liveView
-                  ? `${liveView.entities.size} nodes · ${liveView.relations.size} relations · rev ${liveView.revision ?? "?"} · store en direct`
-                  : EMPTY_ONTOLOGY.subtitle
-                : "Verified offline projection"}
+                : pilotFixture
+                  ? "Verified offline projection"
+                  : liveView
+                    ? `${liveView.entities.size} nœuds · ${liveView.relations.size} relations · rev ${liveView.revision ?? "?"} · store en direct`
+                    : NO_CITY.subtitle}
         </strong>
         <span>
           {avatarFixture
             ? AVATAR_MAPPING_AUTHORITY
             : neighborhoodFixture
               ? "energy measured & executed · positions from layout engine"
-              : ontologyFixture
-                ? liveView
-                  ? `flux SSE · ${live?.state.health ?? "connecting"} · maj temps réel`
-                  : EMPTY_ONTOLOGY.source
-                : `revision ${postgresPilotProjection.authority.revision} - tick ${postgresPilotProjection.authority.tick}`}
+              : pilotFixture
+                ? `revision ${postgresPilotProjection.authority.revision} - tick ${postgresPilotProjection.authority.tick}`
+                : liveView
+                  ? `flux SSE · ${live?.state.health ?? "connecting"} · ${placementCensus.built} bâti · ${placementCensus.scaffold} échafaudé`
+                  : NO_CITY.source}
         </span>
         <span>
           {liveView ? "live store — non-authoritative renderer" : "non-authoritative renderer fixture"}

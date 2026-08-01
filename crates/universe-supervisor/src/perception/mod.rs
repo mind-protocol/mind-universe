@@ -4,8 +4,15 @@
 //! produces a bounded [`Observation`] — the "build a bounded WorldObservation"
 //! step both the headless MCP `sense` adapter and the endogenous L1 loop share.
 //! It lives in the supervisor library (not in the detached `mcp` binary) so BOTH
-//! callers reach the same code; IMAGE rendering (SVG/JPEG) is a transport concern
-//! and stays in the MCP adapter, fed from this observation's [`Pov`] + `sightings`.
+//! callers reach the same code — and so does IMAGE rendering ([`frame`],
+//! [`raster`]), fed from this observation's [`Pov`] + `sightings`.
+//!
+//! Rendering used to live in the MCP adapter, on the reasoning that an image is a
+//! transport concern. That is reversed: the adapter is a pipe, so nothing that
+//! DECIDES anything may live there. Projecting a POV, choosing what falls in the
+//! field of view, and drawing it are all derivations from the Universe's own
+//! state, and they belong to the Universe. The adapter only serialises what it
+//! is handed.
 //!
 //! Perception observes; it never mutates. It resolves the perceiving actor,
 //! solves the physics over a *bounded* candidate cluster, then keeps a **sphere**
@@ -22,7 +29,11 @@
 //! `uncertainty` is `inferred`, never `measured`. A coordinate is emergent,
 //! recomputed, and owned by the solver — the observer never writes one.
 
+pub mod frame;
 pub mod pov;
+pub mod raster;
+
+pub use raster::{base64, render_jpeg};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -60,6 +71,16 @@ const L1_ACTOR_PREFIX: &str = "actor:l1:";
 /// actor-typed nodes. It is a selection, not an export — it must never hydrate
 /// the whole Universe just to find someone to look through.
 const MAX_ACTOR_SCAN: usize = MAX_CLUSTER;
+/// The content field that makes an actor node the durable BODY OF A SESSION: the
+/// session it embodies. Written by the embodiment write-path when an admitted,
+/// sponsored session is materialised as an inhabitant, so it is present on exactly
+/// those nodes and on no other. Its PRESENCE is the structural discriminator the
+/// text render groups on — the value is never inspected, so no origin, client or
+/// name is a policy here. A hand-authored L1 actor carries no such field and is
+/// therefore never folded into the session group.
+const SESSION_BODY_FIELD: &str = "embodied_session";
+/// The single text-group key every session body folds into.
+const SESSION_BODY_GROUP: &str = "session-body";
 
 #[derive(Clone, Debug, Default, Deserialize)]
 pub struct SenseParams {
@@ -203,10 +224,16 @@ pub struct Affordance {
 pub struct Observation {
     pub situation: serde_json::Value,
     pub pov: Option<Pov>,
-    /// The visible spheres around the actor, sorted nearest-first. This is the
-    /// projection an image renderer (a transport concern, e.g. the MCP adapter)
-    /// draws the first-person frame from — the observation-builder places them but
-    /// never rasterises: an image is a transport, not a perception, concern.
+    /// The visible spheres around the actor, sorted nearest-first — what
+    /// [`Self::image_jpeg`] is drawn from.
+    ///
+    /// NOT serialised: this is the renderer's hand-off, not wire payload. Every
+    /// sighting restates an entry of `objects` (`key`, `position`, `distance_m`
+    /// and `bearing` are identical, `label` is that object's `identity`), adding
+    /// only a `primitive` that is `"sphere"` for every sphere sighting. A reader
+    /// loses nothing; the frame it would have described is already the `image`
+    /// content block.
+    #[serde(skip_serializing)]
     pub sightings: Vec<SphereSighting>,
     pub text: String,
     pub objects: Vec<ObservedObject>,
@@ -217,6 +244,37 @@ pub struct Observation {
     /// Each item references its object via `target`.
     pub affordances: Vec<Affordance>,
     pub uncertainty: Uncertainty,
+    /// The actor's first-person frame, base64 JPEG — or `None` when there is
+    /// nothing placed to see.
+    ///
+    /// The observation carries its own image. An earlier design left this to the
+    /// MCP adapter on the reasoning that an image is a transport concern; that is
+    /// reversed, because deciding WHETHER there is anything to see, and captioning
+    /// it with the revision it was taken at, are judgements about the Universe.
+    /// A transport that made them would be a second, unattributable observer.
+    pub image_jpeg: Option<String>,
+}
+
+impl Observation {
+    /// Draws this observation's own frame, once it is otherwise complete.
+    ///
+    /// Honest absence is the point of the two guards: no POV means no vantage to
+    /// draw from, and no sighting means nothing is placed to see. Neither is an
+    /// error and neither is an empty picture — both are `None`, so a reader can
+    /// tell "the Universe showed me nothing" from "here is a picture of nothing".
+    fn with_frame(mut self) -> Self {
+        self.image_jpeg = self.pov.as_ref().filter(|_| !self.sightings.is_empty()).map(|pov| {
+            let universe = self.situation.get("universe").and_then(Value::as_str).unwrap_or("");
+            let revision = self.situation.get("revision").and_then(Value::as_u64).unwrap_or(0);
+            let tick = self.situation.get("tick").and_then(Value::as_u64).unwrap_or(0);
+            // The caption states the projection's own epistemic status: these
+            // positions are inferred by the layout solver, never measured.
+            let caption =
+                format!("{universe} rev {revision} tick {tick} — inferred physics-sphere projection");
+            raster::base64(&raster::render_jpeg(pov, &self.sightings, &caption))
+        });
+        self
+    }
 }
 
 pub fn observe_unmounted(reason: &str) -> Observation {
@@ -232,7 +290,9 @@ pub fn observe_unmounted(reason: &str) -> Observation {
         // Honest absence, never the adapter's own tool names.
         affordances: Vec::new(),
         uncertainty: Uncertainty::Unknown,
+        image_jpeg: None,
     }
+    .with_frame()
 }
 
 fn symbol_name(snapshot: &UniverseSnapshot, index: u32) -> String {
@@ -474,15 +534,22 @@ pub fn observe(
     let mut sightings = Vec::new();
     let mut affordances: Vec<Affordance> = Vec::new();
     // The human `text` groups perceived nodes as it goes (their content is in hand
-    // here): a construct's anatomy faces (which share a canonical-id tail) and a
-    // change-ground moment stream (per-change hash dropped) collapse to ONE line
-    // via `group_key`; that line's NAME is derived from the node's own store data —
+    // here): a construct's anatomy faces (which share a canonical-id tail), a
+    // change-ground moment stream (per-change hash dropped) and the SESSION BODIES
+    // (actor nodes carrying `embodied_session`) each collapse to ONE line via
+    // `group_key`; that line's NAME is derived from the node's own store data —
     // its `content.name` if present, else its humanised canonical_id — never a
     // per-construct dictionary. Purely a projection: `objects`/`affordances` keep
     // one entry per entity.
     let mut node_lines: Vec<pov::NodeLine> = Vec::new();
     let mut group_index: BTreeMap<String, usize> = BTreeMap::new();
-    let mut origin_name = "cet endroit".to_owned();
+    // How many entities folded into each line — a collapsed line must render its
+    // COUNT, never read as a single thing.
+    let mut group_members: Vec<usize> = Vec::new();
+    // The origin's line, plus the name that line would carry with no collapsing —
+    // so the prose still names the ORIGIN when its group is a collapsed crowd.
+    let mut origin_gi: Option<usize> = None;
+    let mut origin_own_name: Option<String> = None;
     for key in &keys {
         let Some(entity) = snapshot.entities.iter().find(|e| e.key == *key) else {
             continue;
@@ -520,14 +587,19 @@ pub fn observe(
         // Fold this node into its text line: the group collapses anatomy faces /
         // moment streams; the display name comes from the node's own data, and the
         // node's fresh affordance verbs are humanised into short action phrases.
-        let gkey = group_key(identity.as_deref(), &semantic_type);
+        // A session body is recognised STRUCTURALLY (an actor node carrying an
+        // `embodied_session`), never by sniffing its name.
+        let session_body = is_session_body(&semantic_type, wrapper.as_ref());
+        let gkey = group_key(identity.as_deref(), &semantic_type, session_body);
         let content_name_ref = content_name.as_deref();
         let identity_ref = identity.as_deref();
         let gi = *group_index.entry(gkey.clone()).or_insert_with(|| {
             let display = group_display_name(&gkey, content_name_ref, identity_ref, &semantic_type);
             node_lines.push(pov::NodeLine { name: display, actions: Vec::new() });
+            group_members.push(0);
             node_lines.len() - 1
         });
+        group_members[gi] += 1;
         for aff in &affordances[affordances_before..] {
             let phrase = humanize_verb(&aff.verb);
             if !phrase.is_empty() && !node_lines[gi].actions.contains(&phrase) {
@@ -535,7 +607,15 @@ pub fn observe(
             }
         }
         if entity.key == origin {
-            origin_name = node_lines[gi].name.clone();
+            origin_gi = Some(gi);
+            // The name with the session collapse switched OFF: what this node
+            // would be called on a line of its own.
+            origin_own_name = Some(group_display_name(
+                &group_key(identity_ref, &semantic_type, false),
+                content_name_ref,
+                identity_ref,
+                &semantic_type,
+            ));
         }
         let (position, source, distance_m, bearing) = match position_of(*key) {
             Some(p) => (
@@ -573,6 +653,26 @@ pub fn observe(
     }
     sightings.sort_by(|a, b| a.distance_m.partial_cmp(&b.distance_m).unwrap());
 
+    // The session-body line stands for a CROWD, so it must say how many it stands
+    // for — a count a reader can never mistake for "there is one". A group holding
+    // a single body collapsed nothing and keeps its own name. Text only: every
+    // body remains one entry of `objects`, and its affordances one of `affordances`.
+    let collapsed_gi = group_index.get(SESSION_BODY_GROUP).copied().filter(|gi| {
+        let n = group_members[*gi];
+        if n > 1 {
+            node_lines[*gi].name = session_bodies_line(n);
+        }
+        n > 1
+    });
+
+    // The prose names the ORIGIN. When the origin's own line became a collapsed
+    // crowd, name the origin itself rather than the crowd it fell into.
+    let origin_name = match (origin_gi, collapsed_gi) {
+        (Some(gi), Some(c)) if gi == c => origin_own_name.unwrap_or_else(|| "cet endroit".to_owned()),
+        (Some(gi), _) => node_lines[gi].name.clone(),
+        (None, _) => "cet endroit".to_owned(),
+    };
+
     // Positions are inferred by the solver, never observed: always `inferred`.
     let uncertainty = Uncertainty::Inferred;
 
@@ -586,7 +686,19 @@ pub fn observe(
     // hardcoded dictionary. The node grouping was built alongside `objects` above.
     let place = place_name(&objects);
     let situated = pov.eye_source != "external_observer";
-    let text = pov::render_text(place.as_deref(), revision, situated, &origin_name, &node_lines);
+    // Whether the prose is naming the reader itself. `origin` falls back to
+    // `actor_key` whenever no `where` is given (the DEFAULT `sense` call), so on
+    // that path the origin and the perceiver are the same node and the prose must
+    // not place the reader beside itself. Only here are both resolved.
+    let origin_is_perceiver = actor_key == Some(origin);
+    let text = pov::render_text(
+        place.as_deref(),
+        revision,
+        situated,
+        origin_is_perceiver,
+        &origin_name,
+        &node_lines,
+    );
 
     let completion = if truncated {
         Completion::BudgetExhausted
@@ -640,7 +752,9 @@ pub fn observe(
         }),
         affordances,
         uncertainty,
+        image_jpeg: None,
     }
+    .with_frame()
 }
 
 /// A vantage point outside the neighbourhood, for an actor that has no inferred
@@ -684,7 +798,9 @@ fn empty_observation(
         // affordances. Honest emptiness, never the adapter's tool names.
         affordances: Vec::new(),
         uncertainty: Uncertainty::Inferred,
+        image_jpeg: None,
     }
+    .with_frame()
 }
 
 fn processes_of(inventory: &RuntimeInventory) -> Vec<ObservedProcess> {
@@ -924,12 +1040,52 @@ fn title_case(slug: &str) -> String {
 // transforms (prefix strip, version strip, hash drop, humanise), not hardcoded
 // names.
 
-/// The key that folds anatomy faces and a moment stream into ONE text line: the
-/// canonical_id's `type:l2:<ns>:` prefix stripped and `-vN` version dropped, with a
-/// `change-ground` moment reduced to its class (the per-change hash dropped). A
-/// node with no identity keys on its type, kept DISTINCT so two typed nodes never
-/// merge into one generic line.
-fn group_key(identity: Option<&str>, semantic_type: &str) -> String {
+/// Is this perceived node the durable BODY OF A SESSION?
+///
+/// Structural, and deliberately so: an `actor`-typed node whose content carries a
+/// [`SESSION_BODY_FIELD`] — the field the embodiment write-path stamps when it
+/// materialises an admitted session as an inhabitant. Presence alone decides; the
+/// value is never read, so no client, origin or name is encoded here. A
+/// hand-authored L1 actor (which carries no such field) is NOT a session body and
+/// keeps its own line, and a session body minted by some other client groups with
+/// these — both the right answer.
+///
+/// Casing-proof on the type, like the actor scans. The real store writes the field
+/// top-level in the wrapper; a fixture may nest its authored content under
+/// `.content`, so both are consulted.
+fn is_session_body(semantic_type: &str, wrapper: Option<&Value>) -> bool {
+    if !semantic_type.eq_ignore_ascii_case("actor") {
+        return false;
+    }
+    let Some(w) = wrapper else { return false };
+    let carries = |v: &Value| match v.get(SESSION_BODY_FIELD) {
+        None | Some(Value::Null) => false,
+        Some(Value::String(s)) => !s.trim().is_empty(),
+        Some(_) => true,
+    };
+    carries(w) || w.get("content").is_some_and(carries)
+}
+
+/// The collapsed session-body line: it names its own COUNT first, so a reader can
+/// never take it for a single inhabitant, and says where the un-collapsed set is.
+/// French-consistent with the surrounding render.
+fn session_bodies_line(count: usize) -> String {
+    format!("{count} corps de session (repliés en une ligne — chacun reste listé dans objects)")
+}
+
+/// The key that folds anatomy faces, a moment stream and the session bodies into
+/// ONE text line: the canonical_id's `type:l2:<ns>:` prefix stripped and `-vN`
+/// version dropped, with a `change-ground` moment reduced to its class (the
+/// per-change hash dropped). A node with no identity keys on its type, kept
+/// DISTINCT so two typed nodes never merge into one generic line.
+///
+/// `session_body` (see [`is_session_body`]) wins first: every session body shares
+/// one key however it named itself, so the crowd of accumulated session
+/// inhabitants costs the render ONE line instead of one line each.
+fn group_key(identity: Option<&str>, semantic_type: &str, session_body: bool) -> String {
+    if session_body {
+        return SESSION_BODY_GROUP.to_owned();
+    }
     let Some(id) = identity else {
         return format!("type:{semantic_type}");
     };
@@ -955,6 +1111,11 @@ fn group_key(identity: Option<&str>, semantic_type: &str) -> String {
 /// (hash-free) key, so the whole stream reads as one hash-free line rather than
 /// the first moment's hashed name. Otherwise the node's own `content.name` wins;
 /// failing that, its humanised `canonical_id`; failing that, its humanised type.
+///
+/// The session-body group takes this ordinary path too: a group holding ONE body
+/// collapsed nothing, so it keeps that body's own name. Only once a second body
+/// joins does the caller restamp the line with [`session_bodies_line`]'s count —
+/// a line that stands for many is never allowed to read as a name.
 fn group_display_name(
     gkey: &str,
     content_name: Option<&str>,
@@ -1305,7 +1466,12 @@ mod tests {
         // no physics-sphere wording. This world carries NO canonical ids, so no
         // place can be derived — it is omitted, never a hardcoded "Lumina Prime" —
         // and the origin names itself generically from its type ("Root").
-        assert!(obs.text.starts_with("Tu es près de Root"), "situated prose: {}", obs.text);
+        // `root` is the NAMED actor and no `where` is given, so the origin falls
+        // back to it: the prose names the reader, and reads as being rather than
+        // as proximity. (This assertion read "près de Root" while the renderer
+        // could not tell the two apart.)
+        assert!(obs.text.starts_with("Tu es Root"), "situated prose: {}", obs.text);
+        assert!(!obs.text.contains("près de"), "the perceiver is not near itself: {}", obs.text);
         assert!(!obs.text.contains(", à "), "no place clause when none derivable: {}", obs.text);
         assert!(!obs.text.contains("Lumina Prime"), "no hardcoded place: {}", obs.text);
         assert!(!obs.text.to_lowercase().contains("sphere"), "no sphere wording: {}", obs.text);
@@ -1412,6 +1578,68 @@ mod tests {
     }
 
     #[test]
+    fn the_embodied_perceiver_is_not_told_it_stands_near_itself() {
+        // The default `sense` call: no `where`, no `actor_id`. The origin falls
+        // back to the embodied actor, so the prose names the READER — and must not
+        // report it as standing beside itself.
+        //
+        // This is the uncovered intersection: the tests that assert the prose all
+        // pass an explicit origin (so origin != actor), and the test above covers
+        // this resolution path but never reads `text`.
+        let nodes = vec![
+            n("actor:l1:lumina-prime:dreamer-01", "actor", "actor", serde_json::json!({ "name": "Dreamer 01" })),
+            n("thing:l1:lumina-prime:pillow", "thing", "thing", serde_json::json!({ "name": "a pillow" })),
+        ];
+        let (snapshot, wrappers, root_hex) = world_from_nodes(&nodes);
+        let reader = |c: &ContentRef| wrappers.get(c.pointer.offset as usize).cloned();
+        let obs = observe(&snapshot, &inv(), &params(None), None, &reader);
+
+        // Precondition of the case: the origin really IS the perceiver.
+        assert_eq!(obs.situation["origin"], obs.situation["embodied_actor"]);
+        assert_eq!(obs.situation["origin"].as_str(), Some(root_hex.as_str()));
+
+        assert!(
+            obs.text.starts_with("Tu es Dreamer 01"),
+            "the perceiver is where it is, not near it: {}",
+            obs.text
+        );
+        assert!(
+            !obs.text.contains("près de"),
+            "nothing is near itself: {}",
+            obs.text
+        );
+        // What it can actually see still renders.
+        assert!(obs.text.contains("a pillow"), "the neighbourhood survives: {}", obs.text);
+    }
+
+    #[test]
+    fn a_named_origin_still_reads_as_proximity() {
+        // The counterpart: naming a `where` OTHER than the perceiver is a real
+        // proximity claim and must keep reading as one. The fix removes a false
+        // "près de", it does not remove the true one.
+        let nodes = vec![
+            n("actor:l1:lumina-prime:dreamer-01", "actor", "actor", serde_json::json!({ "name": "Dreamer 01" })),
+            n("space:l2:lumina-prime:orientation-beacon-v0", "space", "space", serde_json::json!({ "name": "Balise" })),
+        ];
+        let (snapshot, wrappers, _root) = world_from_nodes(&nodes);
+        let reader = |c: &ContentRef| wrappers.get(c.pointer.offset as usize).cloned();
+        let mut p = params(None);
+        // Resolved by type symbol — the beacon is the only `space` here.
+        p.r#where = Some("space".to_owned());
+        let obs = observe(&snapshot, &inv(), &p, None, &reader);
+
+        assert_ne!(
+            obs.situation["origin"], obs.situation["embodied_actor"],
+            "precondition: the origin is somewhere else"
+        );
+        assert!(
+            obs.text.starts_with("Tu es près de Balise"),
+            "a named origin is a proximity claim: {}",
+            obs.text
+        );
+    }
+
+    #[test]
     fn no_actor_and_no_l1_inhabitant_observes_from_outside() {
         // The plain linked world has no actor-typed node -> nobody to embody. The
         // fallback is an honest external-observer vantage, never a substitute.
@@ -1474,6 +1702,189 @@ mod tests {
         assert_eq!(obs.situation["actor_resolution"], "named");
         assert!(obs.situation["embodied_actor"].is_null());
         assert_eq!(obs.pov.as_ref().unwrap().eye_source, "external_observer");
+    }
+
+    // -- Session-body grouping -------------------------------------------------
+
+    /// A session body exactly as the embodiment write-path writes it: an `actor`
+    /// node whose content carries `embodied_session` TOP-LEVEL in the wrapper
+    /// (`mcp/src/world.rs::materialize_actor`), NOT nested under `.content`.
+    fn session_body(session: &str) -> (String, String, String, serde_json::Value) {
+        (
+            format!("actor:l1:mind:claude-{session}"),
+            "actor".to_owned(),
+            "actor".to_owned(),
+            serde_json::json!({ "__top_level_session": session }),
+        )
+    }
+
+    /// Wrap nodes like `world_from_nodes`, but lift a `__top_level_session` marker
+    /// into a TOP-LEVEL `embodied_session` — reproducing the real store's wrapper
+    /// shape for a session body rather than an invented nested one.
+    fn world_with_session_bodies(
+        nodes: &[(String, String, String, serde_json::Value)],
+    ) -> (UniverseSnapshot, Vec<serde_json::Value>, String) {
+        let (snapshot, mut wrappers, root) = world_from_nodes(nodes);
+        for w in &mut wrappers {
+            let lifted = w
+                .get("content")
+                .and_then(|c| c.get("__top_level_session"))
+                .and_then(Value::as_str)
+                .map(str::to_owned);
+            if let Some(s) = lifted {
+                let obj = w.as_object_mut().unwrap();
+                obj.insert("embodied_session".into(), serde_json::json!(format!("claude:{s}")));
+                obj.insert("content".into(), serde_json::json!({}));
+            }
+        }
+        (snapshot, wrappers, root)
+    }
+
+    #[test]
+    fn accumulated_session_bodies_collapse_to_one_counted_line() {
+        // A beacon origin, four accumulated session bodies, one real construct with
+        // affordances. The bodies must cost the TEXT one line, and that line must
+        // say how many it stands for.
+        let mut nodes = vec![n(
+            "space:l2:lumina-prime:orientation-beacon-v0",
+            "space",
+            "space",
+            serde_json::json!({ "name": "Lumina Prime Orientation Beacon v0" }),
+        )];
+        for s in ["aaaa-1111", "bbbb-2222", "cccc-3333", "measure-ab"] {
+            nodes.push(session_body(s));
+        }
+        nodes.push(n(
+            "space:l2:lumina-prime:energy-pen-v0",
+            "space",
+            "space",
+            serde_json::json!({
+                "name": "Energy pen v0",
+                "programming_contract": { "observer_capabilities": ["observe_inscription"] },
+            }),
+        ));
+        let (snapshot, wrappers, root) = world_with_session_bodies(&nodes);
+        let reader = |c: &ContentRef| wrappers.get(c.pointer.offset as usize).cloned();
+        let mut p = params(Some(&root));
+        p.radius_m = Some(1e9);
+        let obs = observe(&snapshot, &inv(), &p, None, &reader);
+        eprintln!("\n--- rendered `text` (session grouping) ---\n{}\n--- end ---\n", obs.text);
+
+        // ONE line for the crowd, and it names its own count — a reader can never
+        // read it as "there is one session body".
+        assert_eq!(
+            obs.text.matches("corps de session").count(),
+            1,
+            "the bodies collapse to ONE line: {}",
+            obs.text
+        );
+        assert!(
+            obs.text.contains("\n4 corps de session (repliés en une ligne"),
+            "the collapsed line states HOW MANY: {}",
+            obs.text
+        );
+        // The per-session names are gone from the TEXT...
+        assert!(!obs.text.contains("aaaa"), "no per-session name survives: {}", obs.text);
+        assert!(!obs.text.contains("measure ab"), "no per-session name survives: {}", obs.text);
+        // ...but every body is still MACHINE-AVAILABLE, one entry per entity. The
+        // render collapses; the structured observation never does.
+        let bodies: Vec<&ObservedObject> = obs
+            .objects
+            .iter()
+            .filter(|o| o.identity.as_deref().is_some_and(|i| i.starts_with("actor:l1:mind:claude-")))
+            .collect();
+        assert_eq!(bodies.len(), 4, "all four bodies remain in `objects`: {bodies:?}");
+        assert_eq!(
+            bodies.iter().filter(|o| o.identity.as_deref() == Some("actor:l1:mind:claude-measure-ab")).count(),
+            1,
+            "each body keeps its own structured entry"
+        );
+        // The real construct keeps its own line AND its action bullets.
+        assert!(obs.text.contains("\nEnergy pen v0"), "the construct keeps its line: {}", obs.text);
+        assert!(
+            obs.text.contains("\n  · observe inscription"),
+            "the construct keeps its actions: {}",
+            obs.text
+        );
+        // The prose still names the ORIGIN, never the collapsed crowd. The beacon
+        // is also the NAMED actor here and no `where` is given, so the origin is
+        // the perceiver: it reads as being, not as proximity.
+        assert!(
+            obs.text.starts_with("Tu es Lumina Prime Orientation Beacon v0"),
+            "origin prose: {}",
+            obs.text
+        );
+    }
+
+    #[test]
+    fn a_lone_session_body_collapses_nothing_and_keeps_its_name() {
+        // Grouping is not erasure: one body collapsed nothing, so it keeps its own
+        // name. A count is only ever rendered when there is a count to render.
+        let nodes = vec![
+            n("space:l2:lumina-prime:orientation-beacon-v0", "space", "space", serde_json::json!({ "name": "Balise" })),
+            session_body("solo-9999"),
+        ];
+        let (snapshot, wrappers, root) = world_with_session_bodies(&nodes);
+        let reader = |c: &ContentRef| wrappers.get(c.pointer.offset as usize).cloned();
+        let mut p = params(Some(&root));
+        p.radius_m = Some(1e9);
+        let obs = observe(&snapshot, &inv(), &p, None, &reader);
+        assert!(!obs.text.contains("corps de session"), "nothing was collapsed: {}", obs.text);
+        assert!(obs.text.contains("Claude solo 9999"), "keeps its own name: {}", obs.text);
+    }
+
+    #[test]
+    fn an_authored_l1_actor_is_not_a_session_body() {
+        // The discriminator is STRUCTURAL — the `embodied_session` field the
+        // embodiment path stamps — not the node's type, level or name. Two authored
+        // L1 actors that carry no such field (as `actor:l1:mind:nlr` and
+        // `actor:l1:mind:worker-local-1` do not, in the live store) must NOT be
+        // swept into the session crowd: they keep one line each.
+        let nodes = vec![
+            n("space:l2:lumina-prime:orientation-beacon-v0", "space", "space", serde_json::json!({ "name": "Balise" })),
+            n("actor:l1:mind:nlr", "actor", "actor", serde_json::json!({ "name": "NLR" })),
+            n("actor:l1:mind:worker-local-1", "actor", "actor", serde_json::json!({ "name": "Worker local-1" })),
+            session_body("dddd-4444"),
+            session_body("eeee-5555"),
+        ];
+        let (snapshot, wrappers, root) = world_with_session_bodies(&nodes);
+        let reader = |c: &ContentRef| wrappers.get(c.pointer.offset as usize).cloned();
+        let mut p = params(Some(&root));
+        p.radius_m = Some(1e9);
+        let obs = observe(&snapshot, &inv(), &p, None, &reader);
+
+        // The authored actors keep their own named lines...
+        assert!(obs.text.contains("\nNLR"), "authored actor keeps its line: {}", obs.text);
+        assert!(obs.text.contains("\nWorker local-1"), "authored actor keeps its line: {}", obs.text);
+        // ...and only the two session bodies collapsed. Same type, same level, same
+        // `actor:l1:` prefix — the field is what separates them.
+        assert!(
+            obs.text.contains("\n2 corps de session (repliés en une ligne"),
+            "only the session bodies collapse, and the count is theirs alone: {}",
+            obs.text
+        );
+    }
+
+    #[test]
+    fn the_session_discriminator_reads_a_field_never_a_name() {
+        // Direct proof that no name, origin or client is a policy here: a node
+        // named nothing like a session but carrying the field IS a body, and a node
+        // named exactly like one but carrying no field is NOT.
+        let field = serde_json::json!({ "embodied_session": "anything:at-all" });
+        assert!(is_session_body("actor", Some(&field)), "the field alone decides");
+        assert!(is_session_body("Actor", Some(&field)), "type gate is casing-proof");
+        // A non-actor node carrying the field is not an inhabitant's body.
+        assert!(!is_session_body("space", Some(&field)), "only actor nodes are bodies");
+        // Named like a session, but no field -> not a body.
+        let named = serde_json::json!({ "canonical_id": "actor:l1:mind:claude-1234", "name": "Claude 1234" });
+        assert!(!is_session_body("actor", Some(&named)), "a name is never the discriminator");
+        // An empty/absent value is not a session.
+        assert!(!is_session_body("actor", Some(&serde_json::json!({ "embodied_session": "  " }))));
+        assert!(!is_session_body("actor", Some(&serde_json::json!({ "embodied_session": null }))));
+        assert!(!is_session_body("actor", None), "no content -> nothing to key on");
+        // A fixture that nests its authored content still resolves.
+        let nested = serde_json::json!({ "content": { "embodied_session": "claude:x" } });
+        assert!(is_session_body("actor", Some(&nested)), "nested content is consulted too");
     }
 
     // -- Affordance derivation -------------------------------------------------

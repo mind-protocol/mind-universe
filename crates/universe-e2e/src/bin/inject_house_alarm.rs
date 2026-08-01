@@ -339,7 +339,6 @@ fn run() -> Result<(), Box<dyn Error>> {
     let write_set = UniverseWriteSet {
         base_revision,
         idempotency_key: "mutation:lumina-house-alarm:v0".to_string(),
-        causal_ancestry: vec!["changeset:lumina-house-alarm-v0".to_string()],
         commands,
     };
 

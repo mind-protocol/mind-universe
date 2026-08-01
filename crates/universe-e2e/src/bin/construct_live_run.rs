@@ -407,11 +407,6 @@ fn drive(store_dir: &Path, genesis: &Path, fixture: &Path) -> Result<LiveRun, Bo
     let write_set = UniverseWriteSet {
         base_revision: revision_before,
         idempotency_key: "moment:l2:lumina-prime:house-alarm:first-live-crossing-v0".to_string(),
-        causal_ancestry: vec![
-            "house-alarm:citizen-body-intersects".to_string(),
-            exec_receipt.idempotency_key.clone(),
-            "construct:l2:lumina-prime:house-alarm-v0:first-live-fire".to_string(),
-        ],
         commands: vec![UniverseCommand::PutEntity {
             entity: EntityRecord {
                 key: moment_key,

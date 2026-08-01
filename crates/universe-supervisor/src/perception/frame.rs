@@ -12,15 +12,21 @@
 //! math in `pov.rs` (YXZ yaw-then-pitch), and shows only what falls in front of
 //! the camera inside the field of view — the rest stays in the object manifest.
 
-use universe_supervisor::perception::{Pov, SphereSighting};
+use super::{Pov, SphereSighting};
 
 /// Image plane, in pixels. `pub` so the raster backend shares the exact frame.
-pub const WIDTH: f64 = 640.0;
-pub const HEIGHT: f64 = 360.0;
+///
+/// Deliberately small: the frame supplies spatial GESTALT, and the exact identity
+/// of what is seen already rides the object manifest, so paying for pixels past
+/// "where is what, roughly" buys a caller nothing. 16:9, both axes multiples of 8
+/// (the encoder's MCU), and every projection constant below scales with WIDTH so
+/// the field of view and the framing are unchanged by the resize.
+pub const WIDTH: f64 = 384.0;
+pub const HEIGHT: f64 = 216.0;
 /// Focal length in pixels — ~78° horizontal field of view over WIDTH.
-const FOCAL: f64 = 400.0;
+const FOCAL: f64 = 240.0;
 /// A sphere's on-screen radius at 1 m; it shrinks with depth (perspective).
-const RADIUS_AT_1M: f64 = 90.0;
+const RADIUS_AT_1M: f64 = 54.0;
 
 /// One projected sphere on the image plane. Shared by the SVG and raster
 /// backends so both draw the *same* frame from the *same* projection.
@@ -55,7 +61,7 @@ pub fn project(pov: &Pov, sightings: &[SphereSighting]) -> Vec<Disc> {
         }
         let sx = cx + FOCAL * dot(v, right) / depth;
         let sy = cy - FOCAL * dot(v, up) / depth; // image y grows downward
-        let r = (RADIUS_AT_1M / depth).clamp(1.5, 220.0);
+        let r = (RADIUS_AT_1M / depth).clamp(1.0, 132.0);
         if sx < -r || sx > WIDTH + r || sy < -r || sy > HEIGHT + r {
             continue;
         }
@@ -82,11 +88,51 @@ fn basis(yaw: f64, pitch: f64) -> ([f64; 3], [f64; 3], [f64; 3]) {
     (forward, right, up)
 }
 
+/// Breaks `s` into lines of at most `cols` characters, preferring a space and
+/// hard-breaking a word longer than the line. It never drops a character.
+///
+/// The caption states the frame's own epistemic status — that these positions are
+/// INFERRED, and the revision they were taken at. A caption the right edge eats is
+/// a frame that has quietly stopped declaring what it is, so a caption too long for
+/// the width wraps; it is never truncated. Shared by both backends so the raster
+/// and the SVG break the caption identically.
+pub fn wrap(s: &str, cols: usize) -> Vec<String> {
+    let cols = cols.max(1);
+    let mut lines: Vec<String> = Vec::new();
+    let mut line = String::new();
+    for word in s.split_whitespace() {
+        let mut rest = word;
+        while rest.chars().count() > cols {
+            if !line.is_empty() {
+                lines.push(std::mem::take(&mut line));
+            }
+            let cut = rest.char_indices().nth(cols).map_or(rest.len(), |(i, _)| i);
+            lines.push(rest[..cut].to_owned());
+            rest = &rest[cut..];
+        }
+        if rest.is_empty() {
+            continue;
+        }
+        let used = line.chars().count() + usize::from(!line.is_empty());
+        if used + rest.chars().count() > cols {
+            lines.push(std::mem::take(&mut line));
+        }
+        if !line.is_empty() {
+            line.push(' ');
+        }
+        line.push_str(rest);
+    }
+    if !line.is_empty() {
+        lines.push(line);
+    }
+    lines
+}
+
 /// Projects the sphere world positions through the pinhole and returns the SVG
 /// document for the frame. `sightings` should be sorted nearest-first so nearer
 /// spheres paint last (on top).
 ///
-/// The SVG twin of [`crate::raster::render_jpeg`]. The MCP tool result rides the
+/// The SVG twin of [`super::raster::render_jpeg`]. The MCP tool result rides the
 /// JPEG only, so this is retained as the alternate transport representation (and
 /// exercised by tests) rather than called on the live path.
 #[allow(dead_code)]
@@ -119,7 +165,7 @@ pub fn render_svg(pov: &Pov, sightings: &[SphereSighting], caption: &str) -> Str
             (shade + 40).min(255),
         ));
         // Label only discs big enough to read, so the frame stays legible.
-        if d.r >= 8.0 {
+        if d.r >= 5.0 {
             svg.push_str(&format!(
                 "<text x=\"{:.1}\" y=\"{:.1}\" font-size=\"11\" fill=\"#e6edf3\" \
                  text-anchor=\"middle\">{}</text>",
@@ -138,10 +184,15 @@ pub fn render_svg(pov: &Pov, sightings: &[SphereSighting], caption: &str) -> Str
         "<line x1=\"{:.0}\" y1=\"{:.0}\" x2=\"{:.0}\" y2=\"{:.0}\" stroke=\"#7d8590\"/>",
         cx, cy - 6.0, cx, cy + 6.0
     ));
-    svg.push_str(&format!(
-        "<text x=\"8\" y=\"18\" font-size=\"11\" fill=\"#7d8590\">{}</text>",
-        escape(caption)
-    ));
+    // Font-size 10 monospace advances ~6 px per glyph, the raster font's exact
+    // advance, so both backends fit the same number of caption characters per line.
+    for (row, text) in wrap(caption, (WIDTH as usize - 16) / 6).iter().enumerate() {
+        svg.push_str(&format!(
+            "<text x=\"8\" y=\"{}\" font-size=\"10\" fill=\"#7d8590\">{}</text>",
+            18 + row * 11,
+            escape(text)
+        ));
+    }
     svg.push_str("</svg>");
     svg
 }
@@ -196,7 +247,7 @@ mod tests {
             label: label.into(),
             primitive: "sphere",
             position,
-            distance_m: universe_supervisor::perception::pov::distance([0.0, 0.0, 0.0], position),
+            distance_m: crate::perception::pov::distance([0.0, 0.0, 0.0], position),
             bearing: "ahead",
         }
     }
@@ -206,9 +257,35 @@ mod tests {
         // Facing -Z, a sphere at -Z lands on the crosshair.
         let svg = render_svg(&pov(0.0, 0.0), &[sighting("balise", [0.0, 0.0, -5.0])], "test");
         assert!(svg.contains("<circle"));
-        // Its centre x is the image centre (320).
-        assert!(svg.contains("cx=\"320.0\""));
+        // Its centre x is the image centre — derived from WIDTH, so a resize of the
+        // frame moves the expectation with it instead of failing this test.
+        assert!(svg.contains(&format!("cx=\"{:.1}\"", WIDTH / 2.0)));
         assert!(svg.contains("balise"));
+    }
+
+    #[test]
+    fn a_caption_too_long_for_the_frame_wraps_instead_of_being_truncated() {
+        // The caption carries the honesty tag and the revision; the frame is only
+        // 384 px wide, so the whole caption must still be present, over more rows.
+        let caption =
+            "universe:0123456789abcdef rev 281 tick 281 - inferred physics-sphere projection";
+        let svg = render_svg(&pov(0.0, 0.0), &[sighting("balise", [0.0, 0.0, -5.0])], caption);
+        let cols = (WIDTH as usize - 16) / 6;
+        let lines = wrap(caption, cols);
+        assert!(lines.len() > 1, "this caption does not fit one line at {WIDTH} px");
+        assert!(lines.iter().all(|l| l.chars().count() <= cols), "a line overflows the frame");
+        // Every word of it survives into the document — nothing is eaten by the edge.
+        for word in caption.split(' ') {
+            assert!(svg.contains(word), "caption lost {word:?}");
+        }
+    }
+
+    #[test]
+    fn wrap_hard_breaks_a_word_longer_than_the_line_and_drops_nothing() {
+        let long = "a".repeat(25);
+        let lines = wrap(&long, 10);
+        assert_eq!(lines, vec!["a".repeat(10), "a".repeat(10), "a".repeat(5)]);
+        assert_eq!(lines.concat(), long);
     }
 
     #[test]

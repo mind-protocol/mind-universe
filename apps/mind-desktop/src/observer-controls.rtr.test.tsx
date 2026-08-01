@@ -73,4 +73,58 @@ describe("ObserverControls runtime eye height (measured via test-renderer)", () 
     expect(cam.position.y).toBeCloseTo(slope(cam.position.x, cam.position.z) + EYE);
     await renderer.unmount();
   });
+
+  // The live city re-renders whenever a store frame lands (and whenever the SSE
+  // bridge drops and reconnects), handing down a FRESH framing array each time.
+  // A re-render that frames the same place is not a framing change: it must not
+  // drag the observer back to the opening viewpoint.
+  it("leaves the walked observer where they stand when the parent re-renders", async () => {
+    const scene = (framing: [number, number, number]) => (
+      <>
+        <CaptureCamera />
+        <ObserverControls
+          initialCamera={framing}
+          groundHeight={slope}
+          eyeHeight={EYE}
+        />
+      </>
+    );
+    const renderer = await ReactThreeTestRenderer.create(scene([0, 2, 9]));
+    press("KeyZ"); // walk forward, away from the opening framing
+    await renderer.advanceFrames(20, 1 / 60);
+    release("KeyZ");
+    const walked = captured!.position.clone();
+    expect(Math.hypot(walked.x, walked.z - 9)).toBeGreaterThan(0.2); // it really moved
+
+    // Same framing VALUES, brand-new array — exactly what a re-render hands down.
+    await renderer.update(scene([0, 2, 9]));
+    await renderer.advanceFrames(1, 1 / 60);
+    expect(captured!.position.x).toBeCloseTo(walked.x);
+    expect(captured!.position.z).toBeCloseTo(walked.z);
+    await renderer.unmount();
+  });
+
+  // The opening framing may still re-aim an eye nobody has touched — the city
+  // arriving late and widening the shot must land, not be ignored.
+  it("re-frames an untouched observer when the framing itself moves", async () => {
+    const scene = (framing: [number, number, number]) => (
+      <>
+        <CaptureCamera />
+        <ObserverControls
+          initialCamera={framing}
+          groundHeight={slope}
+          eyeHeight={EYE}
+        />
+      </>
+    );
+    const renderer = await ReactThreeTestRenderer.create(scene([0, 2, 9]));
+    await renderer.advanceFrames(1, 1 / 60);
+    expect(captured!.position.z).toBeCloseTo(9);
+
+    await renderer.update(scene([0, 40, 80])); // the wide-city framing
+    await renderer.advanceFrames(1, 1 / 60);
+    expect(captured!.position.z).toBeCloseTo(80);
+    expect(captured!.position.y).toBeCloseTo(slope(0, 80) + EYE);
+    await renderer.unmount();
+  });
 });

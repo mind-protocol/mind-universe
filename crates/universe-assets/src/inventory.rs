@@ -738,10 +738,6 @@ fn process_batch(
             UniverseWriteSet {
                 base_revision: snapshot.revision,
                 idempotency_key: format!("asset-inventory-rebuild:{}", batch.batch_id),
-                causal_ancestry: vec![
-                    manifest.policy.inventory_id.clone(),
-                    manifest.mapping.mapping_id.clone(),
-                ],
                 commands,
             },
         )?;
@@ -862,7 +858,6 @@ fn process_batch(
         UniverseWriteSet {
             base_revision: readback.revision,
             idempotency_key: format!("asset-inventory-receipt:{}", batch.batch_id),
-            causal_ancestry: vec![manifest.policy.inventory_id.clone()],
             commands: vec![
                 UniverseCommand::PutEntity {
                     entity: EntityRecord {

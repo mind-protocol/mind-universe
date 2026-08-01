@@ -1020,11 +1020,6 @@ fn run() -> Result<(), Box<dyn Error>> {
         let write_set = UniverseWriteSet {
             base_revision: live.revision,
             idempotency_key: format!("moment:ollama-probe-run:{run_nonce}"),
-            causal_ancestry: vec![
-                "ollama-probe:request-assembled".to_string(),
-                exec_receipt.idempotency_key.clone(),
-                format!("construct:{PROBE_SPACE_ID}:run"),
-            ],
             commands: vec![
                 UniverseCommand::PutEntity {
                     entity: EntityRecord {

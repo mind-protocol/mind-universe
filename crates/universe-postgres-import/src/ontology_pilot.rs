@@ -474,7 +474,6 @@ pub fn run_ontology_pilot(
             UniverseWriteSet {
                 base_revision: independent.revision,
                 idempotency_key: activate_key,
-                causal_ancestry: vec![manifest.changeset.change_id.clone()],
                 commands,
             },
         )?;

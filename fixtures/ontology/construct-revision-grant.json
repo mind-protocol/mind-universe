@@ -1,0 +1,133 @@
+{
+  "contract": "mind-universe-authority-fixture",
+  "version": 0,
+  "universe": "0000000000000000000000000a701091",
+  "symbols": [],
+  "canonical_predicate_remap": {
+    "why": "Same treatment as underground-maintenance-grant.json: the authored normative predicate HOLDS_CAPABILITY (actor -> capability held) is NOT in the canonical seed vocabulary, and interning it would violate the ZERO-new-symbols invariant. The relations below already carry the canonical predicate; this block records the authored intent as prose.",
+    "HOLDS_CAPABILITY": {
+      "canonical": "USED",
+      "swap": false,
+      "note": "actor HOLDS_CAPABILITY capability becomes actor USED capability, source stays the actor, so a bounded reader still materializes the held set from OUTGOING USED edges — exactly what universe_query::read_actor_capability_set walks."
+    }
+  },
+  "entities": [
+    {
+      "key": "00000000000000000000000000005c00",
+      "symbol": "change",
+      "content": {
+        "kind": "ontology_changeset",
+        "change_id": "construct-revision-grant-v1",
+        "base_manifest": "00000000000000000000000000001000",
+        "activation": "active_graph_overlay",
+        "status": "approved_by_fixture_authority",
+        "objective": "Grant authority:construct-revision to ONE revision authority, as an attributable graph edge a bounded reader can materialize. Revising a canonical construct — its objective, its invariants, the protocol every other construct conforms to — is a heavier act than changing a file, and it must be held by an actor, not by whoever happens to run a binary. The grant is DATA only; whether a revision is admitted is decided by the protocol's revision_gate against the read set, never by this fixture.",
+        "deliberately_not_granted": "No session body — no sponsored visitor, no arriving MCP session — receives this capability. A visitor may perceive the protocol and propose a revision; it may not enact one. That asymmetry is the point of the gate, and it is why the grant names exactly one actor.",
+        "members": [
+          "00000000000000000000000000005c01",
+          "00000000000000000000000000005c10",
+          "00000000000000000000000000005c20",
+          "00000000000000000000000000005c30"
+        ]
+      }
+    },
+    {
+      "key": "00000000000000000000000000005c01",
+      "symbol": "terme",
+      "content": {
+        "kind": "ontology_extension_definition",
+        "canonical": true,
+        "canonical_id": "USED",
+        "authored_predicate": "HOLDS_CAPABILITY",
+        "remapped_to": "USED",
+        "definition_kind": "predicate_usage_note",
+        "family": "normative",
+        "description": "Usage note over the existing canonical USED predicate for a construct-revision grant. Mints no symbol. A bounded read of an actor's outgoing USED edges to capability targets materializes exactly what that actor holds. Holding authority:underground-maintenance does not confer authority:construct-revision: the sets are read verbatim and the ports are separate. Authority over the ground is not authority over the law.",
+        "endpoint_constraint": {
+          "source_types": ["actor"],
+          "target": "capability"
+        },
+        "status": "active_overlay"
+      }
+    },
+    {
+      "key": "00000000000000000000000000005c10",
+      "symbol": "thing",
+      "content": {
+        "kind": "capability",
+        "canonical_id": "capability:l2:mind-universe:authority-construct-revision",
+        "capability": "authority:construct-revision",
+        "class": "authority",
+        "note": "The exact capability string the construct protocol's revision gate (port:l2:mind-universe:construct-validity:revision-gate-v0) requires to revise a construct in place. Distinct from authority:underground-maintenance: changing a file under the city and revising the protocol the city's constructs conform to are different powers, and neither implies the other.",
+        "scope": "Revising a construct that APPLIES_IN construct-validity-v0: its member content, its authored relations, and the retirement of relations it no longer authors. It does not confer injection of a new construct, deletion of an entity, or any external effect."
+      }
+    },
+    {
+      "key": "00000000000000000000000000005c20",
+      "symbol": "actor",
+      "content": {
+        "kind": "actor",
+        "canonical_id": "actor:l2:mind-universe:construct-revision-authority",
+        "name": "Construct revision authority",
+        "role": "revision_authority",
+        "note": "Holds authority:construct-revision via a canonical USED edge (authored HOLDS_CAPABILITY). The held set is what a bounded read returns; this note is not itself the authority. An actor that is not this one — including every embodied session body — fails closed at the revision gate.",
+        "accountability": "Every revision admitted through this actor commits an EffectReceipt Moment naming it, in the SAME transaction as the change, so no revision of a canonical construct exists without an attributable holder behind it."
+      }
+    },
+    {
+      "key": "00000000000000000000000000005c30",
+      "symbol": "observation",
+      "content": {
+        "kind": "capability_grant_provenance",
+        "constructor": "authority-fixture",
+        "epistemic": {
+          "state": "measured",
+          "value": true
+        },
+        "statement": "The construct revision authority was granted authority:construct-revision by this approved authority fixture. The grant is attributable to this changeset. No other actor was granted it, and the plain citizen and every session body remain without it — which is what makes a refusal at the revision gate a real decision rather than an empty-set artifact."
+      }
+    }
+  ],
+  "relations": [
+    {
+      "key": "00000000000000000000000000005d00",
+      "source": "00000000000000000000000000005c20",
+      "target": "00000000000000000000000000005c10",
+      "predicate": "USED",
+      "content": {
+        "kind": "capability_grant",
+        "role": "grant",
+        "authored_predicate": "HOLDS_CAPABILITY",
+        "justification": "The revision authority holds authority:construct-revision (canonical USED edge; authored HOLDS_CAPABILITY); this is the sole edge that admits a construct revision at the protocol's revision gate."
+      }
+    },
+    {
+      "key": "00000000000000000000000000005d10",
+      "source": "00000000000000000000000000005c01",
+      "target": "00000000000000000000000000005c00",
+      "predicate": "PART_OF",
+      "content": { "kind": "ontology_relation", "role": "changeset_membership" }
+    },
+    {
+      "key": "00000000000000000000000000005d11",
+      "source": "00000000000000000000000000005c10",
+      "target": "00000000000000000000000000005c00",
+      "predicate": "PART_OF",
+      "content": { "kind": "ontology_relation", "role": "changeset_membership" }
+    },
+    {
+      "key": "00000000000000000000000000005d12",
+      "source": "00000000000000000000000000005c20",
+      "target": "00000000000000000000000000005c00",
+      "predicate": "PART_OF",
+      "content": { "kind": "ontology_relation", "role": "changeset_membership" }
+    },
+    {
+      "key": "00000000000000000000000000005d13",
+      "source": "00000000000000000000000000005c30",
+      "target": "00000000000000000000000000005c00",
+      "predicate": "PART_OF",
+      "content": { "kind": "ontology_relation", "role": "changeset_membership" }
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+[package]
+name = "universe-inference"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# Deliberately ZERO new external dependencies: everything here is either the
+# Rust standard library, a workspace dependency already present in Cargo.lock,
+# or a path dependency on a crate that already exists in this workspace.
+#
+# In particular there is no HTTP or TLS crate. Byte transport is native
+# (std::net::TcpStream for http://) or delegates to an authorized external
+# transport binary for https://. Adding reqwest/rustls would churn the shared
+# Cargo.lock for every other crate in the workspace for no capability the
+# trusted floor does not already have.
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+hex.workspace = true
+universe-capabilities = { path = "../universe-capabilities" }
+universe-core = { path = "../universe-core" }
+
+# Store access is needed ONLY by the end-to-end proof binary, which commits the
+# routing table into a COPY of a store and reads it back. It is optional so the
+# library and its tests never build the storage stack — the inference seam
+# itself has no business knowing what a store is.
+universe-store = { path = "../universe-store", optional = true }
+universe-transactions = { path = "../universe-transactions", optional = true }
+
+[features]
+default = []
+store-proof = ["dep:universe-store", "dep:universe-transactions"]
+
+[[bin]]
+name = "inference_proof"
+path = "src/bin/inference_proof.rs"
+required-features = ["store-proof"]
+
+[dev-dependencies]
+tempfile = "3"

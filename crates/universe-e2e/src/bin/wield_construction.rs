@@ -216,7 +216,6 @@ fn run() -> Result<(), Box<dyn Error>> {
     let bad_write_set = UniverseWriteSet {
         base_revision,
         idempotency_key: "construction:bad-region:v0".into(),
-        causal_ancestry: vec!["changeset:construction-toolkit-v0".into()],
         commands,
     };
     match UniverseTransaction::prepare(&snapshot, bad_write_set) {
@@ -296,7 +295,6 @@ fn translate_step(
         store,
         base_revision,
         "construction:step:v0".into(),
-        vec!["changeset:construction-toolkit-v0".into()],
     )?;
     // The generic translator emits exactly one kernel verb per step.
     if ws.commands.len() != 1 {
@@ -498,20 +496,10 @@ fn construct(
     )?;
     let command_count = commands.len();
 
-    // Guard: only the four closed MutationBond write verbs may appear. Any other
-    // UniverseCommand (e.g. SupersedeEntity) is a fifth-verb violation for a
-    // construction gesture and is refused.
-    for command in &commands {
-        match command {
-            UniverseCommand::InternSymbols { .. }
-            | UniverseCommand::PutEntity { .. }
-            | UniverseCommand::PutRelation { .. }
-            | UniverseCommand::TombstoneRelation { .. } => {}
-            other => {
-                return Err(format!("{kind}: construction emitted a non-MutationBond verb {other:?}").into())
-            }
-        }
-    }
+    // The four MutationBond write verbs are now the WHOLE of UniverseCommand, so
+    // the closed-verb guard is carried by the type rather than by a runtime check
+    // that can no longer fire: the fifth verb it excluded no longer exists
+    // anywhere in the kernel.
     // No InternSymbols in a clean construction (0 new symbols).
     if commands
         .iter()
@@ -523,7 +511,6 @@ fn construct(
     let write_set = UniverseWriteSet {
         base_revision,
         idempotency_key: format!("construction:{kind}:v0"),
-        causal_ancestry: vec!["changeset:construction-toolkit-v0".into()],
         commands,
     };
 

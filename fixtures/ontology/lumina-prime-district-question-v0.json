@@ -1,0 +1,607 @@
+{
+  "id": "space:l2:lumina-prime:district-question-v0",
+  "node_type": "space",
+  "subtype": "district",
+  "content": {
+    "contractKind": "construct",
+    "name": "Quartier de la Question — la Halle des Réponses",
+    "dominant_scale": "civic",
+    "structure_kind": "district",
+    "provenance": "built",
+    "portfolio_priority": "P0",
+    "priority_rank": 2,
+    "lifecycle": "design",
+    "lineage": "Un quartier de Lumina Prime bâti par la Construction toolkit v0 (fixtures/ontology/construction-toolkit-v0.json, structure_kind=district, kind_profiles lus depuis le graphe). Sa substance — objectif, gap, dimensions de métrique, compteurs de baseline, critère d'acceptation, prochaine tâche et santé dérivée — est TRANSCRITE du portefeuille Endgame de Mind Protocol, pas inventée ici. Sa forme est authored selon l'Appearance toolkit v0 (schéma affordance-materialization/1, palette de primitives fermée). Sa place n'est écrite nulle part : elle est portée par ses relations — PART_OF la ville, et les voies qui l'atteignent.",
+    "source_endgame": {
+      "endgame_root": "query-endgame-contextual-answer",
+      "endgame_statement": "Le système résout le contexte, choisit un graphe et une intention, assemble la configuration qui répond, recherche ce qui la contredit puis produit une Answer versionnée. Une question située devient un noyau de réponse minimal, traçable et adapté au graphe interrogé.",
+      "project": "project:mind:question-endgame:v0",
+      "source_node_count": 62,
+      "source_relation_count": 88,
+      "source_sha256": "f5b72a19a2bb4be252e9b3120eb732b1a6b0b212173598f308cbd6589b667453"
+    },
+    "placement_model": "RELATIONNEL, jamais une coordonnée. Ce quartier est PART_OF space:l2:lumina-prime:city-v0 ; son voisinage est porté par les routes qui le rejoignent (COMMUNICATES). Un quartier sans voie inter-quartier est en lisière, et c'est un fait lisible sur le travail, pas un accident de layout.",
+    "canonical_predicate_remap": {
+      "why": "Zéro nouveau symbole : chaque prédicat authored est remappé sur le plus proche prédicat canonique actif du seed (fixtures/ontology/canonical-ontology.json).",
+      "remaps": {
+        "PART_OF": {
+          "canonical": "PART_OF",
+          "swap": false,
+          "note": "quartier PART_OF la ville — la relation de placement primaire"
+        },
+        "PROJECTS_AS": {
+          "canonical": "COMPILES_TO",
+          "swap": false,
+          "note": "le quartier se projette en sa forme : PROJECTS_AS n'est pas canonique, il est remappé sur COMPILES_TO (le binding est la projection compilée du construct, comme code -> implementation). Même convention que sky-toolkit-v0 / appearance-toolkit-v0."
+        }
+      }
+    },
+    "parent_scope": {
+      "classification": "district_of_city",
+      "justification": "Ce quartier appartient à Lumina Prime et à rien d'autre. L'arête PART_OF vers la ville est écrite par la passe de construction, attribuée par un Moment."
+    },
+    "runtime_moment_subtypes": [
+      "validation_run",
+      "health_assessment"
+    ],
+    "native_law_boundary": "Le socle natif ne connaît que les quatre verbes d'écriture fermés et les prédicats canoniques. Ce qu'est un quartier, ce qu'il tient, ce qu'il vaut et à quoi il ressemble sont des données du monde. Aucun endgame n'est un terme du dispatch natif.",
+    "purpose": "Tenir la capacité de transformer une question SITUÉE en une Answer minimale, traçable et contestable — et de CHOISIR par comparaison, non par goût, l'architecture qui la produit. Le quartier est un carrefour : c'est de lui que partent les voies vers l'amélioration autonome et vers l'infrastructure civilisationnelle."
+  },
+  "members": [
+    {
+      "id": "objective:l2:lumina-prime:district-question-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "Une même question est résolue avec identité correcte, scope explicite, motifs adaptés, contre-recherche et provenance phrase par phrase. Le premier objectif est un prototype vertical comparant les architectures candidates sur L1, design et science, y compris ambiguïtés et contradictions.",
+        "epistemic_status": "test_target",
+        "not_yet": "Zéro exécution comparative verticale ; deux décisions d'architecture restent en review."
+      }
+    },
+    {
+      "id": "pattern:l2:lumina-prime:district-question-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "Une halle à trois nefs — L1, design, science — traversées par la MÊME question. Ce qui distingue une réponse d'une affirmation n'est pas sa fluidité mais quatre choses matérialisées ici : l'identité de ce dont on parle, la porte de scope qu'elle n'a pas franchie, la contre-recherche qui a cherché à la démentir, et le fil de provenance qui pend sous chaque phrase.",
+        "epistemic_honesty": "Aucune similarité ne remplace identité, permission ou causalité. Une troncature se déclare. Une phrase sans fil de provenance est une phrase sans source, et se voit comme telle."
+      }
+    },
+    {
+      "id": "vocabulary:l2:lumina-prime:district-question-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "Answer": "Le produit versionné : un noyau de réponse minimal, situé, remontant phrase par phrase à son snapshot.",
+          "Porte de scope": "Le contrôle qui refuse une traversée non permise. Un scopeViolationRate non nul est un mur percé, pas une souplesse.",
+          "Contre-recherche": "La recherche délibérée de ce qui contredit la réponse en cours. counterevidenceRecall en mesure la sincérité.",
+          "Profil d'intention": "Ce que la question demande vraiment ; distinct du profil de graphe, qui décrit ce que le graphe interrogé peut offrir.",
+          "sentenceProvenanceCoverage": "La part des phrases dont l'origine est traçable. Non mesurée ici : unknown, jamais 0.",
+          "Troncature honnête": "Une réponse coupée qui le dit. Une réponse coupée qui ne le dit pas est un mensonge de forme."
+        }
+      }
+    },
+    {
+      "id": "behavior:l2:lumina-prime:district-question-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "Un corpus témoin contenant des identités proches, des scopes incompatibles, des contradictions et des troncatures ; les options d'architecture candidates ; les profils d'intention et de graphe.",
+        "when": "Un citoyen lance le prototype vertical du runtime de question dans ce quartier.",
+        "then": [
+          "Exécuter les options candidates : noyau+profils, moteur par graphe, routage appris validé.",
+          "Comparer aussi L4 natif et overlay riche sur le cas microbien.",
+          "Résoudre la même question sur L1, design et science, en conservant plans, snapshots et provenance phrase par phrase.",
+          "Mesurer identityAccuracy, scopeViolationRate, requiredRoleCoverage, counterevidenceRecall, sentenceProvenanceCoverage, truncationHonesty, latence et coût sur le MÊME jeu de questions.",
+          "Trancher par une décision motivée et versionnée, avec un fallback déclaré pour les intentions non supportées."
+        ],
+        "forbidden": [
+          "choisir une architecture sans comparaison verticale exécutée",
+          "laisser une similarité tenir lieu d'identité, de permission ou de causalité",
+          "produire une Answer dont une phrase ne remonte pas à son noyau et son snapshot",
+          "tronquer sans le déclarer",
+          "cacher une intention non supportée derrière une réponse plausible"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l2:lumina-prime:district-question-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "construire un corpus témoin : identités proches, scopes incompatibles, contradictions, troncatures",
+          "instancier les options d'architecture candidates",
+          "résoudre le contexte, choisir graphe et intention, assembler le plan formel",
+          "franchir (ou refuser) la porte de scope, explicitement",
+          "exécuter le retrieval hybride puis la contre-recherche",
+          "assembler l'Answer versionnée avec provenance phrase par phrase",
+          "mesurer les huit dimensions sur le même jeu de questions",
+          "produire une décision d'architecture motivée, versionnée et révisable"
+        ],
+        "python_escape_hatch": "forbidden_by_default",
+        "composition_is_data": "Les étapes du quartier sont des données du graphe : sa prochaine transformation est lue depuis sa tâche, jamais dispatchée en natif.",
+        "scheduler_projection": "tick-boundary/1"
+      }
+    },
+    {
+      "id": "code:l2:lumina-prime:district-question-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "authority": "Projection matérialisée, pas une autorité sémantique indépendante : l'autorité reste le portefeuille Endgame source.",
+        "language": "mind-district/civic",
+        "note": "Le mécanisme du quartier est le runtime de question : contexte sourcé, profil d'intention, profil de graphe, plan formel, porte de scope, retrieval hybride, contre-recherche, Answer versionnée. L'architecture qui l'implémente n'est pas tranchée.",
+        "next_task": {
+          "id": "task:mind:question-endgame:build-vertical-prototype-v0",
+          "title": "Construire le prototype vertical du runtime de question",
+          "scope": "bounded_prototype",
+          "reversible": true,
+          "priority": "P0"
+        },
+        "source_endgame_root": "query-endgame-contextual-answer",
+        "source_node_count": 62,
+        "source_relation_count": 88,
+        "source_sha256": "f5b72a19a2bb4be252e9b3120eb732b1a6b0b212173598f308cbd6589b667453"
+      }
+    },
+    {
+      "id": "implementation:l2:lumina-prime:district-question-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "status": "authored",
+        "graph_status": "written_on_injection",
+        "runtime_status": "not_running",
+        "verification_status": "not_measured",
+        "honesty": "Les profils, motifs et garde-fous sont définis ; les options runtime et la frontière L4/overlay restent OUVERTES (2 décisions en review). comparative_vertical_run_count = 0. sentenceProvenanceCoverage n'a pas de baseline : c'est unknown, pas 0.",
+        "artifact": "lumina-prime-district-question-v0.json",
+        "baseline_imported": {
+          "observed_at": "2026-07-28",
+          "comparative_vertical_run_count": 0,
+          "architecture_decisions_in_review": 2,
+          "sentence_provenance_coverage": "unknown",
+          "note": "Profils, motifs et garde-fous définis ; identityAccuracy, counterevidenceRecall et provenance phrase par phrase n'ont pas de baseline exécutée."
+        }
+      }
+    },
+    {
+      "id": "justification:l2:lumina-prime:district-question-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": [
+          "Sans comparaison verticale, le projet risque soit une abstraction universelle cachant des hypothèses de domaine, soit une duplication par graphe, soit un modèle opaque franchissant les scopes.",
+          "Un runtime de question situé et auditable peut améliorer la détection des gaps et la sélection des sous-graphes de l'amélioration autonome — d'où la voie qui part d'ici vers le Banc d'Essai.",
+          "Une infrastructure institutionnelle continue exige des réponses sourcées, contextualisées et contestables dans chaque domaine — d'où la seconde voie, vers les Dix Fondations."
+        ],
+        "rejected": [
+          "trancher l'architecture par argument, car seule une comparaison exécutée départage",
+          "un noyau générique déclaré universel, car il cacherait des hypothèses de domaine non dites"
+        ]
+      }
+    },
+    {
+      "id": "validation:l2:lumina-prime:district-question-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "structured_expression_ast",
+        "acceptance_criterion": "Le jalon est atteint lorsque le prototype produit des résultats comparables, une décision motivée et versionnée, un fallback pour les intentions non supportées et une Answer dont CHAQUE phrase remonte à son noyau et son snapshot. Une option domine selon les critères déclarés, les échecs restent inspectables, et aucune similarité ne remplace identité, permission ou causalité.",
+        "scenarios": [
+          "same_question_resolved_across_three_graphs",
+          "identity_held_against_near_identities",
+          "scope_gate_refuses_incompatible_traversal",
+          "counterevidence_actually_retrieved",
+          "every_sentence_traces_to_snapshot",
+          "truncation_declared",
+          "unsupported_intent_falls_back_visibly",
+          "architecture_decision_versioned"
+        ],
+        "negative_invariants": [
+          "similarity substituted for identity — rejected",
+          "sentence without provenance — rejected",
+          "silent truncation — rejected",
+          "architecture chosen without an executed comparison — rejected",
+          "scope crossed without permission — rejected"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l2:lumina-prime:district-question-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Lit le corpus témoin, les plans conservés, les snapshots, la provenance phrase par phrase et les traces de contre-recherche. Ne fait jamais confiance à la fluidité d'une réponse ni à un score de similarité.",
+        "checks": [
+          "identité tenue face aux identités proches",
+          "porte de scope effectivement refusante",
+          "contradictions du corpus effectivement retrouvées",
+          "provenance présente phrase par phrase",
+          "troncature déclarée quand elle a lieu",
+          "latence et coût mesurés sur le même jeu",
+          "décision d'architecture versionnée et motivée",
+          "fallback déclaré pour l'intention non supportée"
+        ]
+      }
+    },
+    {
+      "id": "metric:l2:lumina-prime:district-question-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "dimensions": [
+          "identityAccuracy",
+          "scopeViolationRate",
+          "requiredRoleCoverage",
+          "counterevidenceRecall",
+          "sentenceProvenanceCoverage",
+          "truncationHonesty",
+          "latency",
+          "executionCost",
+          "comparative_vertical_run_count",
+          "evidence_freshness_ms"
+        ],
+        "note": "Les huit dimensions se rapportent sur le MÊME jeu de questions, jamais agrégées en un score unique. sentenceProvenanceCoverage est actuellement sans baseline : unknown, pas 0.",
+        "baseline": {
+          "observed_at": "2026-07-28",
+          "comparative_vertical_run_count": 0,
+          "architecture_decisions_in_review": 2,
+          "sentence_provenance_coverage": "unknown",
+          "note": "Profils, motifs et garde-fous définis ; identityAccuracy, counterevidenceRecall et provenance phrase par phrase n'ont pas de baseline exécutée."
+        }
+      }
+    },
+    {
+      "id": "health:l2:lumina-prime:district-question-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "states": [
+          "healthy",
+          "degraded",
+          "stale",
+          "unknown",
+          "not_measured",
+          "measurement_failed"
+        ],
+        "current": "not_measured",
+        "current_why": "comparative_vertical_run_count = 0 ; deux décisions d'architecture en review. Rien n'a encore été comparé ici.",
+        "derivation": {
+          "healthy": "Le critère d'acceptation du quartier est satisfait par des preuves fraîches et attribuées, mesurées ICI.",
+          "degraded": "Des preuves fraîches existent mais au moins une dimension viole sa borne.",
+          "stale": "La dernière preuve valide dépasse la fenêtre de fraîcheur.",
+          "unknown": "Les preuves requises ne se résolvent en aucun état connu.",
+          "not_measured": "Aucune exécution fraîche n'a mesuré les dimensions requises dans ce quartier.",
+          "measurement_failed": "L'observateur n'a pas produit de mesure fiable."
+        },
+        "upstream_derived": "Les garde-fous sont explicites, mais l'absence de prototype vertical empêche de choisir une architecture sans spéculation. Architecture prometteuse, choix runtime et ontologie non tranchés par comparaison.",
+        "maintenance": [
+          "run_next_task",
+          "inspect_baseline",
+          "reissue_capability",
+          "revise_criterion",
+          "ask_human"
+        ]
+      }
+    },
+    {
+      "id": "visual_binding:l2:lumina-prime:district-question-v0",
+      "node_type": "thing",
+      "subtype": "physicalization_binding",
+      "content": {
+        "kind": "physicalization_binding",
+        "schema_version": "affordance-materialization/1",
+        "dominant_scale": "civic",
+        "silhouette": "La Halle des Réponses — une nef traversante, une porte de scope en anneau, des fils de provenance qui pendent, deux lanternes éteintes pour les deux décisions en review.",
+        "palette": {
+          "core": "#e6e0f0",
+          "emissive": "#8fb6ff",
+          "shell": "#4a4763",
+          "particle": "#f2f6ff"
+        },
+        "form_primitive_tuple": {
+          "arity": 8,
+          "fields": [
+            "kind",
+            "part_name",
+            "palette_role",
+            "offset(vec3)",
+            "rotation(vec3)",
+            "scale(vec3>0)",
+            "particle_count",
+            "particle_size"
+          ],
+          "allowed_primitives": [
+            "box",
+            "cylinder",
+            "cone",
+            "torus",
+            "plane",
+            "tube",
+            "capsule",
+            "sphere",
+            "icosphere",
+            "points",
+            "fresnel_shell"
+          ]
+        },
+        "note": "La forme du quartier est l'UNION des matérialisations de ses affordances. Les offsets sont INTERNES à la forme (la disposition de ses propres parties), jamais une position dans la ville : où est le quartier reste une projection de ses relations.",
+        "affordance_materializations": [
+          {
+            "affordance": {
+              "subtype": "ask_situated_question",
+              "kernel_kind": "open",
+              "justification": "la nef ouverte afforde d'entrer une question située dans la halle",
+              "cell": "actionable"
+            },
+            "form": [
+              [
+                "capsule",
+                "nave",
+                "core",
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  1.5708
+                ],
+                [
+                  1.0,
+                  2.6,
+                  1.0
+                ],
+                0,
+                0
+              ],
+              [
+                "torus",
+                "scope_gate",
+                "emissive",
+                [
+                  -1.5,
+                  0,
+                  0
+                ],
+                [
+                  0,
+                  1.5708,
+                  0
+                ],
+                [
+                  0.85,
+                  0.85,
+                  0.1
+                ],
+                0,
+                0
+              ]
+            ],
+            "inverse_mapping": "la nef = la question traverse ; l'anneau à l'entrée = la porte de scope qu'il faut franchir légitimement"
+          },
+          {
+            "affordance": {
+              "subtype": "trace_provenance",
+              "kernel_kind": "inspect",
+              "justification": "les fils suspendus affordent de remonter chaque phrase à son snapshot — couverture inconnue",
+              "cell": "fogged"
+            },
+            "form": [
+              [
+                "tube",
+                "provenance_thread",
+                "shell",
+                [
+                  0.4,
+                  -0.6,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.03,
+                  0.9,
+                  0.03
+                ],
+                0,
+                0
+              ],
+              [
+                "tube",
+                "provenance_thread_b",
+                "shell",
+                [
+                  0.9,
+                  -0.6,
+                  0.3
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.03,
+                  0.7,
+                  0.03
+                ],
+                0,
+                0
+              ],
+              [
+                "points",
+                "counter_search_motes",
+                "particle",
+                [
+                  0.7,
+                  0.3,
+                  0
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  1,
+                  1,
+                  1
+                ],
+                6,
+                0.3
+              ]
+            ],
+            "inverse_mapping": "chaque fil = une phrase reliée à son noyau ; les motes = la contre-recherche. sentenceProvenanceCoverage est unknown, donc les fils sont en Fog, pas pleins"
+          },
+          {
+            "affordance": {
+              "subtype": "choose_architecture",
+              "kernel_kind": "test",
+              "justification": "les deux lanternes affordent de trancher l'architecture par comparaison — aucune comparaison n'a couru",
+              "cell": "fogged"
+            },
+            "form": [
+              [
+                "icosphere",
+                "decision_lantern_a",
+                "shell",
+                [
+                  1.6,
+                  0.9,
+                  -0.4
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.24,
+                  0.24,
+                  0.24
+                ],
+                0,
+                0
+              ],
+              [
+                "icosphere",
+                "decision_lantern_b",
+                "shell",
+                [
+                  1.6,
+                  0.9,
+                  0.4
+                ],
+                [
+                  0,
+                  0,
+                  0
+                ],
+                [
+                  0.24,
+                  0.24,
+                  0.24
+                ],
+                0,
+                0
+              ]
+            ],
+            "inverse_mapping": "deux lanternes ÉTEINTES = les deux décisions d'architecture encore en review ; elles s'allument par comparaison exécutée, jamais par argument"
+          }
+        ],
+        "state_sockets": [
+          {
+            "socket": "whole.scale",
+            "channel": "poids",
+            "driven_by": "nombre de constructs PART_OF le quartier",
+            "honesty": "absent -> échelle neutre 1"
+          },
+          {
+            "socket": "decision_lantern_*.emissive",
+            "channel": "activation",
+            "driven_by": "comparative_vertical_run_count",
+            "honesty": "0 exécution -> lanternes éteintes"
+          },
+          {
+            "socket": "provenance_thread.continuity",
+            "channel": "validite",
+            "driven_by": "sentenceProvenanceCoverage",
+            "honesty": "unknown -> fil en Fog, jamais un fil plein par défaut"
+          }
+        ],
+        "fallback": "toute affordance non matérialisée ici retombe sur default_materializations[kernel_kind] de l'Appearance toolkit ; aucune affordance -> point de présence gris",
+        "lod_states": {
+          "hot": "nef + porte + fils + motes + lanternes",
+          "sleeping": "nef + porte",
+          "aggregated": "nef seule",
+          "dormant": "point de présence gris"
+        }
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "space:l2:lumina-prime:district-question-v0",
+      "predicate": "IMPLEMENTED_IN",
+      "target": "implementation:l2:lumina-prime:district-question-v0"
+    },
+    {
+      "source": "space:l2:lumina-prime:district-question-v0",
+      "predicate": "DEFINED_BY_CODE",
+      "target": "code:l2:lumina-prime:district-question-v0"
+    },
+    {
+      "source": "code:l2:lumina-prime:district-question-v0",
+      "predicate": "IMPLEMENTED_BY",
+      "target": "implementation:l2:lumina-prime:district-question-v0"
+    },
+    {
+      "source": "pattern:l2:lumina-prime:district-question-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l2:lumina-prime:district-question-v0"
+    },
+    {
+      "source": "behavior:l2:lumina-prime:district-question-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:lumina-prime:district-question-v0"
+    },
+    {
+      "source": "implementation:l2:lumina-prime:district-question-v0",
+      "predicate": "OBSERVED_BY",
+      "target": "observability_algorithm:l2:lumina-prime:district-question-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:lumina-prime:district-question-v0",
+      "predicate": "PRODUCES",
+      "target": "metric:l2:lumina-prime:district-question-v0"
+    },
+    {
+      "source": "metric:l2:lumina-prime:district-question-v0",
+      "predicate": "FEEDS",
+      "target": "health:l2:lumina-prime:district-question-v0"
+    },
+    {
+      "source": "objective:l2:lumina-prime:district-question-v0",
+      "predicate": "SUPPORTS",
+      "target": "space:l2:lumina-prime:district-question-v0"
+    },
+    {
+      "source": "observability_algorithm:l2:lumina-prime:district-question-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l2:lumina-prime:district-question-v0"
+    },
+    {
+      "source": "space:l2:lumina-prime:district-question-v0",
+      "predicate": "PROJECTS_AS",
+      "target": "visual_binding:l2:lumina-prime:district-question-v0"
+    }
+  ]
+}

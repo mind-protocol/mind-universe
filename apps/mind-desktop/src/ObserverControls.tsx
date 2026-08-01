@@ -1,5 +1,5 @@
 import { useFrame, useThree } from "@react-three/fiber";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { Euler } from "three";
 import { observerMotion } from "./observer-controls";
 import {
@@ -60,9 +60,20 @@ export function ObserverControls({
   const pressed = useRef(new Set<string>());
   const look = useRef<LookOrientation>({ yaw: 0, pitch: 0 });
   const lastPose = useRef<{ x: number; z: number; yaw: number } | null>(null);
+  // Whether the observer has taken the viewpoint into their own hands (walked or
+  // turned). Until then the opening framing may still re-aim the eye — after it,
+  // a changing framing only moves where R takes them back to. The world keeps
+  // changing under a live stream; that must never teleport someone mid-step.
+  const taken = useRef(false);
 
-  const homeCamera = useMemo(() => initialCamera ?? DEFAULT_CAMERA, [initialCamera]);
-  const homeTarget = useMemo(() => initialTarget ?? DEFAULT_TARGET, [initialTarget]);
+  const homeCamera = initialCamera ?? DEFAULT_CAMERA;
+  const homeTarget = initialTarget ?? DEFAULT_TARGET;
+  // The framing arrives as a fresh array on every parent render (the live city
+  // re-renders whenever a frame lands, or the stream drops and reconnects). Key
+  // the re-framing on its VALUES: a re-render that frames the same place is not
+  // a framing change and must move nothing.
+  const framingKey = `${homeCamera.join()}|${homeTarget.join()}`;
+  const home = useRef({ camera: homeCamera, target: homeTarget });
 
   const applyOrientation = useCallback(() => {
     camera.quaternion.setFromEuler(
@@ -80,20 +91,29 @@ export function ObserverControls({
     [groundHeight, eyeHeight]
   );
 
+  // Goes to the framing held in `home` — read through the ref so `reset` keeps a
+  // stable identity and a re-render can never re-fire the effects below.
   const reset = useCallback(() => {
     // Ignore the opening y: stand on the floor at the framing's (x, z). The look
     // is derived from the true eye position so the pitch is honest.
-    const eye = eyeAt(homeCamera[0], homeCamera[2]);
+    const { camera: from, target } = home.current;
+    const eye = eyeAt(from[0], from[2]);
     camera.position.set(eye[0], eye[1], eye[2]);
-    look.current = orientationFromLookAt(eye, homeTarget);
+    look.current = orientationFromLookAt(eye, target);
     applyOrientation();
-  }, [camera, homeCamera, homeTarget, applyOrientation, eyeAt]);
+  }, [camera, applyOrientation, eyeAt]);
 
-  // Establish the opening head orientation (and re-apply if the framing changes),
-  // so the FPV eye starts looking at the focus rather than blankly down -Z.
+  // Establish the opening head orientation, so the FPV eye starts looking at the
+  // focus rather than blankly down -Z — and re-aim it if the framing genuinely
+  // moves (e.g. the city arrives and widens) while the view is still the app's to
+  // frame. Once the observer has walked or turned, a new framing only updates
+  // where R goes back to.
   useEffect(() => {
-    reset();
-  }, [reset]);
+    home.current = { camera: homeCamera, target: homeTarget };
+    if (!taken.current) reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the framing
+    // VALUES; the arrays themselves are fresh on every parent render.
+  }, [framingKey, reset]);
 
   // Keyboard: R resets the framing; every other key feeds the movement intent.
   useEffect(() => {
@@ -150,6 +170,7 @@ export function ObserverControls({
       }
       if (!looked) {
         looked = true;
+        taken.current = true; // the head is theirs now; stop re-framing it
         el.style.cursor = "grabbing";
         el.setPointerCapture?.(event.pointerId);
       }
@@ -209,6 +230,7 @@ export function ObserverControls({
     // looking up can never lift the eye off the floor).
     const motion = observerMotion(pressed.current);
     if (motion.forward === 0 && motion.right === 0) return;
+    taken.current = true; // they are walking; the eye is theirs to place
 
     const speed = 5 * motion.speedMultiplier * Math.min(delta, 0.05);
     const { forward, right } = groundBasis(look.current.yaw);

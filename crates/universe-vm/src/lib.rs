@@ -98,6 +98,10 @@ pub enum VmError {
     CallDepthExceeded { limit: u32 },
     #[error("loop iteration budget {limit} exhausted")]
     IterationBudgetExhausted { limit: u32 },
+    #[error("selection holds {found} candidates, not exactly one")]
+    NotExactlyOne { found: usize },
+    #[error("record carries no field {field}")]
+    MissingField { field: String },
 }
 
 /// One live call frame: where control resumes in the caller and which caller
@@ -560,6 +564,48 @@ pub fn execute(
                     })
                     .collect::<Result<BTreeMap<_, _>, VmError>>()?,
             )),
+            Operator::GetField { input, field, .. } => {
+                let Value::Record(record) = register(&registers, *input)? else {
+                    return Err(VmError::Type { expected: "record" });
+                };
+                // Absent is not Unit. A record that does not carry the field is a
+                // fact, and coercing it into a value here would reintroduce
+                // exactly the "missing data as zero" mistake.
+                record
+                    .get(field)
+                    .cloned()
+                    .map(Some)
+                    .ok_or_else(|| VmError::MissingField {
+                        field: field.clone(),
+                    })?
+            }
+            Operator::Only { input, .. } => {
+                let Value::List(items) = register(&registers, *input)? else {
+                    return Err(VmError::Type { expected: "list" });
+                };
+                // Neither zero nor many is coerced. A selection that did not
+                // narrow to one is a broken selection, and it must surface here
+                // rather than downstream as a mutation of the wrong node.
+                if items.len() != 1 {
+                    return Err(VmError::NotExactlyOne { found: items.len() });
+                }
+                Some(items[0].clone())
+            }
+            Operator::ExtendRecord { input, fields, .. } => {
+                // Start from the record as it IS. Every field the program does
+                // not name survives untouched — that pass-through is the whole
+                // reason this operator exists, and it is why a revision can be
+                // committed without silently discarding the provenance of the
+                // node being revised.
+                let Value::Record(existing) = register(&registers, *input)? else {
+                    return Err(VmError::Type { expected: "record" });
+                };
+                let mut extended = existing.clone();
+                for (name, register_id) in fields {
+                    extended.insert(name.clone(), register(&registers, *register_id)?.clone());
+                }
+                Some(Value::Record(extended))
+            }
             Operator::Propose { command, .. } => {
                 if proposals.len() >= limits.max_proposals as usize {
                     return Err(VmError::ProposalBudgetExhausted);
@@ -907,6 +953,260 @@ mod tests {
         serde_json::from_str(include_str!("../../../fixtures/graph-ir/minimal-read.json")).unwrap()
     }
 
+    /// A record standing in for a node's stored content as the store actually
+    /// holds it: the fields a reviser knows about, and — crucially — several it
+    /// does not.
+    fn stored_node_content() -> Value {
+        Value::Record(BTreeMap::from([
+            ("canonical_id".into(), Value::Text("actor:l1:mind:claude-x".into())),
+            ("provenance".into(), Value::Text("built".into())),
+            ("embodied_session".into(), Value::Text("claude:x".into())),
+            ("base_revision".into(), Value::Integer(44)),
+            ("residency".into(), Value::Text("hot".into())),
+        ]))
+    }
+
+    /// Program: take a stored record, set `residency` and attach a reason.
+    fn extend_program(fields: Vec<(String, Register)>) -> CodeDefinition {
+        CodeDefinition {
+            ir_version: universe_ir::IR_VERSION,
+            revision: Revision(1),
+            required_capabilities: vec![],
+            operators: vec![
+                Operator::Input {
+                    name: "node".into(),
+                    output: 0,
+                },
+                Operator::Constant {
+                    value: Value::Text("dormant".into()),
+                    output: 1,
+                },
+                Operator::Constant {
+                    value: Value::Text("crowded the beacon out of its budget".into()),
+                    output: 2,
+                },
+                Operator::ExtendRecord {
+                    input: 0,
+                    fields,
+                    output: 3,
+                },
+                Operator::Return { value: 3 },
+            ],
+        }
+    }
+
+    fn run_extend(node: Value, fields: Vec<(String, Register)>) -> Result<Value, VmError> {
+        execute_program(
+            &extend_program(fields),
+            &mut Host,
+            &BTreeMap::from([("node".to_string(), node)]),
+            Revision(1),
+            Tick(1),
+            ExecutionLimits {
+                fuel: 64,
+                max_proposals: 0,
+            },
+        )
+        .map(|receipt| receipt.result)
+    }
+
+    /// THE load-bearing property. A reviser that rebuilds a record from scratch
+    /// silently discards whatever it does not understand — on a node being
+    /// revised, that means discarding its provenance. Extension must carry the
+    /// unnamed fields through untouched.
+    #[test]
+    fn extend_record_preserves_every_field_the_program_did_not_name() {
+        let result = run_extend(
+            stored_node_content(),
+            vec![("reaping".into(), 2), ("residency".into(), 1)],
+        )
+        .expect("extension executes");
+        let Value::Record(fields) = result else {
+            panic!("expected a record, got {result:?}");
+        };
+        // Untouched: the program never named these, and does not know what two
+        // of them mean.
+        assert_eq!(
+            fields.get("canonical_id"),
+            Some(&Value::Text("actor:l1:mind:claude-x".into()))
+        );
+        assert_eq!(fields.get("provenance"), Some(&Value::Text("built".into())));
+        assert_eq!(
+            fields.get("embodied_session"),
+            Some(&Value::Text("claude:x".into()))
+        );
+        assert_eq!(fields.get("base_revision"), Some(&Value::Integer(44)));
+        // Added.
+        assert_eq!(
+            fields.get("reaping"),
+            Some(&Value::Text("crowded the beacon out of its budget".into()))
+        );
+        // Nothing appeared that was neither stored nor named.
+        assert_eq!(fields.len(), 6, "unexpected field set: {fields:?}");
+    }
+
+    /// Naming a field that already exists IS the intent to set it: revising a
+    /// value in place is the point of the operator, not an accident of it.
+    #[test]
+    fn extend_record_writes_a_named_field_that_already_existed() {
+        let before = stored_node_content();
+        let Value::Record(before_fields) = &before else {
+            unreachable!()
+        };
+        assert_eq!(
+            before_fields.get("residency"),
+            Some(&Value::Text("hot".into())),
+            "the fixture must start hot for this test to mean anything"
+        );
+        let result = run_extend(before, vec![("residency".into(), 1)]).expect("extension executes");
+        let Value::Record(fields) = result else {
+            panic!("expected a record");
+        };
+        assert_eq!(fields.get("residency"), Some(&Value::Text("dormant".into())));
+        // and the rest still survives the overwrite
+        assert_eq!(fields.get("provenance"), Some(&Value::Text("built".into())));
+        assert_eq!(fields.len(), 5);
+    }
+
+    /// `GetField` is what lets a program act on what it observed rather than on
+    /// what its caller handed it. An absent field must trap, not read as `Unit`.
+    #[test]
+    fn get_field_binds_a_field_and_refuses_to_invent_an_absent_one() {
+        let program = |field: &str| {
+            execute_program(
+                &CodeDefinition {
+                    ir_version: universe_ir::IR_VERSION,
+                    revision: Revision(1),
+                    required_capabilities: vec![],
+                    operators: vec![
+                        Operator::Input {
+                            name: "node".into(),
+                            output: 0,
+                        },
+                        Operator::GetField {
+                            input: 0,
+                            field: field.to_string(),
+                            output: 1,
+                        },
+                        Operator::Return { value: 1 },
+                    ],
+                },
+                &mut Host,
+                &BTreeMap::from([("node".to_string(), stored_node_content())]),
+                Revision(1),
+                Tick(1),
+                ExecutionLimits {
+                    fuel: 32,
+                    max_proposals: 0,
+                },
+            )
+            .map(|receipt| receipt.result)
+        };
+
+        assert_eq!(
+            program("base_revision").expect("a present field binds"),
+            Value::Integer(44)
+        );
+        // The node records no lifetime. That is not a zero and not a Unit.
+        match program("expires_at") {
+            Err(VmError::MissingField { field }) => assert_eq!(field, "expires_at"),
+            other => panic!("an absent field must trap, got {other:?}"),
+        }
+    }
+
+    /// `Only` is the single bridge from a selection (always a list) to a thing.
+    /// It is strict on purpose: taking a head would turn a selection that failed
+    /// to narrow into an attributable mutation of whichever node sorted first.
+    #[test]
+    fn only_binds_the_sole_element_and_refuses_to_choose() {
+        let one = Value::List(vec![stored_node_content()]);
+        let program = |input: Value| {
+            execute_program(
+                &CodeDefinition {
+                    ir_version: universe_ir::IR_VERSION,
+                    revision: Revision(1),
+                    required_capabilities: vec![],
+                    operators: vec![
+                        Operator::Input {
+                            name: "candidates".into(),
+                            output: 0,
+                        },
+                        Operator::Only {
+                            input: 0,
+                            output: 1,
+                        },
+                        Operator::Return { value: 1 },
+                    ],
+                },
+                &mut Host,
+                &BTreeMap::from([("candidates".to_string(), input)]),
+                Revision(1),
+                Tick(1),
+                ExecutionLimits {
+                    fuel: 32,
+                    max_proposals: 0,
+                },
+            )
+            .map(|receipt| receipt.result)
+        };
+
+        assert_eq!(
+            program(one).expect("a one-element selection binds"),
+            stored_node_content()
+        );
+
+        // Nothing matched: not a null to carry onward.
+        assert!(
+            matches!(
+                program(Value::List(vec![])),
+                Err(VmError::NotExactlyOne { found: 0 })
+            ),
+            "an empty selection must trap"
+        );
+
+        // Three matched: the program believed it had one. It must not proceed on
+        // whichever happened to sort first.
+        assert!(
+            matches!(
+                program(Value::List(vec![
+                    stored_node_content(),
+                    stored_node_content(),
+                    stored_node_content(),
+                ])),
+                Err(VmError::NotExactlyOne { found: 3 })
+            ),
+            "a selection that did not narrow must trap, never pick"
+        );
+    }
+
+    /// An extension naming no field never reaches the VM: it is a copy that
+    /// would advance a generation and retain nothing, so the validator refuses
+    /// it exactly as it refuses an empty `EvidenceAll`.
+    #[test]
+    fn an_extension_that_names_no_field_is_rejected_at_validation() {
+        let error =
+            run_extend(stored_node_content(), vec![]).expect_err("an empty extension must not compile");
+        // Operator 3 is the ExtendRecord in `extend_program`.
+        assert!(
+            matches!(error, VmError::Compile(CompileError::ZeroBound(3))),
+            "expected a zero-bound rejection at the extension, got {error:?}"
+        );
+    }
+
+    /// A non-record input is a deterministic type error. It must never be
+    /// silently promoted into a fresh record — that would be `MakeRecord`
+    /// wearing this operator's name, and would lose exactly what it exists to
+    /// keep.
+    #[test]
+    fn extend_record_rejects_a_non_record_input() {
+        let error = run_extend(Value::Text("not a record".into()), vec![("residency".into(), 1)])
+            .expect_err("a non-record input must not extend");
+        assert!(
+            matches!(error, VmError::Type { expected: "record" }),
+            "expected a record type error, got {error:?}"
+        );
+    }
+
     fn repeat_until_fixture() -> CodeDefinition {
         serde_json::from_str(include_str!(
             "../../../fixtures/graph-ir/repeat-until-limit.json"
@@ -1086,7 +1386,6 @@ mod tests {
                 execution_receipt_hash,
                 independent_readback_hash: "5".repeat(64),
                 content_hashes_verified: true,
-                causal_chain_verified: true,
                 contradictory: false,
             }),
         }
@@ -1264,8 +1563,8 @@ mod tests {
     fn graph_owned_behavior_loop_health_closes_with_complete_measured_proof() {
         let input = measured_behavior_loop_health_input();
         let receipt = execute_behavior_loop_health_receipt(&input);
-        assert_eq!(receipt.fuel_used, 39);
-        assert_eq!(receipt.trace.len(), 39);
+        assert_eq!(receipt.fuel_used, 38);
+        assert_eq!(receipt.trace.len(), 38);
         assert!(receipt.proposals.is_empty());
         let graph_health = decode_behavior_loop_health(&receipt.result).unwrap();
         assert_eq!(

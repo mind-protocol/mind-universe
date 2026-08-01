@@ -144,15 +144,63 @@ export interface EmbodimentMotionProfile {
   };
 }
 
+/**
+ * A toolkit's OWN appearance, carried as a member of the construct that holds it
+ * (`visual-embodiment/1-role-keyed`). Forms are declared per archetype rather
+ * than per LOD, and each archetype names the role_axis / semantic types it
+ * dresses — so a node resolves its form through the toolkit that produced it.
+ * There is no `lod_states` and no top-level `forms`: this is deliberately NOT
+ * the citizen-energy schema, which is what keeps a node produced by one toolkit
+ * out of another toolkit's form family.
+ */
+export interface RoleKeyedEmbodimentMapping {
+  readonly schema_version: "visual-embodiment/1-role-keyed";
+  readonly primitive_budget: number;
+  readonly particle_budget: number;
+  readonly palette: VisualEmbodimentMapping["palette"];
+  readonly archetypes: Readonly<
+    Record<
+      string,
+      {
+        readonly role_axis?: string;
+        readonly declared_for?: readonly string[];
+        readonly fallback_form?: string;
+        readonly forms: Readonly<
+          Record<string, readonly EmbodimentPrimitiveTuple[]>
+        >;
+      }
+    >
+  >;
+  readonly dormant_form?: Readonly<
+    Record<string, readonly EmbodimentPrimitiveTuple[]>
+  >;
+}
+
 export interface EntityEmbodiment {
   readonly source_mapping_id: string;
-  readonly mapping: VisualEmbodimentMapping;
-  readonly motion_profile: EmbodimentMotionProfile;
+  readonly mapping: VisualEmbodimentMapping | RoleKeyedEmbodimentMapping;
+  /**
+   * Present only when the binding declares one. A role-keyed toolkit binding
+   * carries no motion profile, and fabricating an empty one would let the
+   * motion-driven renderer read invented bounds as authority.
+   */
+  readonly motion_profile?: EmbodimentMotionProfile;
   readonly residency: PhysicalResidency;
   readonly sampled_at_ms: number;
   readonly previous_position?: Vector3;
   readonly previous_sampled_at_ms?: number;
   readonly reduced_motion?: boolean;
+}
+
+/**
+ * An embodiment the motion-driven citizen-energy renderer can actually draw: the
+ * LOD-keyed mapping AND a declared motion profile. Narrowing at the type level is
+ * what keeps a node produced by another toolkit out of that form family — the
+ * failure the resolution policy names first among its forbidden cases.
+ */
+export interface CitizenEnergyEmbodiment extends EntityEmbodiment {
+  readonly mapping: VisualEmbodimentMapping;
+  readonly motion_profile: EmbodimentMotionProfile;
 }
 
 export type EntityVisualPrimitive =
@@ -221,10 +269,22 @@ export interface EntityProvenance {
   readonly producingToolkit?: string;
 }
 
+// On whose authority this node is WHERE it is. `built` — a citizen placed it and
+// the store holds that placement; the solver must not move it. `scaffold` — nothing
+// has ever placed it, so the layout kernel proposed a starting spot. The two must
+// stay distinguishable: a proposal read as a construction is a fabricated history.
+export type PlacementProvenance = "built" | "scaffold";
+
 export interface MaterializedEntity {
   readonly id: EntityId;
   readonly generation: number;
   readonly position: Vector3;
+  /**
+   * Absent ⇒ the projection did not say. That is `unknown`, NOT "scaffold" — a
+   * source that never declared provenance is not evidence that a place was
+   * proposed rather than built.
+   */
+  readonly placement?: PlacementProvenance;
   readonly visual: EntityVisualDescriptor;
   readonly embodiment?: EntityEmbodiment;
   readonly audio?: EntityAudio;

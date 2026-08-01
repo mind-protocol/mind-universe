@@ -6,6 +6,7 @@ import type { MaterializedEntity, UniverseEvent } from "./contracts";
 import { universeEventFromServerFrame } from "./protocol-adapter";
 import { renderSceneSvg } from "./scene-svg";
 import { applyUniverseEvent, emptyUniverseView } from "./universe-state";
+import { citizenEnergyMapping } from "./embodiment";
 
 // Appearance lives IN the toolkit: the underground binding is carried AS a member
 // of the construct (subtype physicalization_binding), reached via the construct's
@@ -64,7 +65,7 @@ describe("provenance-based visual resolution in the renderer", () => {
     for (const id of [AURORA, NYX]) {
       const entity = view.entities.get(id);
       expect(entity?.embodiment).toBeDefined();
-      expect(entity!.embodiment!.mapping.mapping_id).toBe(
+      expect(citizenEnergyMapping(entity!.embodiment!).mapping_id).toBe(
         "citizen-energy-semi-humanoid-v1"
       );
     }
@@ -154,5 +155,110 @@ describe("role-keyed toolkit binding (underground) resolves through provenance",
     // No archetype is declared_for this type and no role_axis matches → fallback.
     const svg = renderSceneSvg(undergroundView("NotAnUndergroundType", "hot", "unbound"));
     expect(svg).toContain(resolutionPolicy.fallback_presence.palette.particle);
+  });
+});
+
+// A toolkit's OWN binding, arriving on the wire the way the projector now emits
+// it: role-keyed mapping, no motion profile, and the provenance to key on. Every
+// one of these was a reason the binding never reached the renderer — the adapter
+// required the LOD-keyed schema and a motion profile, so it dropped the frame.
+const UNDERGROUND_MEMBER = "0000000000000000000000000000c001";
+
+function undergroundFrame(residency: string, roleAxis: string) {
+  return {
+    protocol_version: 0,
+    sequence: 2,
+    payload: {
+      message_type: "entity_materialized",
+      entity: {
+        id: UNDERGROUND_MEMBER,
+        generation: 0,
+        symbol: "narrative",
+        content_kind: "justification",
+        residency,
+        position_micro: [0, 0, 0],
+        placement: { provenance: "scaffold" },
+        visual: {
+          primitive: "unknown",
+          motion: "still",
+          material: {
+            color: "#8a97a8",
+            emissive: "#2b3440",
+            emissive_intensity_micro: 0,
+            opacity_micro: 700_000,
+            scale_micro: 1_000_000
+          }
+        },
+        label: "narrative",
+        detail: "justification",
+        state: residency,
+        epistemic: "measured",
+        dynamics: { embedding_micro: [0, 0, 0, 0] },
+        provenance: {
+          canonical_id: "justification:l2:mind-universe:underground-toolkit-v0",
+          role_axis: roleAxis,
+          semantic_type: "justification",
+          producing_toolkit: "space:l2:mind-universe:underground-toolkit-v0"
+        },
+        embodiment: {
+          source_mapping_id: undergroundMember.id,
+          mapping: undergroundMember.content,
+          residency,
+          sampled_at_ms: 0,
+          resolved_form: null,
+          confident: true
+        }
+      }
+    }
+  };
+}
+
+function foldUnderground(residency: string, roleAxis: string) {
+  let view = emptyUniverseView();
+  const frames = [
+    {
+      protocol_version: 0,
+      sequence: 1,
+      payload: { message_type: "snapshot", revision: 1 }
+    },
+    undergroundFrame(residency, roleAxis)
+  ];
+  for (const frame of frames) {
+    const event = universeEventFromServerFrame(frame);
+    expect(event).not.toBeNull();
+    view = applyUniverseEvent(view, event as UniverseEvent);
+  }
+  return view;
+}
+
+describe("a toolkit dresses what it produced", () => {
+  it("keeps a role-keyed binding that declares no motion profile", () => {
+    const entity = foldUnderground("sleeping", "narrative").entities.get(
+      UNDERGROUND_MEMBER
+    ) as MaterializedEntity;
+    expect(entity.embodiment).toBeDefined();
+    expect(entity.embodiment!.mapping.schema_version).toBe(
+      "visual-embodiment/1-role-keyed"
+    );
+    // Nothing was invented to fill the gap the authority left.
+    expect(entity.embodiment!.motion_profile).toBeUndefined();
+  });
+
+  it("draws the underground archetype for the node's role, not the bare fallback", () => {
+    const svg = renderSceneSvg(foldUnderground("sleeping", "narrative"));
+    // The reservoir archetype is the one declared for role_axis `narrative`; its
+    // form is drawn in the underground toolkit's own palette.
+    expect(svg).toContain("#c9b98a");
+    expect(svg).not.toContain(resolutionPolicy.fallback_presence.palette.core);
+  });
+
+  it("leaves a role its toolkit never declared honestly unbound", () => {
+    // The underground binding declares no archetype for `metric`, a node_type off
+    // the closed role axis. No archetype ⇒ bare presence, never a borrowed dress.
+    const svg = renderSceneSvg(foldUnderground("sleeping", "metric"));
+    // The bare presence is a single particle point, drawn in the fallback
+    // palette's particle colour — a recognizably unbound node.
+    expect(svg).toContain(resolutionPolicy.fallback_presence.palette.particle);
+    expect(svg).not.toContain("#c9b98a");
   });
 });

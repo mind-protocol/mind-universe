@@ -346,11 +346,6 @@ pub fn convert_sources(
             UniverseWriteSet {
                 base_revision: snapshot.revision,
                 idempotency_key: CHANGE_ID.to_owned(),
-                causal_ancestry: vec![
-                    CHANGE_ID.to_owned(),
-                    CONTRACT_ID.to_owned(),
-                    MAPPING_ID.to_owned(),
-                ],
                 commands,
             },
         )?;

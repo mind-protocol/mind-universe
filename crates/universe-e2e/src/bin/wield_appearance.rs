@@ -334,16 +334,10 @@ fn run() -> Result<(), Box<dyn Error>> {
         &mut commands,
     )?;
 
-    // Only the four closed MutationBond write verbs; 0 InternSymbols.
-    for command in &commands {
-        match command {
-            UniverseCommand::InternSymbols { .. }
-            | UniverseCommand::PutEntity { .. }
-            | UniverseCommand::PutRelation { .. }
-            | UniverseCommand::TombstoneRelation { .. } => {}
-            other => return Err(format!("appearance emitted a non-MutationBond verb {other:?}").into()),
-        }
-    }
+    // The four MutationBond write verbs are now the WHOLE of UniverseCommand, so
+    // the closed-verb guard is carried by the type rather than by a runtime check
+    // that can no longer fire: the fifth verb it excluded no longer exists
+    // anywhere in the kernel. The 0-InternSymbols rule below still bites.
     if commands
         .iter()
         .any(|c| matches!(c, UniverseCommand::InternSymbols { .. }))
@@ -354,7 +348,6 @@ fn run() -> Result<(), Box<dyn Error>> {
     let write_set = UniverseWriteSet {
         base_revision,
         idempotency_key: "appearance:magic-cup:v0".into(),
-        causal_ancestry: vec!["changeset:appearance-toolkit-v0".into()],
         commands,
     };
     let boundary_tick = Tick(snapshot.tick.0 + 1);
@@ -508,7 +501,6 @@ fn translate_step(
         store,
         base_revision,
         "appearance:step:v0".into(),
-        vec!["changeset:appearance-toolkit-v0".into()],
     )?;
     if write_set.commands.len() != 1 {
         return Err(format!("translator produced {} commands, expected 1", write_set.commands.len()).into());

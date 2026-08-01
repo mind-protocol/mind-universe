@@ -247,8 +247,11 @@ struct AlarmDriver {
     /// The measured receipts of every drained request, in drain order — evidence,
     /// not self-declared success.
     executed: Vec<ExecutionReceipt>,
-    /// The subject atom of every request whose program translated to a Moment.
+    /// The subject atom of every request whose program translated to a Moment,
+    /// plus the causal tokens composed for it -- surfaced from the driver that
+    /// actually builds them, never read back out of a receipt.
     translated_subjects: Vec<EntityKey>,
+    translated_ancestry: Vec<String>,
 }
 
 impl TriggerTickDriver for AlarmDriver {
@@ -321,11 +324,11 @@ impl TriggerTickDriver for AlarmDriver {
             .push("construct:l2:lumina-prime:house-alarm-v0:heartbeat-fire".to_string());
 
         self.translated_subjects.push(self.evidence.alarm_trigger);
+        self.translated_ancestry = causal_ancestry;
 
         Ok(Some(UniverseWriteSet {
             base_revision: self.evidence.base_revision,
             idempotency_key: MOMENT_ID.to_string(),
-            causal_ancestry,
             commands: vec![UniverseCommand::PutEntity {
                 entity: EntityRecord {
                     key: moment_key,
@@ -467,6 +470,7 @@ fn drive(store_dir: &Path, genesis: &Path, fixture: &Path) -> Result<HeartbeatRu
         },
         executed: Vec::new(),
         translated_subjects: Vec::new(),
+        translated_ancestry: Vec::new(),
     };
 
     // ---- tick N+1 (advance #2): drain -> run program -> commit Moment in-tick.
@@ -479,10 +483,6 @@ fn drive(store_dir: &Path, genesis: &Path, fixture: &Path) -> Result<HeartbeatRu
         .ok_or("tick N+1 committed nothing — the drained wake request did not commit a Moment")?;
     let commit_tick = match &commit_receipt {
         CommitReceipt::Committed { tick, .. } | CommitReceipt::AlreadyCommitted { tick, .. } => *tick,
-    };
-    let causal_ancestry = match &commit_receipt {
-        CommitReceipt::Committed { causal_ancestry, .. } => causal_ancestry.clone(),
-        CommitReceipt::AlreadyCommitted { .. } => Vec::new(),
     };
 
     // INDEPENDENT readback: fresh reopen from disk.
@@ -525,7 +525,7 @@ fn drive(store_dir: &Path, genesis: &Path, fixture: &Path) -> Result<HeartbeatRu
         moment_key,
         moment_content,
         moment_content_readback,
-        causal_ancestry,
+        causal_ancestry: driver.translated_ancestry,
     })
 }
 

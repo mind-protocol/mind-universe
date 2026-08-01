@@ -699,10 +699,6 @@ pub fn run_projection(
         UniverseWriteSet {
             base_revision: independent.revision,
             idempotency_key: format!("asset-projection:{}", manifest.batch.batch_id),
-            causal_ancestry: vec![
-                manifest.contract.contract_id.clone(),
-                manifest.mapping.mapping_id.clone(),
-            ],
             commands: vec![
                 UniverseCommand::PutEntity {
                     entity: EntityRecord {

@@ -7,11 +7,12 @@
 //                                    ActorSession for this session. Sponsored, so
 //                                    it persists as an inhabitant (visible on the
 //                                    desktop); re-running the same id re-admits.
-//   UserPromptSubmit  -> `sense`  : INJECT the submitted prompt as a situated,
-//                                    attributed perturbation (an `act`), then
-//                                    return the world AFTER it — the same
-//                                    first-person frame `sense` builds, now of
-//                                    the post-commit revision.
+//   UserPromptSubmit  -> `sense`  : PERCEIVE, and only perceive — a bounded
+//                                    first-person frame of the world as it
+//                                    currently stands, focused by the submitted
+//                                    prompt. Nothing is written: the adapter
+//                                    holds no transform verb, so a prompt cannot
+//                                    steer a change to the world from here.
 //
 // It is NOT a second ontology, and it does NOT re-derive readable prose: it
 // drives the real `mind-mcp` binary one-shot over stdio (the exact adapter the
@@ -20,10 +21,12 @@
 // holds NO label/verb dictionaries. An unmounted store is reported honestly (the
 // Rust `text` frame says so itself), never fabricated as "empty".
 //
-// HONEST LIMIT: the UserPromptSubmit `act` commits a WRITTEN perturbation — an
-// inert `construct`/proposal node with provenance and a construction moment,
-// committed atomically and read back independently. It is NOT a live firing of a
-// construct's mechanism; the world-after reflects a committed write, not a run.
+// HONEST LIMIT: this hook writes nothing per prompt. It once drove an `act` verb
+// that committed the prompt as a situated perturbation; `act` was removed from
+// the adapter (arrive + sense are the whole surface), which killed this hook
+// SILENTLY — the failure only surfaced once the frame was shown to the user.
+// What comes back is a READ of the current revision: never evidence that
+// anything ran, landed, or changed.
 //
 // Everything resolves repo-relative (with env overrides), so the script is not
 // pinned to one machine. It always exits 0: a perception hook must never block
@@ -65,12 +68,11 @@ const ORIGIN = "Claude Code/Anthropic";
 // adapter degrades to its own fallback vantage (no error).
 const SENSE_ORIGIN =
   process.env.MIND_SENSE_ORIGIN || "0000000000000000000000000000b000";
-// A sponsor unlocks the Propose (write) capability. It makes `arrive` materialise
-// a DURABLE inhabitant, and it lets the UserPromptSubmit `act` actually commit
-// its perturbation. The child's session registry persists across the lines of a
-// single spawn, so an `arrive` that sponsors a session id is in force for an
-// `act` on that same id in the same process — fail-closed authority is honoured
-// (an unsponsored walk-in still cannot write), never bypassed.
+// A sponsor makes `arrive` materialise a DURABLE inhabitant instead of an
+// ephemeral walk-in, so the body that perceives is the one that persists in the
+// city between prompts. The child's session registry lives across the lines of a
+// single spawn, so the `arrive` opening the pair is in force for the `sense` that
+// follows it on the same id — fail-closed authority honoured, never bypassed.
 const SPONSOR = process.env.MIND_SPONSOR || "nlr_ai";
 
 /** Read all of stdin (the hook payload JSON). */
@@ -90,11 +92,31 @@ function emitAndExit(obj) {
   process.exit(0);
 }
 
+// Whether the frame is ALSO shown to the human. `additionalContext` only ever
+// reaches the model; `systemMessage` is the one hook field Claude Code renders
+// in the UI. Set MIND_HOOK_DISPLAY=0 to keep the perception silent.
+const DISPLAY = process.env.MIND_HOOK_DISPLAY !== "0";
+// 0 = no truncation (the Rust renderer already bounds `text` to ~2500 chars).
+const DISPLAY_MAX = Number(process.env.MIND_HOOK_DISPLAY_MAX || 0);
+
+/**
+ * The exact string handed to the model, handed to the user too — one frame, not
+ * a second composition, so what the human reads is what the model read. A cap,
+ * if set, is marked as a cut rather than passed off as the whole frame.
+ */
+function display(text) {
+  if (!DISPLAY || !text) return undefined;
+  if (DISPLAY_MAX > 0 && text.length > DISPLAY_MAX) {
+    return `${text.slice(0, DISPLAY_MAX)}\n… (frame tronqué à ${DISPLAY_MAX} car. — le modèle a reçu les ${text.length})`;
+  }
+  return text;
+}
+
 /**
  * Drive mind-mcp one-shot: feed each call in `calls` as one JSON-RPC line
  * (ids 1..n). The child processes the lines in order and its session registry
  * persists across them within the single spawn, so a sponsoring `arrive` is in
- * force for a later `act` on the same session id. Resolves `{ result }` with the
+ * force for a later `sense` on the same session id. Resolves `{ result }` with the
  * reply of the LAST request, or `{ error }` on any failure.
  */
 function callMcp(calls) {
@@ -185,30 +207,39 @@ async function main() {
       { name: "arrive", args: { session_id: sessionId, origin: ORIGIN, sponsor: SPONSOR } },
     ]);
   } else {
-    // UserPromptSubmit: INJECT then PERCEIVE. Sponsor-arrive first (same id, same
-    // spawn) so the session holds Propose and the `act` genuinely commits; then
-    // `act` commits the prompt as a situated perturbation and returns the actor's
-    // POV of the world AFTER. `where` sets both the perturbation's situation and
-    // the readback vantage to the civic beacon; `intent` is the submitted prompt,
-    // so the perturbation is attributed to this session and to what it asked.
+    // UserPromptSubmit: ARRIVE then PERCEIVE. Sponsor-arrive first (same id, same
+    // spawn) so the body that perceives is the durable inhabitant rather than a
+    // fresh walk-in; then `sense` reads the world from it. `where` sets the
+    // vantage to the civic beacon; `focus` carries the submitted prompt, so the
+    // frame is shaped by what was asked — it steers PERCEPTION, not the world.
     call = await callMcp([
       { name: "arrive", args: { session_id: sessionId, origin: ORIGIN, sponsor: SPONSOR } },
       {
-        name: "act",
-        args: { actor_id: sessionId, where: SENSE_ORIGIN, intent: hook.prompt || "" },
+        name: "sense",
+        args: { actor_id: sessionId, where: SENSE_ORIGIN, focus: hook.prompt || "" },
       },
     ]);
     relayFrame = true;
   }
 
   if (call.error) {
-    // Never block the session; surface the reason only via stderr (--debug).
+    // Never block the session — but never let a silent degrade read as a
+    // successful perception either: the user is told the frame is missing and
+    // why. stderr keeps the same reason for --debug.
     process.stderr.write(`mind-hook(${verb}): ${call.error}\n`);
-    return emitAndExit({ suppressOutput: true });
+    return emitAndExit({
+      suppressOutput: true,
+      systemMessage: display(`mind-hook(${verb}) : aucune perception — ${call.error}`),
+    });
   }
 
   const sc = call.result && call.result.structuredContent;
-  if (!sc) return emitAndExit({ suppressOutput: true });
+  if (!sc) {
+    return emitAndExit({
+      suppressOutput: true,
+      systemMessage: display(`mind-hook(${verb}) : réponse MCP sans structuredContent.`),
+    });
+  }
 
   // The perceive path relays the Rust-owned readable frame (Observation.text)
   // VERBATIM — including the honest "no Universe is mounted" frame the adapter
@@ -218,8 +249,16 @@ async function main() {
     ? (typeof sc.text === "string" && sc.text.length ? sc.text : null)
     : summariseArrive(sc);
 
-  if (!additionalContext) return emitAndExit({ suppressOutput: true });
-  emitAndExit({ hookSpecificOutput: { hookEventName, additionalContext } });
+  if (!additionalContext) {
+    return emitAndExit({
+      suppressOutput: true,
+      systemMessage: display(`mind-hook(${verb}) : l'Observation ne portait pas de frame lisible.`),
+    });
+  }
+  emitAndExit({
+    hookSpecificOutput: { hookEventName, additionalContext },
+    systemMessage: display(additionalContext),
+  });
 }
 
 main().catch((e) => {

@@ -1,23 +1,29 @@
 //! The mounted Universe the adapter observes.
 //!
-//! `sense` and `act` are headless interfaces into the SAME Universe semantics
-//! as the 3D world (CLAUDE.md, "Headless adapters"). The adapter therefore
-//! holds a real [`Supervisor`] booted from a store + genesis, never a private
-//! projection. When no store is mounted the adapter says so honestly instead of
-//! fabricating a world: an unmounted `sense` is `unknown`, not empty.
+//! `sense` is a headless interface into the SAME Universe semantics as the 3D
+//! world (CLAUDE.md, "Headless adapters"). The adapter therefore holds a real
+//! [`Supervisor`] booted from a store + genesis, never a private projection.
+//! When no store is mounted the adapter says so honestly instead of fabricating
+//! a world: an unmounted `sense` is `unknown`, not empty.
+//!
+//! There is no general write path here. The adapter is a pipe, not a host
+//! (CLAUDE.md, "MCP is a pipe, not a host"): changing the world is not a
+//! transport's to offer. The one write that remains is [`World::materialize_actor`],
+//! reached only from `arrive`, which turns an admitted sponsored session into a
+//! durable inhabitant.
 
 use std::env;
-use std::fs;
 use std::path::PathBuf;
 
 use serde_json::{json, Value};
 use universe_core::{EntityKey, RelationKey, UniverseError};
+use universe_e2e::canonical::canonical_predicate;
 use universe_e2e::mutation_translate::{translate_mutation_proposal, MutationPlan};
-use universe_store::{ContentRef, EntityRecord, RelationRecord, UniverseSnapshot, UniverseStore};
+use universe_store::{ContentRef, UniverseSnapshot, UniverseStore};
 use universe_supervisor::{PhaseHook, RuntimeInventory, Supervisor, TickPhase};
 use universe_transactions::{CommitReceipt, UniverseCommand, UniverseTransaction, UniverseWriteSet};
 
-use crate::session::{ActorSession, Capability};
+use crate::session::{ActorSession, Capability, RecalledBody};
 
 /// Environment variables that point the adapter at a real Universe, mirroring
 /// the `universe-server` binary's positional arguments.
@@ -44,9 +50,8 @@ impl World {
     /// Boots from `UNIVERSE_STORE` + `UNIVERSE_GENESIS` if both are set.
     ///
     /// A missing configuration or a failed boot is not fatal: the adapter still
-    /// serves, and every `sense`/`act` reports the honest unmounted state. This
-    /// keeps the transport observable for tooling without ever inventing a
-    /// Universe.
+    /// serves, and every `sense` reports the honest unmounted state. This keeps
+    /// the transport observable for tooling without ever inventing a Universe.
     pub fn from_env() -> Self {
         let store = env::var(STORE_ENV).ok().filter(|value| !value.is_empty());
         let genesis = env::var(GENESIS_ENV).ok().filter(|value| !value.is_empty());
@@ -104,244 +109,49 @@ impl World {
         }
     }
 
-    /// Commits an `act` as a **real graph mutation** in the one reality, then
-    /// reads it back independently.
+    /// Looks for the **durable body** this session already built, and reads its
+    /// recorded facts back. Read-only: it opens no store handle, writes nothing,
+    /// and reads the content of at most ONE entity.
     ///
-    /// This is the wired write path, and every command it emits is compiled
-    /// through the generic write-side translator
-    /// (`universe_e2e::mutation_translate::translate_mutation_proposal`): a
-    /// mutation becomes exactly ONE of the four kernel verbs, a type-level
-    /// guarantee, never a hand-rolled `UniverseCommand`. It assembles a
-    /// `construct` entity (carrying the intent, its builder session, and
-    /// `provenance: "built"`), a `construction_moment` (the authored evidence —
-    /// a Built fact with no construction Moment is a forgery), and their
-    /// relations, and commits them as ONE atomic transaction at the next tick
-    /// boundary. The supervisor's snapshot advances, so the following `sense`
-    /// sees the new revision.
+    /// `materialize_actor` derives the body's key deterministically from the
+    /// session id (that is what makes re-arriving idempotent), so recalling it is
+    /// a direct key lookup rather than a scan — the same contract read backwards.
     ///
-    /// The commit is real but WRITTEN, not RUNNING: a `construct` node persists
-    /// in the graph and the revision advances, but no live mechanism is wired or
-    /// fired yet. Independent readback (a fresh store replay) is the evidence —
-    /// never the committing snapshot's own word. A `prepare` rejection (conflict
-    /// or validation) returns `Err` and commits nothing: prior state is intact.
+    /// The body is only accepted when its own `embodied_session` equals the id
+    /// asked for. A key that exists but names a different session is a collision
+    /// or a reused block, never this presence: it returns `None` and the caller
+    /// falls back to a fresh walk-in (fail-closed).
     ///
-    /// **Authority is enforced here, at the write site, fail-closed.** A durable
-    /// transformation requires the acting session to hold the `Propose` (write)
-    /// capability (minted only for a sponsored visitor or higher — see
-    /// `session.rs`). A session that does not hold it is refused *before any store
-    /// handle is opened or any command is built*: `Err` is returned, nothing is
-    /// committed, and the reason names the session and the missing power. An
-    /// unauthenticated walk-in can observe and speak, but it can never write.
-    pub fn commit_proposal(
-        &mut self,
-        intent: &str,
-        target: Option<&str>,
-        session: &ActorSession,
-    ) -> Result<ProposalOutcome, UniverseError> {
-        // Fail-closed authority gate. A write with no `Propose` capability is
-        // refused at the write site, attributably, before anything is touched —
-        // never a silent drop, never a fabricated success (CLAUDE.md: authority
-        // ENFORCED at the write site; "Acting requires a scope").
-        if !session.has(Capability::Propose) {
-            return Err(UniverseError::Validation(format!(
-                "authority denied: session '{}' (origin '{}', status {:?}) does not hold the \
-                 Propose (write) capability; a durable transformation requires a sponsor's \
-                 Capability Bond. Nothing committed (fail-closed).",
-                session.session_id, session.origin, session.status,
-            )));
-        }
-
-        let World::Mounted {
-            supervisor,
-            store_root,
-        } = self
-        else {
-            return Err(UniverseError::Validation("no Universe mounted".into()));
+    /// An unmounted world recalls nothing — honestly `None`, which is `unknown`
+    /// and produces a walk-in, never a fabricated standing.
+    pub fn recall_body(&self, session_id: &str) -> Option<RecalledBody> {
+        let World::Mounted { supervisor, .. } = self else {
+            return None;
         };
-
-        // A second store handle over the same root: the translator
-        // content-addresses through a `UniverseStore`, and the supervisor does
-        // not hand out its private handle. Same on-disk content segment, so the
-        // `ContentRef`s it produces are readable at commit and readback.
-        let store = UniverseStore::open(&*store_root)?;
-
-        let base = supervisor.revision();
-        let target_key = target.and_then(|t| resolve_key(supervisor.snapshot(), t));
-
-        // Canonical predicate remap for the two write-path edges, via the SAME
-        // table the injection path uses (`canonical_predicate`). The authored
-        // names `CONSTRUCTED_BY` / `PROPOSES_ON` are NOT in the canonical
-        // ontology; interning them raw would mint new non-canonical symbols. The
-        // remap sends them to canonical `GROUNDS` (the construction_moment
-        // grounds the construct — the JUSTIFIED_BY pattern, swapped) and
-        // `PROPOSES_CHANGE_TO` (the construct proposes a change to its target),
-        // so the default act path interns 0 new non-canonical predicate symbols.
-        let (constructed_pred, constructed_swap) = canonical_predicate("CONSTRUCTED_BY")
-            .ok_or_else(|| UniverseError::Validation("CONSTRUCTED_BY has no canonical mapping".into()))?;
-        let (proposes_pred, proposes_swap) = canonical_predicate("PROPOSES_ON")
-            .ok_or_else(|| UniverseError::Validation("PROPOSES_ON has no canonical mapping".into()))?;
-
-        let requested: Vec<String> =
-            ["construct", "construction_moment", constructed_pred, proposes_pred]
-                .iter()
-                .map(|s| (*s).to_owned())
-                .collect();
-        let plan = supervisor.snapshot().plan_symbol_interning(&requested)?;
-        let sym = |name: &str| -> Result<u32, UniverseError> {
-            plan.assignments
-                .get(name)
-                .copied()
-                .ok_or_else(|| UniverseError::Validation(format!("symbol {name} not planned")))
-        };
-
-        // Deterministic id from the builder + intent (NOT the revision), so
-        // re-running the same act yields AlreadyCommitted (idempotent), not a
-        // duplicate construct — the ids below are stable across revisions.
-        let idempotency_key = format!(
-            "mcp:act:{}:{:016x}",
-            session.session_id,
-            fnv64(&format!("{}|{}", session.session_id, intent))
-        );
-        let seed = fnv64(&idempotency_key);
-        let kbase = (0x0AC7u128 << 96) | ((seed as u128) << 8);
-        let construct = EntityKey(kbase);
-        let moment = EntityKey(kbase | 1);
-        let rel_constructed = RelationKey(kbase | 2);
-        let rel_proposes = RelationKey(kbase | 3);
-
-        // The runtime proposal: the content each PutEntity plan draws from by
-        // field name. The translator content-addresses these — absent content is
-        // never coerced to a default.
-        let proposal = json!({
-            "construct_content": {
-                "kind": "construct",
-                "intent": intent,
-                "builder_session": session.session_id,
-                "origin": session.origin,
-                "target": target,
-                "base_revision": base.0,
-                "provenance": "built",
-            },
-            "moment_content": {
-                "kind": "construction_moment",
-                "authored_by": session.session_id,
-                "origin": session.origin,
-                "base_revision": base.0,
-                "note": "MCP act: intent committed as built matter (a construct), written not fired",
-            },
-        });
-
-        // Every mutation is a `MutationPlan`; each compiles to exactly one kernel
-        // verb through the generic translator. A fifth verb is unrepresentable.
-        let mut plans = Vec::new();
-        if !plan.additions.is_empty() {
-            plans.push(MutationPlan::InternSymbols {
-                symbols: plan.additions.clone(),
-            });
+        let key = actor_key_for_session(session_id);
+        let snapshot = supervisor.snapshot();
+        let entity = snapshot.entities.iter().find(|e| e.key == key)?;
+        let content = supervisor.read_content(entity.content.as_ref()?).ok()?;
+        // Fail-closed identity check: the body must name THIS session itself.
+        let embodied = content.get("embodied_session").and_then(Value::as_str)?;
+        if embodied != session_id {
+            return None;
         }
-        plans.push(MutationPlan::PutEntity {
-            key: construct,
-            generation: 0,
-            symbol: sym("construct")?,
-            content_field: Some("construct_content".into()),
-        });
-        plans.push(MutationPlan::PutEntity {
-            key: moment,
-            generation: 0,
-            symbol: sym("construction_moment")?,
-            content_field: Some("moment_content".into()),
-        });
-        // `GROUNDS` reads moment -> construct, so honour the remap's swap flag.
-        let (c_src, c_tgt) = if constructed_swap { (moment, construct) } else { (construct, moment) };
-        plans.push(MutationPlan::PutRelation {
-            key: rel_constructed,
-            generation: 0,
-            source: c_src,
-            target: c_tgt,
-            predicate: sym(constructed_pred)?,
-            content_field: None,
-        });
-        if let Some(target_key) = target_key {
-            let (p_src, p_tgt) = if proposes_swap { (target_key, construct) } else { (construct, target_key) };
-            plans.push(MutationPlan::PutRelation {
-                key: rel_proposes,
-                generation: 0,
-                source: p_src,
-                target: p_tgt,
-                predicate: sym(proposes_pred)?,
-                content_field: None,
-            });
-        }
-
-        // Compile each plan through the translator and gather its single command
-        // into ONE atomic write set — the four-verb boundary, enforced per plan.
-        let ancestry = vec![format!("session:{}", session.session_id)];
-        let mut commands: Vec<UniverseCommand> = Vec::with_capacity(plans.len());
-        for mp in &plans {
-            let ws = translate_mutation_proposal(
-                mp,
-                &proposal,
-                &store,
-                base,
-                idempotency_key.clone(),
-                ancestry.clone(),
-            )?;
-            commands.extend(ws.commands);
-        }
-
-        let write_set = UniverseWriteSet {
-            base_revision: base,
-            idempotency_key,
-            causal_ancestry: ancestry,
-            commands,
-        };
-        // A prepare rejection (conflict/validation) surfaces here as `Err` and
-        // commits nothing — the supervisor's snapshot is untouched.
-        let transaction = UniverseTransaction::prepare(supervisor.snapshot(), write_set)?;
-        supervisor.enqueue(transaction);
-        let receipts = supervisor.advance(&mut NoopHook)?;
-        let idempotent = matches!(receipts.first(), Some(CommitReceipt::AlreadyCommitted { .. }));
-
-        // Independent readback: a fresh reopen, never the committing snapshot.
-        let fresh = supervisor.independent_readback()?;
-        let construct_present = fresh.entities.iter().any(|e| e.key == construct);
-        let moment_present = fresh.entities.iter().any(|e| e.key == moment);
-        let constructed_by_present = fresh.relations.iter().any(|r| r.key == rel_constructed);
-
-        // On an idempotent re-run nothing NEW is committed this call; the nodes
-        // are already present (the readback evidence still proves it).
-        let mut committed_effects = Vec::new();
-        if !idempotent {
-            committed_effects.push(
-                json!({ "put_entity": construct.to_string(), "kind": "construct", "intent": intent }),
-            );
-            committed_effects
-                .push(json!({ "put_entity": moment.to_string(), "kind": "construction_moment" }));
-            committed_effects.push(
-                json!({ "put_relation": rel_constructed.to_string(), "predicate": constructed_pred }),
-            );
-            if let Some(target_key) = target_key {
-                committed_effects.push(json!({
-                    "put_relation": rel_proposes.to_string(),
-                    "predicate": proposes_pred,
-                    "target": target_key.to_string(),
-                }));
-            }
-        }
-
-        Ok(ProposalOutcome {
-            from_revision: base.0,
-            to_revision: fresh.revision.0,
-            idempotent,
-            committed_effects,
-            evidence: vec![json!({
-                "independent_readback": {
-                    "revision": fresh.revision.0,
-                    "construct_present": construct_present,
-                    "moment_present": moment_present,
-                    "constructed_by_present": constructed_by_present,
-                }
-            })],
+        Some(RecalledBody {
+            body_key: key.to_string(),
+            sponsor: content
+                .get("sponsor")
+                .and_then(Value::as_str)
+                .map(str::to_owned),
+            origin: content
+                .get("origin")
+                .and_then(Value::as_str)
+                .map(str::to_owned),
+            base_revision: content.get("base_revision").and_then(Value::as_u64),
+            recorded_status: content
+                .get("status")
+                .and_then(Value::as_str)
+                .map(str::to_owned),
         })
     }
 
@@ -357,11 +167,12 @@ impl World {
     /// `arrive` handler skips it) and, if it did, is refused fail-closed below —
     /// admission stays free, embodiment requires a scope.
     ///
-    /// It mirrors [`World::commit_proposal`] exactly: the same fail-closed
-    /// `Propose` gate, the same generic four-verb write through
-    /// `translate_mutation_proposal` (a mutation compiles to exactly one kernel
-    /// verb, a type-level guarantee), the same canonical-predicate discipline
-    /// (`PART_OF` is already canonical → 0 new predicate symbols), and the same
+    /// This is the ONLY write the adapter still performs, and it is not a
+    /// general one: it takes no caller-supplied intent, so nothing a caller says
+    /// can steer what is written. It is a fail-closed `Propose` gate, a generic
+    /// four-verb write through `translate_mutation_proposal` (a mutation compiles
+    /// to exactly one kernel verb, a type-level guarantee), the canonical
+    /// predicate `PART_OF` (already canonical → 0 new predicate symbols), and
     /// independent-readback evidence (a fresh store replay, never the committing
     /// snapshot's own word).
     ///
@@ -376,17 +187,16 @@ impl World {
     /// actor node is written anyway and the dropped edge is reported (never
     /// dangled).
     ///
-    /// The actor key is deterministic from the session id (the same fnv-based
-    /// `kbase` scheme `commit_proposal` uses, in a disjoint prefix block), so
-    /// re-arriving with the same session id is idempotent — `AlreadyCommitted`,
-    /// no duplicate inhabitant.
+    /// The actor key is deterministic from the session id (an fnv-based `kbase`
+    /// in the `0x0AC0` prefix block), so re-arriving with the same session id is
+    /// idempotent — `AlreadyCommitted`, no duplicate inhabitant.
     pub fn materialize_actor(
         &mut self,
         session: &ActorSession,
     ) -> Result<EmbodimentOutcome, UniverseError> {
-        // Fail-closed authority gate, identical to `commit_proposal`. Being
-        // present is free; embodying a durable inhabitant is a write, and a write
-        // with no `Propose` is refused before any store handle is opened.
+        // Fail-closed authority gate. Being present is free; embodying a durable
+        // inhabitant is a write, and a write with no `Propose` is refused before
+        // any store handle is opened.
         if !session.has(Capability::Propose) {
             return Err(UniverseError::Validation(format!(
                 "authority denied: session '{}' (origin '{}', status {:?}) does not hold the \
@@ -423,14 +233,30 @@ impl World {
             &|content| supervisor.read_content(content).ok(),
         );
 
+        // The Toolkit Shelf's access capability, resolved the same way and for
+        // the same reason. Granting it is how an inhabitant comes into the world
+        // already holding every toolkit the city has shelved — as reach, not as
+        // matter. Absent from this store, the grant is dropped and reported.
+        let toolkit_access_canonical_id = toolkit_access_canonical_id();
+        let toolkit_access_key = resolve_entity_by_canonical_id(
+            supervisor.snapshot(),
+            &toolkit_access_canonical_id,
+            &|content| supervisor.read_content(content).ok(),
+        );
+
         // `PART_OF` is already a canonical predicate → the remap is the identity
-        // and no new predicate symbol is minted.
+        // and no new predicate symbol is minted. The remap table is the SHARED
+        // one (`universe_e2e::canonical`), not an adapter-local copy: the
+        // authored-name -> canonical-predicate mapping is Universe vocabulary,
+        // and a transport that kept its own would be a second authority on it.
         let (part_of_pred, part_of_swap) = canonical_predicate("PART_OF")
             .ok_or_else(|| UniverseError::Validation("PART_OF has no canonical mapping".into()))?;
 
         // The `actor` type symbol should already exist in the store; plan its
         // interning so a MISSING symbol is interned and REPORTED, never assumed.
-        let requested: Vec<String> = ["actor", part_of_pred]
+        // `USED` rides alongside it: already canonical, planned the same way, so
+        // a store missing it interns it and SAYS so rather than assuming.
+        let requested: Vec<String> = ["actor", part_of_pred, GRANT_PREDICATE]
             .iter()
             .map(|s| (*s).to_owned())
             .collect();
@@ -443,15 +269,16 @@ impl World {
                 .ok_or_else(|| UniverseError::Validation(format!("symbol {name} not planned")))
         };
 
-        // Deterministic key from the session id (mirrors `commit_proposal`'s
-        // fnv-based `kbase`), in a disjoint `0x0AC0` prefix block so it never
-        // collides with an `act` construct (`0x0AC7`). Re-arriving with the same
-        // session id lands the same key + idempotency key → AlreadyCommitted.
-        let idempotency_key = format!("mcp:arrive:embody:{}", session.session_id);
-        let seed = fnv64(&idempotency_key);
-        let kbase = (0x0AC0u128 << 96) | ((seed as u128) << 8);
+        // Deterministic key from the session id: an fnv-based `kbase` in the
+        // `0x0AC0` prefix block. Re-arriving with the same session id lands the
+        // same key + idempotency key → AlreadyCommitted.
+        let idempotency_key = actor_idempotency_key(&session.session_id);
+        let kbase = actor_kbase(&session.session_id);
         let actor = EntityKey(kbase);
         let rel_part_of = RelationKey(kbase | 1);
+        // The grant edge shares the body's deterministic key block, so
+        // re-arriving lands the same edge and commits nothing new.
+        let rel_grant = RelationKey(kbase | 2);
 
         // `actor:l1:` is the identity convention the perception layer keys on. The
         // `claude-` namespace prefix is applied HERE; a redundant leading
@@ -481,6 +308,13 @@ impl World {
                 "sponsor": session.sponsor,
                 "status": format!("{:?}", session.status),
                 "base_revision": base.0,
+                // The passport's own lifetime, carried ONTO the body. Without it
+                // the node records no lifetime at all, and a later reaper reading
+                // this node can only answer `unknown` — missing data is not zero,
+                // so `--expired` could never judge a single body. The body is
+                // durable; this is not a self-destruct, it is the arrival fact
+                // that makes the lifetime READABLE from the node itself.
+                "expires_at": session.expires_at,
                 "note": "MCP arrive: a sponsored visitor embodied as a durable L1 inhabitant, \
 attached to the orientation beacon (Balise Zéro) via PART_OF",
             },
@@ -517,10 +351,27 @@ attached to the orientation beacon (Balise Zéro) via PART_OF",
                 content_field: None,
             });
         }
+        if let Some(access_key) = toolkit_access_key {
+            // The one grant: actor -> the capability that opens the Toolkit
+            // Shelf. Unswapped, because that is the direction a held-capability
+            // read walks (source must be the actor, or the grant is somebody
+            // else's). It hands over REACH, not matter — nothing of any
+            // toolkit's content is copied onto this body, so a blueprint revised
+            // tomorrow is held revised without touching this inhabitant again.
+            plans.push(MutationPlan::PutRelation {
+                key: rel_grant,
+                generation: 0,
+                source: actor,
+                target: access_key,
+                predicate: sym(GRANT_PREDICATE)?,
+                content_field: None,
+            });
+        }
 
         // Compile each plan through the translator, gather into ONE atomic write
-        // set, and commit at the next tick boundary — the same path as `act`.
-        let ancestry = vec![format!("session:{}", session.session_id)];
+        // set, and commit at the next tick boundary. Attribution rides in the
+        // content (`embodied_session`) and the idempotency key, both of which
+        // name the session.
         let mut commands: Vec<UniverseCommand> = Vec::with_capacity(plans.len());
         for mp in &plans {
             let ws = translate_mutation_proposal(
@@ -529,7 +380,6 @@ attached to the orientation beacon (Balise Zéro) via PART_OF",
                 &store,
                 base,
                 idempotency_key.clone(),
-                ancestry.clone(),
             )?;
             commands.extend(ws.commands);
         }
@@ -537,7 +387,6 @@ attached to the orientation beacon (Balise Zéro) via PART_OF",
         let write_set = UniverseWriteSet {
             base_revision: base,
             idempotency_key,
-            causal_ancestry: ancestry,
             commands,
         };
         // A prepare rejection commits nothing; prior state is intact.
@@ -552,6 +401,23 @@ attached to the orientation beacon (Balise Zéro) via PART_OF",
         let edge_present =
             beacon_key.is_some() && fresh.relations.iter().any(|r| r.key == rel_part_of);
         let dropped_edge = beacon_key.is_none();
+        let grant_present =
+            toolkit_access_key.is_some() && fresh.relations.iter().any(|r| r.key == rel_grant);
+        let grant_dropped = toolkit_access_key.is_none();
+
+        // What the grant REACHES, walked from the committed edges of the fresh
+        // snapshot: capability --APPLIES_IN--> shelf <--PART_OF-- toolkit. This
+        // is read at the post-commit revision, so the receipt reports the shelf
+        // as it stands NOW rather than as it stood when this body was authored —
+        // which is the whole point of handing over a bearing instead of a copy.
+        let (shelf_canonical_id, toolkits_reached) = match toolkit_access_key {
+            Some(access_key) if grant_present => read_shelf_through_grant(
+                &fresh,
+                access_key,
+                &|content| supervisor.read_content(content).ok(),
+            ),
+            _ => (None, Vec::new()),
+        };
 
         // On an idempotent re-run nothing NEW is committed this call; the node is
         // already present (the readback still proves it).
@@ -569,6 +435,14 @@ attached to the orientation beacon (Balise Zéro) via PART_OF",
                     "target": beacon_key.to_string(),
                 }));
             }
+            if let Some(access_key) = toolkit_access_key {
+                committed_effects.push(json!({
+                    "put_relation": rel_grant.to_string(),
+                    "predicate": GRANT_PREDICATE,
+                    "target": access_key.to_string(),
+                    "grants": toolkit_access_canonical_id.clone(),
+                }));
+            }
         }
 
         Ok(EmbodimentOutcome {
@@ -581,6 +455,12 @@ attached to the orientation beacon (Balise Zéro) via PART_OF",
             edge_present,
             dropped_edge,
             beacon_key: beacon_key.map(|k| k.to_string()),
+            toolkit_access_canonical_id,
+            toolkit_access_key: toolkit_access_key.map(|k| k.to_string()),
+            grant_present,
+            grant_dropped,
+            shelf_canonical_id,
+            toolkits_reached,
             interned_symbols,
             committed_effects,
             evidence: vec![json!({
@@ -588,260 +468,11 @@ attached to the orientation beacon (Balise Zéro) via PART_OF",
                     "revision": fresh.revision.0,
                     "actor_present": actor_present,
                     "part_of_beacon_present": edge_present,
+                    "toolkit_grant_present": grant_present,
                 }
             })],
         })
     }
-}
-
-/// Canonical predicate remap: an authored (portable) edge name -> an
-/// active-voice canonical predicate + a `swap` flag (reverse source/target).
-/// Ported from the `inject_energy_pen` bin — the injector this generalises.
-///
-/// FOLLOWUP: this table is duplicated from the `inject_*` bins because `mcp` is
-/// a detached workspace (see `Cargo.toml`). When the canonical remap earns a
-/// shared home (e.g. an exported helper in `universe-e2e`/`universe-store`),
-/// collapse both copies onto it. Every right-hand side below is a symbol from
-/// `fixtures/ontology/canonical-ontology.json`; the left-hand sides are not.
-fn canonical_predicate(authored: &str) -> Option<(&'static str, bool)> {
-    Some(match authored {
-        "PART_OF" => ("PART_OF", false),
-        "IMPLEMENTED_IN" => ("IMPLEMENTS", true),
-        "DEFINED_BY_CODE" => ("DEFINES", true),
-        "IMPLEMENTED_BY" => ("COMPILES_TO", false),
-        "JUSTIFIED_BY" => ("GROUNDS", true),
-        "VALIDATED_BY" => ("TESTS", true),
-        "OBSERVED_BY" => ("OBSERVES", true),
-        "PRODUCES" => ("PRODUCES", false),
-        "FEEDS" => ("FEEDS", false),
-        "SUPPORTS" => ("MOTIVATES", false),
-        // Write-path edges (the default `act` construct). Authored names that
-        // are NOT canonical; remapped so `act` mints no new predicate symbols.
-        // `CONSTRUCTED_BY` follows the JUSTIFIED_BY pattern: the construction
-        // moment GROUNDS the construct, so swap. `PROPOSES_ON` is the construct
-        // proposing a change to its target — canonical `PROPOSES_CHANGE_TO`.
-        "CONSTRUCTED_BY" => ("GROUNDS", true),
-        "PROPOSES_ON" => ("PROPOSES_CHANGE_TO", false),
-        _ => return None,
-    })
-}
-
-/// Member subtypes that are themselves canonical node-type symbols.
-const CANONICAL_TYPE_SUBTYPES: &[&str] = &["metric", "validation"];
-
-impl World {
-    /// Injects an authored fixture subgraph (root node + members + relations)
-    /// into the one reality as ONE atomic transaction, then reads it back
-    /// independently. This generalises the `inject_energy_pen` bin: it maps
-    /// authored predicates to canonical ones, keeps only relations whose both
-    /// endpoints are injected (dropping the rest, reported — never dangled), and
-    /// interns any missing symbols (reported — never silently). Re-injecting the
-    /// same fixture is idempotent: if the root key already exists, it commits
-    /// nothing and reports the subgraph as already present.
-    pub fn inject_fixture(
-        &mut self,
-        fixture_path: &str,
-        session: &ActorSession,
-    ) -> Result<InjectionOutcome, String> {
-        let World::Mounted { supervisor, .. } = self else {
-            return Err("no Universe mounted".to_owned());
-        };
-
-        let doc: Value = serde_json::from_slice(
-            &fs::read(fixture_path).map_err(|e| format!("read {fixture_path}: {e}"))?,
-        )
-        .map_err(|e| format!("parse {fixture_path}: {e}"))?;
-        let root_id = doc
-            .get("id")
-            .and_then(Value::as_str)
-            .ok_or("fixture has no top-level id")?
-            .to_owned();
-
-        // Nodes = root + members, keyed deterministically in a per-fixture block.
-        let mut raw_nodes = vec![doc.clone()];
-        if let Some(members) = doc.get("members").and_then(Value::as_array) {
-            raw_nodes.extend(members.iter().cloned());
-        }
-        let seed = fnv64(&root_id);
-        let kbase = (0x0FEEu128 << 96) | ((seed as u128) << 16);
-        let node_id = |v: &Value| v.get("id").and_then(Value::as_str).map(str::to_owned);
-
-        let mut id_to_key = std::collections::BTreeMap::new();
-        for (i, node) in raw_nodes.iter().enumerate() {
-            let id = node_id(node).ok_or("a node has no id")?;
-            if id_to_key.insert(id.clone(), EntityKey(kbase | i as u128)).is_some() {
-                return Err(format!("duplicate node id {id}"));
-            }
-        }
-        let root_key = *id_to_key.get(&root_id).expect("root indexed");
-        let base = supervisor.revision();
-
-        // Idempotent: if the root already exists, the fixture is already injected.
-        if supervisor.snapshot().entities.iter().any(|e| e.key == root_key) {
-            let fresh = supervisor
-                .independent_readback()
-                .map_err(|e| e.to_string())?;
-            let present = fresh.entities.iter().filter(|e| {
-                id_to_key.values().any(|k| *k == e.key)
-            }).count();
-            return Ok(InjectionOutcome {
-                fixture_id: root_id,
-                from_revision: base.0,
-                to_revision: fresh.revision.0,
-                idempotent: true,
-                nodes_injected: 0,
-                relations_kept: 0,
-                relations_dropped: Vec::new(),
-                interned_symbols: Vec::new(),
-                committed_effects: Vec::new(),
-                evidence: vec![json!({
-                    "independent_readback": { "revision": fresh.revision.0, "nodes_present": present }
-                })],
-            });
-        }
-
-        // Relations: remap to canonical, keep both-endpoints-present, drop rest.
-        struct Kept {
-            source: EntityKey,
-            target: EntityKey,
-            predicate: String,
-        }
-        let mut kept = Vec::new();
-        let mut dropped = Vec::new();
-        for r in doc.get("relations").and_then(Value::as_array).unwrap_or(&Vec::new()) {
-            let source = r.get("source").and_then(Value::as_str).unwrap_or("");
-            let target = r.get("target").and_then(Value::as_str).unwrap_or("");
-            let authored = r.get("predicate").and_then(Value::as_str).unwrap_or("");
-            let (predicate, swap) = canonical_predicate(authored)
-                .ok_or_else(|| format!("authored predicate {authored} has no canonical mapping"))?;
-            match (id_to_key.get(source), id_to_key.get(target)) {
-                (Some(s), Some(t)) => {
-                    let (src, tgt) = if swap { (*t, *s) } else { (*s, *t) };
-                    kept.push(Kept { source: src, target: tgt, predicate: predicate.to_owned() });
-                }
-                _ => dropped.push(json!({
-                    "source": source, "predicate": predicate, "target": target,
-                    "reason": "endpoint not in injected set",
-                })),
-            }
-        }
-
-        // Symbols: entity type symbols + kept predicates. Intern any missing.
-        let entity_symbol = |node: &Value| -> String {
-            let subtype = node.get("subtype").and_then(Value::as_str).unwrap_or("");
-            if CANONICAL_TYPE_SUBTYPES.contains(&subtype) {
-                subtype.to_owned()
-            } else {
-                node.get("node_type").and_then(Value::as_str).unwrap_or("thing").to_owned()
-            }
-        };
-        let mut requested: Vec<String> = raw_nodes.iter().map(entity_symbol).collect();
-        requested.extend(kept.iter().map(|k| k.predicate.clone()));
-        requested.sort();
-        requested.dedup();
-        let plan = supervisor
-            .snapshot()
-            .plan_symbol_interning(&requested)
-            .map_err(|e| e.to_string())?;
-        let interned_symbols = plan.additions.clone();
-        let sym = |name: &str| -> Result<u32, String> {
-            plan.assignments
-                .get(name)
-                .copied()
-                .ok_or_else(|| format!("symbol {name} not planned"))
-        };
-
-        // Build the atomic write-set.
-        let mut commands = Vec::new();
-        if !plan.additions.is_empty() {
-            commands.push(UniverseCommand::InternSymbols { symbols: plan.additions.clone() });
-        }
-        let mut committed_effects = Vec::new();
-        for node in &raw_nodes {
-            let id = node_id(node).unwrap();
-            let content = json!({
-                "canonical_id": id,
-                "node_type": node.get("node_type"),
-                "subtype": node.get("subtype"),
-                "content": node.get("content"),
-                "injected_by_session": session.session_id,
-            });
-            let content_ref = supervisor.append_content(&content).map_err(|e| e.to_string())?;
-            commands.push(UniverseCommand::PutEntity {
-                entity: EntityRecord {
-                    key: id_to_key[&id],
-                    generation: 0,
-                    symbol: sym(&entity_symbol(node))?,
-                    content: Some(content_ref),
-                },
-            });
-            committed_effects.push(json!({ "put_entity": id_to_key[&id].to_string(), "canonical_id": id }));
-        }
-        for (i, k) in kept.iter().enumerate() {
-            commands.push(UniverseCommand::PutRelation {
-                relation: RelationRecord {
-                    key: RelationKey(kbase | 0x8000 | i as u128),
-                    generation: 0,
-                    source: k.source,
-                    target: k.target,
-                    predicate: sym(&k.predicate)?,
-                    content: None,
-                },
-            });
-            committed_effects.push(json!({ "put_relation": k.predicate }));
-        }
-
-        let write_set = UniverseWriteSet {
-            base_revision: base,
-            idempotency_key: format!("mcp:inject:{root_id}"),
-            causal_ancestry: vec![format!("session:{}", session.session_id)],
-            commands,
-        };
-        let transaction =
-            UniverseTransaction::prepare(supervisor.snapshot(), write_set).map_err(|e| e.to_string())?;
-        supervisor.enqueue(transaction);
-        supervisor.advance(&mut NoopHook).map_err(|e| e.to_string())?;
-
-        // Independent readback: every injected node present by canonical_id.
-        let fresh = supervisor.independent_readback().map_err(|e| e.to_string())?;
-        let nodes_present = id_to_key
-            .values()
-            .filter(|k| fresh.entities.iter().any(|e| e.key == **k))
-            .count();
-
-        Ok(InjectionOutcome {
-            fixture_id: root_id,
-            from_revision: base.0,
-            to_revision: fresh.revision.0,
-            idempotent: false,
-            nodes_injected: raw_nodes.len(),
-            relations_kept: kept.len(),
-            relations_dropped: dropped,
-            interned_symbols,
-            committed_effects,
-            evidence: vec![json!({
-                "independent_readback": {
-                    "revision": fresh.revision.0,
-                    "nodes_present": nodes_present,
-                    "nodes_expected": id_to_key.len(),
-                }
-            })],
-        })
-    }
-}
-
-/// The measured outcome of injecting a fixture subgraph.
-pub struct InjectionOutcome {
-    pub fixture_id: String,
-    pub from_revision: u64,
-    pub to_revision: u64,
-    pub idempotent: bool,
-    pub nodes_injected: usize,
-    pub relations_kept: usize,
-    pub relations_dropped: Vec<Value>,
-    pub interned_symbols: Vec<String>,
-    pub committed_effects: Vec<Value>,
-    pub evidence: Vec<Value>,
 }
 
 /// The measured outcome of embodying a sponsored session as a durable L1
@@ -865,6 +496,24 @@ pub struct EmbodimentOutcome {
     pub dropped_edge: bool,
     /// The resolved orientation-beacon key, or `None` when it did not resolve.
     pub beacon_key: Option<String>,
+    /// The canonical identity the toolkit grant was resolved by (reported even
+    /// when it resolved to nothing, so a reader can see WHAT was looked for).
+    pub toolkit_access_canonical_id: String,
+    /// The resolved access-capability key, or `None` when this store carries no
+    /// Toolkit Shelf.
+    pub toolkit_access_key: Option<String>,
+    /// Independent-readback: the `USED` grant edge survives a fresh reopen.
+    pub grant_present: bool,
+    /// The access capability did not resolve, so the grant was dropped (the body
+    /// is still written; no edge is ever dangled).
+    pub grant_dropped: bool,
+    /// The shelf reached THROUGH the grant, by canonical identity.
+    pub shelf_canonical_id: Option<String>,
+    /// The toolkits standing on that shelf at the post-commit revision — what
+    /// this inhabitant can reach right now. Empty with a present grant means the
+    /// shelf is bare, which is a measured fact; empty with a DROPPED grant means
+    /// `unknown`, and the two are distinguished by `grant_dropped`.
+    pub toolkits_reached: Vec<String>,
     /// Symbols interned this call — expected empty against the canonical store.
     pub interned_symbols: Vec<String>,
     pub committed_effects: Vec<serde_json::Value>,
@@ -887,6 +536,28 @@ impl EmbodimentOutcome {
                 "edge_present": self.edge_present,
                 "dropped": self.dropped_edge,
             },
+            "toolkits": {
+                "held_as": "bearing",
+                "granted_capability": self.toolkit_access_canonical_id,
+                "capability_key": self.toolkit_access_key,
+                "grant_edge_present": self.grant_present,
+                "dropped": self.grant_dropped,
+                "shelf": self.shelf_canonical_id,
+                "reachable_now": self.toolkits_reached,
+                "reachable_count": self.toolkits_reached.len(),
+                "epistemic": if self.grant_dropped {
+                    "unknown — this store carries no Toolkit Shelf access capability, so nothing \
+is claimed about what this inhabitant can reach"
+                } else {
+                    "measured — walked from committed edges in a fresh store replay, at the \
+post-commit revision"
+                },
+                "note": "a BEARING, not a copy: no toolkit content is duplicated onto this body. \
+The list is what the shelf holds RIGHT NOW; a blueprint revised later is held revised, and a \
+toolkit shelved later is held too, with no further write to this inhabitant.",
+                "authority": "reach, not authority — this capability is class `observe`. Wielding \
+a toolkit is adjudicated separately and fails closed at the sealed port.",
+            },
             "interned_symbols": self.interned_symbols,
             "committed_effects": self.committed_effects,
             "evidence": self.evidence,
@@ -899,17 +570,6 @@ beacon via PART_OF; independently read back from a fresh store replay"
             },
         })
     }
-}
-
-/// The measured outcome of a committed proposal — real effects plus independent
-/// readback evidence.
-#[derive(Debug)]
-pub struct ProposalOutcome {
-    pub from_revision: u64,
-    pub to_revision: u64,
-    pub idempotent: bool,
-    pub committed_effects: Vec<serde_json::Value>,
-    pub evidence: Vec<serde_json::Value>,
 }
 
 /// A commit needs no tick-phase side effects here.
@@ -935,6 +595,40 @@ impl PhaseHook for NoopHook {
 /// it for a store that anchors inhabitants under a different identity.
 const DEFAULT_ACTOR_ANCHOR_CANONICAL_ID: &str = "space:l2:lumina-prime:orientation-beacon-v0";
 const ACTOR_ANCHOR_CANONICAL_ID_ENV: &str = "MIND_ACTOR_ANCHOR_CANONICAL_ID";
+
+/// The canonical IDENTITY of the capability that opens the Toolkit Shelf
+/// (`space:l2:mind-universe:toolkit-shelf-v0`, bound by the `shelve_toolkits`
+/// bin). An arriving inhabitant is granted THIS one capability, and through it
+/// reaches every toolkit standing on the shelf.
+///
+/// What the inhabitant receives is a BEARING, not a copy: the grant edge names
+/// the capability, the capability's scope names the shelf, and the shelf's
+/// members name the toolkit definitions themselves. Every read therefore
+/// resolves at the reader's current revision — a revised blueprint is held
+/// revised, and a toolkit shelved after this inhabitant arrived is held from
+/// that revision on, with no write ever touching the inhabitant again.
+///
+/// Resolved from store DATA by identity, exactly like the beacon anchor. If it
+/// does not resolve, the grant is DROPPED and reported: the body is still
+/// written, and no edge is ever dangled.
+const DEFAULT_TOOLKIT_ACCESS_CANONICAL_ID: &str = "capability:l2:mind-universe:toolkit-shelf-access";
+const TOOLKIT_ACCESS_CANONICAL_ID_ENV: &str = "MIND_TOOLKIT_ACCESS_CANONICAL_ID";
+
+/// The canonical predicate the grant rides. Already canonical — it is the
+/// predicate `underground-maintenance-grant.json`'s authored `HOLDS_CAPABILITY`
+/// is STORED as — so it needs no remap and is deliberately not run through the
+/// authored-name table (which fails closed on `HOLDS_CAPABILITY` on purpose, so
+/// no alias is invented here either). Direction is unswapped: actor -> capability,
+/// which is the direction `universe_query::read_actor_capability_set` reads.
+const GRANT_PREDICATE: &str = "USED";
+/// The predicate binding the access capability to the shelf it opens.
+const SCOPE_PREDICATE: &str = "APPLIES_IN";
+/// The predicate binding a toolkit onto the shelf.
+const MEMBERSHIP_PREDICATE: &str = "PART_OF";
+/// Bounded relation budget for the through-the-grant walk. The enumeration is a
+/// courtesy read folded into a receipt, never a hot path; it stops at this many
+/// inspected relations and says so rather than scanning without limit.
+const SHELF_WALK_BUDGET: usize = 8192;
 
 /// The canonical id the actor anchor is resolved by: `MIND_ACTOR_ANCHOR_CANONICAL_ID`
 /// when set and non-empty, else the orientation beacon's canonical id.
@@ -968,6 +662,77 @@ fn resolve_entity_by_canonical_id(
     })
 }
 
+/// The canonical id the Toolkit Shelf's access capability is resolved by:
+/// `MIND_TOOLKIT_ACCESS_CANONICAL_ID` when set and non-empty, else the shelf's
+/// own capability identity.
+fn toolkit_access_canonical_id() -> String {
+    env::var(TOOLKIT_ACCESS_CANONICAL_ID_ENV)
+        .ok()
+        .filter(|value| !value.is_empty())
+        .unwrap_or_else(|| DEFAULT_TOOLKIT_ACCESS_CANONICAL_ID.to_owned())
+}
+
+/// Walks what a held grant REACHES: `capability --APPLIES_IN--> shelf` and then
+/// the shelf's incoming `PART_OF` members, returning the shelf's canonical
+/// identity and each member's, sorted.
+///
+/// This is the read that makes a bearing worth having. It resolves against the
+/// snapshot it is handed — so a caller passing a FRESH post-commit replay learns
+/// what the inhabitant can reach *now*, not what was true when the body was
+/// authored. Nothing is copied and nothing is cached: ask again later, get the
+/// later answer.
+///
+/// Honest by construction: an unknown predicate symbol, an unresolvable member
+/// or a shelf with no members yields fewer names, never an invented one. The
+/// walk is bounded by [`SHELF_WALK_BUDGET`] inspected relations; a store large
+/// enough to exhaust it returns what it found, and the caller reports a count
+/// rather than a claim of completeness.
+fn read_shelf_through_grant(
+    snapshot: &UniverseSnapshot,
+    capability: EntityKey,
+    read_content: &dyn Fn(&ContentRef) -> Option<Value>,
+) -> (Option<String>, Vec<String>) {
+    let (Some(scope), Some(membership)) = (
+        snapshot.symbol_id(SCOPE_PREDICATE),
+        snapshot.symbol_id(MEMBERSHIP_PREDICATE),
+    ) else {
+        return (None, Vec::new());
+    };
+    let identity_of = |key: EntityKey| -> Option<String> {
+        let entity = snapshot.entities.iter().find(|e| e.key == key)?;
+        let value = read_content(entity.content.as_ref()?)?;
+        value
+            .get("canonical_id")
+            .and_then(Value::as_str)
+            .map(str::to_owned)
+    };
+
+    // Hop 1: the shelf this capability opens.
+    let Some(shelf) = snapshot
+        .relations
+        .iter()
+        .take(SHELF_WALK_BUDGET)
+        .find(|r| r.source == capability && r.predicate == scope)
+        .map(|r| r.target)
+    else {
+        return (None, Vec::new());
+    };
+
+    // Hop 2: everything standing on it. Traversed from committed edges — never
+    // read off the shelf node's authored membership list, which states an
+    // intention and not a fact.
+    let mut toolkits: Vec<String> = snapshot
+        .relations
+        .iter()
+        .take(SHELF_WALK_BUDGET)
+        .filter(|r| r.target == shelf && r.predicate == membership)
+        .filter_map(|r| identity_of(r.source))
+        .collect();
+    toolkits.sort();
+    toolkits.dedup();
+    (identity_of(shelf), toolkits)
+}
+
 /// Strips a single leading `claude:` or `claude-` marker from a session id, so the
 /// `claude-` actor namespace prefix is not doubled when a session already begins
 /// with `claude` (e.g. `claude:<uuid>` → `<uuid>`, which then prefixes to a single
@@ -992,22 +757,30 @@ fn sanitize_session_id(session_id: &str) -> String {
         .collect()
 }
 
-/// Resolves a 32-hex EntityKey or a symbol name to an existing entity key.
-fn resolve_key(snapshot: &UniverseSnapshot, wanted: &str) -> Option<EntityKey> {
-    if wanted.len() == 32 {
-        if let Ok(raw) = u128::from_str_radix(wanted, 16) {
-            let key = EntityKey(raw);
-            if snapshot.entities.iter().any(|e| e.key == key) {
-                return Some(key);
-            }
-        }
-    }
-    let index = snapshot.symbols.iter().position(|s| s == wanted)? as u32;
-    snapshot
-        .entities
-        .iter()
-        .find(|e| e.symbol == index)
-        .map(|e| e.key)
+/// The idempotency key an embodiment commits under — one string, derived from
+/// the session id alone, so re-arriving lands `AlreadyCommitted` instead of a
+/// duplicate inhabitant.
+fn actor_idempotency_key(session_id: &str) -> String {
+    format!("mcp:arrive:embody:{session_id}")
+}
+
+/// The deterministic key block a session's body occupies: an fnv-based base in
+/// the `0x0AC0` prefix block, with the low byte left free for the relations that
+/// hang off it (`kbase | 1` is the `PART_OF` edge).
+///
+/// This is the SINGLE derivation shared by the write ([`World::materialize_actor`])
+/// and the read ([`World::recall_body`]). A body is recalled at exactly the key it
+/// was written to, by construction rather than by a matching convention that two
+/// sites could drift apart on.
+fn actor_kbase(session_id: &str) -> u128 {
+    let seed = fnv64(&actor_idempotency_key(session_id));
+    (0x0AC0u128 << 96) | ((seed as u128) << 8)
+}
+
+/// The EntityKey of the durable body belonging to `session_id` — whether or not
+/// anything has been written there yet. Existence is the snapshot's to answer.
+fn actor_key_for_session(session_id: &str) -> EntityKey {
+    EntityKey(actor_kbase(session_id))
 }
 
 /// Deterministic FNV-1a — for stable, collision-resistant ids (no RNG/clock).
@@ -1023,7 +796,10 @@ fn fnv64(value: &str) -> u64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::session::{admit, AdmissionRequest};
+    use crate::session::{admit, AdmissionRequest, Continuity, SessionRegistry};
+    // Only the tests hand-build a record: the seeded beacon stand-in below is
+    // written straight through the kernel, not through the translator.
+    use universe_store::{EntityRecord, RelationRecord};
 
     /// The repository Genesis fixture — a minimal, valid, signed snapshot.
     fn genesis_path() -> PathBuf {
@@ -1044,143 +820,16 @@ mod tests {
             sponsor: Some("NLR".into()),
             ..Default::default()
         };
-        let session = admit(&req, session_id.to_owned(), 0, 100).0;
+        let session = admit(&req, session_id.to_owned(), 0, 100, None).0;
         assert!(session.has(Capability::Propose), "builder must be able to write");
         session
     }
 
     /// An unauthenticated walk-in — observe + speak only, never `Propose`.
     fn walk_in(session_id: &str) -> ActorSession {
-        let session = admit(&AdmissionRequest::default(), session_id.to_owned(), 0, 100).0;
+        let session = admit(&AdmissionRequest::default(), session_id.to_owned(), 0, 100, None).0;
         assert!(!session.has(Capability::Propose), "a walk-in cannot write");
         session
-    }
-
-    #[test]
-    fn commit_proposal_advances_the_revision_and_is_read_back_independently() {
-        let (_dir, mut world) = mounted();
-        let before = world.snapshot().unwrap().revision.0;
-
-        let outcome = world
-            .commit_proposal("connect two beacons", None, &builder("builder-1"))
-            .expect("a mounted commit succeeds");
-
-        // A REAL revision advance — not the committing snapshot's own word, but a
-        // fresh store replay.
-        assert_eq!(outcome.from_revision, before);
-        assert!(
-            outcome.to_revision > before,
-            "revision must advance: {} -> {}",
-            outcome.from_revision,
-            outcome.to_revision
-        );
-        assert!(!outcome.idempotent);
-
-        // Independent readback evidence: the construct, its moment, and their
-        // relation all survive a fresh reopen.
-        let readback = &outcome.evidence[0]["independent_readback"];
-        assert_eq!(readback["revision"], outcome.to_revision);
-        assert_eq!(readback["construct_present"], true);
-        assert_eq!(readback["moment_present"], true);
-        assert_eq!(readback["constructed_by_present"], true);
-
-        // The four-verb write path recorded real committed effects.
-        assert!(outcome
-            .committed_effects
-            .iter()
-            .any(|effect| effect["kind"] == "construct"));
-
-        // And the supervisor's live snapshot agrees with the independent readback.
-        assert_eq!(
-            world.snapshot().unwrap().revision.0,
-            outcome.to_revision,
-            "the following `sense` sees the advanced revision"
-        );
-    }
-
-    #[test]
-    fn re_running_the_same_act_is_idempotent_and_writes_nothing_new() {
-        let (_dir, mut world) = mounted();
-        let session = builder("builder-2");
-
-        let first = world
-            .commit_proposal("build a room here", None, &session)
-            .unwrap();
-        assert!(!first.idempotent);
-
-        let second = world
-            .commit_proposal("build a room here", None, &session)
-            .unwrap();
-        assert!(
-            second.idempotent,
-            "same builder + intent must re-commit nothing"
-        );
-        assert!(
-            second.committed_effects.is_empty(),
-            "an idempotent re-run commits no NEW effects"
-        );
-        // The construct written by the first call still survives an independent
-        // readback on the re-run.
-        assert_eq!(
-            second.evidence[0]["independent_readback"]["construct_present"],
-            true
-        );
-    }
-
-    #[test]
-    fn a_walk_in_without_propose_commits_nothing_and_is_told_why() {
-        let (_dir, mut world) = mounted();
-        let before = world.snapshot().unwrap().revision.0;
-
-        // The same intent the authorised builder commits, but as a walk-in with
-        // no `Propose` capability: it must be refused, fail-closed.
-        let refused = world
-            .commit_proposal("connect two beacons", None, &walk_in("intruder"))
-            .expect_err("a walk-in without Propose is refused at the write site");
-        let reason = refused.to_string();
-        assert!(
-            reason.contains("Propose"),
-            "the refusal names the missing capability: {reason}"
-        );
-        assert!(
-            reason.contains("intruder"),
-            "the refusal is attributable to the session: {reason}"
-        );
-
-        // Fail-closed: nothing was committed — the revision did not advance, and an
-        // independent readback confirms no new entity from this refused write.
-        assert_eq!(
-            world.snapshot().unwrap().revision.0,
-            before,
-            "a refused write must not advance the revision"
-        );
-        let fresh = match &world {
-            World::Mounted { supervisor, .. } => supervisor.independent_readback().unwrap(),
-            World::Unmounted { .. } => unreachable!("mounted above"),
-        };
-        assert_eq!(
-            fresh.revision.0, before,
-            "independent readback agrees: the refused write left no trace"
-        );
-
-        // Contrast: an actor that DOES hold Propose still commits the same intent.
-        let outcome = world
-            .commit_proposal("connect two beacons", None, &builder("authorised"))
-            .expect("a session with Propose commits");
-        assert!(outcome.to_revision > before, "the authorised write advances the revision");
-        assert_eq!(outcome.evidence[0]["independent_readback"]["construct_present"], true);
-    }
-
-    #[test]
-    fn commit_on_an_unmounted_world_errors_and_writes_nothing() {
-        let mut world = World::Unmounted {
-            reason: "no store".into(),
-        };
-        let result = world.commit_proposal("anything", None, &builder("builder-3"));
-        assert!(
-            result.is_err(),
-            "an unmounted world commits nothing and says why"
-        );
     }
 
     /// Seeds a bare orientation-beacon stand-in carrying the anchor's canonical
@@ -1205,7 +854,6 @@ mod tests {
         let write_set = UniverseWriteSet {
             base_revision: base,
             idempotency_key: "test:seed-beacon".into(),
-            causal_ancestry: vec![],
             commands: vec![UniverseCommand::PutEntity {
                 entity: EntityRecord {
                     // Deliberately NOT 0xB000: the resolver keys on canonical_id
@@ -1223,6 +871,433 @@ mod tests {
             UniverseTransaction::prepare(supervisor.snapshot(), write_set).expect("prepare beacon");
         supervisor.enqueue(tx);
         supervisor.advance(&mut NoopHook).expect("commit beacon");
+    }
+
+    /// The round trip that makes a body persistent in more than shape: embody a
+    /// sponsored session, then recall it from the graph alone — no registry, no
+    /// memory of the arrival, exactly what a restarted process has.
+    #[test]
+    fn a_body_written_by_arrive_is_recalled_from_the_graph_alone() {
+        let (_dir, mut world) = mounted();
+        seed_beacon(&mut world);
+        let session = builder("claude:persist-1");
+
+        assert!(
+            world.recall_body("claude:persist-1").is_none(),
+            "nothing is recalled before a body exists — unknown, never a fabricated standing"
+        );
+
+        world
+            .materialize_actor(&session)
+            .expect("a sponsored embody succeeds");
+
+        let recalled = world
+            .recall_body("claude:persist-1")
+            .expect("the durable body is found at its own deterministic key");
+        assert_eq!(
+            recalled.sponsor.as_deref(),
+            Some("NLR"),
+            "the sponsor is read off the body, not re-declared by the caller"
+        );
+        assert_eq!(recalled.origin.as_deref(), Some("unknown-external"));
+        assert_eq!(recalled.recorded_status.as_deref(), Some("SponsoredVisitor"));
+        assert!(recalled.base_revision.is_some(), "the body says when it was built");
+
+        // The standing a brand-new process derives from that body alone.
+        let restored = SessionRegistry::default().get_or_walk_in(
+            "claude:persist-1",
+            session.expires_at + 1_000_000, // long past the original admission window
+            Some(&recalled),
+        );
+        assert!(
+            restored.has(Capability::Propose),
+            "the returning inhabitant is not demoted to a stranger"
+        );
+        assert_eq!(restored.continuity, Continuity::Persistent);
+    }
+
+    /// Fail-closed: the key block is the body's address, not its identity. A node
+    /// sitting at another session's key is never handed over as this presence.
+    #[test]
+    fn a_body_naming_another_session_is_never_recalled() {
+        let (_dir, mut world) = mounted();
+        seed_beacon(&mut world);
+        world
+            .materialize_actor(&builder("claude:persist-1"))
+            .expect("a sponsored embody succeeds");
+
+        assert!(
+            world.recall_body("claude:someone-else").is_none(),
+            "a different session recalls nothing"
+        );
+    }
+
+    /// Seeds a Toolkit Shelf stand-in: the access capability (carrying a
+    /// TOP-LEVEL `capability` string, the shape a held-capability read
+    /// resolves), the shelf Space, one node per `toolkit_ids`, the
+    /// `APPLIES_IN` scope edge and one `PART_OF` membership edge each.
+    ///
+    /// Returns the toolkit keys in the order given, so a test can revise a
+    /// blueprint in place and watch what an untouched inhabitant then reaches.
+    /// Like `seed_beacon`, the keys are arbitrary: everything here is resolved
+    /// by canonical identity from content DATA.
+    fn seed_toolkit_shelf(world: &mut World, toolkit_ids: &[&str]) -> Vec<EntityKey> {
+        let World::Mounted { supervisor, .. } = world else {
+            unreachable!("mounted above");
+        };
+        let base = supervisor.revision();
+        let plan = supervisor
+            .snapshot()
+            .plan_symbol_interning(&[
+                "thing".to_owned(),
+                MEMBERSHIP_PREDICATE.to_owned(),
+                SCOPE_PREDICATE.to_owned(),
+            ])
+            .expect("plan shelf symbols");
+        let sym = |name: &str| plan.assignments[name];
+
+        let capability_key = EntityKey(0x5_A0_00);
+        let shelf_key = EntityKey(0x5_A0_01);
+        let mut commands = Vec::new();
+        if !plan.additions.is_empty() {
+            commands.push(UniverseCommand::InternSymbols {
+                symbols: plan.additions.clone(),
+            });
+        }
+        commands.push(UniverseCommand::PutEntity {
+            entity: EntityRecord {
+                key: capability_key,
+                generation: 0,
+                symbol: sym("thing"),
+                content: Some(
+                    supervisor
+                        .append_content(&json!({
+                            "canonical_id": DEFAULT_TOOLKIT_ACCESS_CANONICAL_ID,
+                            "kind": "capability",
+                            // TOP-LEVEL, deliberately: this is the field a
+                            // bounded held-capability read resolves.
+                            "capability": "observe:toolkit-shelf",
+                            "class": "observe",
+                        }))
+                        .expect("append capability content"),
+                ),
+            },
+        });
+        commands.push(UniverseCommand::PutEntity {
+            entity: EntityRecord {
+                key: shelf_key,
+                generation: 0,
+                symbol: 1,
+                content: Some(
+                    supervisor
+                        .append_content(&json!({
+                            "canonical_id": "space:l2:mind-universe:toolkit-shelf-v0",
+                            "kind": "toolkit_shelf",
+                        }))
+                        .expect("append shelf content"),
+                ),
+            },
+        });
+        commands.push(UniverseCommand::PutRelation {
+            relation: RelationRecord {
+                key: RelationKey(0x5_B0_00),
+                generation: 0,
+                source: capability_key,
+                target: shelf_key,
+                predicate: sym(SCOPE_PREDICATE),
+                content: None,
+            },
+        });
+
+        let mut toolkit_keys = Vec::new();
+        for (index, id) in toolkit_ids.iter().enumerate() {
+            let key = EntityKey(0x5_A1_00 + index as u128);
+            toolkit_keys.push(key);
+            commands.push(UniverseCommand::PutEntity {
+                entity: EntityRecord {
+                    key,
+                    generation: 0,
+                    symbol: 1,
+                    content: Some(
+                        supervisor
+                            .append_content(&json!({
+                                "canonical_id": id,
+                                "kind": "toolkit",
+                                "blueprint_revision": "v0",
+                            }))
+                            .expect("append toolkit content"),
+                    ),
+                },
+            });
+            commands.push(UniverseCommand::PutRelation {
+                relation: RelationRecord {
+                    key: RelationKey(0x5_B1_00 + index as u128),
+                    generation: 0,
+                    source: key,
+                    target: shelf_key,
+                    predicate: sym(MEMBERSHIP_PREDICATE),
+                    content: None,
+                },
+            });
+        }
+
+        let write_set = UniverseWriteSet {
+            base_revision: base,
+            idempotency_key: format!("test:seed-toolkit-shelf:{}", toolkit_ids.len()),
+            commands,
+        };
+        let tx =
+            UniverseTransaction::prepare(supervisor.snapshot(), write_set).expect("prepare shelf");
+        supervisor.enqueue(tx);
+        supervisor.advance(&mut NoopHook).expect("commit shelf");
+        toolkit_keys
+    }
+
+    /// Re-puts a toolkit node at the SAME key with revised content — a blueprint
+    /// revised in place, the way `SupersedeEntity` revises a construct.
+    fn revise_blueprint(world: &mut World, key: EntityKey, canonical_id: &str, revision: &str) {
+        let World::Mounted { supervisor, .. } = world else {
+            unreachable!("mounted above");
+        };
+        let base = supervisor.revision();
+        let content = supervisor
+            .append_content(&json!({
+                "canonical_id": canonical_id,
+                "kind": "toolkit",
+                "blueprint_revision": revision,
+            }))
+            .expect("append revised content");
+        let write_set = UniverseWriteSet {
+            base_revision: base,
+            idempotency_key: format!("test:revise-blueprint:{canonical_id}:{revision}"),
+            commands: vec![UniverseCommand::PutEntity {
+                entity: EntityRecord {
+                    key,
+                    generation: 0,
+                    symbol: 1,
+                    content: Some(content),
+                },
+            }],
+        };
+        let tx =
+            UniverseTransaction::prepare(supervisor.snapshot(), write_set).expect("prepare revise");
+        supervisor.enqueue(tx);
+        supervisor.advance(&mut NoopHook).expect("commit revise");
+    }
+
+    /// Shelves one more toolkit AFTER inhabitants have already arrived — the
+    /// civic act that must reach every one of them without touching any body.
+    fn shelve_one_more(world: &mut World, id: &str, index: u128) -> EntityKey {
+        let World::Mounted { supervisor, .. } = world else {
+            unreachable!("mounted above");
+        };
+        let base = supervisor.revision();
+        let membership = supervisor
+            .snapshot()
+            .symbol_id(MEMBERSHIP_PREDICATE)
+            .expect("PART_OF is interned by seed_toolkit_shelf");
+        let key = EntityKey(0x5_A1_00 + index);
+        let content = supervisor
+            .append_content(&json!({
+                "canonical_id": id,
+                "kind": "toolkit",
+                "blueprint_revision": "v0",
+            }))
+            .expect("append late toolkit content");
+        let write_set = UniverseWriteSet {
+            base_revision: base,
+            idempotency_key: format!("test:shelve-one-more:{id}"),
+            commands: vec![
+                UniverseCommand::PutEntity {
+                    entity: EntityRecord {
+                        key,
+                        generation: 0,
+                        symbol: 1,
+                        content: Some(content),
+                    },
+                },
+                UniverseCommand::PutRelation {
+                    relation: RelationRecord {
+                        key: RelationKey(0x5_B1_00 + index),
+                        generation: 0,
+                        source: key,
+                        target: EntityKey(0x5_A0_01),
+                        predicate: membership,
+                        content: None,
+                    },
+                },
+            ],
+        };
+        let tx =
+            UniverseTransaction::prepare(supervisor.snapshot(), write_set).expect("prepare shelve");
+        supervisor.enqueue(tx);
+        supervisor.advance(&mut NoopHook).expect("commit shelve");
+        key
+    }
+
+    #[test]
+    fn an_arriving_inhabitant_is_handed_every_shelved_toolkit_as_a_bearing() {
+        let (_dir, mut world) = mounted();
+        seed_beacon(&mut world);
+        seed_toolkit_shelf(
+            &mut world,
+            &[
+                "space:l2:mind-universe:underground-toolkit-v0",
+                "space:l2:mind-universe:sky-toolkit-v0",
+            ],
+        );
+
+        let outcome = world
+            .materialize_actor(&builder("claude:shelf-1"))
+            .expect("a sponsored embody succeeds");
+
+        // THREE committed effects now: the body, its beacon edge, and the ONE
+        // grant that carries every toolkit.
+        assert_eq!(
+            outcome.committed_effects.len(),
+            3,
+            "body + beacon edge + toolkit grant: {:?}",
+            outcome.committed_effects
+        );
+        assert!(outcome.grant_present, "the USED grant must survive a fresh reopen");
+        assert!(!outcome.grant_dropped);
+        assert_eq!(
+            outcome.shelf_canonical_id.as_deref(),
+            Some("space:l2:mind-universe:toolkit-shelf-v0"),
+            "the grant must reach the shelf it opens"
+        );
+        // Walked from committed edges: both toolkits, by identity, sorted.
+        assert_eq!(
+            outcome.toolkits_reached,
+            vec![
+                "space:l2:mind-universe:sky-toolkit-v0".to_owned(),
+                "space:l2:mind-universe:underground-toolkit-v0".to_owned(),
+            ]
+        );
+        // Nothing of any toolkit was COPIED: exactly one entity was written.
+        let entities_written = outcome
+            .committed_effects
+            .iter()
+            .filter(|effect| effect.get("put_entity").is_some())
+            .count();
+        assert_eq!(
+            entities_written, 1,
+            "a bearing writes ONE node (the body) and no duplicate of any toolkit"
+        );
+
+        let receipt = outcome.to_json();
+        assert_eq!(receipt["toolkits"]["held_as"], "bearing");
+        assert_eq!(receipt["toolkits"]["reachable_count"], 2);
+        assert_eq!(receipt["evidence"][0]["independent_readback"]["toolkit_grant_present"], true);
+    }
+
+    #[test]
+    fn a_toolkit_shelved_after_arrival_is_held_without_touching_the_inhabitant() {
+        // This is the whole point of a bearing over a copy, and of one shelf
+        // over N direct edges: the city grows, and everyone already living in it
+        // holds the new thing — with no write to any body.
+        let (_dir, mut world) = mounted();
+        seed_beacon(&mut world);
+        seed_toolkit_shelf(&mut world, &["space:l2:mind-universe:underground-toolkit-v0"]);
+        let session = builder("claude:shelf-2");
+
+        let first = world.materialize_actor(&session).expect("embody");
+        assert_eq!(first.toolkits_reached.len(), 1);
+
+        // A toolkit joins the city AFTER this inhabitant arrived.
+        shelve_one_more(&mut world, "space:l2:mind-universe:mechanical-toolkit-v0", 9);
+
+        let second = world.materialize_actor(&session).expect("re-embody");
+        assert!(second.idempotent, "the same session commits nothing new");
+        assert!(
+            second.committed_effects.is_empty(),
+            "NO write touched the inhabitant: {:?}",
+            second.committed_effects
+        );
+        assert_eq!(
+            second.toolkits_reached,
+            vec![
+                "space:l2:mind-universe:mechanical-toolkit-v0".to_owned(),
+                "space:l2:mind-universe:underground-toolkit-v0".to_owned(),
+            ],
+            "yet it now reaches the newly shelved toolkit too"
+        );
+    }
+
+    #[test]
+    fn a_revised_blueprint_is_held_revised_with_no_per_actor_write() {
+        let (_dir, mut world) = mounted();
+        seed_beacon(&mut world);
+        let toolkits = seed_toolkit_shelf(
+            &mut world,
+            &["space:l2:mind-universe:underground-toolkit-v0"],
+        );
+        let session = builder("claude:shelf-3");
+        world.materialize_actor(&session).expect("embody");
+
+        // The blueprint is revised in place — same key, new content.
+        revise_blueprint(
+            &mut world,
+            toolkits[0],
+            "space:l2:mind-universe:underground-toolkit-v0",
+            "v1",
+        );
+
+        let after = world.materialize_actor(&session).expect("re-embody");
+        assert!(
+            after.committed_effects.is_empty(),
+            "a revised blueprint must cost the inhabitant no write"
+        );
+        // What it reaches is the node itself, so it reaches the REVISION.
+        let snapshot = world.snapshot().expect("mounted").clone();
+        let entity = snapshot
+            .entities
+            .iter()
+            .find(|e| e.key == toolkits[0])
+            .expect("the toolkit node");
+        let content = world
+            .read_content(entity.content.as_ref().expect("content"))
+            .expect("readable");
+        assert_eq!(
+            content["blueprint_revision"], "v1",
+            "reading THROUGH the bearing lands on the revised blueprint, never on a stale copy"
+        );
+        assert_eq!(
+            after.toolkits_reached,
+            vec!["space:l2:mind-universe:underground-toolkit-v0".to_owned()],
+            "the identity is stable across the revision — the bearing does not break"
+        );
+    }
+
+    #[test]
+    fn a_store_with_no_shelf_drops_the_grant_and_still_writes_the_body() {
+        // Honest absence: no shelf means `unknown`, not an empty toolkit list,
+        // and never a dangling edge.
+        let (_dir, mut world) = mounted();
+        seed_beacon(&mut world);
+
+        let outcome = world
+            .materialize_actor(&builder("claude:shelf-4"))
+            .expect("embody still succeeds without a shelf");
+
+        assert!(outcome.actor_present, "the body is written regardless");
+        assert!(outcome.grant_dropped, "the grant is dropped, not dangled");
+        assert!(!outcome.grant_present);
+        assert!(outcome.shelf_canonical_id.is_none());
+        assert!(outcome.toolkits_reached.is_empty());
+        assert_eq!(
+            outcome.committed_effects.len(),
+            2,
+            "body + beacon edge only"
+        );
+        let receipt = outcome.to_json();
+        assert!(
+            receipt["toolkits"]["epistemic"]
+                .as_str()
+                .expect("epistemic string")
+                .starts_with("unknown"),
+            "an absent shelf must read as unknown, never as 'holds nothing'"
+        );
     }
 
     #[test]
@@ -1293,6 +1368,50 @@ mod tests {
         assert_eq!(
             second.evidence[0]["independent_readback"]["actor_present"],
             true
+        );
+    }
+
+    #[test]
+    fn an_embodied_body_records_its_own_passport_lifetime() {
+        // A body must carry the lifetime it was admitted under. The reaper
+        // (`crates/universe-e2e/src/bin/reap_session_bodies.rs`) judges staleness
+        // from the node's OWN `expires_at` and treats a missing one as `unknown`,
+        // never as expired — correctly. So a body written without it is
+        // permanently unjudgeable by `--expired`, and the bodies accumulate at the
+        // beacon with no criterion that can see them. Measured on the canonical
+        // store at revision 304: 44 bodies, 44 `unknown`.
+        let (_dir, mut world) = mounted();
+        seed_beacon(&mut world);
+        // `builder` admits at now=0 with ttl=100, so the passport expires at 100.
+        let session = builder("claude:lifetime-1");
+        let outcome = world
+            .materialize_actor(&session)
+            .expect("a sponsored embody succeeds");
+
+        // Read the WRITTEN node back, found by its own content (never by a hex
+        // key), exactly as the reaper finds it.
+        let snapshot = world.snapshot().expect("mounted");
+        let content = snapshot
+            .entities
+            .iter()
+            .filter_map(|e| e.content.as_ref().and_then(|c| world.read_content(c)))
+            .find(|c| {
+                c.get("canonical_id").and_then(Value::as_str) == Some(&outcome.canonical_id)
+            })
+            .expect("the embodied body is readable from the store");
+
+        assert_eq!(
+            content.get("expires_at").and_then(Value::as_u64),
+            Some(session.expires_at),
+            "the body must carry the passport's lifetime: {content}"
+        );
+        assert_eq!(session.expires_at, 100, "the fixture's admitted lifetime");
+        // The discriminator the reaper pairs it with is still there: a body with a
+        // lifetime but no session would be an authored inhabitant, not a body.
+        assert_eq!(
+            content.get("embodied_session").and_then(Value::as_str),
+            Some(session.session_id.as_str()),
+            "still recognisable as a session body: {content}"
         );
     }
 

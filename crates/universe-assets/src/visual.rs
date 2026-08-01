@@ -121,11 +121,60 @@ pub struct Modulation {
     pub hue: Option<String>,
 }
 
+/// One toolkit's claim on appearance: the construct whose products it dresses,
+/// and WHERE that appearance is held. A `binding_member` names a node carried AS
+/// a member of the construct — the toolkit's own appearance, resolvable from the
+/// graph. A `binding_authority` names a standalone catalog instead.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ToolkitVisualBinding {
+    /// The producing construct, e.g. `space:l2:mind-universe:underground-toolkit-v0`.
+    pub toolkit: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub binding_member: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub binding_authority: Option<String>,
+    pub justification: String,
+}
+
+/// The resolution policy. It loads BOTH authored shapes: the v0 table keyed by
+/// `semantic_type` (`bindings`), and the v1 provenance shape keyed by producing
+/// toolkit (`toolkit_bindings`). Before this, the v1 document could not be
+/// deserialized at all — `bindings` was required and its `epistemic_modulation`
+/// carries a prose `note` — so the world declared one policy and ran another.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct VisualPolicy {
     pub policy_id: String,
+    #[serde(default)]
     pub bindings: Vec<VisualBinding>,
+    #[serde(default)]
+    pub toolkit_bindings: Vec<ToolkitVisualBinding>,
+    /// The honest terminal case: what a node with no reachable binding looks like.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fallback_presence: Option<Value>,
+    #[serde(deserialize_with = "modulation_table")]
     pub epistemic_modulation: BTreeMap<String, Modulation>,
+}
+
+/// Reads the epistemic-modulation table, keeping the prose keys authors write
+/// alongside the states (a `note` explaining the grammar). A string entry is
+/// documentation and is skipped; anything else that is not a modulation is a
+/// malformed state and still fails loudly.
+fn modulation_table<'de, D>(deserializer: D) -> Result<BTreeMap<String, Modulation>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::de::Error as _;
+    let raw = BTreeMap::<String, Value>::deserialize(deserializer)?;
+    let mut table = BTreeMap::new();
+    for (key, value) in raw {
+        if value.is_string() {
+            continue;
+        }
+        let modulation: Modulation = serde_json::from_value(value)
+            .map_err(|error| D::Error::custom(format!("epistemic state {key}: {error}")))?;
+        table.insert(key, modulation);
+    }
+    Ok(table)
 }
 
 impl VisualPolicy {
@@ -144,6 +193,16 @@ impl VisualPolicy {
             .iter()
             .find(|binding| binding.semantic_type == semantic_type)
             .map(|binding| binding.authority_id.as_str())
+    }
+
+    /// The graph node carrying the appearance for a producing construct — the
+    /// toolkit's own visual binding, held AS one of its members. `None` means this
+    /// toolkit registered no binding, and its products stay honestly unbound.
+    pub fn binding_member_for(&self, toolkit: &str) -> Option<&str> {
+        self.toolkit_bindings
+            .iter()
+            .find(|binding| binding.toolkit == toolkit)
+            .and_then(|binding| binding.binding_member.as_deref())
     }
 }
 
@@ -325,7 +384,7 @@ pub fn validate_policy(policy: &VisualPolicy) -> Result<(), UniverseError> {
             }
         }
     }
-    if policy.bindings.is_empty() {
+    if policy.bindings.is_empty() && policy.toolkit_bindings.is_empty() {
         return Err(validation("visual policy binds nothing"));
     }
     for binding in &policy.bindings {
@@ -333,6 +392,23 @@ pub fn validate_policy(policy: &VisualPolicy) -> Result<(), UniverseError> {
             return Err(validation(format!(
                 "binding for {} is unjustified or unbound",
                 binding.semantic_type
+            )));
+        }
+    }
+    // A toolkit binding must name a producing construct, say WHERE the appearance
+    // is held, and justify why that dress is a legitimate reading of what the
+    // toolkit makes. An unjustified binding is an assertion, not an authority.
+    for binding in &policy.toolkit_bindings {
+        if binding.toolkit.trim().is_empty() || binding.justification.trim().is_empty() {
+            return Err(validation(format!(
+                "toolkit binding for {} is unjustified or unbound",
+                binding.toolkit
+            )));
+        }
+        if binding.binding_member.is_none() && binding.binding_authority.is_none() {
+            return Err(validation(format!(
+                "toolkit binding for {} names no binding member or authority",
+                binding.toolkit
             )));
         }
     }
@@ -1059,6 +1135,14 @@ pub struct VisualReceipt {
 fn build_seed(catalog: &VisualCatalog, policy: &VisualPolicy) -> Result<GraphSeed, UniverseError> {
     validate_catalog(catalog)?;
     validate_policy(policy)?;
+    // This path materializes the semantic-type table into the graph. A policy that
+    // binds only by producing toolkit has nothing for it to seed — and seeding an
+    // empty table would report success for a materialization that did not happen.
+    if policy.bindings.is_empty() {
+        return Err(validation(
+            "policy declares only toolkit bindings; the graph seed path needs semantic-type bindings",
+        ));
+    }
     let catalog_sha256 = canonical_hash(&catalog.mapping)?;
     let mapping_id = catalog.mapping_id()?.to_owned();
 
@@ -1398,6 +1482,43 @@ mod tests {
                 .join("../../fixtures/assets/visual-projection-policy.json"),
         )
         .unwrap()
+    }
+
+    #[test]
+    fn the_declared_resolution_policy_is_a_policy_this_authority_can_run() {
+        // The v1 document could not be deserialized at all: `bindings` was a
+        // required field it does not carry, and its `epistemic_modulation` holds a
+        // prose `note`. The world declared one policy and the pipe ran another.
+        let policy = VisualPolicy::load(
+            Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../../fixtures/assets/visual-resolution-policy-v1.json"),
+        )
+        .expect("the declared resolution policy must load");
+        assert_eq!(policy.policy_id, "visual-resolution-policy-v1");
+        validate_policy(&policy).expect("the declared resolution policy must validate");
+        // It binds by producing toolkit, not by semantic type.
+        assert!(policy.bindings.is_empty());
+        assert_eq!(
+            policy.binding_member_for("space:l2:mind-universe:underground-toolkit-v0"),
+            Some("visual_binding:l2:mind-universe:underground-toolkit-v0")
+        );
+        // A toolkit that registered no binding is not given someone else's dress.
+        assert_eq!(policy.binding_member_for("space:l2:lumina-prime:energy-pen-v0"), None);
+        // The prose note is documentation, not a state; the six states survive it.
+        assert_eq!(policy.epistemic_modulation.len(), EPISTEMIC_STATES.len());
+        assert!(policy.fallback_presence.is_some());
+    }
+
+    #[test]
+    fn a_toolkit_only_policy_cannot_silently_seed_an_empty_semantic_type_table() {
+        let policy = VisualPolicy::load(
+            Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../../fixtures/assets/visual-resolution-policy-v1.json"),
+        )
+        .unwrap();
+        let temp = tempfile::tempdir().unwrap();
+        let error = materialize(temp.path().join("store"), &catalog(), &policy).unwrap_err();
+        assert!(error.to_string().contains("semantic-type bindings"));
     }
 
     #[test]
