@@ -1,0 +1,595 @@
+{
+  "id": "space:l1:mind-universe:ollama-inference-probe-v0",
+  "node_type": "space",
+  "subtype": "inference_probe",
+  "content": {
+    "contractKind": "construct",
+    "name": "Ollama inference probe v0 (an L1 actor's turn, reduced to its provable core)",
+    "dominant_scale": "mechanism",
+    "level": "l1",
+    "built_with": "space:l2:mind-universe:mechanical-toolkit-v0",
+    "lineage": "PRODUCED BY the Mechanical toolkit: the modules, typed ports, couplings, compatibility rule, machine run and terminal Effector below are that toolkit's grammar applied at the citizen's INNER (L1) scale. Where the toolkit's illustrative machine moves a body, this machine THINKS: its terminal effector reaches out of the bay to the local inference server and comes back with a receipted completion. See [[space:l2:mind-universe:mechanical-toolkit-v0]] for the assembly contract this construct is checked against, and [[space:l1:mind-universe:attention-l1-v0]] for the inner tool that will later supply this machine's prompt module.",
+    "parent_scope": {
+      "classification": "standalone",
+      "justification": "Portable inner tool (L1) awaiting installation under a citizen's brain Space. Exactly one scope classification; no PART_OF edge is written to an unbuilt parent brain, and no Built pose is authored for a coordinate this construct does not have."
+    },
+    "runtime_moment_subtypes": ["validation_run", "health_assessment"],
+    "native_law_boundary": "AtomDynamics knows only AtomSpec, AtomBond and support/inhibit/neutral. This construct is a physicalization + composition grammar over that law: a module is an atom that transforms, a compatible coupling is a support bond, the machine's terminal effector is an atom whose fire surfaces a CANDIDATE EffectIntent. The prompt text, the model reference, the request body bytes, the endpoint, the response and every port TYPE are typed payload data on modules and ports — never terms in the atom law. Energy only gates whether the required inputs are supplied; it never encodes what was asked, which model answered, or what came back.",
+    "purpose": "Answer one question with measured evidence: CAN THIS CITIZEN THINK, AND CAN IT PROVE IT? The machine takes a measured prompt and a measured local model reference, assembles one inference request, fires a terminal Effector, and reaches OUT of the bay to the local Ollama server through authorized transport. The completion is not real until its EffectReceipt lands; the receipt is then challenged by a validation rig that checks the response against the module's DECLARED transformation (same model, generated tokens, non-empty completion, run completed) and, additionally, measures whether a small local model returns a PARSEABLE verb choice — the exact property an L1 actor's turn depends on. What this probe measures is the reduced, provable core of an L1 actor's turn: the turn adds the two-frame WorldObservation as the prompt and parses the completion into an IntentProposal, and neither of those is claimed here.",
+    "reduced_from": {
+      "full_l1_turn": "two frames (MindEye L1 + CitizenEye L2) + reachable action verbs with target/precondition/justification + context (role, needs, energy, memory, objective, recent receipts) -> one local inference -> one chosen verb on an exact target with its justification -> a candidate IntentProposal that rises to L3, which attempts it -> the 4-verb path commits and returns a receipt",
+      "this_probe_covers": [
+        "the inference call itself: one local Ollama call, serial, one in flight",
+        "the request as authored graph payload, transported verbatim",
+        "the receipt discipline: no completion is real without a returned EffectReceipt",
+        "the rig: the response is challenged against the declared transformation",
+        "whether the returned completion is a PARSEABLE verb choice"
+      ],
+      "this_probe_does_not_cover": [
+        "assembling the prompt from two live frames (the prompt is authored here)",
+        "offering only reachable, proven verbs (the verb list is authored here)",
+        "parsing the completion into a committed IntentProposal",
+        "the L3 attempt and the 4-verb commit of the chosen action",
+        "serialization of the turn across many actors (one call in flight)"
+      ]
+    },
+    "machine_contract": {
+      "module": "one element of this machine: typed input ports + typed output ports + a transformation; physicalized as an atom that activates when all its required inputs are supplied",
+      "coupling": "an output port wired to a COMPATIBLE input port; physicalized as a support bond",
+      "compatibility": "couple(out, in) is admitted iff the output port type is accepted by the input port type; an incompatible coupling is refused and the prior assembly is restored exactly",
+      "effector": "the terminal module whose activation emits an EffectIntent carrying the authored request bytes; the effect is real only once its EffectReceipt returns",
+      "validation_rig": "an independent harness that reads the returned response and checks it against the declared transformation; a rig check with no evaluator is a hard failure, never a silent skip",
+      "rule": "A module activates only when every required input port is supplied with MEASURED signal. A coupling exists only between compatible ports. The effector transports the authored payload bytes verbatim: it invents no prompt, no model and no parameter."
+    }
+  },
+  "members": [
+    {
+      "id": "objective:l1:mind-universe:ollama-inference-probe-v0",
+      "node_type": "narrative",
+      "subtype": "objective",
+      "content": {
+        "success_condition": "For one measured prompt and one measured local model reference, every coupling of the machine joins compatible ports, the request module activates only once BOTH its inputs are supplied, the terminal effector fires exactly once, exactly one inference EffectIntent is emitted carrying the authored request bytes unchanged, and a real EffectReceipt returns from the local inference server. The validation rig then measures the response against the declared transformation: the answering model matches the requested model, tokens were actually generated, the completion is non-empty and the run reports completion. A starved module never activates; an incompatible coupling is refused and rolls back exactly; a transport failure is recorded as a measured failure and NEVER as an absent completion. No completion is claimed without a returned receipt, and no rig check is reported as passing when no evaluator measured it."
+      }
+    },
+    {
+      "id": "pattern:l1:mind-universe:ollama-inference-probe-v0",
+      "node_type": "narrative",
+      "subtype": "pattern",
+      "content": {
+        "pattern": "The Mechanical toolkit's assembly grammar applied to cognition. Two source modules (prompt, model reference) supply typed outputs; a request module is an AND gate that activates only once BOTH are supplied and transforms them into one inference request; that activation deposits onto the probe trigger; the trigger conducts to a terminal Effector whose fire surfaces ONE candidate EffectIntent carrying the authored request bytes. The candidate becomes an effect only through authorized transport, which returns an EffectReceipt reinjected as a Moment. A validation rig then challenges the response against the declared transformation.",
+        "chain": "measured prompt + measured model -> request module (AND gate) -> deposit -> probe trigger -> terminal Effector -> CANDIDATE EffectIntent -> capability declaration + limits -> authorized transport -> measured response bytes -> EffectReceipt -> validation rig -> Moment",
+        "epistemic_honesty": "An assembled machine is not a run machine. A fired effector is not a completion. A returned HTTP body is not a valid inference until the rig checks it against the declared transformation. A transport failure is measured evidence of failure — it is NEVER an empty completion, and never a not_measured. One probe run measures one call: it certifies nothing about availability over time, about determinism, or about the quality of what the model said."
+      }
+    },
+    {
+      "id": "vocabulary:l1:mind-universe:ollama-inference-probe-v0",
+      "node_type": "narrative",
+      "subtype": "vocabulary",
+      "content": {
+        "terms": {
+          "PromptModule": "The source module supplying the measured prompt text. Its output port carries type `prompt_text`.",
+          "ModelModule": "The source module supplying the measured local model reference. Its output port carries type `model_ref`.",
+          "RequestModule": "The AND-gate module whose transformation is (prompt_text, model_ref) -> inference_request. It activates only when BOTH input ports are supplied; with one input it is Starved and produces nothing.",
+          "ProbeTrigger": "The trigger atom the assembled request deposits onto. It fires at one measured support.",
+          "InferenceEffector": "The TERMINAL module. Its fire surfaces exactly one CANDIDATE EffectIntent carrying the authored request bytes; it conducts no energy onward.",
+          "InferenceRequest": "The authored request payload bytes (model + prompt + decoding options). It is graph data, transported verbatim; the transport never edits it.",
+          "EffectReceipt": "The measured result of the authorized transport, reinjected as a Moment. The ONLY proof a completion exists. Text claiming a completion is not evidence.",
+          "Completion": "The `response` string returned by the inference server for this request. Non-empty completion is a measured rig check, not an assumption.",
+          "VerbChoice": "The parse of the completion into one of the offered action verbs. Measured; a failed parse is a measured FAILURE of parseability, not a missing measurement.",
+          "Starved": "A module whose required inputs were not all supplied. It does not activate and fabricates no output.",
+          "TransportFailed": "A measured failure of the authorized transport (unreachable server, timeout, non-200 status). Known evidence of failure — distinct from not_measured and from an empty completion.",
+          "Fog": "An unmeasured or unknown signal, port, or response field. Never rendered as a supplied input or as a produced completion."
+        }
+      }
+    },
+    {
+      "id": "behavior:l1:mind-universe:ollama-inference-probe-v0",
+      "node_type": "narrative",
+      "subtype": "behavior",
+      "content": {
+        "given": "A set of typed modules and their proposed couplings, a measured prompt, a measured local model reference, an authored request payload, a graph-declared capability with its limits, an authored transport endpoint and timeout, and the acting capability set.",
+        "when": "The machine is assembled and run.",
+        "then": [
+          "Admit a coupling only between compatible ports; refuse an incompatible coupling and restore the prior assembly exactly.",
+          "Physicalize the assembly: one atom per module (required inputs = required_supports), one support bond per coupling.",
+          "Run the machine to quiescence: activate each module once all its required inputs are supplied, conducting each coupling once.",
+          "Hold a starved module inactive; never fabricate an output it did not produce.",
+          "On the terminal Effector's fire, surface exactly one CANDIDATE EffectIntent carrying the authored request bytes unchanged.",
+          "Resolve the candidate against the graph-declared capability and its limits before any transport; a limit violation fails BEFORE transport with a durable receipt.",
+          "Transport the payload bytes verbatim to the authored endpoint under the authored timeout, and return the measured response as an EffectReceipt.",
+          "Run every rig check named by the graph; a check with no evaluator is a HARD failure of the run, never a silent skip.",
+          "Record a transport failure as measured failure evidence, distinct from an absent or empty completion.",
+          "Commit exactly one Moment carrying the validation_run and the health_assessment derived from THIS run only."
+        ],
+        "forbidden": [
+          "reading the prompt, the model reference, the response or any port type inside the native AtomDynamics law",
+          "admitting a coupling between incompatible ports",
+          "activating the request module on a single supplied input",
+          "conducting a coupling more than once",
+          "the transport editing, re-templating or re-generating the authored request payload",
+          "the transport choosing a model, a prompt, or a decoding parameter",
+          "claiming a completion without a returned EffectReceipt",
+          "converting a transport failure into an empty completion or into not_measured",
+          "reporting a rig check as passed when no evaluator measured it",
+          "deriving overall health as healthy from a single probe run",
+          "pre-creating validation_run or health_assessment",
+          "streaming authored, derived, unknown or not_measured signal energy"
+        ]
+      }
+    },
+    {
+      "id": "algorithm:l1:mind-universe:ollama-inference-probe-v0",
+      "node_type": "narrative",
+      "subtype": "algorithm",
+      "content": {
+        "steps": [
+          "read the assembly (modules, ports, couplings) and the authored circuit from the COMMITTED graph, never from an authoring file",
+          "read the producing toolkit's compatibility rule from the committed Mechanical toolkit and check every proposed coupling against it",
+          "refuse every authored incompatible coupling and prove the assembly is unchanged",
+          "map each module to an atom whose required_supports are its required input couplings, and each compatible coupling to a support bond",
+          "admit only measured input signal at the machine's sources",
+          "run the machine to quiescence; hold starved modules inactive",
+          "on the terminal effector's fire, surface exactly one candidate EffectIntent carrying the authored payload",
+          "resolve the candidate against the graph-declared capability registry (payload size, causal depth, deadline) before any transport",
+          "transport the payload bytes verbatim to the authored endpoint under the authored timeout",
+          "return the measured response as an EffectReceipt; a failure is measured failure evidence",
+          "run every graph-named rig check with its evaluator; a missing evaluator fails the run",
+          "derive the health vector from THIS run's measured dimensions only, marking every uncovered dimension not_measured",
+          "commit one Moment and read it back independently"
+        ],
+        "compatibility_rule": "couple(out, in) admitted iff type(out) is accepted by type(in); otherwise refused with the prior assembly restored exactly.",
+        "starvation_rule": "the request module has TWO required supports; with one supplied input it does not activate and no request is assembled.",
+        "epistemic_precedence": ["Observed", "Measured", "Known_absent", "Unknown", "Not_measured"],
+        "evaluation": "structured_expression_ast",
+        "python_escape_hatch": "forbidden_by_default"
+      }
+    },
+    {
+      "id": "code:l1:mind-universe:ollama-inference-probe-v0",
+      "node_type": "thing",
+      "subtype": "code",
+      "content": {
+        "authority": "Graph-native CodeDefinition for the Ollama inference probe. This JSON file is a portable materialized projection, not independent semantic authority; the committed graph node is what the runtime reads.",
+        "language": "mind-ir+atom-fixture",
+        "runnable": true,
+        "runnable_note": "Runnable WITHOUT the physics-event -> atom-deposit bridge: this machine's source modules are supplied by MEASURED authored injections (a prompt and a model reference are data an actor supplies, not a Rapier intersection). Unlike the house alarm, nothing here is simulated to stand in for an unbuilt bridge. What is authored is authored; what is measured is measured.",
+        "entrypoints": [
+          "read_assembly",
+          "check_port_compatibility",
+          "assemble_machine",
+          "run_until_quiescent",
+          "emit_inference_intent",
+          "transport_inference",
+          "run_validation_rig",
+          "observe_probe",
+          "evaluate_probe_ast"
+        ],
+        "machine_circuit": {
+          "note": "The Mechanical toolkit's grammar instantiated: modules + typed ports + couplings, terminating in an Effector. `atoms`/`bonds`/`deposit_bond`/`trigger_atom`/`effect_bindings`/`external_measured_injections` are the physicalization the native floor consumes; `modules`/`couplings` carry the port TYPES the toolkit's compatibility rule is checked against. Every bond has exactly one declared coupling and vice versa.",
+          "modules": [
+            {
+              "key": "prompt_supplied",
+              "role": "source",
+              "ports": { "in": [], "out": [{ "name": "prompt", "type": "prompt_text" }] },
+              "transformation": "supply the measured prompt text authored for this probe"
+            },
+            {
+              "key": "model_selected",
+              "role": "source",
+              "ports": { "in": [], "out": [{ "name": "model", "type": "model_ref" }] },
+              "transformation": "supply the measured local model reference"
+            },
+            {
+              "key": "request_assembled",
+              "role": "transform",
+              "ports": {
+                "in": [
+                  { "name": "prompt", "type": "prompt_text" },
+                  { "name": "model", "type": "model_ref" }
+                ],
+                "out": [{ "name": "request", "type": "inference_request" }]
+              },
+              "transformation": "(prompt_text, model_ref) -> inference_request",
+              "and_gate": true
+            },
+            {
+              "key": "inference_probe",
+              "role": "trigger",
+              "ports": {
+                "in": [{ "name": "request", "type": "inference_request" }],
+                "out": [{ "name": "fire", "type": "probe_fire" }]
+              },
+              "transformation": "inference_request -> probe_fire (one assembled request = one probe)"
+            },
+            {
+              "key": "inference_effector",
+              "role": "effector",
+              "terminal": true,
+              "ports": {
+                "in": [{ "name": "fire", "type": "probe_fire" }],
+                "out": [{ "name": "intent", "type": "effect_intent" }]
+              },
+              "transformation": "probe_fire -> EffectIntent{infer.ollama, authored request bytes}"
+            }
+          ],
+          "couplings": [
+            { "key": "prompt_to_request", "from": "prompt_supplied.prompt", "to": "request_assembled.prompt", "out_type": "prompt_text", "in_type": "prompt_text" },
+            { "key": "model_to_request", "from": "model_selected.model", "to": "request_assembled.model", "out_type": "model_ref", "in_type": "model_ref" },
+            { "key": "request_to_probe", "from": "request_assembled.request", "to": "inference_probe.request", "out_type": "inference_request", "in_type": "inference_request" },
+            { "key": "probe_to_effector", "from": "inference_probe.fire", "to": "inference_effector.fire", "out_type": "probe_fire", "in_type": "probe_fire" }
+          ],
+          "refused_couplings": [
+            {
+              "key": "prompt_to_probe_direct",
+              "from": "prompt_supplied.prompt",
+              "to": "inference_probe.request",
+              "out_type": "prompt_text",
+              "in_type": "inference_request",
+              "expected": "refused_incompatible",
+              "why": "a raw prompt is not an assembled inference request; admitting this coupling would let the probe fire on half a request. Authored as a NEGATIVE case so the compatibility rule is MEASURED on this machine, not merely declared."
+            },
+            {
+              "key": "model_to_effector_direct",
+              "from": "model_selected.model",
+              "to": "inference_effector.fire",
+              "out_type": "model_ref",
+              "in_type": "probe_fire",
+              "expected": "refused_incompatible",
+              "why": "a model reference is not a probe fire; admitting it would let the effector transport before a request exists."
+            }
+          ],
+          "atoms": [
+            { "key": "prompt_supplied", "roleAxis": "thing", "threshold": 100, "seed_energy": 0 },
+            { "key": "model_selected", "roleAxis": "thing", "threshold": 100, "seed_energy": 0 },
+            {
+              "key": "request_assembled",
+              "roleAxis": "thing",
+              "threshold": 200,
+              "seed_energy": 0,
+              "required_supports": ["prompt_to_request", "model_to_request"]
+            },
+            {
+              "key": "inference_probe",
+              "roleAxis": "thing",
+              "threshold": 100,
+              "seed_energy": 0,
+              "required_supports": ["request_to_probe"]
+            },
+            {
+              "key": "inference_effector",
+              "roleAxis": "thing",
+              "threshold": 100,
+              "seed_energy": 0,
+              "required_supports": ["probe_to_effector"]
+            }
+          ],
+          "bonds": [
+            { "key": "prompt_to_request", "source": "prompt_supplied", "target": "request_assembled", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "model_to_request", "source": "model_selected", "target": "request_assembled", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "request_to_probe", "source": "request_assembled", "target": "inference_probe", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" },
+            { "key": "probe_to_effector", "source": "inference_probe", "target": "inference_effector", "polarity": "support", "energy": 100, "energy_status": "measured:semantic_v0" }
+          ],
+          "deposit_bond": "request_to_probe",
+          "trigger_atom": "inference_probe",
+          "terminal_emitter_honesty": "inference_effector is TERMINAL: on a fire it surfaces exactly one candidate EffectIntent and conducts no energy onward. The EffectReceipt and the run Moment are produced by the real transport and commit machinery — they are not shadow atoms this circuit energizes (an atom holding 100 support cannot conduct 200 outward without starving).",
+          "effect_bindings": [
+            {
+              "emitter_atom": "inference_effector",
+              "capability": "infer.ollama",
+              "idempotency_key": "ollama-probe:l1-verb-choice-v0",
+              "message": "{\"model\":\"qwen3-vl:2b-instruct\",\"prompt\":\"You are an L1 actor in the city of Lumina Prime. Choose exactly one action verb from this list: observe, speak, wait. Answer with the single verb and nothing else.\",\"stream\":false,\"options\":{\"temperature\":0,\"num_predict\":24}}",
+              "deadline_tick": 1000,
+              "causal_ancestry": ["ollama-probe:request-assembled"]
+            }
+          ],
+          "effect_bindings_honesty": "The `message` IS the request payload: the exact bytes the transport POSTs, authored in the graph. The transport is a byte channel with zero policy — it selects no model, writes no prompt, sets no decoding parameter. Surfacing the candidate is not calling: the call happens only through the declared capability and returns an EffectReceipt.",
+          "external_measured_injections": {
+            "prompt_supplied": 100,
+            "model_selected": 100
+          },
+          "injection_honesty": "These two injections are MEASURED supplies, not stand-ins for an unbuilt bridge: an actor supplying a prompt and naming a model IS the measured input of this machine. Nothing here is simulated."
+        },
+        "capability_declaration": {
+          "capability": "infer.ollama",
+          "version": "1",
+          "max_payload_bytes": 8192,
+          "max_causal_depth": 4,
+          "sensitive": false,
+          "note": "Materialized into the runtime CapabilityRegistry from THIS graph node. The host holds no policy of its own: an undeclared capability is denied outright, and a limit violation fails BEFORE transport with a durable receipt."
+        },
+        "effect_transport": {
+          "port_id": "port:l1:mind-universe:ollama-probe:inference-v0",
+          "capability": "infer.ollama",
+          "protocol": "http/1.1",
+          "method": "POST",
+          "endpoint": "http://127.0.0.1:11434/api/generate",
+          "content_type": "application/json",
+          "timeout_ms": 180000,
+          "mandatory": ["timeout", "idempotency", "causal_depth", "independent_readback"],
+          "rule": "The adapter opens the authored endpoint, POSTs the authored payload bytes verbatim under the authored timeout, and returns the measured response bytes. It parses nothing, retries nothing, and substitutes nothing. A non-200 status, an unreachable host or a timeout is a measured TransportFailed — never an empty completion."
+        },
+        "validation_rig": {
+          "feeds": "the authored request payload; the response bytes returned by the authorized transport",
+          "checks": [
+            { "id": "transport_succeeded", "asserts": "the EffectReceipt is TransportSucceeded", "load_bearing": true },
+            { "id": "http_status_200", "asserts": "the response status line reports 200", "load_bearing": true },
+            { "id": "body_is_json", "asserts": "the response body parses as a JSON object", "load_bearing": true },
+            { "id": "model_echo_matches", "asserts": "response.model equals the model named in the authored request", "load_bearing": true },
+            { "id": "completion_nonempty", "asserts": "response.response is a non-empty string", "load_bearing": true },
+            { "id": "run_done", "asserts": "response.done is true", "load_bearing": true },
+            { "id": "tokens_generated", "asserts": "response.eval_count is greater than zero", "load_bearing": true },
+            { "id": "verb_choice_parseable", "asserts": "the completion contains exactly one of the offered verbs (observe, speak, wait)", "load_bearing": false, "why": "the property an L1 actor's turn depends on: whether a small local model returns a parseable choice. Measured and reported; a failure degrades the probe rather than invalidating the inference." }
+          ],
+          "offered_verbs": ["observe", "speak", "wait"],
+          "not_checked": [
+            { "id": "semantic_correctness", "why": "whether the chosen verb is the RIGHT one for a situation is not decidable from one context-free probe" },
+            { "id": "determinism", "why": "one call cannot measure run-to-run stability; the heartbeat is explicitly non-deterministic" },
+            { "id": "availability_over_time", "why": "one call measures one moment, never an uptime rate" },
+            { "id": "concurrency_serialization", "why": "one call in flight is the rule; this probe issues one call and cannot observe the serialization of many" }
+          ],
+          "rule": "Every check named here MUST be evaluated by the rig. A check with no evaluator is a HARD failure of the run — never a silent skip and never a pass."
+        }
+      }
+    },
+    {
+      "id": "implementation:l1:mind-universe:ollama-inference-probe-v0",
+      "node_type": "thing",
+      "subtype": "implementation",
+      "content": {
+        "status": "materialized",
+        "artifact": "ollama-inference-probe-l1-v0.json",
+        "graph_status": "not_written",
+        "wiring_status": "not_wired",
+        "runtime_status": "not_running",
+        "verification_status": "not_measured",
+        "honesty": "These four fields are written BEFORE injection and go STALE the moment an injector commits this construct. They are the authoring state, never a live status: after injection the on-disk graph carries the construct while this embedded field still reads not_written. The live state is what an independent readback of the store and this construct's own runtime Moments report — not this block."
+      }
+    },
+    {
+      "id": "justification:l1:mind-universe:ollama-inference-probe-v0",
+      "node_type": "narrative",
+      "subtype": "justification",
+      "content": {
+        "why": [
+          "The inference call is named in the irreducible native floor, and an L1 actor's turn is one such call. Before any turn can be trusted, the call itself must be provable: reachable, receipted, and checked against what it claimed to produce.",
+          "Building it as a Mechanical machine rather than a bespoke script means the prompt and the model are typed modules that can be RE-COUPLED: the same machine serves the real turn once the prompt module is fed by the two frames instead of by an authored constant.",
+          "Making the request payload authored graph data and the transport a pure byte channel puts every variable — model, prompt, decoding options, endpoint, timeout — in the Universe, and leaves in native code only the mechanism with zero policy.",
+          "The AND-gate request module makes a half-supplied turn structurally impossible: with a prompt but no model, nothing is assembled and nothing is transported. Starvation is honest, not an error path.",
+          "Authoring incompatible couplings as NEGATIVE cases gives the toolkit's compatibility rule a measurement on this machine instead of a declaration.",
+          "Checking the response against the declared transformation separates 'the server answered' from 'the answer is a valid inference', and measuring verb-parseability separately answers the question an L1 actor actually depends on without letting a bad parse masquerade as a failed call."
+        ],
+        "rejected": [
+          "calling the inference server directly from a driver script, because then the model, prompt and endpoint are native policy and nothing in the Universe explains or can repair the turn",
+          "letting the transport build the request from parameters, because a transport that templates a prompt is a hidden authoring layer",
+          "treating an unreachable server as a not_measured probe, because unreachability is measured knowledge and must be recorded as failure evidence",
+          "asserting a completion from a process that ran, because a running client is not a returned receipt",
+          "checking the completion's semantic correctness in the rig, because a context-free probe cannot decide whether a verb was the right choice",
+          "deriving healthy from one successful call, because a single measurement certifies no rate and no stability"
+        ]
+      }
+    },
+    {
+      "id": "validation:l1:mind-universe:ollama-inference-probe-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "evaluation_kind": "structured_expression_ast",
+        "scenarios": [
+          "compatible_couplings_admitted",
+          "incompatible_coupling_refused_transactionally",
+          "request_module_waits_for_both_inputs",
+          "starved_request_module_assembles_nothing",
+          "machine_reaches_quiescence",
+          "effector_fires_once_and_surfaces_one_candidate",
+          "candidate_carries_authored_payload_unchanged",
+          "undeclared_capability_denied",
+          "oversized_payload_fails_before_transport",
+          "transport_returns_effect_receipt",
+          "response_model_matches_requested_model",
+          "completion_nonempty_and_run_done",
+          "tokens_generated_greater_than_zero",
+          "verb_choice_parseable",
+          "transport_failure_recorded_as_failure_not_absence",
+          "rig_check_without_evaluator_fails_the_run",
+          "energy_conserved"
+        ],
+        "negative_invariants": [
+          "threshold zero rejected",
+          "duplicate required supports rejected",
+          "neutral bond with nonzero energy rejected",
+          "incompatible coupling admitted rejected",
+          "completion claimed without receipt rejected",
+          "transport failure reported as not_measured rejected"
+        ],
+        "invariants": [
+          "a coupling exists only between compatible ports",
+          "an incompatible coupling is refused and the assembly is unchanged",
+          "the request module activates only when both inputs are supplied",
+          "every coupling conducts at most once",
+          "admitted integer signal energy is conserved",
+          "the candidate EffectIntent carries the authored payload bytes unchanged",
+          "the capability is resolved against the graph-declared registry before transport",
+          "a completion exists only through an EffectIntent that returned an EffectReceipt",
+          "a transport failure is recorded as measured failure, never as absence or as an empty completion",
+          "every rig check named in the graph is evaluated or the run fails"
+        ]
+      }
+    },
+    {
+      "id": "validation:l1:mind-universe:ollama-inference-probe-observer-v0",
+      "node_type": "narrative",
+      "subtype": "validation",
+      "content": {
+        "target": "observability_algorithm:l1:mind-universe:ollama-inference-probe-v0",
+        "tests": [
+          "detect a coupling between incompatible ports",
+          "detect a request module that activated on one supplied input",
+          "detect a candidate whose payload differs from the authored request bytes",
+          "detect a claimed completion with no returned EffectReceipt",
+          "detect a transport failure reported as an empty completion",
+          "detect a transport failure reported as not_measured",
+          "detect a rig check reported as passed with no evaluator",
+          "detect a model echo that does not match the requested model",
+          "detect duplicate coupling conduction",
+          "detect non-conserved energy",
+          "detect overall health reported healthy from a single run",
+          "never convert an unreachable server into an absent measurement",
+          "return measurement_failed when observer execution itself fails"
+        ]
+      }
+    },
+    {
+      "id": "observability_algorithm:l1:mind-universe:ollama-inference-probe-v0",
+      "node_type": "narrative",
+      "subtype": "observability_algorithm",
+      "content": {
+        "independence": "Reads the committed assembly (modules, ports, couplings) from the store, the physicalized activation trace, the surfaced candidate EffectIntent and its payload bytes, the capability declaration actually enforced, the returned EffectReceipt, the raw response bytes, and each rig check's evaluator result. It does not trust a runtime-declared health field, the construct's own implementation block, or a client process that merely ran.",
+        "checks": [
+          "every coupling joins compatible ports",
+          "every authored incompatible coupling was refused and the assembly unchanged",
+          "the request module activated only with both inputs supplied",
+          "single conduction per coupling",
+          "integer energy conservation",
+          "exactly one candidate surfaced by the terminal effector",
+          "the candidate payload equals the authored request bytes",
+          "the capability was resolved against the graph-declared registry",
+          "every claimed completion has a returned EffectReceipt",
+          "the response model matches the requested model",
+          "each rig check has a named evaluator and a measured result",
+          "a transport failure is recorded as failure, not as absence",
+          "quiescence",
+          "receipt integrity",
+          "evidence freshness"
+        ]
+      }
+    },
+    {
+      "id": "metric:l1:mind-universe:ollama-inference-probe-v0",
+      "node_type": "narrative",
+      "subtype": "metric",
+      "content": {
+        "dimensions": [
+          "port_compatibility_enforcement_rate",
+          "incompatible_coupling_refusal_rate",
+          "and_gate_fire_accuracy",
+          "starvation_accuracy",
+          "single_conduction_accuracy",
+          "signal_conservation_error_u64",
+          "quiescence_reached",
+          "candidate_payload_fidelity",
+          "capability_declaration_enforced",
+          "effect_receipt_backed_rate",
+          "transport_latency_ms",
+          "response_wellformed_rate",
+          "model_echo_match_rate",
+          "completion_nonempty_rate",
+          "tokens_generated",
+          "verb_choice_parseable_rate",
+          "rig_check_coverage",
+          "transport_failure_honesty_rate",
+          "availability_over_time_rate",
+          "determinism_rate",
+          "observer_fault_detection_rate",
+          "evidence_freshness_ms"
+        ]
+      }
+    },
+    {
+      "id": "health:l1:mind-universe:ollama-inference-probe-v0",
+      "node_type": "narrative",
+      "subtype": "health",
+      "content": {
+        "states": ["healthy", "degraded", "stale", "unknown", "not_measured", "measurement_failed"],
+        "derivation": {
+          "healthy": "Requires a POPULATION of fresh runs, not one: every load-bearing rig check passing across repeated runs, an availability rate and a determinism rate actually measured, with couplings, starvation, conduction and conservation clean throughout. One successful probe can never reach this state.",
+          "degraded": "Fresh evidence exists but at least one non-catastrophic dimension violates its bound — for example a successful, well-formed inference whose completion is not a parseable verb choice.",
+          "stale": "The latest otherwise valid evidence exceeds the configured freshness window.",
+          "unknown": "Required evidence cannot be resolved to a known state.",
+          "not_measured": "No fresh run has measured the required dimensions — the state of this construct before its first run, and the honest overall state after a single run, since the population dimensions remain unmeasured.",
+          "measurement_failed": "The rig or the observer failed to produce a trustworthy measurement — distinct from a measured transport failure, which is knowledge, not a failed measurement."
+        },
+        "maintenance": [
+          "retry",
+          "inspect_activation_trace",
+          "inspect_port_compatibility",
+          "inspect_effect_receipt",
+          "inspect_raw_response",
+          "check_inference_server_reachable",
+          "pull_or_repair_declared_model",
+          "raise_transport_timeout",
+          "recouple_prompt_module_to_live_frames",
+          "rerun_validation_rig",
+          "reissue_capability_declaration",
+          "ask_human"
+        ]
+      }
+    },
+    {
+      "id": "port:l1:mind-universe:ollama-probe:inference-v0",
+      "node_type": "thing",
+      "subtype": "capability_port",
+      "content": {
+        "name": "Local inference transport port",
+        "state": "declared_transport_only",
+        "capability": "infer.ollama",
+        "observe_capabilities": ["observe", "read_machine", "trace_pipeline", "inspect_ports"],
+        "required_mutate_capability": "authority:effect-transport",
+        "shape_contract": "authored_payload_transported_verbatim",
+        "effect_when_unauthorized": "fail_closed_and_emit_rejection_receipt",
+        "note": "Inspecting the machine (modules, couplings, payload, receipts) is a separate observe-only surface. This port is the ONLY surface through which the machine reaches out of the bay, and it carries no authoring power: it transports the authored bytes and returns the measured response."
+      }
+    }
+  ],
+  "relations": [
+    {
+      "source": "space:l1:mind-universe:ollama-inference-probe-v0",
+      "predicate": "IMPLEMENTED_IN",
+      "target": "implementation:l1:mind-universe:ollama-inference-probe-v0"
+    },
+    {
+      "source": "space:l1:mind-universe:ollama-inference-probe-v0",
+      "predicate": "DEFINED_BY_CODE",
+      "target": "code:l1:mind-universe:ollama-inference-probe-v0"
+    },
+    {
+      "source": "code:l1:mind-universe:ollama-inference-probe-v0",
+      "predicate": "IMPLEMENTED_BY",
+      "target": "implementation:l1:mind-universe:ollama-inference-probe-v0"
+    },
+    {
+      "source": "pattern:l1:mind-universe:ollama-inference-probe-v0",
+      "predicate": "JUSTIFIED_BY",
+      "target": "justification:l1:mind-universe:ollama-inference-probe-v0"
+    },
+    {
+      "source": "behavior:l1:mind-universe:ollama-inference-probe-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l1:mind-universe:ollama-inference-probe-v0"
+    },
+    {
+      "source": "implementation:l1:mind-universe:ollama-inference-probe-v0",
+      "predicate": "OBSERVED_BY",
+      "target": "observability_algorithm:l1:mind-universe:ollama-inference-probe-v0"
+    },
+    {
+      "source": "observability_algorithm:l1:mind-universe:ollama-inference-probe-v0",
+      "predicate": "PRODUCES",
+      "target": "metric:l1:mind-universe:ollama-inference-probe-v0"
+    },
+    {
+      "source": "metric:l1:mind-universe:ollama-inference-probe-v0",
+      "predicate": "FEEDS",
+      "target": "health:l1:mind-universe:ollama-inference-probe-v0"
+    },
+    {
+      "source": "objective:l1:mind-universe:ollama-inference-probe-v0",
+      "predicate": "SUPPORTS",
+      "target": "space:l1:mind-universe:ollama-inference-probe-v0"
+    },
+    {
+      "source": "observability_algorithm:l1:mind-universe:ollama-inference-probe-v0",
+      "predicate": "VALIDATED_BY",
+      "target": "validation:l1:mind-universe:ollama-inference-probe-observer-v0"
+    }
+  ]
+}
