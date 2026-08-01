@@ -73,6 +73,7 @@ use std::{env, io::ErrorKind};
 use serde_json::{json, Map, Value};
 use sha2::{Digest, Sha256};
 
+use universe_assets::visual::{validate_catalog, VisualCatalog};
 use universe_capabilities::{
     CapabilityDeclaration, CapabilityHost, CapabilityRegistry, EffectAdapter,
     EffectExecutionReceipt, EffectIntent, EffectReceipt,
@@ -976,6 +977,54 @@ fn extensions_named_in(clause: &str) -> BTreeSet<String> {
     found
 }
 
+// ===========================================================================
+// The form, submitted to the RENDERER's own validator.
+// ===========================================================================
+
+/// Wraps forms in the minimal `visual-embodiment/1` document the renderer's
+/// validator consumes.
+///
+/// `lod_states` and `fallback_form` are HARNESS SCAFFOLDING: the validator
+/// refuses to run without them, and their values cannot change the verdict on
+/// the tuples. The budgets are NOT invented — they are the measured maxima of
+/// the forms being submitted, so the probe asks exactly one question: does the
+/// renderer accept these primitive tuples?
+fn probe_catalog(forms: Map<String, Value>) -> Result<VisualCatalog, Box<dyn Error>> {
+    let first = forms
+        .keys()
+        .next()
+        .ok_or("no form to submit to the renderer's validator")?
+        .clone();
+    let primitive_budget = forms
+        .values()
+        .filter_map(Value::as_array)
+        .map(Vec::len)
+        .max()
+        .unwrap_or(0)
+        .max(1) as u64;
+    let particle_budget = forms
+        .values()
+        .filter_map(Value::as_array)
+        .flatten()
+        .filter_map(Value::as_array)
+        .filter_map(|tuple| tuple.get(6).and_then(Value::as_u64))
+        .max()
+        .unwrap_or(0);
+    Ok(VisualCatalog {
+        authority_id: "probe:portal-form-submitted-to-renderer-validator".to_string(),
+        mapping: json!({
+            "schema_version": "visual-embodiment/1",
+            "mapping_id": "probe:portal-form",
+            "primitive_budget": primitive_budget,
+            "particle_budget": particle_budget,
+            "forms": Value::Object(forms),
+            "fallback_form": first,
+            "lod_states": { "hot": first, "sleeping": first, "aggregated": first, "dormant": first }
+        }),
+        motion_profile: Value::Null,
+    })
+}
+
 struct Proposal {
     toolkit: String,
     why: String,
@@ -1802,6 +1851,95 @@ fn run() -> Result<(), Box<dyn Error>> {
                 .collect()
         })
         .unwrap_or_default();
+    // The portal's own forms, submitted to the code the RENDERER enforces —
+    // palette, tuple arity, vec3 shapes, positive scale, particle counts. This
+    // is what the graph-side palette check alone cannot see.
+    let portal_forms: Map<String, Value> = contents
+        .get(PORTAL_BINDING_ID)
+        .and_then(|wrapper| wrapper.pointer("/content/affordance_materializations"))
+        .and_then(Value::as_array)
+        .map(|materializations| {
+            materializations
+                .iter()
+                .filter_map(|m| {
+                    let name = m.pointer("/affordance/subtype").and_then(Value::as_str)?;
+                    Some((name.to_string(), m.get("form")?.clone()))
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    let renderer_verdict = if portal_forms.is_empty() {
+        not_measured("the portal's visual binding is not committed in this store, so no form could be submitted")
+    } else {
+        match probe_catalog(portal_forms.clone()).and_then(|catalog| {
+            validate_catalog(&catalog).map_err(|error| -> Box<dyn Error> { error.to_string().into() })
+        }) {
+            Ok(()) => measured(
+                json!(true),
+                "every form of the portal was ACCEPTED by universe_assets::validate_catalog — the renderer's own validator, enforcing its closed palette, 8-tuple arity, vec3 offsets/rotations, positive scale and particle counts. lod_states and fallback_form were harness scaffolding; the budgets were the submitted forms' own measured maxima, so nothing was widened to make this pass.",
+            ),
+            Err(error) => measured(
+                json!(false),
+                &format!("the renderer's own validator REFUSED the portal's form: {error}"),
+            ),
+        }
+    };
+
+    // Does the palette the GRAPH declares match the one the renderer enforces?
+    // Each declared-allowed primitive is submitted alone: a kind the graph allows
+    // and the renderer refuses is divergence — the exact failure that would make
+    // the graph-side check a comfortable lie.
+    let divergence_dimension = match &appearance_palette {
+        None => not_measured("the Appearance toolkit's binding is not committed in this store"),
+        Some(palette) => {
+            let mut refused: Vec<String> = Vec::new();
+            let mut probed = 0usize;
+            for kind in palette {
+                probed += 1;
+                let mut forms = Map::new();
+                forms.insert(
+                    "probe".to_string(),
+                    json!([[kind, "probe", "core", [0, 0, 0], [0, 0, 0], [1, 1, 1], 0, 0]]),
+                );
+                let accepted = probe_catalog(forms)
+                    .and_then(|catalog| {
+                        validate_catalog(&catalog)
+                            .map_err(|error| -> Box<dyn Error> { error.to_string().into() })
+                    })
+                    .is_ok();
+                if !accepted {
+                    refused.push(kind.clone());
+                }
+            }
+            // A probe that has never said no proves nothing. One kind the graph
+            // does NOT declare is submitted too: the renderer must refuse it, or
+            // this whole dimension is meaningless and is reported as failed.
+            let mut negative = Map::new();
+            negative.insert(
+                "probe".to_string(),
+                json!([["hypercube", "probe", "core", [0, 0, 0], [0, 0, 0], [1, 1, 1], 0, 0]]),
+            );
+            let negative_refused = probe_catalog(negative)
+                .and_then(|catalog| {
+                    validate_catalog(&catalog)
+                        .map_err(|error| -> Box<dyn Error> { error.to_string().into() })
+                })
+                .is_err();
+            measured(
+                json!(if negative_refused {
+                    format!("{}/{probed}", probed - refused.len())
+                } else {
+                    "meaningless: the probe accepts anything".to_string()
+                }),
+                &format!(
+                    "primitives the graph declares allowed and the renderer's validator accepts; refused by the renderer: {refused:?}. \
+                     Negative control: an undeclared primitive (`hypercube`) was {} by the same validator, so the probe is able to say no.",
+                    if negative_refused { "REFUSED" } else { "ACCEPTED — this measurement is void" }
+                ),
+            )
+        }
+    };
+
     let palette_dimension = match (&appearance_palette, portal_primitives.is_empty()) {
         (Some(palette), false) => {
             let outside: Vec<String> = portal_primitives.difference(palette).cloned().collect();
@@ -1864,6 +2002,8 @@ fn run() -> Result<(), Box<dyn Error>> {
             "artifact_bytes_out_of_world_rate": measured(json!(artifacts_all_bytes_out), "every artifact states bytes_in_world = false"),
             "rig_check_coverage": measured(json!(format!("{}/{}", rig.len(), rig.len())), "every check named by the graph was evaluated; an unknown check id fails the run"),
             "form_inside_closed_palette": palette_dimension,
+            "form_accepted_by_renderer_validator": renderer_verdict,
+            "graph_palette_agrees_with_renderer": divergence_dimension,
             "unreadable_honesty_rate": not_measured("no entry failed to read this run, so the failure-honesty path was not exercised"),
             "single_conduction_accuracy": not_measured("per-bond conduction was not read from a ledger; only aggregate conservation and no-starve were observed"),
             "availability_over_time_rate": not_measured("one crossing measures one instant of the ground; an availability rate needs a population over time"),
